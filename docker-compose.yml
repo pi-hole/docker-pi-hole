@@ -1,0 +1,9 @@
+debian:
+  build: .
+  dockerfile: debian.docker
+  ports:
+    - "53:53/tcp"
+    - "53:53/udp"
+    - "8053:80/tcp"
+  cap_add:
+    - NET_ADMIN

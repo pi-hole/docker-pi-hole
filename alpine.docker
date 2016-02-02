@@ -1,0 +1,29 @@
+FROM alpine:edge
+MAINTAINER adam@diginc.us <adam@diginc.us>
+
+RUN apk add --update --repository http://dl-1.alpinelinux.org/alpine/edge/testing/ tini
+ENTRYPOINT ["tini", "--"]
+
+RUN apk update && \
+    apk add \
+        dnsmasq \
+        lighttpd \
+        ca-certificates \
+        php-fpm php-json php-zlib php-xml \
+        php-pdo php-phar php-openssl \
+        php-gd php-iconv php-mcrypt && \
+    apk add -u musl && \
+    rm -rf /var/cache/apk/*
+
+# Hit wall with /usr/share/lighttpd/*.pl not existing on alpine,
+# will need custom configs
+# maybe just switch to nginx...
+COPY ./pi-hole/gravity.sh /usr/local/bin/
+COPY ./pi-hole/advanced/Scripts/* /usr/local/bin/
+COPY ./pi-hole/advanced/lighttpd.conf /etc/lighttpd/lighttpd.conf
+COPY ./pi-hole/advanced/dnsmasq.conf /etc/dnsmasq.conf
+COPY ./pi-hole/advanced/index.html /var/www/html/pihole/index.html
+COPY ./AdminLTE /var/www/html/admin
+
+COPY start.sh /
+CMD /start.sh

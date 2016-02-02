@@ -1,0 +1,46 @@
+FROM debian:jessie
+MAINTAINER adam@diginc.us <adam@diginc.us>
+
+ENV TINI_VERSION v0.9.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc /tini.asc
+RUN gpg --keyserver ha.pool.sks-keyservers.net --recv-keys 0527A9B7 \
+ && gpg --verify /tini.asc
+RUN chmod +x /tini
+
+# Requirements
+RUN apt-get -q update && \
+    apt-get install -y \
+        dnsmasq \
+        lighttpd \
+        php5-common php5-cgi php5 \
+        curl unzip wget && \
+    rm -rf /var/cache/apt/archives
+
+# Setup
+COPY ./pi-hole/gravity.sh /usr/local/bin/
+COPY ./pi-hole/advanced/Scripts/* /usr/local/bin/
+COPY ./pi-hole/advanced/lighttpd.conf /etc/lighttpd/lighttpd.conf
+COPY ./pi-hole/advanced/dnsmasq.conf /etc/dnsmasq.conf
+COPY ./pi-hole/advanced/index.html /var/www/html/pihole/index.html
+COPY ./AdminLTE /var/www/html/admin
+
+RUN mkdir -p /etc/pihole/ && \
+    mkdir -p /var/www/html/pihole && \
+    mkdir -p /var/www/html/admin/ && \
+    chown www-data:www-data /var/www/html && \
+    chmod 775 /var/www/html && \
+    lighty-enable-mod fastcgi fastcgi-php || true && \
+    touch /var/log/pihole.log && \
+    chmod 644 /var/log/pihole.log && \
+    chown dnsmasq:root /var/log/pihole.log && \
+    sed -i "s/@INT@/eth0/" /etc/dnsmasq.conf
+
+# This chould be eliminated if the files were +x in git
+RUN chmod +x /usr/local/bin/*.sh
+# Fix just for docker
+RUN grep -q '^user=root' || echo 'user=root' >> /etc/dnsmasq.conf
+
+COPY ./start.sh /
+ENTRYPOINT ["/tini", "--"]
+CMD /start.sh
