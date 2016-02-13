@@ -17,11 +17,12 @@ RUN apt-get -q update && \
         curl unzip wget && \
     rm -rf /var/cache/apt/archives
 
-# Setup
+# Original upstream pihole code being used
 COPY ./pi-hole/gravity.sh /usr/local/bin/
+COPY ./pi-hole/adlists.default /etc/pihole/
 COPY ./pi-hole/advanced/Scripts/* /usr/local/bin/
 COPY ./pi-hole/advanced/lighttpd.conf /etc/lighttpd/lighttpd.conf
-COPY ./pi-hole/advanced/dnsmasq.conf /etc/dnsmasq.conf
+COPY ./pi-hole/advanced/01-pihole.conf /etc/dnsmasq.conf
 COPY ./pi-hole/advanced/index.html /var/www/html/pihole/index.html
 COPY ./AdminLTE /var/www/html/admin
 
@@ -34,7 +35,9 @@ RUN mkdir -p /etc/pihole/ && \
     touch /var/log/pihole.log && \
     chmod 644 /var/log/pihole.log && \
     chown dnsmasq:root /var/log/pihole.log && \
-    sed -i "s/@INT@/eth0/" /etc/dnsmasq.conf
+    sed -i "s/@INT@/eth0/" /etc/dnsmasq.conf && \
+    sed -i "s/@DNS1@/8.8.8.8/" /etc/dnsmasq.conf && \
+    sed -i "s/@DNS2@/8.8.4.4/" /etc/dnsmasq.conf
 
 # This chould be eliminated if the files were +x in git
 RUN chmod +x /usr/local/bin/*.sh
