@@ -41,6 +41,6 @@ RUN chmod +x /usr/local/bin/*.sh
 # Fix just for docker
 RUN grep -q '^user=root' || echo 'user=root' >> /etc/dnsmasq.conf
 
-COPY ./start.sh /
+COPY ./debian/start.sh /
 ENTRYPOINT ["/tini", "--"]
 CMD /start.sh

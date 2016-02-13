@@ -35,7 +35,7 @@ RUN chmod +x /usr/local/bin/*.sh
 # Fix for docker
 RUN grep -q '^user=root' || echo 'user=root' >> /etc/dnsmasq.conf
 
-COPY ./start.sh /
+COPY ./alpine/start.sh /
 
 EXPOSE 53 53/udp
 EXPOSE 80
