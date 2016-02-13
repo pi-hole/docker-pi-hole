@@ -1,8 +1,13 @@
 #!/bin/sh
+gravity.sh # pi-hole version minus the service dnsmasq start
 
+dnsmasq --test || exit 1
+dnsmasq
 
-service lighttpd start
-gravity.sh # dnsmasq start included
+php-fpm -t || exit 1
+php-fpm
 
-tail -f /var/log/lighttpd/*.log /var/log/pihole.log
+nginx -t || exit 1
+nginx
 
+tail -F /var/log/nginx/*.log /var/log/pihole.log

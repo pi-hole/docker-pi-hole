@@ -1,0 +1,9 @@
+alpine:
+  build: .
+  dockerfile: alpine.docker
+  ports:
+    - "53:53/tcp"
+    - "53:53/udp"
+    - "8054:80/tcp"
+  cap_add:
+    - NET_ADMIN

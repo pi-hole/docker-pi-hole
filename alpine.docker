@@ -1,29 +1,44 @@
 FROM alpine:edge
 MAINTAINER adam@diginc.us <adam@diginc.us>
 
-RUN apk add --update --repository http://dl-1.alpinelinux.org/alpine/edge/testing/ tini
-ENTRYPOINT ["tini", "--"]
-
-RUN apk update && \
-    apk add \
+RUN apk add --update \
         dnsmasq \
-        lighttpd \
+        nginx \
         ca-certificates \
-        php-fpm php-json php-zlib php-xml \
-        php-pdo php-phar php-openssl \
-        php-gd php-iconv php-mcrypt && \
-    apk add -u musl && \
+        php-fpm php-json libxml2 \
+        bash curl perl && \
+    apk add --update --repository http://dl-1.alpinelinux.org/alpine/edge/testing/ tini && \
     rm -rf /var/cache/apk/*
 
-# Hit wall with /usr/share/lighttpd/*.pl not existing on alpine,
-# will need custom configs
-# maybe just switch to nginx...
-COPY ./pi-hole/gravity.sh /usr/local/bin/
+# Customized from submodules
+COPY ./alpine/gravity.sh /usr/local/bin/
+COPY ./alpine/nginx.conf /etc/nginx/nginx.conf
+# Original upstream pihole code being used
 COPY ./pi-hole/advanced/Scripts/* /usr/local/bin/
-COPY ./pi-hole/advanced/lighttpd.conf /etc/lighttpd/lighttpd.conf
 COPY ./pi-hole/advanced/dnsmasq.conf /etc/dnsmasq.conf
 COPY ./pi-hole/advanced/index.html /var/www/html/pihole/index.html
 COPY ./AdminLTE /var/www/html/admin
 
-COPY start.sh /
+# Things installer did
+RUN mkdir -p /etc/pihole/ && \
+    mkdir -p /var/www/html/pihole && \
+    mkdir -p /var/www/html/admin/ && \
+    chown nginx:nginx /var/www/html && \
+    chmod 775 /var/www/html && \
+    touch /var/log/pihole.log && \
+    chmod 644 /var/log/pihole.log && \
+    chown dnsmasq:root /var/log/pihole.log && \
+    sed -i "s/@INT@/eth0/" /etc/dnsmasq.conf
+
+# This chould be eliminated if the (upstream) files were +x in git
+RUN chmod +x /usr/local/bin/*.sh
+# Fix for docker
+RUN grep -q '^user=root' || echo 'user=root' >> /etc/dnsmasq.conf
+
+COPY ./start.sh /
+
+EXPOSE 53 53/udp
+EXPOSE 80
+
+ENTRYPOINT ["tini", "--"]
 CMD /start.sh
