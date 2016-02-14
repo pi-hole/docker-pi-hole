@@ -1,11 +1,11 @@
-A Docker project to make lightweight continers with [https://pi-hole.net](pi-hole) functionality.  
+A Docker project to make lightweight continers with [pi-hole](https://pi-hole.net) functionality.  
 
 ## Docker tags
 
 ### Alpine
 
 [![](https://badge.imagelayers.io/diginc/pi-hole:alpine.svg)](https://imagelayers.io/?images=diginc/pi-hole:alpine 'Get your own badge on imagelayers.io')
-This is an optimized docker using [https://hub.docker.com/_/alpine/](alpine) as it's base
+This is an optimized docker using (https://hub.docker.com/_/alpine/](alpine) as it's base
 
 ### Debian
 
@@ -25,7 +25,7 @@ Here are some useful volume mounts options to persist your history of stats in t
 * `docker run -v /etc/pihole/whitelist.txt:/etc/pihole/whitelist.txt ...` (plus all of the minimum options added)
  * if you use this you should probably read the Advanced Usage section
 
-All of these options get really long when strung together in one command, which is why I'm not going to show all the full commands variations.  This is where [https://docs.docker.com/compose/install/](docker-compose) yml files come in handy for representing [https://github.com/diginc/docker-pi-hole/blob/master/doco-example.yml](really long docker commands in a readable file format).
+All of these options get really long when strung together in one command, which is why I'm not going to show all the full commands variations.  This is where [docker-compose](https://docs.docker.com/compose/install/) yml files come in handy for representing [really long docker commands in a readable file format](https://github.com/diginc/docker-pi-hole/blob/master/doco-example.yml).
 
 ## Advanced Usage
 
@@ -35,9 +35,9 @@ The standard pi-hole customization abilities apply to this docker but with docke
 
 Here are some relevant wiki page from pi-hole's documentation and example volume mappings to add to your `docker run` command:
 
-* [https://github.com/pi-hole/pi-hole/wiki/Customising-sources-for-ad-lists](Customizing sources for ad lists)
+* [Customizing sources for ad lists](https://github.com/pi-hole/pi-hole/wiki/Customising-sources-for-ad-lists)
  * `-v your-adlists.list:/etc/pihole/adlists.list` Your version should probably start with the existing defaults for this file.
-* [https://github.com/pi-hole/pi-hole/wiki/Whitelisting-and-Blacklisting](Whitlisting and Blacklisting)
+* [Whitlisting and Blacklisting](https://github.com/pi-hole/pi-hole/wiki/Whitelisting-and-Blacklisting)
  * `-v your-whitelist:/etc/pihole/whitelist.txt` Your version should probably start with the existing defaults for this file.
  * `-v your-blacklist:/etc/pihole/blacklist.txt` This one is empty by default
 
