@@ -14,7 +14,7 @@ RUN apt-get -q update && \
         dnsmasq \
         lighttpd \
         php5-common php5-cgi php5 \
-        curl unzip wget && \
+        bc curl unzip wget && \
     rm -rf /var/cache/apt/archives
 
 # Original upstream pihole code being used

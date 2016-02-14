@@ -6,7 +6,7 @@ RUN apk add --update \
         nginx \
         ca-certificates \
         php-fpm php-json libxml2 \
-        bash curl perl && \
+        bc bash curl perl && \
     apk add --update --repository http://dl-1.alpinelinux.org/alpine/edge/testing/ tini && \
     rm -rf /var/cache/apk/*
 
