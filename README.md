@@ -1,4 +1,4 @@
-A Docker project to make lightweight continers with [pi-hole](https://pi-hole.net) functionality.  
+A Docker project to make lightweight x86 continers with [pi-hole](https://pi-hole.net) functionality.  
 
 ## Docker tags
 
