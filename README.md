@@ -5,7 +5,7 @@ A Docker project to make lightweight continers with [pi-hole](https://pi-hole.ne
 ### Alpine
 
 [![](https://badge.imagelayers.io/diginc/pi-hole:alpine.svg)](https://imagelayers.io/?images=diginc/pi-hole:alpine 'Get your own badge on imagelayers.io')
-This is an optimized docker using [alpine](https://hub.docker.com/_/alpine/) as it's base
+This is an optimized docker using [alpine](https://hub.docker.com/_/alpine/) as its base
 
 ### Debian
 
@@ -18,7 +18,7 @@ The minimum options required to run are:
 `docker run -p 53:53/tcp -p 53:53/udp -p 8053:80 --cap-add=NET_ADMIN -d diginc/pi-hole`
 dnsmasq requires NET_ADMIN capabilities to run correctly in docker.  I'm arbitrarily choosing port 8053 for the web interface.
 
-Here are some useful volume mounts options to persist your history of stats in the admin interface, or add custom whitelists/blacklists.  **Create these files on the docker host first or you'll get errors**:
+Here are some useful volume mount options to persist your history of stats in the admin interface, or add custom whitelists/blacklists.  **Create these files on the docker host first or you'll get errors**:
 
 * `docker run -v /var/log/pihole.log:/var/log/pihole.log ...` (plus all of the minimum options added)
 * `docker run -v /etc/pihole/blacklist.txt:/etc/pihole/blacklist.txt ...` (plus all of the minimum options added)
@@ -29,11 +29,11 @@ All of these options get really long when strung together in one command, which 
 
 ## Advanced Usage
 
-The standard pi-hole customization abilities apply to this docker but with docker twists such as using docker volumes to map host stored file configurations over the container defaults.  Volumes are also important to persist the configuration incase you have remove the pihole container which is a typical docker upgrade pattern.
+The standard pi-hole customization abilities apply to this docker, but with docker twists such as using docker volume mounts to map host stored file configurations over the container defaults.  Volumes are also important to persist the configuration incase you have remove the pi-hole container which is a typical docker upgrade pattern.
 
 ### Customizing with volume mounts
 
-Here are some relevant wiki page from pi-hole's documentation and example volume mappings to add to your `docker run` command:
+Here are some relevant wiki pages from pi-hole's documentation and example volume mappings to optionally add to the basic example:
 
 * [Customizing sources for ad lists](https://github.com/pi-hole/pi-hole/wiki/Customising-sources-for-ad-lists)
  * `-v your-adlists.list:/etc/pihole/adlists.list` Your version should probably start with the existing defaults for this file.
