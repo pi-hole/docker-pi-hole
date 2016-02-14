@@ -18,7 +18,7 @@ The minimum options required to run are:
 `docker run -p 53:53/tcp -p 53:53/udp -p 8053:80 --cap-add=NET_ADMIN -d diginc/pi-hole`
 dnsmasq requires NET_ADMIN capabilities to run correctly in docker.  I'm arbitrarily choosing port 8053 for the web interface.
 
-Here are some useful volume mounts options to persist your history of stats in the admin interface, or add custom whitelists/blacklists.  *Create these files on the docker host first or you'll get errors*:
+Here are some useful volume mounts options to persist your history of stats in the admin interface, or add custom whitelists/blacklists.  **Create these files on the docker host first or you'll get errors**:
 
 * `docker run -v /var/log/pihole.log:/var/log/pihole.log ...` (plus all of the minimum options added)
 * `docker run -v /etc/pihole/blacklist.txt:/etc/pihole/blacklist.txt ...` (plus all of the minimum options added)
