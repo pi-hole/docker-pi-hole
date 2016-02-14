@@ -5,7 +5,7 @@ A Docker project to make lightweight continers with [pi-hole](https://pi-hole.ne
 ### Alpine
 
 [![](https://badge.imagelayers.io/diginc/pi-hole:alpine.svg)](https://imagelayers.io/?images=diginc/pi-hole:alpine 'Get your own badge on imagelayers.io')
-This is an optimized docker using (https://hub.docker.com/_/alpine/](alpine) as it's base
+This is an optimized docker using [alpine](https://hub.docker.com/_/alpine/) as it's base
 
 ### Debian
 
