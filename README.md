@@ -14,9 +14,18 @@ This version of the docker aims to be as close to a standard pi-hole installatio
 
 ## Basic Docker Usage
 
-The minimum options required to run are:
-`docker run -p 53:53/tcp -p 53:53/udp -p 8053:80 --cap-add=NET_ADMIN -d diginc/pi-hole`
-dnsmasq requires NET_ADMIN capabilities to run correctly in docker.  I'm arbitrarily choosing port 8053 for the web interface.
+If you have no other dockers using port 80, the minimum options required to run this container are in the script [docker_run.sh](https://github.com/diginc/docker-pi-hole/blob/master/docker_run.sh): 
+
+```
+IP=$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
+docker run -p 53:53/tcp -p 53:53/udp -p 80:80 --cap-add=NET_ADMIN -e piholeIP="$IP" --name pihole -d dockerhole_alpine
+```
+
+* piholeIP environment variable is required or default pi-hole scripts autodetect and give ads the private docker ip address that is not on your network so won't work.
+ * A good way to test things are working right is by loading this page: [http://pi-hole.isworking.ok/admin/](http://pi-hole.isworking.ok/admin/)
+ * I'm running jwilder/proxy on my port 80 already so I have `DEFAULT_HOST=pihole.mydomain.lan` (and matching VIRTUAL_HOST envs on the pihole) to ensure all the ad domains get served blank pages from my pihole container by default.
+ * If you have something else taking up port 80 then the ads may not transform into blank ads correctly.  The solution to this is to make sure whatever you do have as the 'default' port 80 virtual host is redirect to this container.  
+* dnsmasq requires NET_ADMIN capabilities to run correctly in docker.
 
 **Updating ad sources** - Just run a `docker restart your_pihole_name` to kick off the gravity script which updates all the ad lists.
 
