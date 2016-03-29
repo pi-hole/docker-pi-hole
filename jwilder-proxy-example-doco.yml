@@ -1,0 +1,35 @@
+applist:
+  image: jwilder/nginx-proxy
+  ports:
+    - '80:80'
+  environment:
+    DEFAULT_HOST: pihole.yourDomain.lan
+  volumes:
+    - '/var/run/docker.sock:/tmp/docker.sock'
+  restart: always
+
+pihole:
+  image: diginc/pi-hole:alpine
+  ports:
+    - '53:53/tcp'
+    - '53:53/udp'
+    - '8053:80/tcp'
+  volumes:
+    - '/var/log/pihole.log:/var/log/pihole.log'
+  #net: host
+  cap_add:
+    - NET_ADMIN
+  environment:
+    piholeIP: 192.168.41.55
+    PROXY_LOCATION: pihole
+    VIRTUAL_HOST: pihole.yourDomain.lan
+    VIRTUAL_PORT: 80
+  extra_hosts:
+    # Resolve to nothing domains (terminate connection)
+    - 'nw2master.bioware.com nwn2.master.gamespy.com:0.0.0.0'
+    # LAN hostnames for other docker containers using jwilder
+    - 'yourDomain.lan:192.168.41.55'
+    - 'pihole pihole.yourDomain.lan:192.168.41.55'
+    - 'ghost ghost.yourDomain.lan:192.168.41.55'
+    - 'wordpress wordpress.yourDomain.lan:192.168.41.55'
+  restart: always

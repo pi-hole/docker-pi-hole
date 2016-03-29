@@ -14,6 +14,7 @@ pihole:
     - NET_ADMIN
   # docker jwilder/nginx-proxy support
   environment:
+    piholeIP: 192.168.1.55
     PROXY_LOCATION: pihole
     VIRTUAL_HOST: pihole.yourdomain.local
     VIRTUAL_PORT: 80
