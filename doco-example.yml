@@ -3,23 +3,24 @@ pihole:
   ports:
     - "53:53/tcp"
     - "53:53/udp"
-    - "8053:80/tcp"
-  volumes:
-    # if these don't exist as files on the host already
-    # docker will try to create them as directories 
-    - '/var/log/pihole.log:/var/log/pihole.log'
-    - '/etc/pihole/whitelist.txt:/etc/pihole/whitelist.txt'
-    - '/etc/pihole/blacklist.txt:/etc/pihole/blacklist.txt'
+    - "80:80/tcp"
   cap_add:
     - NET_ADMIN
-  # docker jwilder/nginx-proxy support
   environment:
-    piholeIP: 192.168.1.55
+    # enter your docker host IP here
+    piholeIP:
+    # jwilder/proxy envs, see readme for more info
     PROXY_LOCATION: pihole
     VIRTUAL_HOST: pihole.yourdomain.local
     VIRTUAL_PORT: 80
-  # Add your own custom hostnames you need for your donmain
+  # Add your own custom hostnames you need for your domain
   extra_hosts:
     #   Point any of the jwilder virtual_host addresses
     # to your docker host ip address
-    - 'pihole.yourdomain.local:192.168.1.2'
+    - 'pihole.yourdomain.local:192.168.1.55'
+  volumes:
+    # WARNING: if these don't exist as files on the host already
+    # docker will try to create them as directories 
+    # - '/var/log/pihole.log:/var/log/pihole.log'
+    #- '/etc/pihole/whitelist.txt:/etc/pihole/whitelist.txt'
+    # - '/etc/pihole/blacklist.txt:/etc/pihole/blacklist.txt'
