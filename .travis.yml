@@ -1,0 +1,12 @@
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker pull diginc/pi-hole:alpine
+  - docker pull diginc/pi-hole:debian
+
+script:
+  - docker build -f alpine.docker .
+  - docker build -f debian.docker .
