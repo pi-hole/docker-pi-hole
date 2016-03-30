@@ -19,6 +19,8 @@ COPY ./pi-hole/advanced/Scripts/* /usr/local/bin/
 COPY ./pi-hole/advanced/01-pihole.conf /etc/dnsmasq.conf
 COPY ./pi-hole/advanced/index.html /var/www/html/pihole/index.html
 COPY ./AdminLTE /var/www/html/admin
+COPY ./AdminLTE_version.txt /etc/
+COPY ./pi-hole_version.txt /etc/
 
 # Things installer did
 RUN mkdir -p /etc/pihole/ && \
@@ -31,7 +33,9 @@ RUN mkdir -p /etc/pihole/ && \
     chown dnsmasq:root /var/log/pihole.log && \
     sed -i "s/@INT@/eth0/" /etc/dnsmasq.conf && \
     sed -i "s/@DNS1@/8.8.8.8/" /etc/dnsmasq.conf && \
-    sed -i "s/@DNS2@/8.8.4.4/" /etc/dnsmasq.conf
+    sed -i "s/@DNS2@/8.8.4.4/" /etc/dnsmasq.conf && \
+    sed -i 's|"cd /etc/.pihole/ && git describe --tags --abbrev=0"|"cat /etc/pi-hole_version.txt"|g' /var/www/html/admin/footer.php && \
+    sed -i 's|"cd /var/www/html/admin/ && git describe --tags --abbrev=0"|"cat /etc/AdminLTE_version.txt"|g' /var/www/html/admin/footer.php
 
 # This chould be eliminated if the (upstream) files were +x in git
 RUN chmod +x /usr/local/bin/*.sh

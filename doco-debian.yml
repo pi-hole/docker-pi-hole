@@ -2,8 +2,8 @@ debian:
   build: .
   dockerfile: debian.docker
   environment:
-    # Your docker host IP is required
-    - piholeIP: 192.168.1.55
+    # Your docker host IP is required if you run RUN (not build)
+    piholeIP: 192.168.1.55
   ports:
     - "53:53/tcp"
     - "53:53/udp"
