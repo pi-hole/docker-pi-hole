@@ -2,21 +2,13 @@ A Docker project to make lightweight x86 continers with [pi-hole](https://pi-hol
 
 [![Build Status](https://travis-ci.org/diginc/docker-pi-hole.svg?branch=master)](https://travis-ci.org/diginc/docker-pi-hole)
 
-## Docker tags
-
-### Alpine
-
-[![](https://badge.imagelayers.io/diginc/pi-hole:alpine.svg)](https://imagelayers.io/?images=diginc/pi-hole:alpine 'Get your own badge on imagelayers.io')
-This is an optimized docker using [alpine](https://hub.docker.com/_/alpine/) as its base.  It uses nginx instead of lighttpd.
-
-### Debian
-
-[![](https://badge.imagelayers.io/diginc/pi-hole:debian.svg)](https://imagelayers.io/?images=diginc/pi-hole:debian 'Get your own badge on imagelayers.io')
-This version of the docker aims to be as close to a standard pi-hole installation by using the same base OS and the exact configs and scripts (minimally modified to get them working).  This serves as a nice baseline for merging and testing upstream repository pi-hole changes.
+*April 25, 2016 Update*: piholeIP env var replaced by ServerIP env var, update your docker run/docker-compose configs accordingly please.
 
 ## Basic Docker Usage
 
 If you have no other dockers using port 80 (if you do, read the list below for reverse proxy advice), the minimum options required to run this container are in the script [docker_run.sh](https://github.com/diginc/docker-pi-hole/blob/master/docker_run.sh): 
+
+To customize your upstream DNS servers you use docker environment varibales of *DNS1* and *DNS2* passed into docker at runtime.  The default servers are Google's 8.8.8.8 and 8.8.4.4.
 
 ```
 IP=$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
@@ -39,6 +31,19 @@ Here are some useful volume mount options to persist your history of stats in th
  * if you use this you should probably read the Advanced Usage section
 
 All of these options get really long when strung together in one command, which is why I'm not going to show all the full commands variations.  This is where [docker-compose](https://docs.docker.com/compose/install/) yml files come in handy for representing [really long docker commands in a readable file format](https://github.com/diginc/docker-pi-hole/blob/master/doco-example.yml).
+
+
+## Docker tags
+
+### Alpine
+
+[![](https://badge.imagelayers.io/diginc/pi-hole:alpine.svg)](https://imagelayers.io/?images=diginc/pi-hole:alpine 'Get your own badge on imagelayers.io')
+This is an optimized docker using [alpine](https://hub.docker.com/_/alpine/) as its base.  It uses nginx instead of lighttpd.
+
+### Debian
+
+[![](https://badge.imagelayers.io/diginc/pi-hole:debian.svg)](https://imagelayers.io/?images=diginc/pi-hole:debian 'Get your own badge on imagelayers.io')
+This version of the docker aims to be as close to a standard pi-hole installation by using the same base OS and the exact configs and scripts (minimally modified to get them working).  This serves as a nice baseline for merging and testing upstream repository pi-hole changes.
 
 
 ## Advanced Usage and Notes
