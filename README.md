@@ -2,7 +2,7 @@ A Docker project to make lightweight x86 continers with [pi-hole](https://pi-hol
 
 [![Build Status](https://travis-ci.org/diginc/docker-pi-hole.svg?branch=master)](https://travis-ci.org/diginc/docker-pi-hole)
 
-*April 25, 2016 Update*: piholeIP env var replaced by ServerIP env var, update your docker run/docker-compose configs accordingly please.
+**April 25, 2016 Update**: piholeIP env var replaced by ServerIP env var, update your docker run/docker-compose configs accordingly please.
 
 ## Basic Docker Usage
 
@@ -12,10 +12,10 @@ To customize your upstream DNS servers you use docker environment varibales of *
 
 ```
 IP=$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
-docker run -p 53:53/tcp -p 53:53/udp -p 80:80 --cap-add=NET_ADMIN -e piholeIP="$IP" --name pihole -d diginc/pi-hole
+docker run -p 53:53/tcp -p 53:53/udp -p 80:80 --cap-add=NET_ADMIN -e ServerIP="$IP" --name pihole -d diginc/pi-hole
 ```
 
-* piholeIP environment variable is required or default pi-hole scripts autodetect and give ads the private docker ip address that is not on your network so won't work.
+* ServerIP environment variable is required because default pi-hole scripts autodetect and give ads the private docker ip address that is not on your network so it just won't work.
  * A good way to test things are working right is by loading this page: [http://pi-hole.isworking.ok/admin/](http://pi-hole.isworking.ok/admin/)
  * [Here is an example of running with jwilder/proxy](https://github.com/diginc/docker-pi-hole/blob/master/jwilder-proxy-example-doco.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with pihole on another porg.  Pi-hole needs to be `DEFAULT_HOST` env in jwilder/proxy and you need to set the matching `VIRTUAL_HOST` for the pihole.  Please read jwilder/proxy readme for more info if you have trouble.  I tested this basic exmaple which is based off what I run.
  * If you have something else taking up port 80 then the ads may not transform into blank ads correctly.  The solution to this is to make sure whatever you do have as the 'default' port 80 virtual host is redirect to this container.  

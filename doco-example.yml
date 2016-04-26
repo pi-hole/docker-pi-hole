@@ -8,7 +8,7 @@ pihole:
     - NET_ADMIN
   environment:
     # enter your docker host IP here
-    piholeIP:
+    ServerIP:
     # jwilder/proxy envs, see readme for more info
     PROXY_LOCATION: pihole
     VIRTUAL_HOST: pihole.yourdomain.local
