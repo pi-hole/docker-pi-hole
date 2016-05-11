@@ -22,7 +22,7 @@ dnsmasq --test -7 /etc/dnsmasq.d || exit 1
 php-fpm -t || exit 1
 nginx -t || exit 1
 
-gravity.sh # pi-hole version without 'service dnsmasq start'
+gravity.sh
 dnsmasq -7 /etc/dnsmasq.d
 php-fpm
 nginx

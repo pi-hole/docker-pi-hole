@@ -323,7 +323,7 @@ function gravity_reload() {
 		$SUDO kill -HUP "$dnsmasqPid"
 	else
 		# service not running, start it up
-		$SUDO service dnsmasq start
+		$SUDO dnsmasq -7 /etc/dnsmasq.d
 	fi
 	echo " done!"
 }
@@ -337,4 +337,4 @@ gravity_hostFormat
 gravity_blackbody
 gravity_Whitelist
 gravity_Blacklist
-#gravity_reload
+gravity_reload

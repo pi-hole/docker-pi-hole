@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 docker build -f alpine.docker -t dockerpihole_alpine .
 docker build -f debian.docker -t dockerpihole_debian .
 

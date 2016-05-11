@@ -1,6 +1,5 @@
 alpine:
-  build: .
-  dockerfile: alpine.docker
+  image: diginc/pi-hole:alpine
   environment:
     # Your docker host IP is required if you run RUN (not build)
     ServerIP: 192.168.1.55
