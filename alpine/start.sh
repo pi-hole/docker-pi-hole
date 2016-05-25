@@ -1,7 +1,7 @@
 #!/bin/sh
 if [ -n "$ServerIP" ] ; then
   # /tmp/piholeIP is the current override of auto-lookup in gravity.sh
-  echo "$ServerIP" > /tmp/piholeIP;
+  echo "$ServerIP" > /etc/pihole/piholeIP;
 else
   echo "ERROR: To function correctly you must pass an environment variables of 'ServerIP' into the docker container with the IP of your docker host from which you are passing web (80) and dns (53) ports from"
   exit 1
