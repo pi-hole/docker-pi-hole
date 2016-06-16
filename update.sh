@@ -1,6 +1,7 @@
 #!/bin/bash -x
 
 # Grab newest code and update version files
+git submodule foreach git pull;
 git submodule foreach git pull origin master;
 pushd pi-hole ; git describe --tags --abbrev=0 > ../pi-hole_version.txt ; popd ;
 pushd AdminLTE ; git describe --tags --abbrev=0 > ../AdminLTE_version.txt ; popd ;
