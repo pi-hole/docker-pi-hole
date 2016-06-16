@@ -14,6 +14,13 @@ if [ "$DNS1" != '8.8.8.8' ] || [ "$DNS2" != '8.8.4.4' ] ; then
   dnsType='custom'
 fi;
 
+if [ -n "$VIRTUAL_HOST" ] ; then
+  PHP_CONFIG='/etc/lighttpd/conf-enabled/15-fastcgi-php.conf'
+  sed -i "/bin-environment/ a\\\t\t\t\"VIRTUAL_HOST\" => \"${VIRTUAL_HOST}\"," $PHP_CONFIG
+  echo "Added ENV to php:"
+  grep 'VIRTUAL_HOST' $PHP_CONFIG
+fi;
+
 echo "Using $dnsType DNS servers: $DNS1 & $DNS2"
 sed -i "s/@DNS1@/$DNS1/" /etc/dnsmasq.d/01-pihole.conf && \
 sed -i "s/@DNS2@/$DNS2/" /etc/dnsmasq.d/01-pihole.conf && \

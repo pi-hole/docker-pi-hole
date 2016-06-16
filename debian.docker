@@ -13,8 +13,8 @@ RUN apt-get -q update && \
     apt-get install -y \
         dnsmasq \
         lighttpd \
-        php5-common php5-cgi php5-openssl php5 \
-        bc curl unzip wget && \
+        php5-common php5-cgi php5 \
+        bc curl unzip wget sudo && \
     rm -rf /var/cache/apt/archives
 
 # Original upstream pihole code being used
@@ -27,6 +27,7 @@ COPY ./pi-hole/advanced/lighttpd.conf /etc/lighttpd/lighttpd.conf
 COPY ./pi-hole/advanced/dnsmasq.conf.original /etc/dnsmasq.conf
 COPY ./pi-hole/advanced/01-pihole.conf /etc/dnsmasq.d/
 COPY ./pi-hole/advanced/index.html /var/www/html/pihole/index.html
+COPY ./pi-hole/advanced/pihole.sudo /etc/sudoers.d/pihole
 COPY ./AdminLTE /var/www/html/admin
 COPY ./AdminLTE_version.txt /etc/
 COPY ./pi-hole_version.txt /etc/

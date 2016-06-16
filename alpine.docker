@@ -6,7 +6,7 @@ RUN apk add --update \
         nginx \
         ca-certificates \
         php5-fpm php5-json php5-openssl libxml2 \
-        bc bash curl perl && \
+        bc bash curl perl sudo && \
     apk add --update --repository http://dl-1.alpinelinux.org/alpine/edge/testing/ tini && \
     rm -rf /var/cache/apk/*
 
@@ -21,6 +21,7 @@ RUN mkdir -p /opt/ && ln -s /usr/local/bin /opt/pihole
 COPY ./pi-hole/advanced/dnsmasq.conf.original /etc/dnsmasq.conf
 COPY ./pi-hole/advanced/01-pihole.conf /etc/dnsmasq.d/
 COPY ./pi-hole/advanced/index.html /var/www/html/pihole/index.html
+COPY ./pi-hole/advanced/pihole.sudo /etc/sudoers.d/pihole
 COPY ./AdminLTE /var/www/html/admin
 COPY ./AdminLTE_version.txt /etc/
 COPY ./pi-hole_version.txt /etc/
