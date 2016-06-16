@@ -13,7 +13,7 @@ RUN apt-get -q update && \
     apt-get install -y \
         dnsmasq \
         lighttpd \
-        php5-common php5-cgi php5 \
+        php5-common php5-cgi php5-openssl php5 \
         bc curl unzip wget && \
     rm -rf /var/cache/apt/archives
 

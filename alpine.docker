@@ -5,7 +5,7 @@ RUN apk add --update \
         dnsmasq \
         nginx \
         ca-certificates \
-        php5-fpm php5-json libxml2 \
+        php5-fpm php5-json php5-openssl libxml2 \
         bc bash curl perl && \
     apk add --update --repository http://dl-1.alpinelinux.org/alpine/edge/testing/ tini && \
     rm -rf /var/cache/apk/*
