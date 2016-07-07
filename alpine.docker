@@ -37,7 +37,9 @@ RUN mkdir -p /etc/pihole/ && \
     chown dnsmasq:root /var/log/pihole.log && \
     sed -i "s/@INT@/eth0/" /etc/dnsmasq.d/01-pihole.conf && \
     sed -i 's|"cd /etc/.pihole/ && git describe --tags --abbrev=0"|"cat /etc/pi-hole_version.txt"|g' /var/www/html/admin/footer.php && \
-    sed -i 's|"cd /var/www/html/admin/ && git describe --tags --abbrev=0"|"cat /etc/AdminLTE_version.txt"|g' /var/www/html/admin/footer.php
+    sed -i 's|"cd /var/www/html/admin/ && git describe --tags --abbrev=0"|"cat /etc/AdminLTE_version.txt"|g' /var/www/html/admin/footer.php && \
+    sed -i 's|else if(|else if( substr( $_SERVER['SERVER_ADDR'], 0, 7 ) === "172.17." \|\| |g' /var/www/html/admin/php/add.php && \
+    sed -i 's|else if(|else if( substr( $_SERVER['SERVER_ADDR'], 0, 7 ) === "172.17." \|\| |g' /var/www/html/admin/php/sub.php
 
 # This chould be eliminated if all (upstream) files were +x in git
 RUN chmod +x /usr/local/bin/*.sh
