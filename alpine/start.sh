@@ -13,6 +13,8 @@ echo "env[ServerIP] = ${ServerIP}" >> $PHP_ENV_CONFIG;
 
 if [ -n "$VIRTUAL_HOST" ] ; then
   echo "env[VIRTUAL_HOST] = ${VIRTUAL_HOST}" >> $PHP_ENV_CONFIG;
+else 
+  echo "env[VIRTUAL_HOST] = ${ServerIP}" >> $PHP_ENV_CONFIG;
 fi;
 
 echo "Added ENV to php:"
