@@ -14,3 +14,4 @@ docker run -it --rm --cap-add=NET_ADMIN \
   -e VIRTUAL_HOST='pihole.diginc.lan:5080' \
   $@ \
   diginc/pi-hole:${image:-alpine}
+
