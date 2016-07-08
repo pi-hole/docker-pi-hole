@@ -7,6 +7,7 @@ fi;
 # /tmp/piholeIP is the current override of auto-lookup in gravity.sh
 echo "$ServerIP" > /etc/pihole/piholeIP;
 echo "[www]" > $PHP_ENV_CONFIG;
+echo "env[PATH] = ${PATH}" >> $PHP_ENV_CONFIG;
 echo "env[PHP_ERROR_LOG] = ${PHP_ERROR_LOG}" >> $PHP_ENV_CONFIG;
 echo "env[ServerIP] = ${ServerIP}" >> $PHP_ENV_CONFIG;
 
