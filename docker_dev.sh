@@ -11,5 +11,7 @@ docker run -it --rm --cap-add=NET_ADMIN \
   -p 5053:53/udp \
   -p 5080:80 \
   -e ServerIP="$IP" \
+  -e VIRTUAL_HOST='pihole.diginc.lan:5080' \
   $@ \
   diginc/pi-hole:${image:-alpine}
+

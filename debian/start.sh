@@ -1,11 +1,22 @@
 #!/bin/sh
-if [ -n "$ServerIP" ] ; then
-  # /tmp/piholeIP is the current override of auto-lookup in gravity.sh
-  echo "$ServerIP" > /etc/pihole/piholeIP;
-else
+if [ -z "$ServerIP" ] ; then
   echo "ERROR: It is required you pass an environment variables of 'ServerIP' with the IP of your docker host which you are passing 80/53 from"
   exit 1
 fi;
+
+# /tmp/piholeIP is the current override of auto-lookup in gravity.sh
+echo "$ServerIP" > /etc/pihole/piholeIP;
+sed -i "/bin-environment/ a\\\t\t\t\"ServerIP\" => \"${ServerIP}\"," $PHP_ENV_CONFIG
+sed -i "/bin-environment/ a\\\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\"," $PHP_ENV_CONFIG
+
+if [ -n "$VIRTUAL_HOST" ] ; then
+  sed -i "/bin-environment/ a\\\t\t\t\"VIRTUAL_HOST\" => \"${VIRTUAL_HOST}\"," $PHP_ENV_CONFIG
+else 
+  echo "env[VIRTUAL_HOST] = ${ServerIP}" >> $PHP_ENV_CONFIG;
+fi;
+
+echo "Added ENV to php:"
+grep -E '(VIRTUAL_HOST|ServerIP)' $PHP_ENV_CONFIG
 
 dnsType='default'
 DNS1=${DNS1:-'8.8.8.8'}

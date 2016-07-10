@@ -32,10 +32,13 @@ COPY ./AdminLTE /var/www/html/admin
 COPY ./AdminLTE_version.txt /etc/
 COPY ./pi-hole_version.txt /etc/
 
+ENV WEBLOGDIR /var/log/lighttpd
 RUN mkdir -p /etc/pihole/ && \
     mkdir -p /var/www/html/pihole && \
     mkdir -p /var/www/html/admin/ && \
     chown www-data:www-data /var/www/html && \
+    touch ${WEBLOGDIR}/access.log ${WEBLOGDIR}/error.log && \
+    chown -R www-data.www-data ${WEBLOGDIR} && \
     chmod 775 /var/www/html && \
     lighty-enable-mod fastcgi fastcgi-php || true && \
     touch /var/log/pihole.log && \
@@ -43,7 +46,7 @@ RUN mkdir -p /etc/pihole/ && \
     chown dnsmasq:root /var/log/pihole.log && \
     sed -i "s/@INT@/eth0/" /etc/dnsmasq.d/01-pihole.conf && \
     sed -i 's|"cd /etc/.pihole/ && git describe --tags --abbrev=0"|"cat /etc/pi-hole_version.txt"|g' /var/www/html/admin/footer.php && \
-    sed -i 's|"cd /var/www/html/admin/ && git describe --tags --abbrev=0"|"cat /etc/AdminLTE_version.txt"|g' /var/www/html/admin/footer.php
+    sed -i 's|"git describe --tags --abbrev=0"|"cat /etc/AdminLTE_version.txt"|g' /var/www/html/admin/footer.php
 
 # This chould be eliminated if all (upstream) files were +x in git
 RUN chmod +x /usr/local/bin/*.sh
@@ -51,6 +54,9 @@ RUN chmod +x /usr/local/bin/*.sh
 # Fix dnsmasq in docker
 RUN grep -q '^user=root' || echo 'user=root' >> /etc/dnsmasq.conf
 
+# php config start passes special ENVs into
+ENV PHP_ENV_CONFIG '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf'
+ENV PHP_ERROR_LOG '/var/log/lighttpd/error.log'
 COPY ./debian/start.sh /
 
 EXPOSE 53 53/udp
