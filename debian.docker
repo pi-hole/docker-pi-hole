@@ -23,7 +23,7 @@ COPY ./pi-hole/adlists.default /etc/pihole/
 COPY ./pi-hole/pihole /usr/local/bin/
 COPY ./pi-hole/advanced/Scripts/* /usr/local/bin/
 RUN mkdir -p /opt/ && ln -s /usr/local/bin /opt/pihole
-COPY ./pi-hole/advanced/lighttpd.conf /etc/lighttpd/lighttpd.conf
+COPY ./pi-hole/advanced/lighttpd.conf.debian /etc/lighttpd/lighttpd.conf
 COPY ./pi-hole/advanced/dnsmasq.conf.original /etc/dnsmasq.conf
 COPY ./pi-hole/advanced/01-pihole.conf /etc/dnsmasq.d/
 COPY ./pi-hole/advanced/index.html /var/www/html/pihole/index.html
