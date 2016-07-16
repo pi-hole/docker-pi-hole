@@ -13,9 +13,11 @@ One crucuial thing to know before starting is docker-pi-hole container needs por
 ```
 IP=$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
 docker run -p 53:53/tcp -p 53:53/udp -p 80:80 --cap-add=NET_ADMIN -e ServerIP="$IP" --name pihole -d diginc/pi-hole
+# Recommended auto ad list updates & log rotation:
+wget -O- https://raw.githubusercontent.com/diginc/docker-pi-hole/master/docker-pi-hole.cron | sudo tee /etc/cron.d/docker-pi-hole.cron
 ```
 
-**Automatic Updates** - [docker-pi-hole.cron](https://github.com/diginc/docker-pi-hole/blob/master/docker-pi-hole.cron) is a modified verion of upstream pi-hole's crontab entries using `docker exec` to run the same update scripts inside the docker container.  **Fill in your container's DOCKER_NAME** into the variable in the cron file before copying it to /etc/cron.d/ to use it.  It updates ad lists and cleans up your logs nightly.
+**Automatic Ad List Updates** - [docker-pi-hole.cron](https://github.com/diginc/docker-pi-hole/blob/master/docker-pi-hole.cron) is a modified verion of upstream pi-hole's crontab entries using `docker exec` to run the same update scripts inside the docker container.  The cron automatically updates pi-hole ad lists and cleans up pi-hole logs nightly.  If you're not using the `docker run` with `--name pihole` from default contariner run command be sure to fill in your container's DOCKER_NAME into the variable in the cron file.
 
 **Tips**
 * To customize your upstream DNS servers you use docker environment varibales of *DNS1* and *DNS2* passed into docker at runtime.  The default servers are Google's 8.8.8.8 and 8.8.4.4.
