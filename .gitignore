@@ -1,4 +1,7 @@
 *.sw*
+*.pyc
+.cache
+__pycache__
 
 # WIP/test stuff
 doco.yml
