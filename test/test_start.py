@@ -1,7 +1,5 @@
 import pytest
-import testinfra
 
-# This test will run on both debian:jessie and centos:7 images
 def test_ServerIP_missing_env_triggers_error(Command):
     start = Command.run('/start.sh')
     error_msg = "ERROR: To function correctly you must pass an environment variables of 'ServerIP' into the docker container"

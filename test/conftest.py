@@ -17,11 +17,8 @@ def TestinfraBackend(request):
 
     def teardown():
         check_output("docker rm -f %s", docker_id)
-
-    # Destroy the container at the end of the fixture life
     request.addfinalizer(teardown) 
 
-    # Return a dynamic created backend
     return testinfra.get_backend("docker://" + docker_id)
 
 
@@ -47,10 +44,6 @@ def pytest_generate_tests(metafunc):
 	for img in images:
 	    docker_run_args.append('{} {} {}'.format(" ".join(docker_args),
 						  img, command))
-
-        # If the test has a destructive marker, we scope TestinfraBackend
-        # at function level (i.e. executing for each test). If not we scope
-        # at session level (i.e. all tests will share the same container)
         if getattr(metafunc.function, "persistent", None) is not None:
             scope = "session"
         else:
