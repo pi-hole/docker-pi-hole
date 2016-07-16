@@ -1,6 +1,6 @@
 #!/bin/sh
 if [ -z "$ServerIP" ] ; then
-  echo "ERROR: It is required you pass an environment variables of 'ServerIP' with the IP of your docker host which you are passing 80/53 from"
+  echo "ERROR: To function correctly you must pass an environment variables of 'ServerIP' into the docker container with the IP of your docker host from which you are passing web (80) and dns (53) ports from"
   exit 1
 fi;
 
@@ -12,7 +12,7 @@ sed -i "/bin-environment/ a\\\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\"," $
 if [ -n "$VIRTUAL_HOST" ] ; then
   sed -i "/bin-environment/ a\\\t\t\t\"VIRTUAL_HOST\" => \"${VIRTUAL_HOST}\"," $PHP_ENV_CONFIG
 else 
-  echo "env[VIRTUAL_HOST] = ${ServerIP}" >> $PHP_ENV_CONFIG;
+  sed -i "/bin-environment/ a\\\t\t\t\"VIRTUAL_HOST\" => \"${ServerIP}\"," $PHP_ENV_CONFIG
 fi;
 
 echo "Added ENV to php:"

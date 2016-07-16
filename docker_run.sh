@@ -1,5 +1,5 @@
 #!/bin/bash
-image=${1:-'diginc/pihole:alpine'}
+image=${1:-'diginc/pi-hole:alpine'}
 IP=$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
 
 # Default ports + daemonized docker container
