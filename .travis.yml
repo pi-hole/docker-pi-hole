@@ -4,13 +4,6 @@ services:
 language: python
 python:
   - "2.7"
-  - "3.2"
-  - "3.3"
-  - "3.4"
-  # does not have headers provided, please ask https://launchpad.net/~pypy/+archive/ppa
-  # maintainers to fix their pypy-dev package.
-  - "pypy"
-# command to install dependencies
 install:
   - pip install -r requirements.txt
 
