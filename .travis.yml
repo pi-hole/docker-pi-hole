@@ -1,12 +1,14 @@
-sudo: required
+language: python
+python:
+  - "2.7"
+  - "3.2"
+  - "3.3"
+  - "3.4"
+  # does not have headers provided, please ask https://launchpad.net/~pypy/+archive/ppa
+  # maintainers to fix their pypy-dev package.
+  - "pypy"
+# command to install dependencies
+install:
+  - pip install -r requirements.txt
 
-services:
-  - docker
-
-before_install:
-  - docker pull diginc/pi-hole:alpine
-  - docker pull diginc/pi-hole:debian
-
-script:
-  - docker build -f alpine.docker .
-  - docker build -f debian.docker .
+script: py.test

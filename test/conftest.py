@@ -17,7 +17,7 @@ def TestinfraBackend(request):
 
     def teardown():
         check_output("docker rm -f %s", docker_id)
-    request.addfinalizer(teardown) 
+    request.addfinalizer(teardown)
 
     return testinfra.get_backend("docker://" + docker_id)
 
@@ -26,7 +26,7 @@ def pytest_generate_tests(metafunc):
     if "TestinfraBackend" in metafunc.fixturenames:
 
         mark_args = getattr(metafunc.function, "docker_args", None)
-	docker_args = []
+        docker_args = []
         if mark_args is not None:
             docker_args = docker_args + list(mark_args.args)
 
@@ -36,14 +36,14 @@ def pytest_generate_tests(metafunc):
             images = mark_images.args
 
         mark_cmd = getattr(metafunc.function, "docker_cmd", None)
-	command = 'tail -f /dev/null'
+        command = 'tail -f /dev/null'
         if mark_cmd is not None:
             command = " ".join(mark_cmd.args)
 
-	docker_run_args = []
-	for img in images:
-	    docker_run_args.append('{} {} {}'.format(" ".join(docker_args),
-						  img, command))
+        docker_run_args = []
+        for img in images:
+            docker_run_args.append('{} {} {}'.format(" ".join(docker_args),
+                                                  img, command))
         if getattr(metafunc.function, "persistent", None) is not None:
             scope = "session"
         else:
