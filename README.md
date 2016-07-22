@@ -6,6 +6,8 @@ A [Docker](https://www.docker.com/what-docker) project to make lightweight x86 c
 
 ## Running Pi-Hole Docker
 
+[![Join the chat at https://gitter.im/diginc/docker-pi-hole](https://badges.gitter.im/diginc/docker-pi-hole.svg)](https://gitter.im/diginc/docker-pi-hole?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [Dockerhub](https://hub.docker.com/r/diginc/pi-hole/) automatically builds the latest docker-pi-hole changes into images which can easily be pulled and ran with a simple `docker run` command.  
 
 One crucuial thing to know before starting is docker-pi-hole container needs port 53 and port 80, 2 very popular ports that may conflict with existing applications.  If you have no other services or dockers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum options required to run this container are in the script [docker_run.sh](https://github.com/diginc/docker-pi-hole/blob/master/docker_run.sh) or summarized here: 
