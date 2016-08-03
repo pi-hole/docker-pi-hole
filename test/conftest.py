@@ -1,53 +1,55 @@
 import pytest
 import testinfra
 
-# Use testinfra to get a handy function to run commands locally
-check_output = testinfra.get_backend(
-    "local://"
-).get_module("Command").check_output
+@pytest.fixture()
+def args(request): 
+    return '-e ServerIP="192.168.100.2"'
 
+@pytest.fixture(params=['alpine', 'debian'])
+def tag(request):
+    return request.param
 
-@pytest.fixture
-def TestinfraBackend(request):
-    docker_run = "docker run -d {}".format(request.param)
-    print docker_run
+@pytest.fixture()
+def image(request, tag): 
+    return 'diginc/pi-hole:{}'.format(tag)
 
-    docker_id = check_output(docker_run)
-    check_output("docker exec %s sed -i 's/^gravity_spinup/#donotcurl/g' /usr/local/bin/gravity.sh", docker_id)
+@pytest.fixture()
+def cmd(request): 
+    return '/start.sh'
+
+DEBUG = []
+
+@pytest.fixture()
+def Docker(request, LocalCommand, args, image, cmd):
+    assert 'docker' in LocalCommand.check_output('id'), "Are you in the docker group?"
+    docker_run = "docker run -d {} {} {}".format(args, image, cmd)
+    if 'run' in DEBUG:
+        assert docker_run  == 'docker run -d -e ServerIP="192.168.100.2" diginc/pi-hole:alpine /start.sh'
+    docker_id = LocalCommand.check_output(docker_run)
+    LocalCommand.check_output("docker exec %s sed -i 's/^gravity_spinup/#donotcurl/g' /usr/local/bin/gravity.sh", docker_id)
 
     def teardown():
-        check_output("docker rm -f %s", docker_id)
+        LocalCommand.check_output("docker rm -f %s", docker_id)
     request.addfinalizer(teardown)
 
     return testinfra.get_backend("docker://" + docker_id)
 
-
-def pytest_generate_tests(metafunc):
-    if "TestinfraBackend" in metafunc.fixturenames:
-
-        mark_args = getattr(metafunc.function, "docker_args", None)
-        docker_args = []
-        if mark_args is not None:
-            docker_args = docker_args + list(mark_args.args)
-
-        mark_images = getattr(metafunc.function, "docker_images", None)
-        images = ['diginc/pi-hole:alpine', 'diginc/pi-hole:debian']
-        if mark_images is not None:
-            images = mark_images.args
-
-        mark_cmd = getattr(metafunc.function, "docker_cmd", None)
-        command = 'tail -f /dev/null'
-        if mark_cmd is not None:
-            command = " ".join(mark_cmd.args)
-
-        docker_run_args = []
-        for img in images:
-            docker_run_args.append('{} {} {}'.format(" ".join(docker_args),
-                                                  img, command))
-        if getattr(metafunc.function, "persistent", None) is not None:
-            scope = "session"
-        else:
-            scope = "function"
-
-        metafunc.parametrize(
-            "TestinfraBackend", docker_run_args, indirect=True, scope=scope)
+@pytest.fixture
+def Slow():
+    """
+    Run a slow check, check if the state is correct for `timeout` seconds.
+    """
+    import time
+    def slow(check, timeout=30):
+        timeout_at = time.time() + timeout
+        while True:
+            try:
+                assert check()
+            except AssertionError, e:
+                if timeout_at < time.time():
+                    time.sleep(1)
+                else:
+                    raise e
+            else:
+                return
+    return slow
