@@ -1,5 +1,5 @@
 #!/bin/sh -e
-supportedTags='^(alpine|debian)$'
+supportedTags='^(alpine|debian|debian-armhf)$'
 if ! (echo $1 | grep -Pq "$supportedTags") ; then
     echo "$1 is not a supported tag"; exit 1;
 fi
