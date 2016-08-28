@@ -20,7 +20,7 @@ COPY ./pi-hole/advanced/Scripts/* /usr/local/bin/
 RUN mkdir -p /opt/ && ln -s /usr/local/bin /opt/pihole
 COPY ./pi-hole/advanced/dnsmasq.conf.original /etc/dnsmasq.conf
 COPY ./pi-hole/advanced/01-pihole.conf /etc/dnsmasq.d/
-COPY ./pi-hole/advanced/index* /var/www/html/pihole/
+COPY ./pi-hole/advanced/index.html /var/www/html/pihole/index.html
 COPY ./pi-hole/advanced/pihole.sudo /etc/sudoers.d/pihole
 COPY ./AdminLTE /var/www/html/admin
 COPY ./AdminLTE_version.txt /etc/
