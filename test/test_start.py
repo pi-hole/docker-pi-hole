@@ -33,8 +33,7 @@ def test_indecies_are_present(RunningPiHole):
     File('/var/www/html/pihole/index.html').exists
     File('/var/www/html/pihole/index.js').exists
 
-@pytest.mark.parametrize('url', [ '/' ] )
-#@pytest.mark.parametrize('url', [ '/', '/index.html', 'any.html' ] )
+@pytest.mark.parametrize('url', [ '/', '/index.html', '/any.html' ] )
 def test_html_index_requests_load_as_expected(RunningPiHole, url):
     command = 'curl -s -o /tmp/curled_file -w "%{{http_code}}" http://127.0.0.1{}'.format(url)
     print command
@@ -44,8 +43,7 @@ def test_html_index_requests_load_as_expected(RunningPiHole, url):
     assert RunningPiHole.run('md5sum /tmp/curled_file /var/www/html/pihole/index.html').rc == 0
     assert int(http_rc.stdout) == 200
 
-@pytest.mark.parametrize('url', [ '/index.js' ] )
-#@pytest.mark.parametrize('url', [ '/index.js', '/any.js'] )
+@pytest.mark.parametrize('url', [ '/index.js', '/any.js'] )
 def test_javascript_requests_load_as_expected(RunningPiHole, url):
     command = 'curl -s -o /tmp/curled_file -w "%{{http_code}}" http://127.0.0.1{}'.format(url)
     print command

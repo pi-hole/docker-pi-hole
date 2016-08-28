@@ -77,7 +77,7 @@ def Slow():
     Run a slow check, check if the state is correct for `timeout` seconds.
     """
     import time
-    def slow(check, timeout=15):
+    def slow(check, timeout=5):
         timeout_at = time.time() + timeout
         while True:
             try:
