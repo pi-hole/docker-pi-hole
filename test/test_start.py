@@ -1,6 +1,7 @@
 import pytest
+import time
 ''' conftest.py provides the defaults through fixtures '''
-''' Note, testinfra builtins don't seem fully compatible with 
+''' Note, testinfra builtins don't seem fully compatible with
         docker containers (esp. alpine) stripped down nature '''
 
 def test_pihole_default_run_command(Docker):
@@ -21,12 +22,33 @@ def test_ServerIP_missing_triggers_start_error(Docker):
     assert start.rc == 1
     assert error_msg in start.stdout
 
-@pytest.mark.parametrize('tag,webserver', [
-    ( 'alpine', 'nginx' ),
-    ( 'debian', 'lighttpd' )
-])
-def test_start_launches_dns_and_a_webserver(Docker, webserver, Slow):
-    ''' after we wait for start to finish '''
-    import time
-    Socket = Docker.get_module("Socket")
-    Slow(lambda: Docker.run( 'ps -ef | grep -q "{}"'.format(webserver) ).rc == 0)
+@pytest.fixture
+def RunningPiHole(DockerPersist, Slow, persist_webserver):
+    ''' Persist a docker and provide some parameterized data for re-use '''
+    Slow(lambda: DockerPersist.run( 'pgrep {}'.format(persist_webserver) ).rc == 0)
+    return DockerPersist
+
+def test_indecies_are_present(RunningPiHole):
+    File = RunningPiHole.get_module('File')
+    File('/var/www/html/pihole/index.html').exists
+    File('/var/www/html/pihole/index.js').exists
+
+@pytest.mark.parametrize('url', [ '/' ] )
+#@pytest.mark.parametrize('url', [ '/', '/index.html', 'any.html' ] )
+def test_html_index_requests_load_as_expected(RunningPiHole, url):
+    command = 'curl -s -o /tmp/curled_file -w "%{{http_code}}" http://127.0.0.1{}'.format(url)
+    print command
+    http_rc = RunningPiHole.run(command)
+    print RunningPiHole.run('ls -lat /tmp/curled_file').stdout
+    print RunningPiHole.run('cat /tmp/curled_file').stdout
+    assert RunningPiHole.run('md5sum /tmp/curled_file /var/www/html/pihole/index.html').rc == 0
+    assert int(http_rc.stdout) == 200
+
+@pytest.mark.parametrize('url', [ '/index.js' ] )
+#@pytest.mark.parametrize('url', [ '/index.js', '/any.js'] )
+def test_javascript_requests_load_as_expected(RunningPiHole, url):
+    command = 'curl -s -o /tmp/curled_file -w "%{{http_code}}" http://127.0.0.1{}'.format(url)
+    print command
+    http_rc = RunningPiHole.run(command)
+    assert RunningPiHole.run('md5sum /tmp/curled_file /var/www/html/pihole/index.js').rc == 0
+    assert int(http_rc.stdout) == 200
