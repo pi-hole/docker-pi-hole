@@ -1,12 +1,10 @@
 sudo: required
-
 services:
   - docker
+language: python
+python:
+  - "2.7"
+install:
+  - pip install -r requirements.txt
 
-before_install:
-  - docker pull diginc/pi-hole:alpine
-  - docker pull diginc/pi-hole:debian
-
-script:
-  - docker build -f alpine.docker .
-  - docker build -f debian.docker .
+script: py.test -v
