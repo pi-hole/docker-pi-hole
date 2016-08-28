@@ -13,7 +13,7 @@ echo "env[ServerIP] = ${ServerIP}" >> $PHP_ENV_CONFIG;
 
 if [ -n "$VIRTUAL_HOST" ] ; then
   echo "env[VIRTUAL_HOST] = ${VIRTUAL_HOST}" >> $PHP_ENV_CONFIG;
-else
+else 
   echo "env[VIRTUAL_HOST] = ${ServerIP}" >> $PHP_ENV_CONFIG;
 fi;
 
@@ -23,7 +23,7 @@ cat $PHP_ENV_CONFIG
 dnsType='default'
 DNS1=${DNS1:-'8.8.8.8'}
 DNS2=${DNS2:-'8.8.4.4'}
-if [ "$DNS1" != '8.8.8.8' ] || [ "$DNS2" != '8.8.4.4' ] ; then
+if [ "$DNS1" != '8.8.8.8' ] || [ "$DNS2" != '8.8.4.4' ] ; then 
   dnsType='custom'
 fi;
 
@@ -34,9 +34,7 @@ sed -i "s/@DNS2@/$DNS2/" /etc/dnsmasq.d/01-pihole.conf && \
 dnsmasq --test -7 /etc/dnsmasq.d || exit 1
 php-fpm -t || exit 1
 nginx -t || exit 1
-echo " :: All config checks passed, starting ..."
 
-if [ -n "$PYTEST" ] ; then sed -i 's/^gravity_spinup/#donotcurl/g' `which gravity.sh`; fi;
 gravity.sh
 dnsmasq -7 /etc/dnsmasq.d
 php-fpm
