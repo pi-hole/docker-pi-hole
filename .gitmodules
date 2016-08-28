@@ -3,4 +3,4 @@
 	url = https://github.com/pi-hole/pi-hole.git
 [submodule "AdminLTE"]
 	path = AdminLTE
-	url = https://github.com/diginc/AdminLTE.git
+	url = https://github.com/pi-hole/AdminLTE.git

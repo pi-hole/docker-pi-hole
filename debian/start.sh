@@ -11,7 +11,7 @@ sed -i "/bin-environment/ a\\\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\"," $
 
 if [ -n "$VIRTUAL_HOST" ] ; then
   sed -i "/bin-environment/ a\\\t\t\t\"VIRTUAL_HOST\" => \"${VIRTUAL_HOST}\"," $PHP_ENV_CONFIG
-else 
+else
   sed -i "/bin-environment/ a\\\t\t\t\"VIRTUAL_HOST\" => \"${ServerIP}\"," $PHP_ENV_CONFIG
 fi;
 
@@ -21,7 +21,7 @@ grep -E '(VIRTUAL_HOST|ServerIP)' $PHP_ENV_CONFIG
 dnsType='default'
 DNS1=${DNS1:-'8.8.8.8'}
 DNS2=${DNS2:-'8.8.4.4'}
-if [ "$DNS1" != '8.8.8.8' ] || [ "$DNS2" != '8.8.4.4' ] ; then 
+if [ "$DNS1" != '8.8.8.8' ] || [ "$DNS2" != '8.8.4.4' ] ; then
   dnsType='custom'
 fi;
 
@@ -31,7 +31,9 @@ sed -i "s/@DNS2@/$DNS2/" /etc/dnsmasq.d/01-pihole.conf && \
 
 dnsmasq --test -7 /etc/dnsmasq.d || exit 1
 lighttpd -t -f /etc/lighttpd/lighttpd.conf || exit 1
+echo " :: All config checks passed, starting ..."
 
+if [ -n "$PYTEST" ] ; then sed -i 's/^gravity_spinup/#donotcurl/g' `which gravity.sh`; fi;
 gravity.sh # dnsmasq start included
 service lighttpd start
 
