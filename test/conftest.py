@@ -1,53 +1,92 @@
 import pytest
 import testinfra
 
-# Use testinfra to get a handy function to run commands locally
+DEBUG = []
+
 check_output = testinfra.get_backend(
     "local://"
 ).get_module("Command").check_output
 
-
-@pytest.fixture
-def TestinfraBackend(request):
-    docker_run = "docker run -d {}".format(request.param)
-    print docker_run
-
+def DockerGeneric(request, args, image, cmd):
+    assert 'docker' in check_output('id'), "Are you in the docker group?"
+    docker_run = "docker run -d -e PYTEST=\"True\" {} {} {}".format(args, image, cmd)
     docker_id = check_output(docker_run)
-    check_output("docker exec %s sed -i 's/^gravity_spinup/#donotcurl/g' /usr/local/bin/gravity.sh", docker_id)
 
     def teardown():
-        check_output("docker rm -f %s", docker_id)
-    request.addfinalizer(teardown) 
+        check_output("docker stop %s", docker_id)
+        check_output("docker rm %s", docker_id)
+    request.addfinalizer(teardown)
 
     return testinfra.get_backend("docker://" + docker_id)
 
+@pytest.fixture
+def Docker(request, args, image, cmd):
+    ''' One-off Docker container run '''
+    return DockerGeneric(request, args, image, cmd)
 
-def pytest_generate_tests(metafunc):
-    if "TestinfraBackend" in metafunc.fixturenames:
+@pytest.fixture(scope='session')
+def DockerPersist(request, persist_args, persist_image, persist_cmd):
+    ''' Persistent Docker container for multiple tests '''
+    return DockerGeneric(request, persist_args, persist_image, persist_cmd)
 
-        mark_args = getattr(metafunc.function, "docker_args", None)
-	docker_args = []
-        if mark_args is not None:
-            docker_args = docker_args + list(mark_args.args)
+@pytest.fixture()
+def args(request):
+    return '-e ServerIP="192.168.100.2"'
 
-        mark_images = getattr(metafunc.function, "docker_images", None)
-        images = ['diginc/pi-hole:alpine', 'diginc/pi-hole:debian']
-        if mark_images is not None:
-            images = mark_images.args
+@pytest.fixture(params=['alpine', 'debian'])
+def tag(request):
+    return request.param
 
-        mark_cmd = getattr(metafunc.function, "docker_cmd", None)
-	command = 'tail -f /dev/null'
-        if mark_cmd is not None:
-            command = " ".join(mark_cmd.args)
+@pytest.fixture
+@pytest.mark.parametrize('tag,webserver', [ ( 'alpine', 'nginx' ), ( 'debian', 'lighttpd' ) ])
+def webserver(request, tag):
+    return webserver
 
-	docker_run_args = []
-	for img in images:
-	    docker_run_args.append('{} {} {}'.format(" ".join(docker_args),
-						  img, command))
-        if getattr(metafunc.function, "persistent", None) is not None:
-            scope = "session"
-        else:
-            scope = "function"
+@pytest.fixture()
+def image(request, tag):
+    return 'diginc/pi-hole:{}'.format(tag)
 
-        metafunc.parametrize(
-            "TestinfraBackend", docker_run_args, indirect=True, scope=scope)
+@pytest.fixture()
+def cmd(request):
+    return '/start.sh'
+
+@pytest.fixture(scope='session')
+def persist_args(request):
+    return '-e ServerIP="192.168.100.2"'
+
+@pytest.fixture(scope='session', params=['alpine', 'debian'])
+def persist_tag(request):
+    return request.param
+
+@pytest.fixture(scope='session')
+def persist_webserver(request, persist_tag):
+    web_dict = { 'alpine': 'nginx', 'debian': 'lighttpd' }
+    return web_dict[persist_tag]
+
+@pytest.fixture(scope='session')
+def persist_image(request, persist_tag):
+    return 'diginc/pi-hole:{}'.format(persist_tag)
+
+@pytest.fixture(scope='session')
+def persist_cmd(request):
+    return '/start.sh'
+
+@pytest.fixture
+def Slow():
+    """
+    Run a slow check, check if the state is correct for `timeout` seconds.
+    """
+    import time
+    def slow(check, timeout=5):
+        timeout_at = time.time() + timeout
+        while True:
+            try:
+                assert check()
+            except AssertionError, e:
+                if time.time() < timeout_at:
+                    time.sleep(1)
+                else:
+                    raise e
+            else:
+                return
+    return slow
