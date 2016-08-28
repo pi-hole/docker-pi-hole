@@ -36,10 +36,7 @@ def test_indecies_are_present(RunningPiHole):
 @pytest.mark.parametrize('url', [ '/', '/index.html', '/any.html' ] )
 def test_html_index_requests_load_as_expected(RunningPiHole, url):
     command = 'curl -s -o /tmp/curled_file -w "%{{http_code}}" http://127.0.0.1{}'.format(url)
-    print command
     http_rc = RunningPiHole.run(command)
-    print RunningPiHole.run('ls -lat /tmp/curled_file').stdout
-    print RunningPiHole.run('cat /tmp/curled_file').stdout
     assert RunningPiHole.run('md5sum /tmp/curled_file /var/www/html/pihole/index.html').rc == 0
     assert int(http_rc.stdout) == 200
 
@@ -50,3 +47,12 @@ def test_javascript_requests_load_as_expected(RunningPiHole, url):
     http_rc = RunningPiHole.run(command)
     assert RunningPiHole.run('md5sum /tmp/curled_file /var/www/html/pihole/index.js').rc == 0
     assert int(http_rc.stdout) == 200
+
+@pytest.mark.parametrize('url', [ '/admin/', '/admin/index.php' ] )
+def test_admin_requests_load_as_expected(RunningPiHole, url):
+    command = 'curl -s -o /tmp/curled_file -w "%{{http_code}}" http://127.0.0.1{}'.format(url)
+    http_rc = RunningPiHole.run(command)
+    assert int(http_rc.stdout) == 200
+    assert RunningPiHole.run('wc -l /tmp/curled_file ') > 10
+    assert RunningPiHole.run('grep -q "Content-Security-Policy" /tmp/curled_file ').rc == 0
+    assert RunningPiHole.run('grep -q "js/pihole/footer.js" /tmp/curled_file ').rc == 0
