@@ -1,5 +1,7 @@
-FROM resin/armv7hf-debian:jessie
+FROM jsurf/rpi-raspbian
 MAINTAINER adam@diginc.us <adam@diginc.us>
+
+RUN [ "cross-build-start" ]
 
 # Requirements
 RUN apt-get -q update && \
@@ -58,3 +60,5 @@ EXPOSE 80
 
 ENTRYPOINT ["/bash", "-c"]
 CMD /start.sh
+
+RUN [ "cross-build-end" ]  
