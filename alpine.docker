@@ -15,6 +15,7 @@ COPY ./alpine/gravity.sh /usr/local/bin/
 COPY ./alpine/nginx.conf /etc/nginx/nginx.conf
 # Original upstream pihole code being used
 COPY ./pi-hole/adlists.default /etc/pihole/
+COPY ./pi-hole/adlists.default /etc/.pihole/
 COPY ./pi-hole/pihole /usr/local/bin/
 COPY ./pi-hole/advanced/Scripts/* /usr/local/bin/
 RUN mkdir -p /opt/ && ln -s /usr/local/bin /opt/pihole
