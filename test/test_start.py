@@ -24,9 +24,19 @@ def test_ServerIP_missing_triggers_start_error(Docker):
 
 @pytest.fixture
 def RunningPiHole(DockerPersist, Slow, persist_webserver):
-    ''' Persist a docker and provide some parameterized data for re-use '''
-    Slow(lambda: DockerPersist.run( 'pgrep {}'.format(persist_webserver) ).rc == 0)
+    ''' Persist a working docker-pi-hole to help speed up subsequent tests '''
+    Slow(lambda: DockerPersist.run('pgrep {}'.format(persist_webserver) ).rc == 0)
     return DockerPersist
+
+@pytest.mark.parametrize('hostname,expected_ip', [
+    ('pi.hole',                        '192.168.100.2'),
+    ('google-public-dns-a.google.com', '8.8.8.8'),
+    ('b.resolvers.Level3.net',         '4.2.2.2')
+])
+def test_dns_responses(RunningPiHole, hostname, expected_ip):
+    dig_cmd = "dig +noall +answer {} @pihole | awk '{{ print $5 }}'".format(hostname)
+    lookup = RunningPiHole.dig.run(dig_cmd).stdout.rstrip('\n')
+    assert lookup == expected_ip
 
 def test_indecies_are_present(RunningPiHole):
     File = RunningPiHole.get_module('File')

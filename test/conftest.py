@@ -9,15 +9,18 @@ check_output = testinfra.get_backend(
 
 def DockerGeneric(request, args, image, cmd):
     assert 'docker' in check_output('id'), "Are you in the docker group?"
-    docker_run = "docker run -d -e PYTEST=\"True\" {} {} {}".format(args, image, cmd)
+    if 'diginc/pi-hole' in image:
+       args += " -e PYTEST=\"True\""
+    docker_run = "docker run -d {} {} {}".format(args, image, cmd)
     docker_id = check_output(docker_run)
 
     def teardown():
-        check_output("docker stop %s", docker_id)
-        check_output("docker rm %s", docker_id)
+        check_output("docker rm -f %s", docker_id)
     request.addfinalizer(teardown)
 
-    return testinfra.get_backend("docker://" + docker_id)
+    docker_container = testinfra.get_backend("docker://" + docker_id)
+    docker_container.id = docker_id
+    return docker_container
 
 @pytest.fixture
 def Docker(request, args, image, cmd):
@@ -25,9 +28,12 @@ def Docker(request, args, image, cmd):
     return DockerGeneric(request, args, image, cmd)
 
 @pytest.fixture(scope='session')
-def DockerPersist(request, persist_args, persist_image, persist_cmd):
+def DockerPersist(request, persist_args, persist_image, persist_cmd, Dig):
     ''' Persistent Docker container for multiple tests '''
-    return DockerGeneric(request, persist_args, persist_image, persist_cmd)
+    persistent_container = DockerGeneric(request, persist_args, persist_image, persist_cmd)
+    ''' attach a dig conatiner for lookups '''
+    persistent_container.dig = Dig(persistent_container.id)
+    return persistent_container
 
 @pytest.fixture()
 def args(request):
@@ -90,3 +96,16 @@ def Slow():
             else:
                 return
     return slow
+
+@pytest.fixture(scope='session')
+def Dig(request):
+    ''' separate container to link to pi-hole and perform lookups '''
+    ''' a docker pull is faster than running an install of dnsutils '''
+    def dig(docker_id):
+        args  = '--link {}:pihole'.format(docker_id)
+        image = 'azukiapp/dig'
+        cmd   = 'tail -f /dev/null'
+        dig_container = DockerGeneric(request, args, image, cmd)
+        return dig_container
+    return dig
+
