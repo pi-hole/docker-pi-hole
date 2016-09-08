@@ -31,6 +31,13 @@ echo "Using $dnsType DNS servers: $DNS1 & $DNS2"
 sed -i "s/@DNS1@/$DNS1/" /etc/dnsmasq.d/01-pihole.conf && \
 sed -i "s/@DNS2@/$DNS2/" /etc/dnsmasq.d/01-pihole.conf && \
 
+ip_versions="IPv4 and IPv6"
+if [ "$IPv6" != "True" ] ; then
+    ip_versions="IPv4"
+    sed -i '/listen \[::\]:80;/ d' /etc/nginx/nginx.conf
+fi;
+echo "Using $ip_versions"
+
 dnsmasq --test -7 /etc/dnsmasq.d || exit 1
 php-fpm -t || exit 1
 nginx -t || exit 1

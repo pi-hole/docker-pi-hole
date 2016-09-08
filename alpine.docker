@@ -58,6 +58,9 @@ ENV PHP_ENV_CONFIG '/etc/php5/fpm.d/envs.conf'
 ENV PHP_ERROR_LOG '/var/log/nginx/error.log'
 COPY ./alpine/start.sh /
 
+# IPV6 disable flag for networks/devices that do not support it
+ENV IPv6 True
+
 EXPOSE 53 53/udp
 EXPOSE 80
 

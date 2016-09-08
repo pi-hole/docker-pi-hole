@@ -61,6 +61,10 @@ ENV PHP_ENV_CONFIG '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf'
 ENV PHP_ERROR_LOG '/var/log/lighttpd/error.log'
 COPY ./debian/start.sh /
 
+# IPV6 disable flag for networks/devices that do not support it
+# not fully supported in debian yet
+ENV IPv6 True
+
 EXPOSE 53 53/udp
 EXPOSE 80
 
