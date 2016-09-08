@@ -9,6 +9,7 @@ run_local = testinfra.get_backend(
 @pytest.mark.parametrize("image,tag", [
     ( 'alpine.docker', 'diginc/pi-hole:alpine' ),
     ( 'debian.docker', 'diginc/pi-hole:debian' ),
+    ( 'debian-armhf.docker', 'diginc/pi-hole-armhf:debian' ),
 ])
 def test_build_pihole_image(image, tag):
     build_cmd = run_local('docker build -f {} -t {} .'.format(image, tag))
