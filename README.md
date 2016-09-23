@@ -12,7 +12,7 @@ A [Docker](https://www.docker.com/what-docker) project to make lightweight x86 c
 
 [Dockerhub](https://hub.docker.com/r/diginc/pi-hole/) automatically builds the latest docker-pi-hole changes into images which can easily be pulled and ran with a simple `docker run` command.  
 
-One crucuial thing to know before starting is docker-pi-hole container needs port 53 and port 80, 2 very popular ports that may conflict with existing applications.  If you have no other services or dockers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum options required to run this container are in the script [docker_run.sh](https://github.com/diginc/docker-pi-hole/blob/master/docker_run.sh) or summarized here: 
+One crucial thing to know before starting is docker-pi-hole container needs port 53 and port 80, 2 very popular ports that may conflict with existing applications.  If you have no other services or dockers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum options required to run this container are in the script [docker_run.sh](https://github.com/diginc/docker-pi-hole/blob/master/docker_run.sh) or summarized here: 
 
 ```
 IP=$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
@@ -49,7 +49,7 @@ All of these options get really long when strung together in one command, which 
 
 [![](https://images.microbadger.com/badges/image/diginc/pi-hole.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com")
 [![](https://images.microbadger.com/badges/version/diginc/pi-hole.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
-[![Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/alpine.docker)]
+[Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/alpine.docker)
 
 This is an optimized docker using [alpine](https://hub.docker.com/_/alpine/) as its base.  It uses nginx instead of lighttpd.
 
@@ -57,7 +57,7 @@ This is an optimized docker using [alpine](https://hub.docker.com/_/alpine/) as 
 
 [![](https://images.microbadger.com/badges/image/diginc/pi-hole:debian.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com")
 [![](https://images.microbadger.com/badges/version/diginc/pi-hole:debian.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
-[![Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/debian.docker)]
+[Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/debian.docker)
 
 This version of the docker aims to be as close to a standard pi-hole installation by using the same base OS and the exact configs and scripts (minimally modified to get them working).  This serves as a nice baseline for merging and testing upstream repository pi-hole changes.
 
