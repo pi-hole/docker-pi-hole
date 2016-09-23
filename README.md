@@ -49,7 +49,7 @@ All of these options get really long when strung together in one command, which 
 
 [![](https://images.microbadger.com/badges/image/diginc/pi-hole.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com")
 [![](https://images.microbadger.com/badges/version/diginc/pi-hole.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
-[![Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/alpine.docker)]
+[Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/alpine.docker)
 
 This is an optimized docker using [alpine](https://hub.docker.com/_/alpine/) as its base.  It uses nginx instead of lighttpd.
 
@@ -57,7 +57,7 @@ This is an optimized docker using [alpine](https://hub.docker.com/_/alpine/) as 
 
 [![](https://images.microbadger.com/badges/image/diginc/pi-hole:debian.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com")
 [![](https://images.microbadger.com/badges/version/diginc/pi-hole:debian.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
-[![Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/debian.docker)]
+[Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/debian.docker)
 
 This version of the docker aims to be as close to a standard pi-hole installation by using the same base OS and the exact configs and scripts (minimally modified to get them working).  This serves as a nice baseline for merging and testing upstream repository pi-hole changes.
 
