@@ -19,8 +19,7 @@ pihole:
     # to your docker host ip address
     - 'pihole.yourdomain.local:192.168.1.55'
   volumes:
-    # WARNING: if these don't exist as files on the host already
-    # docker will try to create them as directories 
+    # - '/etc/pihole/:/etc/pihole/'
+    # WARNING: if this log don't exist as a file on the host already
+    # docker will try to create a directory in it's place making for lots of errors
     # - '/var/log/pihole.log:/var/log/pihole.log'
-    #- '/etc/pihole/whitelist.txt:/etc/pihole/whitelist.txt'
-    # - '/etc/pihole/blacklist.txt:/etc/pihole/blacklist.txt'
