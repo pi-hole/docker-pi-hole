@@ -1,10 +1,10 @@
 A [Docker](https://www.docker.com/what-docker) project to make lightweight x86 and ARM continer with [pi-hole](https://pi-hole.net) functionality.  Why?  Maybe you don't have a Raspberry Pi lying around but you do have a Docker server.
 
-**Now with ARM (actual docker-pi) support!**  Just install docker on your Rasberry-Pi and run docker image `diginc/pi-hole:arm tag` (see below for full required command).
+**Now with ARM (actual docker-pi) support!**  Just install docker on your Rasberry-Pi and run docker image `diginc/pi-hole:arm` tag (see below for full required command).
 
 * The current Raspbian install is simply `curl -sSL https://get.docker.com | sh` [[1]](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/)
 
-[![Build Status](https://travis-ci.org/diginc/docker-pi-hole.svg?branch=master)](https://travis-ci.org/diginc/docker-pi-hole) [![Build Status](https://travis-ci.org/diginc/docker-pi-hole.svg?branch=dev)](https://travis-ci.org/diginc/docker-pi-hole) [![Docker Stars](https://img.shields.io/docker/stars/diginc/pi-hole.svg?maxAge=604800)](https://hub.docker.com/r/diginc/pi-hole/) [![Docker Pulls](https://img.shields.io/docker/pulls/diginc/pi-hole.svg?maxAge=604800)](https://hub.docker.com/r/diginc/pi-hole/)
+[![Build Status](https://travis-ci.org/diginc/docker-pi-hole.svg?branch=master)](https://travis-ci.org/diginc/docker-pi-hole) [![Docker Stars](https://img.shields.io/docker/stars/diginc/pi-hole.svg?maxAge=604800)](https://hub.docker.com/r/diginc/pi-hole/) [![Docker Pulls](https://img.shields.io/docker/pulls/diginc/pi-hole.svg?maxAge=604800)](https://hub.docker.com/r/diginc/pi-hole/)
 
 [![Join the chat at https://gitter.im/diginc/docker-pi-hole](https://badges.gitter.im/diginc/docker-pi-hole.svg)](https://gitter.im/diginc/docker-pi-hole?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -60,6 +60,8 @@ All of these options get really long when strung together in one command, which 
 
 ## Docker tags
 
+The primary docker tags / versions are as follows.  [Click here to see the full list of tags](https://hub.docker.com/r/diginc/pi-hole/tags/), I also try to tag with the specific version of Pi-Hole Core / Web for historical or version pinning purposes.
+
 | tag                 | architecture | description                                                             | Dockerfile |
 | ---                 | ------------ | -----------                                                             | ---------- |
 | `alpine` / `latest` | x86          | Alpine x86 image, small size container running nginx and dnsmasq        | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/alpine.docker) |
@@ -107,3 +109,15 @@ The original pi-hole scripts are in the container so they should work via `docke
 Any configuration files you volume mount into `/etc/dnsmasq.d/` will be loaded by dnsmasq when the container starts or restarts or if you need to modify the pi-hole config it is located at `/etc/dnsmasq.d/01-pihole.conf`.  The docker start scripts runs a config test prior to starting so it should tell you about any errors in the docker log.
 
 Similarly for the webserver you can customize configs in /etc/nginx (*:alpine* tag) and /etc/lighttpd (*:debian* tag).
+
+
+
+## Development[![Build Status](https://travis-ci.org/diginc/docker-pi-hole.svg?branch=dev)](https://travis-ci.org/diginc/docker-pi-hole)
+
+If you plan on making a contribution please pull request to the dev branch.  I also build tags of the dev branch for bug fix testing after merges have been made:
+
+| tag                 | architecture | description                                                             | Dockerfile |
+| ---                 | ------------ | -----------                                                             | ---------- |
+| `alpine_dev` | x86          | Alpine x86 image, small size container running nginx and dnsmasq        | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/dev/alpine.docker) |
+| `debian_dev`            | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/dev/debian.docker) |
+| `arm_dev`               | ARM          | Debian ARM image, container running lighttpd and dnsmasq built for ARM  | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/dev/debian-armhf.docker) |
