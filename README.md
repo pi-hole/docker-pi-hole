@@ -48,26 +48,15 @@ All of these options get really long when strung together in one command, which 
 
 ## Docker tags
 
-| tag    | architecture | description                                                             |
-| ------ | ------------ | -----------                                                             |
-| alpine | x86          | Alpine x86 image, small size container running nginx and dnsmasq        |
-| debian | x86          | Debian x86 image, container running lighttpd and dnsmasq                |
-| arm    | ARM          | Debian ARM image, container running lighttpd and dnsmasq built for ARM  |
+| tag                 | architecture | description                                                             | Dockerfile |
+| ---                 | ------------ | -----------                                                             | ---------- |
+| `alpine` / `latest` | x86          | Alpine x86 image, small size container running nginx and dnsmasq        | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/alpine.docker) |
+| `debian`            | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/debian.docker) |
+| `arm`               | ARM          | Debian ARM image, container running lighttpd and dnsmasq built for ARM  | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/debian-armhf.docker) |
 
-### `diginc/pi-hole:alpine`
+### `diginc/pi-hole:alpine` (default tag) [![](https://images.microbadger.com/badges/image/diginc/pi-hole:alpine.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:alpine.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:latest.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com") 
 
-[![](https://images.microbadger.com/badges/image/diginc/pi-hole.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com")
-[![](https://images.microbadger.com/badges/version/diginc/pi-hole.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
-[Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/alpine.docker)
-
-This is an optimized docker using [alpine](https://hub.docker.com/_/alpine/) as its base.  It uses nginx instead of lighttpd.
-
-
-### `diginc/pi-hole:debian`
-
-[![](https://images.microbadger.com/badges/image/diginc/pi-hole:debian.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com")
-[![](https://images.microbadger.com/badges/version/diginc/pi-hole:debian.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
-[Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/debian.docker)
+### `diginc/pi-hole:debian` [![](https://images.microbadger.com/badges/image/diginc/pi-hole:debian.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:debian.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
 
 This version of the docker aims to be as close to a standard pi-hole installation by using the same base OS and the exact configs and scripts (minimally modified to get them working).  This serves as a nice baseline for merging and testing upstream repository pi-hole changes.
 
