@@ -24,33 +24,46 @@ def test_ServerIP_missing_triggers_start_error(Docker):
 
 @pytest.fixture
 def RunningPiHole(DockerPersist, Slow, persist_webserver):
-    ''' Persist a docker and provide some parameterized data for re-use '''
-    Slow(lambda: DockerPersist.run( 'pgrep {}'.format(persist_webserver) ).rc == 0)
+    ''' Persist a working docker-pi-hole to help speed up subsequent tests '''
+    Slow(lambda: DockerPersist.run('pgrep {}'.format(persist_webserver) ).rc == 0)
     return DockerPersist
+
+@pytest.mark.parametrize('hostname,expected_ip', [
+    ('pi.hole',                        '192.168.100.2'),
+    ('google-public-dns-a.google.com', '8.8.8.8'),
+    ('b.resolvers.Level3.net',         '4.2.2.2')
+])
+def test_dns_responses(RunningPiHole, hostname, expected_ip):
+    dig_cmd = "dig +noall +answer {} @pihole | awk '{{ print $5 }}'".format(hostname)
+    lookup = RunningPiHole.dig.run(dig_cmd).stdout.rstrip('\n')
+    assert lookup == expected_ip
 
 def test_indecies_are_present(RunningPiHole):
     File = RunningPiHole.get_module('File')
     File('/var/www/html/pihole/index.html').exists
     File('/var/www/html/pihole/index.js').exists
 
+@pytest.mark.parametrize('ip', [ '127.0.0.1', '[::]' ] )
 @pytest.mark.parametrize('url', [ '/', '/index.html', '/any.html' ] )
-def test_html_index_requests_load_as_expected(RunningPiHole, url):
-    command = 'curl -s -o /tmp/curled_file -w "%{{http_code}}" http://127.0.0.1{}'.format(url)
+def test_html_index_requests_load_as_expected(RunningPiHole, ip, url):
+    command = 'curl -s -o /tmp/curled_file -w "%{{http_code}}" http://{}{}'.format(ip, url)
     http_rc = RunningPiHole.run(command)
     assert RunningPiHole.run('md5sum /tmp/curled_file /var/www/html/pihole/index.html').rc == 0
     assert int(http_rc.stdout) == 200
 
+@pytest.mark.parametrize('ip', [ '127.0.0.1', '[::]' ] )
 @pytest.mark.parametrize('url', [ '/index.js', '/any.js'] )
-def test_javascript_requests_load_as_expected(RunningPiHole, url):
-    command = 'curl -s -o /tmp/curled_file -w "%{{http_code}}" http://127.0.0.1{}'.format(url)
+def test_javascript_requests_load_as_expected(RunningPiHole, ip, url):
+    command = 'curl -s -o /tmp/curled_file -w "%{{http_code}}" http://{}{}'.format(ip, url)
     print command
     http_rc = RunningPiHole.run(command)
     assert RunningPiHole.run('md5sum /tmp/curled_file /var/www/html/pihole/index.js').rc == 0
     assert int(http_rc.stdout) == 200
 
+@pytest.mark.parametrize('ip', [ '127.0.0.1', '[::]' ] )
 @pytest.mark.parametrize('url', [ '/admin/', '/admin/index.php' ] )
-def test_admin_requests_load_as_expected(RunningPiHole, url):
-    command = 'curl -s -o /tmp/curled_file -w "%{{http_code}}" http://127.0.0.1{}'.format(url)
+def test_admin_requests_load_as_expected(RunningPiHole, ip, url):
+    command = 'curl -s -o /tmp/curled_file -w "%{{http_code}}" http://{}{}'.format(ip, url)
     http_rc = RunningPiHole.run(command)
     assert int(http_rc.stdout) == 200
     assert RunningPiHole.run('wc -l /tmp/curled_file ') > 10

@@ -33,3 +33,17 @@ pihole:
     - 'ghost ghost.yourDomain.lan:192.168.41.55'
     - 'wordpress wordpress.yourDomain.lan:192.168.41.55'
   restart: always
+
+# Another container you might want to have running through the proxy
+# Note it also have ENV Vars like pihole and a host under pihole's extra_hosts
+#ghost:
+#  image: fractalf/ghost
+#  ports:
+#    - '2368:2368/tcp'
+#  volumes:
+#    - '/etc/ghost/:/ghost-override'
+#  environment:
+#    PROXY_LOCATION: ghost
+#    VIRTUAL_HOST: ghost.yourDomain.lan
+#    VIRTUAL_PORT: 2368
+#  restart: always
