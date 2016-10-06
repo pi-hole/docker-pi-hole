@@ -6,7 +6,7 @@ fi;
 
 # /tmp/piholeIP is the current override of auto-lookup in gravity.sh
 echo "$ServerIP" > /etc/pihole/piholeIP;
-echo "ipv4addr=$ServerIP" > /etc/pihole/setupVars.conf;
+echo "IPv4addr=$ServerIP" > /etc/pihole/setupVars.conf;
 echo "piholeIPv6=$ServerIPv6" >> /etc/pihole/setupVars.conf;
 
 if [ ! -f /var/run/dockerpihole-firstboot ] ; then

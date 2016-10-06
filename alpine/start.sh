@@ -6,7 +6,7 @@ fi;
 
 # /tmp/piholeIP is the current override of auto-lookup in gravity.sh
 echo "$ServerIP" > /etc/pihole/piholeIP;
-echo "ipv4addr=$ServerIP" > /etc/pihole/setupVars.conf;
+echo "IPv4addr=$ServerIP" > /etc/pihole/setupVars.conf;
 echo "piholeIPv6=$ServerIPv6" >> /etc/pihole/setupVars.conf;
 
 if [ ! -f /var/run/dockerpihole-firstboot ] ; then
@@ -37,7 +37,7 @@ fi;
 
 echo "Using $dnsType DNS servers: $DNS1 & $DNS2"
 sed -i "s/@DNS1@/$DNS1/" /etc/dnsmasq.d/01-pihole.conf && \
-sed -i "s/@DNS2@/$DNS2/" /etc/dnsmasq.d/01-pihole.conf && \
+sed -i "s/@DNS2@/$DNS2/" /etc/dnsmasq.d/01-pihole.conf
 
 ip_versions="IPv4 and IPv6"
 if [ "$IPv6" != "True" ] ; then
