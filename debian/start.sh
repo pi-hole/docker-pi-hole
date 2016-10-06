@@ -6,13 +6,21 @@ fi;
 
 # /tmp/piholeIP is the current override of auto-lookup in gravity.sh
 echo "$ServerIP" > /etc/pihole/piholeIP;
-sed -i "/bin-environment/ a\\\t\t\t\"ServerIP\" => \"${ServerIP}\"," $PHP_ENV_CONFIG
-sed -i "/bin-environment/ a\\\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\"," $PHP_ENV_CONFIG
+echo "ipv4addr=$ServerIP" > /etc/pihole/setupVars.conf;
+echo "piholeIPv6=$ServerIPv6" >> /etc/pihole/setupVars.conf;
 
-if [ -n "$VIRTUAL_HOST" ] ; then
-  sed -i "/bin-environment/ a\\\t\t\t\"VIRTUAL_HOST\" => \"${VIRTUAL_HOST}\"," $PHP_ENV_CONFIG
+if [ ! -f /var/run/dockerpihole-firstboot ] ; then
+    sed -i "/bin-environment/ a\\\t\t\t\"ServerIP\" => \"${ServerIP}\"," $PHP_ENV_CONFIG
+    sed -i "/bin-environment/ a\\\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\"," $PHP_ENV_CONFIG
+
+    if [ -z "$VIRTUAL_HOST" ] ; then
+      VIRTUAL_HOST="$ServerIP"
+    fi;
+    sed -i "/bin-environment/ a\\\t\t\t\"VIRTUAL_HOST\" => \"${VIRTUAL_HOST}\"," $PHP_ENV_CONFIG
+
+    touch /var/run/dockerpihole-firstboot
 else
-  sed -i "/bin-environment/ a\\\t\t\t\"VIRTUAL_HOST\" => \"${ServerIP}\"," $PHP_ENV_CONFIG
+    echo "Skipped first boot configuration, looks like you're restarting this container"
 fi;
 
 echo "Added ENV to php:"
