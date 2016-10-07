@@ -16,5 +16,8 @@ cp -f pi-hole/advanced/pihole.cron ${cron};
 sed -i '/Update the ad sources/ i\# Your container name goes here:\nDOCKER_NAME=pihole\nPATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin\n' ${cron};
 sed -i 's|/usr/local/bin/|docker exec $DOCKER_NAME |g' ${cron};
 sed -i '/docker exec/ s|$| > /dev/null|g' ${cron};
+
 # docker-pi-hole users update their docker images, not git code
+sed -i '/Update Pi-hole/ a\# pihole software update commands are unsupported in docker!' ${cron};
+sed -i '/Update Pi-hole/ c\# Update docker-pi-hole by pulling the latest docker image ane re-creating your container.' ${cron};
 sed -i '/pihole updateDashboard/ s/^/#/' ${cron};
