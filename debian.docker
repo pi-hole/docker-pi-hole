@@ -1,6 +1,8 @@
 FROM debian:jessie
 MAINTAINER adam@diginc.us <adam@diginc.us>
 
+ENV IMAGE debian
+
 ENV TINI_VERSION v0.9.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc /tini.asc
@@ -60,6 +62,7 @@ RUN grep -q '^user=root' || echo 'user=root' >> /etc/dnsmasq.conf
 ENV PHP_ENV_CONFIG '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf'
 ENV PHP_ERROR_LOG '/var/log/lighttpd/error.log'
 COPY ./debian/start.sh /
+COPY ./common_start.sh /
 
 # IPV6 disable flag for networks/devices that do not support it
 # not fully supported in debian yet
