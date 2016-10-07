@@ -61,6 +61,7 @@ COPY ./common_start.sh /
 EXPOSE 53 53/udp
 EXPOSE 80
 
+# Tini doesn't work in ARM
 ENTRYPOINT [ "bash", "-c" ]
 CMD [ "/start.sh" ]
 
