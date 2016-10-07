@@ -74,21 +74,25 @@ test_configs() {
 }
 
 test_configs_debian() {
-    echo -n ' :: Testing DNSmasq config: '
-    dnsmasq --test -7 /etc/dnsmasq.d || exit 1
-    echo -n ' :: Testing lighttpd config: '
-    lighttpd -t -f /etc/lighttpd/lighttpd.conf || exit 1
-    echo " :: All config checks passed, starting ..."
+    set -e
+    echo -n '::: Testing DNSmasq config: '
+    dnsmasq --test -7 /etc/dnsmasq.d
+    echo -n '::: Testing lighttpd config: '
+    lighttpd -t -f /etc/lighttpd/lighttpd.conf
+    set +e
+    echo "::: All config checks passed, starting ..."
 }
 
 test_configs_alpine() {
-    echo -n ' :: Testing DNSmasq config: '
-    dnsmasq --test -7 /etc/dnsmasq.d || exit 1
-    echo -n ' :: Testing PHP-FPM config: '
-    php-fpm -t || exit 1
-    echo -n ' :: Testing NGINX config: '
-    nginx -t || exit 1
-    echo " :: All config checks passed, starting ..."
+    set -e
+    echo -n '::: Testing DNSmasq config: '
+    dnsmasq --test -7 /etc/dnsmasq.d
+    echo -n '::: Testing PHP-FPM config: '
+    php-fpm -t
+    echo -n '::: Testing NGINX config: '
+    nginx -t
+    set +e
+    echo "::: All config checks passed, starting ..."
 }
 
 test_framework_stubbing() {
