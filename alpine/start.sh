@@ -26,8 +26,7 @@ echo "Using $ip_versions"
 test_configs
 test_framework_stubbing
 
-gravity.sh
-dnsmasq -7 /etc/dnsmasq.d
+gravity.sh # dnsmasq start included
 php-fpm
 nginx
 
