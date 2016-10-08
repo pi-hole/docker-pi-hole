@@ -6,12 +6,13 @@ run_local = testinfra.get_backend(
     "local://"
 ).get_module("Command").run
 
-@pytest.mark.parametrize("image,tag", [
-    ( 'alpine.docker', 'diginc/pi-hole:alpine' ),
-    ( 'debian.docker', 'diginc/pi-hole:debian' ),
-    ( 'debian-armhf.docker', 'diginc/pi-hole-armhf:debian' ),
+@pytest.mark.parametrize("upstream,image,tag", [
+    ( 'alpine:edge', 'alpine.docker', 'diginc/pi-hole:alpine' ),
+    ( 'debian:jessie', 'debian.docker', 'diginc/pi-hole:debian' ),
+    ( 'jsurf/rpi-raspbian', 'debian-armhf.docker', 'diginc/pi-hole-armhf:debian' ),
 ])
-def test_build_pihole_image(image, tag):
+def test_build_pihole_image(upstream, image, tag):
+    run_local('docker pull {}'.format(upstream))
     build_cmd = run_local('docker build -f {} -t {} .'.format(image, tag))
     if build_cmd.rc != 0:
         print build_cmd.stdout

@@ -2,6 +2,7 @@ FROM jsurf/rpi-raspbian
 MAINTAINER adam@diginc.us <adam@diginc.us>
 
 RUN [ "cross-build-start" ]
+ENV IMAGE debian
 
 # Requirements
 RUN apt-get -q update && \
@@ -9,7 +10,7 @@ RUN apt-get -q update && \
         dnsmasq \
         lighttpd \
         php5-common php5-cgi php5 \
-        bc curl unzip wget sudo && \
+        bc curl unzip wget sudo dnsutils && \
     rm -rf /var/cache/apt/archives
 
 # Original upstream pihole code being used
@@ -54,11 +55,13 @@ RUN grep -q '^user=root' || echo 'user=root' >> /etc/dnsmasq.conf
 # php config start passes special ENVs into
 ENV PHP_ENV_CONFIG '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf'
 ENV PHP_ERROR_LOG '/var/log/lighttpd/error.log'
-COPY ./debian-armhf/start.sh /
+COPY ./debian/start.sh /
+COPY ./common_start.sh /
 
 EXPOSE 53 53/udp
 EXPOSE 80
 
+# Tini doesn't work in ARM
 ENTRYPOINT [ "bash", "-c" ]
 CMD [ "/start.sh" ]
 

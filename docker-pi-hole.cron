@@ -17,9 +17,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 #          Download any updates from the adlists
 59 1    * * 7   root    docker exec $DOCKER_NAME pihole updateGravity > /dev/null
 
-# Pi-hole: Update the Web interface shortly after gravity runs
-#          This should also update the version number if it is changed in the dashboard repo
-#30 2    * * 7   root    docker exec $DOCKER_NAME pihole updateDashboard > /dev/null
+# Update docker-pi-hole by pulling the latest docker image ane re-creating your container.
+# pihole software update commands are unsupported in docker!
+#30 2    * * 7   root    docker exec $DOCKER_NAME pihole updatePihole > /dev/null
 
 # Pi-hole: Parse the log file before it is flushed and save the stats to a database
 #          This will be used for a historical view of your Pi-hole's performance
