@@ -39,31 +39,33 @@ setup_php_env() {
 }
 
 setup_php_env_debian() {
-    sed -i "/bin-environment/ a\\\t\t\t\"ServerIP\" => \"${ServerIP}\"," $PHP_ENV_CONFIG
-    sed -i "/bin-environment/ a\\\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\"," $PHP_ENV_CONFIG
+    sed -i "/bin-environment/ a\\\t\t\t\"ServerIP\" => \"${ServerIP}\"," "$PHP_ENV_CONFIG"
+    sed -i "/bin-environment/ a\\\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\"," "$PHP_ENV_CONFIG"
 
     if [ -z "$VIRTUAL_HOST" ] ; then
       VIRTUAL_HOST="$ServerIP"
     fi;
-    sed -i "/bin-environment/ a\\\t\t\t\"VIRTUAL_HOST\" => \"${VIRTUAL_HOST}\"," $PHP_ENV_CONFIG
+    sed -i "/bin-environment/ a\\\t\t\t\"VIRTUAL_HOST\" => \"${VIRTUAL_HOST}\"," "$PHP_ENV_CONFIG"
 
     echo "Added ENV to php:"
-    grep -E '(VIRTUAL_HOST|ServerIP)' $PHP_ENV_CONFIG
+    grep -E '(VIRTUAL_HOST|ServerIP)' "$PHP_ENV_CONFIG"
 }
 
 setup_php_env_alpine() {
-    echo "[www]" > $PHP_ENV_CONFIG;
-    echo "env[PATH] = ${PATH}" >> $PHP_ENV_CONFIG;
-    echo "env[PHP_ERROR_LOG] = ${PHP_ERROR_LOG}" >> $PHP_ENV_CONFIG;
-    echo "env[ServerIP] = ${ServerIP}" >> $PHP_ENV_CONFIG;
+    cat <<-EOF > "$PHP_ENV_CONFIG"
+		[www]
+		env[PATH] = ${PATH}
+		env[PHP_ERROR_LOG] = ${PHP_ERROR_LOG}
+		env[ServerIP] = ${ServerIP}
+	EOF
 
     if [ -z "$VIRTUAL_HOST" ] ; then
       VIRTUAL_HOST="$ServerIP"
     fi;
-    echo "env[VIRTUAL_HOST] = ${VIRTUAL_HOST}" >> $PHP_ENV_CONFIG;
+    echo "env[VIRTUAL_HOST] = ${VIRTUAL_HOST}" >> "$PHP_ENV_CONFIG";
 
     echo "Added ENV to php:"
-    cat $PHP_ENV_CONFIG
+    cat "$PHP_ENV_CONFIG"
 }
 
 test_configs() {
@@ -96,5 +98,5 @@ test_configs_alpine() {
 }
 
 test_framework_stubbing() {
-    if [ -n "$PYTEST" ] ; then sed -i 's/^gravity_spinup/#donotcurl/g' `which gravity.sh`; fi;
+    if [ -n "$PYTEST" ] ; then sed -i 's/^gravity_spinup/#donotcurl/g' "$(which gravity.sh)"; fi;
 }

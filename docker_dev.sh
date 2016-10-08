@@ -6,6 +6,7 @@ docker build -f debian.docker -t diginc/pi-hole:debian .
 IP=$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
 
 # Alternative ports to not conflict with my real instance
+# shellcheck disable=SC2068
 docker run -it --rm --cap-add=NET_ADMIN \
   -p 5053:53/tcp \
   -p 5053:53/udp \
@@ -13,5 +14,5 @@ docker run -it --rm --cap-add=NET_ADMIN \
   -e ServerIP="$IP" \
   -e VIRTUAL_HOST='pihole.diginc.lan:5080' \
   $@ \
-  diginc/pi-hole:${image:-alpine}
+  diginc/pi-hole:"${image:-alpine}"
 
