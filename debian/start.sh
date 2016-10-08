@@ -4,8 +4,6 @@
 export IMAGE
 export ServerIP
 export ServerIPv6
-export DNS1
-export DNS2
 export PYTEST
 export PHP_ENV_CONFIG
 export PHP_ERROR_LOG 
@@ -13,7 +11,7 @@ export PHP_ERROR_LOG
 validate_env
 setup_saved_variables
 setup_php_env
-setup_dnsmasq
+setup_dnsmasq "$DNS1" "$DNS2"
 test_configs
 test_framework_stubbing
 
