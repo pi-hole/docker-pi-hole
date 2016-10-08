@@ -55,7 +55,6 @@ def test_html_index_requests_load_as_expected(RunningPiHole, ip, url):
 @pytest.mark.parametrize('url', [ '/index.js', '/any.js'] )
 def test_javascript_requests_load_as_expected(RunningPiHole, ip, url):
     command = 'curl -s -o /tmp/curled_file -w "%{{http_code}}" http://{}{}'.format(ip, url)
-    print command
     http_rc = RunningPiHole.run(command)
     assert RunningPiHole.run('md5sum /tmp/curled_file /var/www/html/pihole/index.js').rc == 0
     assert int(http_rc.stdout) == 200
@@ -84,5 +83,4 @@ def test_DNS_Envs_override_defaults(Docker, args, expected_stdout, dns1, dns2):
 
     docker_dns_servers = Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout
     expected_servers = 'server={}\nserver={}\n'.format(dns1, dns2)
-    print expected_servers, '==', docker_dns_servers
     assert expected_servers == docker_dns_servers
