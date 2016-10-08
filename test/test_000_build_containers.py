@@ -18,8 +18,8 @@ def optimize_ci():
     https://docs.travis-ci.com/user/environment-variables#Default-Environment-Variables
     '''
     if os.environ.get('TRAVIS') == 'true':
-        for tag in ['dev_alpine', 'dev_debian', 'dev_arm']:
-            run_local('docker pull diginc/pi-hole:{}'.format(tag))
+        for tag in ['alpine', 'debian', 'arm']:
+            run_local('docker pull diginc/pi-hole:{}_dev'.format(tag))
 
 @pytest.mark.parametrize("upstream, image, tag", [
     ( 'alpine:edge', 'alpine.docker', 'diginc/pi-hole:alpine' ),
