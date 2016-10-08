@@ -55,7 +55,6 @@ def test_html_index_requests_load_as_expected(RunningPiHole, ip, url):
 @pytest.mark.parametrize('url', [ '/index.js', '/any.js'] )
 def test_javascript_requests_load_as_expected(RunningPiHole, ip, url):
     command = 'curl -s -o /tmp/curled_file -w "%{{http_code}}" http://{}{}'.format(ip, url)
-    print command
     http_rc = RunningPiHole.run(command)
     assert RunningPiHole.run('md5sum /tmp/curled_file /var/www/html/pihole/index.js').rc == 0
     assert int(http_rc.stdout) == 200
@@ -69,3 +68,19 @@ def test_admin_requests_load_as_expected(RunningPiHole, ip, url):
     assert RunningPiHole.run('wc -l /tmp/curled_file ') > 10
     assert RunningPiHole.run('grep -q "Content-Security-Policy" /tmp/curled_file ').rc == 0
     assert RunningPiHole.run('grep -q "js/pihole/footer.js" /tmp/curled_file ').rc == 0
+
+@pytest.mark.parametrize('args, expected_stdout, dns1, dns2', [
+    ('-e ServerIP="1.2.3.4"', 'default DNS', '8.8.8.8', '8.8.4.4' ),
+    ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4"', 'custom DNS', '1.2.3.4', '8.8.4.4' ),
+    ('-e ServerIP="1.2.3.4" -e DNS2="1.2.3.4"', 'custom DNS', '8.8.8.8', '1.2.3.4' ),
+    ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4" -e DNS2="2.2.3.4"', 'custom DNS', '1.2.3.4', '2.2.3.4' ),
+])
+@pytest.mark.parametrize('cmd', [ 'tail -f /dev/null' ])
+def test_DNS_Envs_override_defaults(Docker, args, expected_stdout, dns1, dns2):
+    ''' When DNS environment vars are passed in, they override default dns servers '''
+    run_function = Docker.run('. /common_start.sh ; eval `grep setup_dnsmasq /start.sh`')
+    assert expected_stdout in run_function.stdout
+
+    docker_dns_servers = Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout
+    expected_servers = 'server={}\nserver={}\n'.format(dns1, dns2)
+    assert expected_servers == docker_dns_servers

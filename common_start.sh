@@ -13,9 +13,9 @@ setup_saved_variables() {
 }
 
 setup_dnsmasq() {
-    local dnsType='default'
     local DNS1="${1:-8.8.8.8}"
     local DNS2="${2:-8.8.4.4}"
+    local dnsType='default'
     if [ "$DNS1" != '8.8.8.8' ] || [ "$DNS2" != '8.8.4.4' ] ; then
       dnsType='custom'
     fi;
