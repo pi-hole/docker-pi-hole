@@ -17,7 +17,7 @@ def optimize_ci():
     
     https://docs.travis-ci.com/user/environment-variables#Default-Environment-Variables
     '''
-    if os.environ.get('TRAVIS') == 'true':
+    if os.environ.get('TRAVIS') != None:
         for tag in ['alpine', 'debian', 'arm']:
             run_local('docker pull diginc/pi-hole:{}_dev'.format(tag))
 
