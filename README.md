@@ -91,7 +91,7 @@ The standard pi-hole customization abilities apply to this docker, but with dock
 For those unfamilar, the docker way to ugprade is: 
 
 * Throw away your container: `docker rm -f pihole`
- * Make sure if you care about your data you have it volume mapped
+ * If you care about your data (logs/customizations), make sure you have it volume mapped or it will be deleted in this step
 * Download the latest version of the image: `docker pull diginc/pi-hole`
 * Start your container with the newer base image: `docker run ... diginc/pi-hole` (whatever your original run command was)
 
