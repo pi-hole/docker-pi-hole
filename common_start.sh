@@ -8,8 +8,8 @@ validate_env() {
 setup_saved_variables() {
     # /tmp/piholeIP is the current override of auto-lookup in gravity.sh
     echo "$ServerIP" > /etc/pihole/piholeIP;
-    echo "IPv4addr=$ServerIP" > /etc/pihole/setupVars.conf;
-    echo "piholeIPv6=$ServerIPv6" >> /etc/pihole/setupVars.conf;
+    echo "IPv4_address=$ServerIP" > /etc/pihole/setupVars.conf;
+    echo "IPv6_address=$ServerIPv6" >> /etc/pihole/setupVars.conf;
 }
 
 setup_dnsmasq() {
@@ -26,29 +26,30 @@ setup_dnsmasq() {
 }
 
 setup_php_env() {
-    if [ ! -f /var/run/dockerpihole-firstboot ] ; then
-        case $IMAGE in
-            "debian") setup_php_env_debian ;;
-            "alpine") setup_php_env_alpine ;;
-        esac
-
-        touch /var/run/dockerpihole-firstboot
-    else
-        echo "Looks like you're restarting this container, skipping php env setup"
-    fi;
+    case $IMAGE in
+        "debian") setup_php_env_debian ;;
+        "alpine") setup_php_env_alpine ;;
+    esac
 }
 
 setup_php_env_debian() {
-    sed -i "/bin-environment/ a\\\t\t\t\"ServerIP\" => \"${ServerIP}\"," $PHP_ENV_CONFIG
-    sed -i "/bin-environment/ a\\\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\"," $PHP_ENV_CONFIG
-
     if [ -z "$VIRTUAL_HOST" ] ; then
       VIRTUAL_HOST="$ServerIP"
     fi;
-    sed -i "/bin-environment/ a\\\t\t\t\"VIRTUAL_HOST\" => \"${VIRTUAL_HOST}\"," $PHP_ENV_CONFIG
+    local vhost_line="\t\t\t\"VIRTUAL_HOST\" => \"${VIRTUAL_HOST}\","
+    local serverip_line="\t\t\t\"ServerIP\" => \"${ServerIP}\","
+    local php_error_line="\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\","
+
+    # idempotent line additions
+    grep -q "$vhost_line" $PHP_ENV_CONFIG || \
+        sed -i "/bin-environment/ a\\${vhost_line}" $PHP_ENV_CONFIG
+    grep -q "$serverip_line" $PHP_ENV_CONFIG || \
+        sed -i "/bin-environment/ a\\${serverip_line}" $PHP_ENV_CONFIG
+    grep -q "$php_error_line" $PHP_ENV_CONFIG || \
+        sed -i "/bin-environment/ a\\${php_error_line}" $PHP_ENV_CONFIG
 
     echo "Added ENV to php:"
-    grep -E '(VIRTUAL_HOST|ServerIP)' $PHP_ENV_CONFIG
+    grep -E '(VIRTUAL_HOST|ServerIP|PHP_ERROR_LOG)' $PHP_ENV_CONFIG
 }
 
 setup_php_env_alpine() {
@@ -64,6 +65,18 @@ setup_php_env_alpine() {
 
     echo "Added ENV to php:"
     cat $PHP_ENV_CONFIG
+}
+
+setup_ipv4_ipv6() {
+    local ip_versions="IPv4 and IPv6"
+    if [ "$IPv6" != "True" ] ; then
+        ip_versions="IPv4"
+        case $IMAGE in
+            "debian") sed -i '/use-ipv6.pl/ d' /etc/lighttpd/lighttpd.conf ;;
+            "alpine") sed -i '/listen \[::\]:80;/ d' /etc/nginx/nginx.conf ;;
+        esac
+    fi;
+    echo "Using $ip_versions"
 }
 
 test_configs() {
@@ -96,5 +109,5 @@ test_configs_alpine() {
 }
 
 test_framework_stubbing() {
-    if [ -n "$PYTEST" ] ; then sed -i 's/^gravity_spinup/#donotcurl/g' `which gravity.sh`; fi;
+    if [ -n "$PYTEST" ] ; then sed -i 's/^gravity_spinup$/#donotcurl/g' `which gravity.sh`; fi;
 }

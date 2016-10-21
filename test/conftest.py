@@ -2,6 +2,7 @@ import pytest
 import testinfra
 
 DEBUG = []
+WEB_SERVER = { 'alpine': 'nginx', 'debian': 'lighttpd' }
 
 check_output = testinfra.get_backend(
     "local://"
@@ -44,9 +45,8 @@ def tag(request):
     return request.param
 
 @pytest.fixture
-@pytest.mark.parametrize('tag,webserver', [ ( 'alpine', 'nginx' ), ( 'debian', 'lighttpd' ) ])
 def webserver(request, tag):
-    return webserver
+    return WEB_SERVER[tag]
 
 @pytest.fixture()
 def image(request, tag):
@@ -66,8 +66,7 @@ def persist_tag(request):
 
 @pytest.fixture(scope='session')
 def persist_webserver(request, persist_tag):
-    web_dict = { 'alpine': 'nginx', 'debian': 'lighttpd' }
-    return web_dict[persist_tag]
+    return WEB_SERVER[persist_tag]
 
 @pytest.fixture(scope='session')
 def persist_image(request, persist_tag):
@@ -102,7 +101,7 @@ def Dig(request):
     ''' separate container to link to pi-hole and perform lookups '''
     ''' a docker pull is faster than running an install of dnsutils '''
     def dig(docker_id):
-        args  = '--link {}:pihole'.format(docker_id)
+        args  = '--link {}:test_pihole'.format(docker_id)
         image = 'azukiapp/dig'
         cmd   = 'tail -f /dev/null'
         dig_container = DockerGeneric(request, args, image, cmd)
