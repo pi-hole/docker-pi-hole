@@ -12,15 +12,7 @@ validate_env
 setup_saved_variables
 setup_php_env
 setup_dnsmasq "$DNS1" "$DNS2"
-
-# alpine unique currently
-ip_versions="IPv4 and IPv6"
-if [ "$IPv6" != "True" ] ; then
-    ip_versions="IPv4"
-    sed -i '/listen \[::\]:80;/ d' /etc/nginx/nginx.conf
-fi;
-echo "Using $ip_versions"
-
+setup_ipv4_ipv6
 test_configs
 test_framework_stubbing
 
