@@ -88,16 +88,14 @@ The standard pi-hole customization abilities apply to this docker, but with dock
 
 ### Upgrading
 
-For those unfamilar, the docker way to ugprade is: 
+**If you try to use `pi-hole -up` it will fail.** For those unfamilar, the docker way to ugprade is: 
 
 * Throw away your container: `docker rm -f pihole`
  * If you care about your data (logs/customizations), make sure you have it volume mapped or it will be deleted in this step
 * Download the latest version of the image: `docker pull diginc/pi-hole`
 * Start your container with the newer base image: `docker run ... diginc/pi-hole` (whatever your original run command was)
 
-Why is this style of upgrading good?  A couple reasons: Everyone is starting from the same base which has been tested to known to work.  No worrying about upgrading from A to B, B to C, or A to C is required for application developers.
-
-**If you try to use `pi-hole -up` it will fail**, more about this is covered in [Issue 49](https://github.com/diginc/docker-pi-hole/issues/49)
+Why is this style of upgrading good?  A couple reasons: Everyone is starting from the same base image which has been tested to know it works.  No worrying about upgrading from A to B, B to C, or A to C is required when rolling out updates, reducing complexity.
 
 ### Volumes customizations
 
