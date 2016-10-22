@@ -41,15 +41,15 @@ setup_php_env_debian() {
     local php_error_line="\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\","
 
     # idempotent line additions
-    grep -q "$vhost_line" $PHP_ENV_CONFIG || \
-        sed -i "/bin-environment/ a\\${vhost_line}" $PHP_ENV_CONFIG
-    grep -q "$serverip_line" $PHP_ENV_CONFIG || \
-        sed -i "/bin-environment/ a\\${serverip_line}" $PHP_ENV_CONFIG
-    grep -q "$php_error_line" $PHP_ENV_CONFIG || \
-        sed -i "/bin-environment/ a\\${php_error_line}" $PHP_ENV_CONFIG
+    grep -q "$vhost_line" "$PHP_ENV_CONFIG" || \
+        sed -i "/bin-environment/ a\\${vhost_line}" "$PHP_ENV_CONFIG"
+    grep -q "$serverip_line" "$PHP_ENV_CONFIG" || \
+        sed -i "/bin-environment/ a\\${serverip_line}" "$PHP_ENV_CONFIG"
+    grep -q "$php_error_line" "$PHP_ENV_CONFIG" || \
+        sed -i "/bin-environment/ a\\${php_error_line}" "$PHP_ENV_CONFIG"
 
     echo "Added ENV to php:"
-    grep -E '(VIRTUAL_HOST|ServerIP|PHP_ERROR_LOG)' $PHP_ENV_CONFIG
+    grep -E '(VIRTUAL_HOST|ServerIP|PHP_ERROR_LOG)' "$PHP_ENV_CONFIG"
 }
 
 setup_php_env_alpine() {
@@ -111,5 +111,5 @@ test_configs_alpine() {
 }
 
 test_framework_stubbing() {
-    if [ -n "$PYTEST" ] ; then sed -i 's/^gravity_spinup/#donotcurl/g' "$(which gravity.sh)"; fi;
+    if [ -n "$PYTEST" ] ; then sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)"; fi;
 }

@@ -1,1 +1,1 @@
-py.test -vv -f test/
+py.test -f ./test -v $@
