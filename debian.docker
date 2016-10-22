@@ -3,7 +3,7 @@ MAINTAINER adam@diginc.us <adam@diginc.us>
 
 ENV IMAGE debian
 
-ENV TINI_VERSION v0.9.0
+ENV TINI_VERSION v0.10.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc /tini.asc
 RUN gpg --keyserver ha.pool.sks-keyservers.net --recv-keys 0527A9B7 \
@@ -35,6 +35,10 @@ COPY ./pi-hole/advanced/pihole.sudo /etc/sudoers.d/pihole
 COPY ./AdminLTE /var/www/html/admin
 COPY ./AdminLTE_version.txt /etc/
 COPY ./pi-hole_version.txt /etc/
+#     Make pihole scripts fail searching for `systemctl`,
+# which fails pretty miserably in docker compared to `service`
+# For more info see docker/docker issue #7459
+RUN mv `which systemctl` /bin/no_systemctl
 
 ENV WEBLOGDIR /var/log/lighttpd
 RUN mkdir -p /etc/pihole/ && \
@@ -64,7 +68,7 @@ ENV PHP_ERROR_LOG '/var/log/lighttpd/error.log'
 COPY ./debian/start.sh /
 COPY ./common_start.sh /
 
-# IPV6 disable flag for networks/devices that do not support it
+# IPv6 disable flag for networks/devices that do not support it
 # not fully supported in debian yet
 ENV IPv6 True
 

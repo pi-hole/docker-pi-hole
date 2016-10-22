@@ -9,7 +9,7 @@ run_local = testinfra.get_backend(
 @pytest.mark.parametrize("upstream,image,tag", [
     ( 'alpine:edge', 'alpine.docker', 'diginc/pi-hole:alpine' ),
     ( 'debian:jessie', 'debian.docker', 'diginc/pi-hole:debian' ),
-    ( 'jsurf/rpi-raspbian', 'debian-armhf.docker', 'diginc/pi-hole-armhf:debian' ),
+    ( 'jsurf/rpi-raspbian', 'debian-armhf.docker', 'diginc/pi-hole:arm' ),
 ])
 def test_build_pihole_image(upstream, image, tag):
     run_local('docker pull {}'.format(upstream))

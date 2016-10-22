@@ -82,11 +82,22 @@ As close to the debian image as possible, but cross compiled for ARM architectur
 
 Alpine doesn't have an arm cross compileable image at this time.
 
-## Persistence and Customizations
+## Upgrading, Persistence, and Customizations
 
 The standard pi-hole customization abilities apply to this docker, but with docker twists such as using docker volume mounts to map host stored file configurations over the container defaults.  Volumes are also important to persist the configuration incase you have remove the pi-hole container which is a typical docker upgrade pattern.
 
-### Volumes
+### Upgrading
+
+**If you try to use `pi-hole -up` it will fail.** For those unfamilar, the docker way to ugprade is: 
+
+* Throw away your container: `docker rm -f pihole`
+ * If you care about your data (logs/customizations), make sure you have it volume mapped or it will be deleted in this step
+* Download the latest version of the image: `docker pull diginc/pi-hole`
+* Start your container with the newer base image: `docker run ... diginc/pi-hole` (whatever your original run command was)
+
+Why is this style of upgrading good?  A couple reasons: Everyone is starting from the same base image which has been tested to know it works.  No worrying about upgrading from A to B, B to C, or A to C is required when rolling out updates, reducing complexity.
+
+### Volumes customizations
 
 Here are some relevant wiki pages from pi-hole's documentation and example volume mappings to optionally add to the basic example:
 
@@ -112,7 +123,7 @@ Similarly for the webserver you can customize configs in /etc/nginx (*:alpine* t
 
 
 
-## Development[![Build Status](https://travis-ci.org/diginc/docker-pi-hole.svg?branch=dev)](https://travis-ci.org/diginc/docker-pi-hole)
+## Development [![Build Status](https://travis-ci.org/diginc/docker-pi-hole.svg?branch=dev)](https://travis-ci.org/diginc/docker-pi-hole)
 
 If you plan on making a contribution please pull request to the dev branch.  I also build tags of the dev branch for bug fix testing after merges have been made:
 

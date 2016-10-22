@@ -12,6 +12,7 @@ validate_env
 setup_saved_variables
 setup_php_env
 setup_dnsmasq "$DNS1" "$DNS2"
+setup_ipv4_ipv6
 test_configs
 test_framework_stubbing
 

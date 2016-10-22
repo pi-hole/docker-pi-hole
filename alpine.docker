@@ -13,13 +13,18 @@ RUN apk add --update \
     rm -rf /var/cache/apk/*
 
 # Customized from submodules
-COPY ./alpine/gravity.sh /usr/local/bin/
+COPY ./pi-hole/gravity.sh /usr/local/bin/
+COPY ./pi-hole/advanced/Scripts/* /usr/local/bin/
+RUN sed -i 's|service dnsmasq \(re\)\{0,1\}start|dnsmasq -7 /etc/dnsmasq.d|g' \
+    /usr/local/bin/gravity.sh \
+    /usr/local/bin/whitelist.sh \
+    /usr/local/bin/blacklist.sh
 COPY ./alpine/nginx.conf /etc/nginx/nginx.conf
+
 # Original upstream pihole code being used
 COPY ./pi-hole/adlists.default /etc/pihole/
 COPY ./pi-hole/adlists.default /etc/.pihole/
 COPY ./pi-hole/pihole /usr/local/bin/
-COPY ./pi-hole/advanced/Scripts/* /usr/local/bin/
 RUN mkdir -p /opt/ && ln -s /usr/local/bin /opt/pihole
 COPY ./pi-hole/advanced/dnsmasq.conf.original /etc/dnsmasq.conf
 COPY ./pi-hole/advanced/01-pihole.conf /etc/dnsmasq.d/

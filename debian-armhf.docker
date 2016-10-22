@@ -29,6 +29,10 @@ COPY ./pi-hole/advanced/pihole.sudo /etc/sudoers.d/pihole
 COPY ./AdminLTE /var/www/html/admin
 COPY ./AdminLTE_version.txt /etc/
 COPY ./pi-hole_version.txt /etc/
+#     Make pihole scripts fail searching for `systemctl`,
+# which fails pretty miserably in docker compared to `service`
+# For more info see docker/docker issue #7459
+RUN mv `which systemctl` /bin/no_systemctl
 
 ENV WEBLOGDIR /var/log/lighttpd
 RUN mkdir -p /etc/pihole/ && \
@@ -57,6 +61,10 @@ ENV PHP_ENV_CONFIG '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf'
 ENV PHP_ERROR_LOG '/var/log/lighttpd/error.log'
 COPY ./debian/start.sh /
 COPY ./common_start.sh /
+
+# IPv6 disable flag for networks/devices that do not support it
+# not fully supported in debian yet
+ENV IPv6 True
 
 EXPOSE 53 53/udp
 EXPOSE 80
