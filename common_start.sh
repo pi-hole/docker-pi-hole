@@ -30,36 +30,36 @@ setup_dnsmasq_hostnames() {
     local IPv4_address="${1}"
     local IPv6_address="${2}"
     local hostname="${3}"
-	local dnsmasq_pihole_01_location="/etc/dnsmasq.d/01-pihole.conf"
+    local dnsmasq_pihole_01_location="/etc/dnsmasq.d/01-pihole.conf"
 
     if [ -z "$hostname" ]; then
-	    if [[ -f /etc/hostname ]]; then
-	    	hostname=$(</etc/hostname)
-	    elif [ -x "$(command -v hostname)" ]; then
-	    	hostname=$(hostname -f)
-	    fi
+        if [[ -f /etc/hostname ]]; then
+            hostname=$(</etc/hostname)
+        elif [ -x "$(command -v hostname)" ]; then
+            hostname=$(hostname -f)
+        fi
     fi;
 
-	if [[ "${IPv4_address}" != "" ]]; then
-	    tmp=${IPv4_address%/*}
-	    sed -i "s/@IPv4@/$tmp/" ${dnsmasq_pihole_01_location}
-	else
-		sed -i '/^address=\/pi.hole\/@IPv4@/d' ${dnsmasq_pihole_01_location}
-		sed -i '/^address=\/@HOSTNAME@\/@IPv4@/d' ${dnsmasq_pihole_01_location}
-	fi
+    if [[ "${IPv4_address}" != "" ]]; then
+        tmp=${IPv4_address%/*}
+        sed -i "s/@IPv4@/$tmp/" ${dnsmasq_pihole_01_location}
+    else
+        sed -i '/^address=\/pi.hole\/@IPv4@/d' ${dnsmasq_pihole_01_location}
+        sed -i '/^address=\/@HOSTNAME@\/@IPv4@/d' ${dnsmasq_pihole_01_location}
+    fi
 
-	if [[ "${IPv6_address}" != "" ]]; then
-	    sed -i "s/@IPv6@/$IPv6_address/" ${dnsmasq_pihole_01_location}
-	else
-		sed -i '/^address=\/pi.hole\/@IPv6@/d' ${dnsmasq_pihole_01_location}
-		sed -i '/^address=\/@HOSTNAME@\/@IPv6@/d' ${dnsmasq_pihole_01_location}
-	fi
+    if [[ "${IPv6_address}" != "" ]]; then
+        sed -i "s/@IPv6@/$IPv6_address/" ${dnsmasq_pihole_01_location}
+    else
+        sed -i '/^address=\/pi.hole\/@IPv6@/d' ${dnsmasq_pihole_01_location}
+        sed -i '/^address=\/@HOSTNAME@\/@IPv6@/d' ${dnsmasq_pihole_01_location}
+    fi
 
-	if [[ "${hostname}" != "" ]]; then
-	    sed -i "s/@HOSTNAME@/$hostname/" ${dnsmasq_pihole_01_location}
-	else
-		sed -i '/^address=\/@HOSTNAME@*/d' ${dnsmasq_pihole_01_location}
-	fi
+    if [[ "${hostname}" != "" ]]; then
+        sed -i "s/@HOSTNAME@/$hostname/" ${dnsmasq_pihole_01_location}
+    else
+        sed -i '/^address=\/@HOSTNAME@*/d' ${dnsmasq_pihole_01_location}
+    fi
 }
 
 setup_php_env() {
@@ -90,6 +90,7 @@ setup_php_env_debian() {
 }
 
 setup_php_env_alpine() {
+    # Intentionally tabs, required by HEREDOC de-indentation (<<-)
     cat <<-EOF > "$PHP_ENV_CONFIG"
 		[www]
 		env[PATH] = ${PATH}
