@@ -64,7 +64,7 @@ RUN grep -q '^user=root' || echo 'user=root' >> /etc/dnsmasq.conf
 ENV PHP_ENV_CONFIG '/etc/php5/fpm.d/envs.conf'
 ENV PHP_ERROR_LOG '/var/log/nginx/error.log'
 COPY ./start.sh /
-COPY ./common_start.sh /
+COPY ./bash_functions.sh /
 
 # IPV6 disable flag for networks/devices that do not support it
 ENV IPv6 True

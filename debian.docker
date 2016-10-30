@@ -66,7 +66,7 @@ RUN grep -q '^user=root' || echo 'user=root' >> /etc/dnsmasq.conf
 ENV PHP_ENV_CONFIG '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf'
 ENV PHP_ERROR_LOG '/var/log/lighttpd/error.log'
 COPY ./start.sh /
-COPY ./common_start.sh /
+COPY ./bash_functions.sh /
 
 # IPv6 disable flag for networks/devices that do not support it
 # not fully supported in debian yet

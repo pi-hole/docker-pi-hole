@@ -35,7 +35,7 @@ def test_ServerIP_missing_triggers_start_error(Docker):
 @pytest.mark.parametrize('cmd', [ 'tail -f /dev/null' ])
 def test_IPv6_not_True_removes_ipv6(Docker, tag, args, expected_ipv6, expected_stdout):
     ''' When a user overrides IPv6=True they only get IPv4 listening webservers '''
-    function = Docker.run('. /common_start.sh ; setup_ipv4_ipv6')
+    function = Docker.run('. /bash_functions.sh ; setup_ipv4_ipv6')
     assert "Using {}".format(expected_stdout) in function.stdout
     ipv6 = Docker.run('grep -q \'{}\' {}'.format(IPV6_LINE[tag], WEB_CONFIG[tag])).rc == 0
     assert ipv6 == expected_ipv6
@@ -49,7 +49,7 @@ def test_IPv6_not_True_removes_ipv6(Docker, tag, args, expected_ipv6, expected_s
 @pytest.mark.parametrize('cmd', [ 'tail -f /dev/null' ])
 def test_DNS_Envs_override_defaults(Docker, args, expected_stdout, dns1, dns2):
     ''' When DNS environment vars are passed in, they override default dns servers '''
-    function = Docker.run('. /common_start.sh ; eval `grep setup_dnsmasq /start.sh`')
+    function = Docker.run('. /bash_functions.sh ; eval `grep setup_dnsmasq_dns /start.sh`')
     assert expected_stdout in function.stdout
 
     docker_dns_servers = Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout
