@@ -15,16 +15,16 @@ RUN apk add --update \
 # Customized from submodules
 COPY ./pi-hole/gravity.sh /usr/local/bin/
 COPY ./pi-hole/advanced/Scripts/* /usr/local/bin/
+COPY ./pi-hole/pihole /usr/local/bin/
 RUN sed -i 's|service dnsmasq \(re\)\{0,1\}start|dnsmasq -7 /etc/dnsmasq.d|g' \
+    /usr/local/bin/pihole \
     /usr/local/bin/gravity.sh \
-    /usr/local/bin/whitelist.sh \
-    /usr/local/bin/blacklist.sh
+    /usr/local/bin/list.sh
 COPY ./alpine/nginx.conf /etc/nginx/nginx.conf
 
 # Original upstream pihole code being used
 COPY ./pi-hole/adlists.default /etc/pihole/
 COPY ./pi-hole/adlists.default /etc/.pihole/
-COPY ./pi-hole/pihole /usr/local/bin/
 RUN mkdir -p /opt/ && ln -s /usr/local/bin /opt/pihole
 COPY ./pi-hole/advanced/dnsmasq.conf.original /etc/dnsmasq.conf
 COPY ./pi-hole/advanced/01-pihole.conf /etc/dnsmasq.d/
@@ -63,7 +63,7 @@ RUN grep -q '^user=root' || echo 'user=root' >> /etc/dnsmasq.conf
 # php config start passes special ENVs into
 ENV PHP_ENV_CONFIG '/etc/php5/fpm.d/envs.conf'
 ENV PHP_ERROR_LOG '/var/log/nginx/error.log'
-COPY ./alpine/start.sh /
+COPY ./start.sh /
 COPY ./common_start.sh /
 
 # IPV6 disable flag for networks/devices that do not support it
