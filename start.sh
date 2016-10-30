@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 . /common_start.sh
 # Dockerfile variables
 export IMAGE
@@ -7,17 +7,15 @@ export ServerIPv6
 export PYTEST
 export PHP_ENV_CONFIG
 export PHP_ERROR_LOG 
+export HOSTNAME
 
 validate_env
 setup_saved_variables
 setup_php_env
-setup_dnsmasq "$DNS1" "$DNS2"
+setup_dnsmasq_dns "$DNS1" "$DNS2"
+setup_dnsmasq_hostnames "$ServerIP" "$ServerIPv6" "$HOSTNAME"
 setup_ipv4_ipv6
 test_configs
 test_framework_stubbing
 
-gravity.sh # dnsmasq start included
-php-fpm
-nginx
-
-tail -F /var/log/nginx/*.log /var/log/pihole.log
+main "$IMAGE"

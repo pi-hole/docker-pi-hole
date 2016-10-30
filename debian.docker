@@ -65,7 +65,7 @@ RUN grep -q '^user=root' || echo 'user=root' >> /etc/dnsmasq.conf
 # php config start passes special ENVs into
 ENV PHP_ENV_CONFIG '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf'
 ENV PHP_ERROR_LOG '/var/log/lighttpd/error.log'
-COPY ./debian/start.sh /
+COPY ./start.sh /
 COPY ./common_start.sh /
 
 # IPv6 disable flag for networks/devices that do not support it
