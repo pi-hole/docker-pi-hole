@@ -78,7 +78,7 @@ setup_php_env_debian() {
     local php_error_line="\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\","
 
     # idempotent line additions
-    grep -q "$vhost_line" "$PHP_ENV_CONFIG" || \
+    grep -qP "$vhost_line" "$PHP_ENV_CONFIG" || \
         sed -i "/bin-environment/ a\\${vhost_line}" "$PHP_ENV_CONFIG"
     grep -q "$serverip_line" "$PHP_ENV_CONFIG" || \
         sed -i "/bin-environment/ a\\${serverip_line}" "$PHP_ENV_CONFIG"
