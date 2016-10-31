@@ -59,7 +59,7 @@ setup_dnsmasq_hostnames() {
         sed -i "s/@HOSTNAME@/$hostname/" ${dnsmasq_pihole_01_location}
     else
         sed -i '/^address=\/@HOSTNAME@*/d' ${dnsmasq_pihole_01_location}
-P    fi
+    fi
 }
 
 setup_php_env() {
