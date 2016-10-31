@@ -59,7 +59,7 @@ setup_dnsmasq_hostnames() {
         sed -i "s/@HOSTNAME@/$hostname/" ${dnsmasq_pihole_01_location}
     else
         sed -i '/^address=\/@HOSTNAME@*/d' ${dnsmasq_pihole_01_location}
-    fi
+P    fi
 }
 
 setup_php_env() {
@@ -80,9 +80,9 @@ setup_php_env_debian() {
     # idempotent line additions
     grep -qP "$vhost_line" "$PHP_ENV_CONFIG" || \
         sed -i "/bin-environment/ a\\${vhost_line}" "$PHP_ENV_CONFIG"
-    grep -q "$serverip_line" "$PHP_ENV_CONFIG" || \
+    grep -qP "$serverip_line" "$PHP_ENV_CONFIG" || \
         sed -i "/bin-environment/ a\\${serverip_line}" "$PHP_ENV_CONFIG"
-    grep -q "$php_error_line" "$PHP_ENV_CONFIG" || \
+    grep -qP "$php_error_line" "$PHP_ENV_CONFIG" || \
         sed -i "/bin-environment/ a\\${php_error_line}" "$PHP_ENV_CONFIG"
 
     echo "Added ENV to php:"
