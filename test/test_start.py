@@ -4,8 +4,6 @@ import time
 ''' Note, testinfra builtins don't seem fully compatible with
         docker containers (esp. alpine) stripped down nature '''
 
-WEB_CONFIG = { 'alpine': '/etc/nginx/nginx.conf', 'debian': '/etc/lighttpd/lighttpd.conf' }
-IPV6_LINE = { 'alpine': 'listen \[::\]:80', 'debian': 'use-ipv6.pl' }
 
 def test_pihole_default_run_command(Docker):
     expected_proc = '/sbin/tini -- /start.sh'
@@ -25,36 +23,6 @@ def test_ServerIP_missing_triggers_start_error(Docker):
     assert start.rc == 1
     assert error_msg in start.stdout
 
-
-@pytest.mark.parametrize('args,expected_ipv6,expected_stdout', [
-    ('-e ServerIP="1.2.3.4"', True, 'IPv4 and IPv6'),
-    ('-e ServerIP="1.2.3.4" -e "IPv6=True"', True, 'IPv4 and IPv6'),
-    ('-e ServerIP="1.2.3.4" -e "IPv6=False"', False, 'IPv4'),
-    ('-e ServerIP="1.2.3.4" -e "IPv6=foobar"', False, 'IPv4'),
-])
-@pytest.mark.parametrize('cmd', [ 'tail -f /dev/null' ])
-def test_IPv6_not_True_removes_ipv6(Docker, tag, args, expected_ipv6, expected_stdout):
-    ''' When a user overrides IPv6=True they only get IPv4 listening webservers '''
-    function = Docker.run('. /bash_functions.sh ; setup_ipv4_ipv6')
-    assert "Using {}".format(expected_stdout) in function.stdout
-    ipv6 = Docker.run('grep -q \'{}\' {}'.format(IPV6_LINE[tag], WEB_CONFIG[tag])).rc == 0
-    assert ipv6 == expected_ipv6
-
-@pytest.mark.parametrize('args, expected_stdout, dns1, dns2', [
-    ('-e ServerIP="1.2.3.4"', 'default DNS', '8.8.8.8', '8.8.4.4' ),
-    ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4"', 'custom DNS', '1.2.3.4', '8.8.4.4' ),
-    ('-e ServerIP="1.2.3.4" -e DNS2="1.2.3.4"', 'custom DNS', '8.8.8.8', '1.2.3.4' ),
-    ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4" -e DNS2="2.2.3.4"', 'custom DNS', '1.2.3.4', '2.2.3.4' ),
-])
-@pytest.mark.parametrize('cmd', [ 'tail -f /dev/null' ])
-def test_DNS_Envs_override_defaults(Docker, args, expected_stdout, dns1, dns2):
-    ''' When DNS environment vars are passed in, they override default dns servers '''
-    function = Docker.run('. /bash_functions.sh ; eval `grep setup_dnsmasq_dns /start.sh`')
-    assert expected_stdout in function.stdout
-
-    docker_dns_servers = Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout
-    expected_servers = 'server={}\nserver={}\n'.format(dns1, dns2)
-    assert expected_servers == docker_dns_servers
 
 ''' 
 Persistent Docker container for testing service post start.sh 
@@ -106,3 +74,4 @@ def test_admin_requests_load_as_expected(RunningPiHole, ip, url):
     assert RunningPiHole.run('wc -l /tmp/curled_file ') > 10
     assert RunningPiHole.run('grep -q "Content-Security-Policy" /tmp/curled_file ').rc == 0
     assert RunningPiHole.run('grep -q "js/pihole/footer.js" /tmp/curled_file ').rc == 0
+
