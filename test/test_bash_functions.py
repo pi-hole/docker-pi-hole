@@ -1,4 +1,5 @@
 import pytest
+import re
 
 # Override these docker command pieces to minimize parameter repititon
 @pytest.fixture()
@@ -37,3 +38,21 @@ def test_DNS_Envs_override_defaults(Docker, args, expected_stdout, dns1, dns2):
     expected_servers = 'server={}\nserver={}\n'.format(dns1, dns2)
     assert expected_servers == docker_dns_servers
 
+expected_debian_lines = [ 
+    '"VIRTUAL_HOST" => "192.168.100.2"',
+    '"ServerIP" => "192.168.100.2"',
+    '"PHP_ERROR_LOG" => "/var/log/lighttpd/error.log"'
+]
+@pytest.mark.parametrize('tag,expected_lines,repeat_function', [
+    ('debian', expected_debian_lines, 1),
+    ('debian', expected_debian_lines, 2)
+])
+def test_setup_php_env(Docker, tag, expected_lines, repeat_function):
+    ''' confirm all expected output is there and nothing else '''
+    stdout = ''
+    for i in range(repeat_function):
+        stdout = Docker.run('. /bash_functions.sh ; eval `grep setup_php_env /start.sh`').stdout
+    for expected_line in expected_lines:
+        search_config_cmd = "grep -c '{}' /etc/lighttpd/conf-enabled/15-fastcgi-php.conf".format(expected_line)
+        search_config_count = Docker.run(search_config_cmd)
+        assert search_config_count.stdout.rstrip('\n') == '1'
