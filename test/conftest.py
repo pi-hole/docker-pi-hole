@@ -1,7 +1,6 @@
 import pytest
 import testinfra
 
-DEBUG = []
 WEB_SERVER = { 'alpine': 'nginx', 'debian': 'lighttpd' }
 
 check_output = testinfra.get_backend(
