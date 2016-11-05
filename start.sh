@@ -1,5 +1,5 @@
 #!/bin/bash -e
-. /common_start.sh
+. /bash_functions.sh
 # Dockerfile variables
 export IMAGE
 export ServerIP
