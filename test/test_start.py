@@ -5,7 +5,7 @@ import time
         docker containers (esp. alpine) stripped down nature '''
 
 
-def test_pihole_default_run_command(Docker):
+def test_pihole_default_run_command(Docker, tag):
     expected_proc = '/sbin/tini -- /start.sh'
     pgrep = 'pgrep -f "{}" | wc -l || echo 0'.format(expected_proc)
     find_proc = Docker.run(pgrep).stdout
@@ -23,16 +23,6 @@ def test_ServerIP_missing_triggers_start_error(Docker):
     assert start.rc == 1
     assert error_msg in start.stdout
 
-
-''' 
-Persistent Docker container for testing service post start.sh 
-'''
-@pytest.fixture
-def RunningPiHole(DockerPersist, Slow, persist_webserver):
-    ''' Persist a fully started docker-pi-hole to help speed up subsequent tests '''
-    Slow(lambda: DockerPersist.run('pgrep {}'.format(persist_webserver) ).rc == 0)
-    Slow(lambda: DockerPersist.run('pgrep dnsmasq').rc == 0)
-    return DockerPersist
 
 @pytest.mark.parametrize('hostname,expected_ip', [
     ('pi.hole',                        '192.168.100.2'),

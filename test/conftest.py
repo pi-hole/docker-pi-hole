@@ -107,3 +107,13 @@ def Dig(request):
         return dig_container
     return dig
 
+'''
+Persistent Docker container for testing service post start.sh
+'''
+@pytest.fixture
+def RunningPiHole(DockerPersist, Slow, persist_webserver):
+    ''' Persist a fully started docker-pi-hole to help speed up subsequent tests '''
+    Slow(lambda: DockerPersist.run('pgrep {}'.format(persist_webserver) ).rc == 0)
+    Slow(lambda: DockerPersist.run('pgrep dnsmasq').rc == 0)
+    return DockerPersist
+
