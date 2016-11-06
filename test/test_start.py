@@ -23,7 +23,6 @@ def test_ServerIP_missing_triggers_start_error(Docker):
     assert start.rc == 1
     assert error_msg in start.stdout
 
-
 @pytest.mark.parametrize('hostname,expected_ip', [
     ('pi.hole',                        '192.168.100.2'),
     ('google-public-dns-a.google.com', '8.8.8.8'),
