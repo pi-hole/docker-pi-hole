@@ -16,7 +16,11 @@ RUN apk add --update \
 COPY ./pi-hole/gravity.sh /usr/local/bin/
 COPY ./pi-hole/advanced/Scripts/* /usr/local/bin/
 COPY ./pi-hole/pihole /usr/local/bin/
-RUN sed -i 's|service dnsmasq \(re\)\{0,1\}start|dnsmasq -7 /etc/dnsmasq.d|g' \
+RUN sed -i 's|service dnsmasq restart|kill -9 $(pidof dnsmasq); dnsmasq -7 /etc/dnsmasq.d|g' \
+    /usr/local/bin/pihole \
+    /usr/local/bin/gravity.sh \
+    /usr/local/bin/list.sh
+RUN sed -i 's|service dnsmasq start|dnsmasq -7 /etc/dnsmasq.d|g' \
     /usr/local/bin/pihole \
     /usr/local/bin/gravity.sh \
     /usr/local/bin/list.sh
