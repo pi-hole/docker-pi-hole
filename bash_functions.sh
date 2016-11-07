@@ -165,5 +165,5 @@ main() {
              service lighttpd start
         ;;
     esac
-    tail -F /var/log/lighttpd/*.log /var/log/pihole.log
+    tail -F "${WEBLOGDIR}"/*.log /var/log/pihole.log
 }
