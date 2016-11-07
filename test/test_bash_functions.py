@@ -47,7 +47,7 @@ expected_debian_lines = [
     ('debian', expected_debian_lines, 1),
     ('debian', expected_debian_lines, 2)
 ])
-def test_setup_php_env(Docker, tag, expected_lines, repeat_function):
+def test_debian_setup_php_env(Docker, tag, expected_lines, repeat_function):
     ''' confirm all expected output is there and nothing else '''
     stdout = ''
     for i in range(repeat_function):

@@ -8,6 +8,9 @@ export PYTEST
 export PHP_ENV_CONFIG
 export PHP_ERROR_LOG 
 export HOSTNAME
+export WEBLOGDIR
+export IPv6
+
 
 validate_env
 setup_saved_variables
