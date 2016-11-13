@@ -4,14 +4,21 @@ MAINTAINER adam@diginc.us <adam@diginc.us>
 RUN [ "cross-build-start" ]
 ENV IMAGE debian
 
-# Requirements
-RUN apt-get -q update && \
+ENV TINI_VERSION v0.13.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-armhf /tini
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-armhf.asc /tini.asc
+
+# Tini and package requirements
+RUN gpg --keyserver ha.pool.sks-keyservers.net --recv-keys 0527A9B7 && \
+    gpg --verify /tini.asc && \
+    chmod +x /tini && \
+    apt-get -q update && \
     apt-get install -y \
         dnsmasq \
         lighttpd \
         php5-common php5-cgi php5 \
         bc curl unzip wget sudo dnsutils && \
-    rm -rf /var/cache/apt/archives
+    rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
 
 # Original upstream pihole code being used
 COPY ./pi-hole/gravity.sh /usr/local/bin/
@@ -70,7 +77,7 @@ EXPOSE 53 53/udp
 EXPOSE 80
 
 # Tini doesn't work in ARM
-ENTRYPOINT [ "bash", "-c" ]
+ENTRYPOINT ["/tini", "--"]
 CMD [ "/start.sh" ]
 
 RUN [ "cross-build-end" ]  
