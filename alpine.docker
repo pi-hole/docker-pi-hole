@@ -3,13 +3,21 @@ MAINTAINER adam@diginc.us <adam@diginc.us>
 
 ENV IMAGE alpine
 
-RUN apk add --update \
+ENV TINI_VERSION v0.13.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static /tini
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static.asc /tini.asc
+
+# Tini and package requirements
+RUN apk add --update gpgme && \
+    gpg --keyserver ha.pool.sks-keyservers.net --recv-keys 0527A9B7 && \
+    gpg --verify /tini.asc && \
+    chmod +x /tini && \
+    apk add \
         dnsmasq \
         nginx \
         ca-certificates \
         php5-fpm php5-json php5-openssl libxml2 \
-        bc bash curl perl sudo && \
-    apk add --update --repository http://dl-1.alpinelinux.org/alpine/edge/testing/ tini && \
+        bc bash curl perl sudo git && \
     rm -rf /var/cache/apk/*
 
 # Customized from submodules
@@ -76,5 +84,5 @@ ENV IPv6 True
 EXPOSE 53 53/udp
 EXPOSE 80
 
-ENTRYPOINT ["tini", "--"]
-CMD /start.sh
+ENTRYPOINT ["/tini", "--"]
+CMD [ "/start.sh" ]
