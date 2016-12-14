@@ -1,4 +1,4 @@
-A [Docker](https://www.docker.com/what-docker) project to make lightweight x86 and ARM continer with [pi-hole](https://pi-hole.net) functionality.  Why?  Maybe you don't have a Raspberry Pi lying around but you do have a Docker server.
+A [Docker](https://www.docker.com/what-docker) project to make lightweight x86 and ARM container with [pi-hole](https://pi-hole.net) functionality.  Why?  Maybe you don't have a Raspberry Pi lying around but you do have a Docker server.
 
 **Now with ARM (actual docker-pi) support!**  Just install docker on your Rasberry-Pi and run docker image `diginc/pi-hole:arm` tag (see below for full required command).
 
