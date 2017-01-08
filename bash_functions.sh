@@ -1,3 +1,5 @@
+setupVars="${setupVars:-/etc/pihole/setupVars.conf}"
+
 validate_env() {
     if [ -z "$ServerIP" ] ; then
       echo "ERROR: To function correctly you must pass an environment variables of 'ServerIP' into the docker container with the IP of your docker host from which you are passing web (80) and dns (53) ports from"
@@ -8,8 +10,8 @@ validate_env() {
 setup_saved_variables() {
     # /tmp/piholeIP is the current override of auto-lookup in gravity.sh
     echo "$ServerIP" > /etc/pihole/piholeIP;
-    echo "IPv4_address=$ServerIP" > /etc/pihole/setupVars.conf;
-    echo "IPv6_address=$ServerIPv6" >> /etc/pihole/setupVars.conf;
+    echo "IPV4_ADDRESS=$ServerIP" > "${setupVars}";
+    echo "IPV6_ADDRESS=$ServerIPv6" >> "${setupVars}";
 }
 
 setup_dnsmasq_dns() {
@@ -20,15 +22,16 @@ setup_dnsmasq_dns() {
       dnsType='custom'
     fi;
 
+    set -x
     echo "Using $dnsType DNS servers: $DNS1 & $DNS2"
-    sed -i "s/@DNS1@/$DNS1/" /etc/dnsmasq.d/01-pihole.conf && \
-    sed -i "s/@DNS2@/$DNS2/" /etc/dnsmasq.d/01-pihole.conf
+    sed -i 's/ProcessDnsmasqSettings/ProcessDNSSettings/g' /opt/pihole/webpage.sh
+    sudo pihole -a setdns "$DNS1" "$DNS2"
 }
 
 setup_dnsmasq_hostnames() {
     # largely borrowed from automated install/basic-install.sh
-    local IPv4_address="${1}"
-    local IPv6_address="${2}"
+    local IPV4_ADDRESS="${1}"
+    local IPV6_ADDRESS="${2}"
     local hostname="${3}"
     local dnsmasq_pihole_01_location="/etc/dnsmasq.d/01-pihole.conf"
 
@@ -40,16 +43,16 @@ setup_dnsmasq_hostnames() {
         fi
     fi;
 
-    if [[ "${IPv4_address}" != "" ]]; then
-        tmp=${IPv4_address%/*}
-        sed -i "s/@IPv4@/$tmp/" ${dnsmasq_pihole_01_location}
+    if [[ "${IPV4_ADDRESS}" != "" ]]; then
+        tmp=${IPV4_ADDRESS%/*}
+        sed -i "s/@IPV4@/$tmp/" ${dnsmasq_pihole_01_location}
     else
-        sed -i '/^address=\/pi.hole\/@IPv4@/d' ${dnsmasq_pihole_01_location}
-        sed -i '/^address=\/@HOSTNAME@\/@IPv4@/d' ${dnsmasq_pihole_01_location}
+        sed -i '/^address=\/pi.hole\/@IPV4@/d' ${dnsmasq_pihole_01_location}
+        sed -i '/^address=\/@HOSTNAME@\/@IPV4@/d' ${dnsmasq_pihole_01_location}
     fi
 
-    if [[ "${IPv6_address}" != "" ]]; then
-        sed -i "s/@IPv6@/$IPv6_address/" ${dnsmasq_pihole_01_location}
+    if [[ "${IPV6_ADDRESS}" != "" ]]; then
+        sed -i "s/@IPv6@/$IPV6_ADDRESS/" ${dnsmasq_pihole_01_location}
     else
         sed -i '/^address=\/pi.hole\/@IPv6@/d' ${dnsmasq_pihole_01_location}
         sed -i '/^address=\/@HOSTNAME@\/@IPv6@/d' ${dnsmasq_pihole_01_location}

@@ -2,28 +2,26 @@ FROM alpine:edge
 MAINTAINER adam@diginc.us <adam@diginc.us>
 
 ENV IMAGE alpine
+ENV PATH /opt/pihole:${PATH}
+
+COPY install.sh /install.sh
+ENV setupVars /etc/pihole/setupVars.conf
+ENV PIHOLE_INSTALL /tmp/ph_install.sh
 
 ENV TINI_VERSION v0.13.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static /tini
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static.asc /tini.asc
 
 # Tini and package requirements
-RUN apk add --update gpgme && \
+RUN apk add --update 'gnupg<2.1.17-r0' && \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys 0527A9B7 && \
     gpg --verify /tini.asc && \
     chmod +x /tini && \
-    apk add \
-        dnsmasq \
-        nginx \
-        ca-certificates \
-        php5-fpm php5-json php5-openssl libxml2 \
-        bc bash curl perl sudo git && \
+    apk add wget bash && \
+    /install.sh && \
     rm -rf /var/cache/apk/*
 
 # Customized from submodules
-COPY ./pi-hole/gravity.sh /usr/local/bin/
-COPY ./pi-hole/advanced/Scripts/* /usr/local/bin/
-COPY ./pi-hole/pihole /usr/local/bin/
 RUN sed -i 's|service dnsmasq restart|kill -9 $(pidof dnsmasq); dnsmasq -7 /etc/dnsmasq.d|g' \
     /usr/local/bin/pihole \
     /usr/local/bin/gravity.sh \

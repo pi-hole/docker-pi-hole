@@ -10,7 +10,7 @@ pushd AdminLTE ; git describe --tags --abbrev=0 > ../AdminLTE_version.txt ; popd
 cron='./docker-pi-hole.cron'
 cp -f pi-hole/advanced/pihole.cron ${cron};
 sed -i '/Update the ad sources/ i\# Your container name goes here:\nDOCKER_NAME=pihole\nPATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin\n' ${cron};
-sed -i "s|/usr/local/bin/|docker exec \$DOCKER_NAME |g" ${cron};
+sed -i "s|pihole |docker exec \$DOCKER_NAME pihole |g" ${cron};
 sed -i '/docker exec/ s|$| > /dev/null|g' ${cron};
 
 # docker-pi-hole users update their docker images, not git code
