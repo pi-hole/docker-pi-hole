@@ -3,7 +3,8 @@ docker build -f alpine.docker -t diginc/pi-hole:alpine .
 docker tag diginc/pi-hole:alpine diginc/pi-hole:latest
 docker build -f debian.docker -t diginc/pi-hole:debian .
 
-IP=$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')
+IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')"  # May not work for VPN / tun0
+IP="${IP:-$IP_LOOKUP}"  # use $IP, if set, otherwise IP_LOOKUP
 
 # Alternative ports to not conflict with my real instance
 # shellcheck disable=SC2068
