@@ -156,17 +156,20 @@ test_framework_stubbing() {
 }
 
 main() {
+    echo -n '::: Starting up DNS and Webserver ...'
+    pihole restartdns # Just get DNS up. The webserver is down!!!
+
     IMAGE="$1"
-    case $IMAGE in
+    case $IMAGE in # Setup webserver
         "alpine")
-             gravity.sh # dnsmasq start included
-             php-fpm
-             nginx
+            php-fpm
+            nginx
         ;;
         "debian")
-             gravity.sh # dnsmasq start included
-             service lighttpd start
+            service lighttpd start
         ;;
     esac
+
+    gravity.sh # Finally lets update and be awesome.
     tail -F "${WEBLOGDIR}"/*.log /var/log/pihole.log
 }
