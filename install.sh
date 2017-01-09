@@ -16,8 +16,11 @@ if [[ "$IMAGE" == 'alpine' ]] ; then
     sed -i 's#nologin pihole#nologin pihole 2>/dev/null || adduser -S -s /sbin/nologin pihole#g' "$PIHOLE_INSTALL"
     sed -i '/usermod -a -G/ s#$# 2> /dev/null || addgroup pihole ${LIGHTTPD_GROUP}#g' "$PIHOLE_INSTALL"
     sed -i 's/www-data/nginx/g' "$PIHOLE_INSTALL"
+    sed -i '/LIGHTTPD_CFG/d' "${PIHOLE_INSTALL}"
+    sed -i '/etc\/cron.d\//d' "${PIHOLE_INSTALL}"
     LIGHTTPD_USER="nginx"
     LIGHTTPD_GROUP="nginx"
+
 fi
 PH_TEST=true . "${PIHOLE_INSTALL}"
 

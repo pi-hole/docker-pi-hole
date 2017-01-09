@@ -5,6 +5,7 @@ ENV IMAGE alpine
 ENV PATH /opt/pihole:${PATH}
 
 COPY install.sh /install.sh
+COPY ./alpine/service /usr/local/bin/service
 ENV setupVars /etc/pihole/setupVars.conf
 ENV PIHOLE_INSTALL /tmp/ph_install.sh
 
@@ -22,27 +23,7 @@ RUN apk add --update 'gnupg<2.1.17-r0' && \
     rm -rf /var/cache/apk/*
 
 # Customized from submodules
-RUN sed -i 's|service dnsmasq restart|kill -9 $(pidof dnsmasq); dnsmasq -7 /etc/dnsmasq.d|g' \
-    /usr/local/bin/pihole \
-    /usr/local/bin/gravity.sh \
-    /usr/local/bin/list.sh
-RUN sed -i 's|service dnsmasq start|dnsmasq -7 /etc/dnsmasq.d|g' \
-    /usr/local/bin/pihole \
-    /usr/local/bin/gravity.sh \
-    /usr/local/bin/list.sh
 COPY ./alpine/nginx.conf /etc/nginx/nginx.conf
-
-# Original upstream pihole code being used
-COPY ./pi-hole/adlists.default /etc/pihole/
-COPY ./pi-hole/adlists.default /etc/.pihole/
-RUN mkdir -p /opt/ && ln -s /usr/local/bin /opt/pihole
-COPY ./pi-hole/advanced/dnsmasq.conf.original /etc/dnsmasq.conf
-COPY ./pi-hole/advanced/01-pihole.conf /etc/dnsmasq.d/
-COPY ./pi-hole/advanced/index* /var/www/html/pihole/
-COPY ./pi-hole/advanced/pihole.sudo /etc/sudoers.d/pihole
-COPY ./AdminLTE /var/www/html/admin
-COPY ./AdminLTE_version.txt /etc/
-COPY ./pi-hole_version.txt /etc/
 
 # Things installer did and fix alpine+nginx differences
 ENV WEBLOGDIR /var/log/nginx
@@ -59,16 +40,11 @@ RUN mkdir -p /etc/pihole/ && \
     chmod 644 /var/log/pihole.log && \
     chown dnsmasq:root /var/log/pihole.log && \
     sed -i "s/@INT@/eth0/" /etc/dnsmasq.d/01-pihole.conf && \
-    sed -i 's|"cd /etc/.pihole/ && git describe --tags --abbrev=0"|"cat /etc/pi-hole_version.txt"|g' /var/www/html/admin/footer.php && \
-    sed -i 's|"git describe --tags --abbrev=0"|"cat /etc/AdminLTE_version.txt"|g' /var/www/html/admin/footer.php && \
-    sed -i 's|www-data|nginx|g' /etc/sudoers.d/pihole && \
-    /bin/true # placeholder
+    echo 'Done!'
 
-# This chould be eliminated if all (upstream) files were +x in git
-RUN chmod +x /usr/local/bin/*.sh
-
-# Fix dnsmasq in docker
-RUN grep -q '^user=root' || echo 'user=root' >> /etc/dnsmasq.conf
+    #sed -i 's|"cd /etc/.pihole/ && git describe --tags --abbrev=0"|"cat /etc/pi-hole_version.txt"|g' /var/www/html/admin/footer.php && \
+    #sed -i 's|"git describe --tags --abbrev=0"|"cat /etc/AdminLTE_version.txt"|g' /var/www/html/admin/footer.php && \
+    #sed -i 's|www-data|nginx|g' /etc/sudoers.d/pihole && \
 
 # php config start passes special ENVs into
 ENV PHP_ENV_CONFIG '/etc/php5/fpm.d/envs.conf'
