@@ -20,7 +20,8 @@ if [[ "$IMAGE" == 'alpine' ]] ; then
     sed -i '/etc\/cron.d\//d' "${PIHOLE_INSTALL}"
     LIGHTTPD_USER="nginx"
     LIGHTTPD_GROUP="nginx"
-
+    LIGHTTPD_CFG="lighttpd.conf.debian"
+    DNSMASQ_USER="dnsmasq"
 fi
 PH_TEST=true . "${PIHOLE_INSTALL}"
 
@@ -37,8 +38,8 @@ elif [[ "$IMAGE" == 'alpine' ]] ; then
         php5-fpm php5-json php5-openssl libxml2 \
         bc bash curl perl sudo git
 fi
-git clone --depth 1 ${piholeGitUrl} ${PI_HOLE_LOCAL_REPO} 
-git clone --depth 1 ${webInterfaceGitUrl} ${webInterfaceDir}
+git clone --depth 1 "${piholeGitUrl}" "${PI_HOLE_LOCAL_REPO}"
+git clone --depth 1 "${webInterfaceGitUrl}" "${webInterfaceDir}"
 
 export PIHOLE_INTERFACE=eth0
 export IPV4_ADDRESS=0.0.0.0
@@ -52,4 +53,4 @@ mv "${tmpLog}" "${instalLogLoc}"
 
 # Fix dnsmasq in docker
 grep -q '^user=root' || echo -e '\nuser=root' >> /etc/dnsmasq.conf 
-echo done
+echo 'done'
