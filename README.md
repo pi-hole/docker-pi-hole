@@ -16,8 +16,8 @@ One crucial thing to know before starting is the docker-pi-hole container needs 
 
 ```
 IMAGE='diginc/pi-hole'
-NIC='eth0'
-IP=$(ip addr show $NIC | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
+IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')"  # May not work for VPN / tun0
+IP="${IP:-$IP_LOOKUP}"  # use $IP, if set, otherwise IP_LOOKUP
 docker run -p 53:53/tcp -p 53:53/udp -p 80:80 --cap-add=NET_ADMIN -e ServerIP="$IP" --name pihole -d $IMAGE
 
 # Recommended auto ad list updates & log rotation:
