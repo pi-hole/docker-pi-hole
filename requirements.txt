@@ -1,5 +1,5 @@
 docker-compose
-pytest
-pytest-xdist
-pytest-cov
-testinfra
+pytest==2.9.2
+pytest-cov==2.3.0
+pytest-xdist==1.14
+testinfra==1.5.1
