@@ -46,8 +46,8 @@ In addition to the required environment variable you saw above (`-e ServerIP="$I
 * Port conflicts?  Stop your server's existing DNS / Web services.
  * Ubuntu users especially may need to shutoff dnsmasq on your docker server so it can run in the container on port 53
  * Don't forget to stop your services from auto-starting again after you reboot
-* Port 80 is required because if you have another site/service using port 80 by default then the ads may not transform into blank ads correctly.  To make sure docker-pi-hole plays nicely with an exising webserver you run you'll probably need a reverse proxy websever config if you don't have one already.  Pi-Hole has to be the default web app on said proxy e.g. if you goto your host by IP instead of domain pi-hole is served out instead of any other sites hosted by the proxy. This behavior is taken advantage of so any ad domain can be directed to your webserver and get blank html/images/videos instead of ads.
- * [Here is an example of running with jwilder/proxy](https://github.com/diginc/docker-pi-hole/blob/master/jwilder-proxy-example-doco.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with pihole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in jwilder/proxy and you need to set the matching `VIRTUAL_HOST` for the pihole's container.  Please read jwilder/proxy readme for more info if you have trouble.  I tested this basic exmaple which is based off what I run.
+* Port 80 is required because if you have another site/service using port 80 by default then the ads may not transform into blank ads correctly.  To make sure docker-pi-hole plays nicely with an existing webserver you run you'll probably need a reverse proxy webserver config if you don't have one already.  Pi-Hole has to be the default web app on said proxy e.g. if you goto your host by IP instead of domain pi-hole is served out instead of any other sites hosted by the proxy. This behavior is taken advantage of so any ad domain can be directed to your webserver and get blank html/images/videos instead of ads.
+ * [Here is an example of running with jwilder/proxy](https://github.com/diginc/docker-pi-hole/blob/master/jwilder-proxy-example-doco.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with pihole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in jwilder/proxy and you need to set the matching `VIRTUAL_HOST` for the pihole's container.  Please read jwilder/proxy readme for more info if you have trouble.  I tested this basic example which is based off what I run.
 
 ## Volume Mounts
 Here are some useful volume mount options to persist your history of stats in the admin interface, or add custom whitelists/blacklists.  **Create these files on the docker host first or you'll get errors**:
@@ -84,7 +84,7 @@ Alpine doesn't have an arm cross compileable image at this time.
 
 ## Upgrading, Persistence, and Customizations
 
-The standard pi-hole customization abilities apply to this docker, but with docker twists such as using docker volume mounts to map host stored file configurations over the container defaults.  Volumes are also important to persist the configuration incase you have remove the pi-hole container which is a typical docker upgrade pattern.
+The standard pi-hole customization abilities apply to this docker, but with docker twists such as using docker volume mounts to map host stored file configurations over the container defaults.  Volumes are also important to persist the configuration in case you have removed the pi-hole container which is a typical docker upgrade pattern.
 
 ### Upgrading
 
