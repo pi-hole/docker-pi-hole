@@ -31,6 +31,7 @@ export USER=pihole
 if [[ "$IMAGE" == 'debian' ]] ; then
     install_dependent_packages INSTALLER_DEPS[@]
     install_dependent_packages PIHOLE_DEPS[@]
+    sed -i "/sleep 2/ d" /etc/init.d/dnsmasq # SLOW
 elif [[ "$IMAGE" == 'alpine' ]] ; then
     apk add \
         dnsmasq \

@@ -7,14 +7,14 @@ def start_cmd():
 
 START_DNS_STDOUT = {
     'alpine': '',
-    'debian': 'Starting DNS forwarder and DHCP server: dnsmasq.\n'
+    'debian': 'Restarting DNS forwarder and DHCP server: dnsmasq.\n'
 }
 @pytest.fixture
 def RunningPiHole(DockerPersist, Slow, persist_webserver, persist_tag, start_cmd):
     ''' Override the RunningPiHole to run and check for success of a
         dnsmasq start based `pihole` script command '''
-    Slow(lambda: DockerPersist.run('pgrep {}'.format(persist_webserver) ).rc == 0)
     Slow(lambda: DockerPersist.run('pgrep dnsmasq').rc == 0)
+    Slow(lambda: DockerPersist.run('pgrep {}'.format(persist_webserver) ).rc == 0)
     oldpid = DockerPersist.run('pidof dnsmasq')
     cmd = DockerPersist.run('pihole {}'.format(start_cmd))
     Slow(lambda: DockerPersist.run('pgrep dnsmasq').rc == 0)
