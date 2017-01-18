@@ -1,4 +1,4 @@
-setupVars="${setupVars:-/etc/pihole/setupVars.conf}"
+. /opt/pihole/webpage.sh
 
 validate_env() {
     if [ -z "$ServerIP" ] ; then
@@ -7,14 +7,8 @@ validate_env() {
     fi;
 }
 
-setup_saved_variables() {
-    # /tmp/piholeIP is the current override of auto-lookup in gravity.sh
-    echo "$ServerIP" > /etc/pihole/piholeIP;
-    echo "IPV4_ADDRESS=$ServerIP" > "${setupVars}";
-    echo "IPV6_ADDRESS=$ServerIPv6" >> "${setupVars}";
-}
-
 setup_dnsmasq_dns() {
+    . /opt/pihole/webpage.sh
     local DNS1="${1:-8.8.8.8}"
     local DNS2="${2:-8.8.4.4}"
     local dnsType='default'
@@ -22,10 +16,10 @@ setup_dnsmasq_dns() {
       dnsType='custom'
     fi;
 
-    set -x
     echo "Using $dnsType DNS servers: $DNS1 & $DNS2"
-    sed -i 's/ProcessDnsmasqSettings/ProcessDNSSettings/g' /opt/pihole/webpage.sh
-    sudo pihole -a setdns "$DNS1" "$DNS2"
+	[ -n "$DNS1" ] && change_setting "PIHOLE_DNS_1" "${DNS1}"
+	[ -n "$DNS2" ] && change_setting "PIHOLE_DNS_2" "${DNS2}"
+	ProcessDNSSettings
 }
 
 setup_dnsmasq_hostnames() {
@@ -155,9 +149,9 @@ test_framework_stubbing() {
     if [ -n "$PYTEST" ] ; then sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)"; fi;
 }
 
-main() {
+docker_main() {
     echo -n '::: Starting up DNS and Webserver ...'
-    pihole restartdns # Just get DNS up. The webserver is down!!!
+    service dnsmasq restart # Just get DNS up. The webserver is down!!!
 
     IMAGE="$1"
     case $IMAGE in # Setup webserver

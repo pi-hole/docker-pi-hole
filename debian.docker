@@ -33,5 +33,6 @@ ENV IPv6 True
 EXPOSE 53 53/udp
 EXPOSE 80
 
+SHELL ["/bin/bash", "-c"]
 ENTRYPOINT ["/tini", "--"]
 CMD [ "/start.sh" ]

@@ -49,7 +49,9 @@ export IPV6_ADDRESS=0:0:0:0:0:0
 export PIHOLE_DNS_1=8.8.8.8
 export PIHOLE_DNS_2=8.8.4.4
 export QUERY_LOGGING=true
+
 installPihole | tee "${tmpLog}"
+sed -i 's/readonly //g' /opt/pihole/webpage.sh
 
 mv "${tmpLog}" "${instalLogLoc}"
 
