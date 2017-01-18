@@ -1,3 +1,5 @@
+. /opt/pihole/webpage.sh
+
 validate_env() {
     if [ -z "$ServerIP" ] ; then
       echo "ERROR: To function correctly you must pass an environment variables of 'ServerIP' into the docker container with the IP of your docker host from which you are passing web (80) and dns (53) ports from"
@@ -5,14 +7,8 @@ validate_env() {
     fi;
 }
 
-setup_saved_variables() {
-    # /tmp/piholeIP is the current override of auto-lookup in gravity.sh
-    echo "$ServerIP" > /etc/pihole/piholeIP;
-    echo "IPv4_address=$ServerIP" > /etc/pihole/setupVars.conf;
-    echo "IPv6_address=$ServerIPv6" >> /etc/pihole/setupVars.conf;
-}
-
 setup_dnsmasq_dns() {
+    . /opt/pihole/webpage.sh
     local DNS1="${1:-8.8.8.8}"
     local DNS2="${2:-8.8.4.4}"
     local dnsType='default'
@@ -21,14 +17,15 @@ setup_dnsmasq_dns() {
     fi;
 
     echo "Using $dnsType DNS servers: $DNS1 & $DNS2"
-    sed -i "s/@DNS1@/$DNS1/" /etc/dnsmasq.d/01-pihole.conf && \
-    sed -i "s/@DNS2@/$DNS2/" /etc/dnsmasq.d/01-pihole.conf
+	[ -n "$DNS1" ] && change_setting "PIHOLE_DNS_1" "${DNS1}"
+	[ -n "$DNS2" ] && change_setting "PIHOLE_DNS_2" "${DNS2}"
+	ProcessDNSSettings
 }
 
 setup_dnsmasq_hostnames() {
     # largely borrowed from automated install/basic-install.sh
-    local IPv4_address="${1}"
-    local IPv6_address="${2}"
+    local IPV4_ADDRESS="${1}"
+    local IPV6_ADDRESS="${2}"
     local hostname="${3}"
     local dnsmasq_pihole_01_location="/etc/dnsmasq.d/01-pihole.conf"
 
@@ -40,16 +37,16 @@ setup_dnsmasq_hostnames() {
         fi
     fi;
 
-    if [[ "${IPv4_address}" != "" ]]; then
-        tmp=${IPv4_address%/*}
-        sed -i "s/@IPv4@/$tmp/" ${dnsmasq_pihole_01_location}
+    if [[ "${IPV4_ADDRESS}" != "" ]]; then
+        tmp=${IPV4_ADDRESS%/*}
+        sed -i "s/@IPV4@/$tmp/" ${dnsmasq_pihole_01_location}
     else
-        sed -i '/^address=\/pi.hole\/@IPv4@/d' ${dnsmasq_pihole_01_location}
-        sed -i '/^address=\/@HOSTNAME@\/@IPv4@/d' ${dnsmasq_pihole_01_location}
+        sed -i '/^address=\/pi.hole\/@IPV4@/d' ${dnsmasq_pihole_01_location}
+        sed -i '/^address=\/@HOSTNAME@\/@IPV4@/d' ${dnsmasq_pihole_01_location}
     fi
 
-    if [[ "${IPv6_address}" != "" ]]; then
-        sed -i "s/@IPv6@/$IPv6_address/" ${dnsmasq_pihole_01_location}
+    if [[ "${IPV6_ADDRESS}" != "" ]]; then
+        sed -i "s/@IPv6@/$IPV6_ADDRESS/" ${dnsmasq_pihole_01_location}
     else
         sed -i '/^address=\/pi.hole\/@IPv6@/d' ${dnsmasq_pihole_01_location}
         sed -i '/^address=\/@HOSTNAME@\/@IPv6@/d' ${dnsmasq_pihole_01_location}
@@ -152,18 +149,21 @@ test_framework_stubbing() {
     if [ -n "$PYTEST" ] ; then sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)"; fi;
 }
 
-main() {
+docker_main() {
+    echo -n '::: Starting up DNS and Webserver ...'
+    service dnsmasq restart # Just get DNS up. The webserver is down!!!
+
     IMAGE="$1"
-    case $IMAGE in
+    case $IMAGE in # Setup webserver
         "alpine")
-             gravity.sh # dnsmasq start included
-             php-fpm
-             nginx
+            php-fpm
+            nginx
         ;;
         "debian")
-             gravity.sh # dnsmasq start included
-             service lighttpd start
+            service lighttpd start
         ;;
     esac
+
+    gravity.sh # Finally lets update and be awesome.
     tail -F "${WEBLOGDIR}"/*.log /var/log/pihole.log
 }

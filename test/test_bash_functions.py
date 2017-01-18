@@ -14,9 +14,10 @@ def cmd(request):
 ])
 def test_IPv6_not_True_removes_ipv6(Docker, tag, args, expected_ipv6, expected_stdout):
     ''' When a user overrides IPv6=True they only get IPv4 listening webservers '''
-    IPV6_LINE = { 'alpine': 'listen \[::\]:80', 'debian': 'use-ipv6.pl' }
-    WEB_CONFIG = { 'alpine': '/etc/nginx/nginx.conf', 'debian': '/etc/lighttpd/lighttpd.conf' }
-
+    IPV6_LINE = { 'alpine': 'listen \[::\]:80',
+                  'debian': 'use-ipv6.pl' }
+    WEB_CONFIG = { 'alpine': '/etc/nginx/nginx.conf',
+                   'debian': '/etc/lighttpd/lighttpd.conf' }
 
     function = Docker.run('. /bash_functions.sh ; setup_ipv4_ipv6')
     assert "Using {}".format(expected_stdout) in function.stdout
@@ -38,7 +39,7 @@ def test_DNS_Envs_override_defaults(Docker, args, expected_stdout, dns1, dns2):
     expected_servers = 'server={}\nserver={}\n'.format(dns1, dns2)
     assert expected_servers == docker_dns_servers
 
-expected_debian_lines = [ 
+expected_debian_lines = [
     '"VIRTUAL_HOST" => "192.168.100.2"',
     '"ServerIP" => "192.168.100.2"',
     '"PHP_ERROR_LOG" => "/var/log/lighttpd/error.log"'

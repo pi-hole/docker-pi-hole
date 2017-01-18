@@ -10,7 +10,7 @@ check_output = testinfra.get_backend(
 def DockerGeneric(request, args, image, cmd):
     assert 'docker' in check_output('id'), "Are you in the docker group?"
     if 'diginc/pi-hole' in image:
-       args += " -e PYTEST=\"True\""
+       args += " -v /dev/null:/etc/pihole/adlists.default -e PYTEST=\"True\""
     docker_run = "docker run -d {} {} {}".format(args, image, cmd)
     docker_id = check_output(docker_run)
 
@@ -20,6 +20,21 @@ def DockerGeneric(request, args, image, cmd):
 
     docker_container = testinfra.get_backend("docker://" + docker_id)
     docker_container.id = docker_id
+
+    def run_bash(self, command, *args, **kwargs):
+        cmd = self.get_command(command, *args)
+        if self.user is not None:
+            out = self.run_local(
+                "docker exec -u %s %s /bin/bash -c %s",
+                self.user, self.name, cmd)
+        else:
+            out = self.run_local(
+                "docker exec %s /bin/bash -c %s", self.name, cmd)
+        out.command = self.encode(cmd)
+        return out
+
+    funcType = type(docker_container.run)
+    docker_container.run = funcType(run_bash, docker_container, testinfra.backend.docker.DockerBackend)
     return docker_container
 
 @pytest.fixture
@@ -113,7 +128,7 @@ Persistent Docker container for testing service post start.sh
 @pytest.fixture
 def RunningPiHole(DockerPersist, Slow, persist_webserver):
     ''' Persist a fully started docker-pi-hole to help speed up subsequent tests '''
-    Slow(lambda: DockerPersist.run('pgrep {}'.format(persist_webserver) ).rc == 0)
     Slow(lambda: DockerPersist.run('pgrep dnsmasq').rc == 0)
+    Slow(lambda: DockerPersist.run('pgrep {}'.format(persist_webserver) ).rc == 0)
     return DockerPersist
 
