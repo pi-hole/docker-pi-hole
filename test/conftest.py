@@ -20,6 +20,21 @@ def DockerGeneric(request, args, image, cmd):
 
     docker_container = testinfra.get_backend("docker://" + docker_id)
     docker_container.id = docker_id
+
+    def run_bash(self, command, *args, **kwargs):
+        cmd = self.get_command(command, *args)
+        if self.user is not None:
+            out = self.run_local(
+                "docker exec -u %s %s /bin/bash -c %s",
+                self.user, self.name, cmd)
+        else:
+            out = self.run_local(
+                "docker exec %s /bin/bash -c %s", self.name, cmd)
+        out.command = self.encode(cmd)
+        return out
+
+    funcType = type(docker_container.run)
+    docker_container.run = funcType(run_bash, docker_container, testinfra.backend.docker.DockerBackend)
     return docker_container
 
 @pytest.fixture
