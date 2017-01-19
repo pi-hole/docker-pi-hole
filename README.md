@@ -4,7 +4,7 @@ A [Docker](https://www.docker.com/what-docker) project to make lightweight x86 a
 
 * The current Raspbian install is simply `curl -sSL https://get.docker.com | sh` [[1]](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/)
 
-[![Build Status](https://travis-ci.org/diginc/docker-pi-hole.svg?branch=master)](https://travis-ci.org/diginc/docker-pi-hole) [![Docker Stars](https://img.shields.io/docker/stars/diginc/pi-hole.svg?maxAge=604800)](https://hub.docker.com/r/diginc/pi-hole/) [![Docker Pulls](https://img.shields.io/docker/pulls/diginc/pi-hole.svg?maxAge=604800)](https://hub.docker.com/r/diginc/pi-hole/)
+[![Build Status](https://api.travis-ci.org/diginc/docker-pi-hole.svg?branch=master)](https://travis-ci.org/diginc/docker-pi-hole) [![Docker Stars](https://img.shields.io/docker/stars/diginc/pi-hole.svg?maxAge=604800)](https://hub.docker.com/r/diginc/pi-hole/) [![Docker Pulls](https://img.shields.io/docker/pulls/diginc/pi-hole.svg?maxAge=604800)](https://hub.docker.com/r/diginc/pi-hole/)
 
 [![Join the chat at https://gitter.im/diginc/docker-pi-hole](https://badges.gitter.im/diginc/docker-pi-hole.svg)](https://gitter.im/diginc/docker-pi-hole?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -16,12 +16,12 @@ One crucial thing to know before starting is the docker-pi-hole container needs 
 
 ```
 IMAGE='diginc/pi-hole'
-NIC='eth0'
-IP=$(ip addr show $NIC | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
+IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')"  # May not work for VPN / tun0
+IP="${IP:-$IP_LOOKUP}"  # use $IP, if set, otherwise IP_LOOKUP
 docker run -p 53:53/tcp -p 53:53/udp -p 80:80 --cap-add=NET_ADMIN -e ServerIP="$IP" --name pihole -d $IMAGE
 
 # Recommended auto ad list updates & log rotation:
-wget -O- https://raw.githubusercontent.com/diginc/docker-pi-hole/master/docker-pi-hole.cron | sudo tee /etc/cron.d/docker-pi-hole.cron
+wget -O- https://raw.githubusercontent.com/diginc/docker-pi-hole/master/docker-pi-hole.cron | sudo tee /etc/cron.d/docker-pi-hole
 ```
 
 This is just an example and might need changing.  For exmaple of you're running on a raspberry pi over wireless you'll probably want to change your NIC variable to `wlan0` and IMAGE to `diginc/pi-hole:arm`
@@ -46,8 +46,8 @@ In addition to the required environment variable you saw above (`-e ServerIP="$I
 * Port conflicts?  Stop your server's existing DNS / Web services.
  * Ubuntu users especially may need to shutoff dnsmasq on your docker server so it can run in the container on port 53
  * Don't forget to stop your services from auto-starting again after you reboot
-* Port 80 is required because if you have another site/service using port 80 by default then the ads may not transform into blank ads correctly.  To make sure docker-pi-hole plays nicely with an exising webserver you run you'll probably need a reverse proxy websever config if you don't have one already.  Pi-Hole has to be the default web app on said proxy e.g. if you goto your host by IP instead of domain pi-hole is served out instead of any other sites hosted by the proxy. This behavior is taken advantage of so any ad domain can be directed to your webserver and get blank html/images/videos instead of ads.
- * [Here is an example of running with jwilder/proxy](https://github.com/diginc/docker-pi-hole/blob/master/jwilder-proxy-example-doco.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with pihole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in jwilder/proxy and you need to set the matching `VIRTUAL_HOST` for the pihole's container.  Please read jwilder/proxy readme for more info if you have trouble.  I tested this basic exmaple which is based off what I run.
+* Port 80 is required because if you have another site/service using port 80 by default then the ads may not transform into blank ads correctly.  To make sure docker-pi-hole plays nicely with an existing webserver you run you'll probably need a reverse proxy webserver config if you don't have one already.  Pi-Hole has to be the default web app on said proxy e.g. if you goto your host by IP instead of domain pi-hole is served out instead of any other sites hosted by the proxy. This behavior is taken advantage of so any ad domain can be directed to your webserver and get blank html/images/videos instead of ads.
+ * [Here is an example of running with jwilder/proxy](https://github.com/diginc/docker-pi-hole/blob/master/jwilder-proxy-example-doco.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with pihole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in jwilder/proxy and you need to set the matching `VIRTUAL_HOST` for the pihole's container.  Please read jwilder/proxy readme for more info if you have trouble.  I tested this basic example which is based off what I run.
 
 ## Volume Mounts
 Here are some useful volume mount options to persist your history of stats in the admin interface, or add custom whitelists/blacklists.  **Create these files on the docker host first or you'll get errors**:
@@ -68,15 +68,15 @@ The primary docker tags / versions are as follows.  [Click here to see the full 
 | `debian`            | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/debian.docker) |
 | `arm`               | ARM          | Debian ARM image, container running lighttpd and dnsmasq built for ARM  | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/debian-armhf.docker) |
 
-### `diginc/pi-hole:alpine` [![](https://images.microbadger.com/badges/image/diginc/pi-hole:alpine.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:alpine.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:latest.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
+### `diginc/pi-hole:alpine` [![](https://images.microbadger.com/badges/image/diginc/pi-hole:alpine.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:alpine.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:latest.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
 
 Alpine is also the default, aka `latest` tag.  If you don't specify a tag you will get this version.  This is only an x86 version and will not work on Raspberry Pi's ARM architecture.
 
-### `diginc/pi-hole:debian` [![](https://images.microbadger.com/badges/image/diginc/pi-hole:debian.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:debian.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
+### `diginc/pi-hole:debian` [![](https://images.microbadger.com/badges/image/diginc/pi-hole:debian.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:debian.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
 
 This version of the docker aims to be as close to a standard pi-hole installation by using the same base OS and the exact configs and scripts (minimally modified to get them working).  This serves as a nice baseline for merging and testing upstream repository pi-hole changes.
 
-### `diginc/pi-hole:arm` [![](https://images.microbadger.com/badges/image/diginc/pi-hole:arm.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:arm.svg)](http://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
+### `diginc/pi-hole:arm` [![](https://images.microbadger.com/badges/image/diginc/pi-hole:arm.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:arm.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
 
 As close to the debian image as possible, but cross compiled for ARM architecture hardware through [resin.io's awesome Qemu wrapper](https://resin.io/blog/building-arm-containers-on-any-x86-machine-even-dockerhub/).
 
@@ -84,7 +84,7 @@ Alpine doesn't have an arm cross compileable image at this time.
 
 ## Upgrading, Persistence, and Customizations
 
-The standard pi-hole customization abilities apply to this docker, but with docker twists such as using docker volume mounts to map host stored file configurations over the container defaults.  Volumes are also important to persist the configuration incase you have remove the pi-hole container which is a typical docker upgrade pattern.
+The standard pi-hole customization abilities apply to this docker, but with docker twists such as using docker volume mounts to map host stored file configurations over the container defaults.  Volumes are also important to persist the configuration in case you have removed the pi-hole container which is a typical docker upgrade pattern.
 
 ### Upgrading
 
@@ -124,7 +124,7 @@ Similarly for the webserver you can customize configs in /etc/nginx (*:alpine* t
 
 
 
-## Development [![Build Status](https://travis-ci.org/diginc/docker-pi-hole.svg?branch=dev)](https://travis-ci.org/diginc/docker-pi-hole)
+## Development [![Build Status](https://api.travis-ci.org/diginc/docker-pi-hole.svg?branch=dev)](https://travis-ci.org/diginc/docker-pi-hole)
 
 If you plan on making a contribution please pull request to the dev branch.  I also build tags of the dev branch for bug fix testing after merges have been made:
 

@@ -1,5 +1,5 @@
 docker-compose
 pytest
-pytest-xdist
 pytest-cov
-testinfra
+pytest-xdist
+testinfra==1.5.1
