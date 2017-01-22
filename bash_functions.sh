@@ -1,7 +1,7 @@
 . /opt/pihole/webpage.sh
 
 prepare_setup_vars() {
-    touch $setupVars
+    touch "$setupVars"
 }
 
 validate_env() {
