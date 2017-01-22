@@ -1,5 +1,9 @@
 . /opt/pihole/webpage.sh
 
+prepare_setup_vars() {
+    touch "$setupVars"
+}
+
 validate_env() {
     if [ -z "$ServerIP" ] ; then
       echo "ERROR: To function correctly you must pass an environment variables of 'ServerIP' into the docker container with the IP of your docker host from which you are passing web (80) and dns (53) ports from"
