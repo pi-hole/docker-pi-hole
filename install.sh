@@ -1,5 +1,7 @@
 #!/bin/bash -x
 mkdir -p /etc/pihole/
+export CORE_TAG='v2.11.2'
+export WEB_TAG='v2.4'
 
 #     Make pihole scripts fail searching for `systemctl`,
 # which fails pretty miserably in docker compared to `service`
@@ -9,7 +11,7 @@ mv "$(which systemctl)" /bin/no_systemctl && \
 mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
 
 # Get the install functions
-wget -O "$PIHOLE_INSTALL" https://install.pi-hole.net
+wget -O "$PIHOLE_INSTALL" https://raw.githubusercontent.com/pi-hole/pi-hole/${CORE_TAG}/automated%20install/basic-install.sh
 if [[ "$IMAGE" == 'alpine' ]] ; then
     sed -i '/OS distribution not supported/ i\  echo "Hi Alpine"' "$PIHOLE_INSTALL"
     sed -i '/OS distribution not supported/,+1d' "$PIHOLE_INSTALL"
@@ -40,8 +42,11 @@ elif [[ "$IMAGE" == 'alpine' ]] ; then
         php5-fpm php5-json php5-openssl libxml2 \
         bc bash curl perl sudo git
 fi
-git clone --depth 1 "${piholeGitUrl}" "${PI_HOLE_LOCAL_REPO}"
-git clone --depth 1 "${webInterfaceGitUrl}" "${webInterfaceDir}"
+
+git clone "${piholeGitUrl}" "${PI_HOLE_LOCAL_REPO}"
+pushd "${PI_HOLE_LOCAL_REPO}"; git checkout "${CORE_TAG}"; popd;
+git clone "${webInterfaceGitUrl}" "${webInterfaceDir}"
+pushd "${webInterfaceDir}"; git checkout "${WEB_TAG}"; popd;
 
 export PIHOLE_INTERFACE=eth0
 export IPV4_ADDRESS=0.0.0.0
