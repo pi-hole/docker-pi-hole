@@ -16,9 +16,12 @@ RUN gpg --keyserver ha.pool.sks-keyservers.net --recv-keys 0527A9B7 && \
     gpg --verify /tini.asc && \
     chmod +x /tini && \
     apt-get -q update && \
-    apt-get install -y wget net-tools && \
+    apt-get install -y wget net-tools php-pclzip && \
     /install.sh && \
     rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
+
+# Enables Pi-hole Teleporter (extract your lists)
+COPY ./alpine/php.ini /etc/php5/php.ini
 
 # php config start passes special ENVs into
 ENV PHP_ENV_CONFIG '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf'
