@@ -31,6 +31,7 @@ PH_TEST=true . "${PIHOLE_INSTALL}"
 # Run only what we need from installer
 export USER=pihole
 if [[ "$IMAGE" == 'debian' ]] ; then
+    distro_check
     install_dependent_packages INSTALLER_DEPS[@]
     install_dependent_packages PIHOLE_DEPS[@]
     sed -i "/sleep 2/ d" /etc/init.d/dnsmasq # SLOW
