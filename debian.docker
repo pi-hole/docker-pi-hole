@@ -20,6 +20,9 @@ RUN gpg --keyserver ha.pool.sks-keyservers.net --recv-keys 0527A9B7 && \
     /install.sh && \
     rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
 
+# Enables Pi-hole Teleporter (extract your lists)
+COPY ./alpine/php.ini /etc/php5/php.ini
+
 # php config start passes special ENVs into
 ENV PHP_ENV_CONFIG '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf'
 ENV PHP_ERROR_LOG '/var/log/lighttpd/error.log'

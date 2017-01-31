@@ -25,6 +25,9 @@ RUN apk add --update 'gnupg<2.1.17-r0' && \
 # Customized from submodules
 COPY ./alpine/nginx.conf /etc/nginx/nginx.conf
 
+# Enables Pi-hole Teleporter (extract your lists)
+COPY ./alpine/php.ini /etc/php5/php.ini
+
 # Things installer did and fix alpine+nginx differences
 ENV WEBLOGDIR /var/log/nginx
 ENV PHP_CONFIG '/etc/php5/php-fpm.conf'
