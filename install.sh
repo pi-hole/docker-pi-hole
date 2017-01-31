@@ -37,7 +37,7 @@ elif [[ "$IMAGE" == 'alpine' ]] ; then
         dnsmasq \
         nginx \
         ca-certificates \
-        php5-fpm php5-json php5-openssl libxml2 \
+        php5-fpm php5-json php5-openssl php5-zip libxml2 \
         bc bash curl perl sudo git
 fi
 git clone --depth 1 "${piholeGitUrl}" "${PI_HOLE_LOCAL_REPO}"
