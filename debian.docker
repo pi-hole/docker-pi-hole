@@ -16,7 +16,7 @@ RUN gpg --keyserver ha.pool.sks-keyservers.net --recv-keys 0527A9B7 && \
     gpg --verify /tini.asc && \
     chmod +x /tini && \
     apt-get -q update && \
-    apt-get install -y wget net-tools && \
+    apt-get install -y wget net-tools php-pclzip && \
     /install.sh && \
     rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
 
