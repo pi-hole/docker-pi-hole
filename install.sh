@@ -1,6 +1,6 @@
 #!/bin/bash -x
 mkdir -p /etc/pihole/
-export CORE_TAG='v2.11.2'
+export CORE_TAG='v2.12'
 export WEB_TAG='v2.4'
 
 #     Make pihole scripts fail searching for `systemctl`,
