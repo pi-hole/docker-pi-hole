@@ -45,9 +45,9 @@ elif [[ "$IMAGE" == 'alpine' ]] ; then
 fi
 
 git clone "${piholeGitUrl}" "${PI_HOLE_LOCAL_REPO}"
-pushd "${PI_HOLE_LOCAL_REPO}"; git checkout "${CORE_TAG}"; popd;
+pushd "${PI_HOLE_LOCAL_REPO}"; git reset --hard "${CORE_TAG}"; popd;
 git clone "${webInterfaceGitUrl}" "${webInterfaceDir}"
-pushd "${webInterfaceDir}"; git checkout "${WEB_TAG}"; popd;
+pushd "${webInterfaceDir}"; git reset --hard "${WEB_TAG}"; popd;
 
 export PIHOLE_INTERFACE=eth0
 export IPV4_ADDRESS=0.0.0.0
