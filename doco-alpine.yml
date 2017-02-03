@@ -11,3 +11,4 @@ services:
       - "80:80/tcp"
     cap_add:
       - NET_ADMIN
+    restart: always

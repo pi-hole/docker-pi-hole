@@ -8,4 +8,5 @@ docker run -p 53:53/tcp -p 53:53/udp -p 80:80 \
   --cap-add=NET_ADMIN \
   -e ServerIP="$IP" \
   --name pihole \
+  --restart=always \
   -d "$IMAGE"
