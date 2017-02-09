@@ -24,9 +24,9 @@ docker run -p 53:53/tcp -p 53:53/udp -p 80:80 --cap-add=NET_ADMIN -e ServerIP="$
 wget -O- https://raw.githubusercontent.com/diginc/docker-pi-hole/master/docker-pi-hole.cron | sudo tee /etc/cron.d/docker-pi-hole
 ```
 
-This is just an example and might need changing.  For exmaple of you're running on a raspberry pi over wireless you'll probably want to change your NIC variable to `wlan0` and IMAGE to `diginc/pi-hole:arm`
+This is just an example and might need changing.  As mentioned on line 2, the auto IP_LOOKUP variable may not work for VPN tunnel interfaces.
 
-**Automatic Ad List Updates** - [docker-pi-hole.cron](https://github.com/diginc/docker-pi-hole/blob/master/docker-pi-hole.cron) is a modified verion of upstream pi-hole's crontab entries using `docker exec` to run the same update scripts inside the docker container.  The cron automatically updates pi-hole ad lists and cleans up pi-hole logs nightly.  If you're not using the `docker run` with `--name pihole` from default contariner run command be sure to fill in your container's DOCKER_NAME into the variable in the cron file.
+**Automatic Ad List Updates** - [docker-pi-hole.cron](https://github.com/diginc/docker-pi-hole/blob/master/docker-pi-hole.cron) is a modified version of upstream pi-hole's crontab entries using `docker exec` to run the same update scripts inside the docker container.  The cron automatically updates pi-hole ad lists and cleans up pi-hole logs nightly.  If you're not using the `docker run` with `--name pihole` from default container run command be sure to fill in your container's DOCKER_NAME into the variable in the cron file.
 
 ## Environment Variables
 
@@ -34,7 +34,7 @@ In addition to the required environment variable you saw above (`-e ServerIP="$I
 
 | Env Variable | Default   | Description |
 | ------------ | -------   | ----------- |
-| ServerIP     | REQUIRED! | Set to your server's external IP in order to override what Pi-Hole users.  Pi-Hole autodiscovers the unusable internal docker IP otherwise |
+| ServerIP     | REQUIRED! | Set to your server's external IP in order to override what Pi-Hole users.  Pi-Hole auto discovers the unusable internal docker IP otherwise |
 | WEBPASSWORD  | <random>  | Set this to your desired password or on first boot we'll randomly set one.  `docker logs pihole` can tell you what it got set to.  To change it check out the tips below |
 | DNS1         | 8.8.8.8   | Primary upstream DNS for Pi-Hole's DNSMasq to use, defaults to google |
 | DNS2         | 8.8.4.4   | Secondary upstream DNS for Pi-Hole's DNSMasq to use, defaults to google |
@@ -83,7 +83,7 @@ This version of the docker aims to be as close to a standard pi-hole installatio
 
 Same as the debian image, but cross compiled for ARM architecture hardware through [resin.io's awesome Qemu wrapper](https://resin.io/blog/building-arm-containers-on-any-x86-machine-even-dockerhub/).
 
-Alpine doesn't have an arm cross compileable image at this time.
+Alpine doesn't have an arm cross compilable image at this time.
 
 ## Upgrading, Persistence, and Customizations
 
@@ -91,13 +91,13 @@ The standard pi-hole customization abilities apply to this docker, but with dock
 
 ### Upgrading
 
-**If you try to use pihole's built in updater it is not guaranteed to work**; it almost assuredly won't work for alpine but debian may.  The prefered 'docker way' to ugprade is: 
+**If you try to use pihole's built in updater it is not guaranteed to work**; it almost assuredly won't work for alpine but debian may.  The preferred 'docker way' to upgrade is: 
 
 1. Download the latest version of the image: `docker pull diginc/pi-hole`
 2. Throw away your container: `docker rm -f pihole`
  * **Warning** When removing your pihole container you may be stuck without DNS until step 3 - **docker pull** before you **docker rm -f** to avoid DNS inturruption **OR** always have a fallback DNS server configured in DHCP to avoid this problem all together.
  * If you care about your data (logs/customizations), make sure you have it volume mapped or it will be deleted in this step
-3. Start your container with the newer base image: `docker run <args> diginc/pi-hole` (`<args>` being your prefered run volumes and env vars)
+3. Start your container with the newer base image: `docker run <args> diginc/pi-hole` (`<args>` being your preferred run volumes and env vars)
 
 Why is this style of upgrading good?  A couple reasons: Everyone is starting from the same base image which has been tested to know it works.  No worrying about upgrading from A to B, B to C, or A to C is required when rolling out updates, it reducing complexity, and simply allows a 'fresh start' every time while preserving customizations with volumes.  Basically I'm encouraging [phoenix servers](https://www.google.com/?q=phoenix+servers) principles for your containers.
 
