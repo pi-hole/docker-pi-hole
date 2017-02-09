@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 # Dockerfile variables
 export IMAGE
 export ServerIP
