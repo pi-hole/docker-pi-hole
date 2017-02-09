@@ -101,7 +101,7 @@ The standard pi-hole customization abilities apply to this docker, but with dock
 
 Why is this style of upgrading good?  A couple reasons: Everyone is starting from the same base image which has been tested to know it works.  No worrying about upgrading from A to B, B to C, or A to C is required when rolling out updates, it reducing complexity, and simply allows a 'fresh start' every time while preserving customizations with volumes.  Basically I'm encouraging [phoenix servers](https://www.google.com/?q=phoenix+servers) principles for your containers.
 
-### Persisting piholoe volume
+### Persisting pihole volume
 
 `-v my-pihole-configs/:/etc/pihole/` Volume mapping the entire /etc/pihole directory is the easiest way to save all your customizations.  Clear out the directory if you want to start from scratch.
 

@@ -108,6 +108,14 @@ setup_php_env_alpine() {
     cat "$PHP_ENV_CONFIG"
 }
 
+setup_web_password() {
+    if [ -z "${WEBPASSWORD+x}" ] ; then 
+        # Not set at all, give the user a random pass
+        WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
+        echo "Assigning random password: $WEBPASSWORD"
+    fi;
+    pihole -a -p "$WEBPASSWORD"
+}
 setup_ipv4_ipv6() {
     local ip_versions="IPv4 and IPv6"
     if [ "$IPv6" != "True" ] ; then
