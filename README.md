@@ -35,7 +35,7 @@ In addition to the required environment variable you saw above (`-e ServerIP="$I
 | Env Variable | Default   | Description |
 | ------------ | -------   | ----------- |
 | ServerIP     | REQUIRED! | Set to your server's external IP in order to override what Pi-Hole users.  Pi-Hole autodiscovers the unusable internal docker IP otherwise |
-| WebPassword  | <random>  | Set this to your desired password or on first boot we'll randomly set one.  `docker logs pihole` can tell you what it got set to.  To change it check out the tips below |
+| WEBPASSWORD  | <random>  | Set this to your desired password or on first boot we'll randomly set one.  `docker logs pihole` can tell you what it got set to.  To change it check out the tips below |
 | DNS1         | 8.8.8.8   | Primary upstream DNS for Pi-Hole's DNSMasq to use, defaults to google |
 | DNS2         | 8.8.4.4   | Secondary upstream DNS for Pi-Hole's DNSMasq to use, defaults to google |
 | VIRTUAL_HOST | Server_IP | What your web server 'virtual host' is, accessing admin through this Hostname/IP allows you to make changes to the whitelist / blacklists in addition to the default 'http://pi.hole/admin/' address |
