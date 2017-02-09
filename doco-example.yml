@@ -23,3 +23,4 @@ pihole:
     # WARNING: if this log don't exist as a file on the host already
     # docker will try to create a directory in it's place making for lots of errors
     # - '/var/log/pihole.log:/var/log/pihole.log'
+  restart: always
