@@ -1,7 +1,7 @@
 #!/bin/bash -x
 mkdir -p /etc/pihole/
-export CORE_TAG='v2.12.1'
-export WEB_TAG='v2.4'
+export CORE_TAG='v2.13.1'
+export WEB_TAG='v2.5.1'
 
 #     Make pihole scripts fail searching for `systemctl`,
 # which fails pretty miserably in docker compared to `service`
@@ -34,6 +34,7 @@ if [[ "$IMAGE" == 'debian' ]] ; then
     distro_check
     install_dependent_packages INSTALLER_DEPS[@]
     install_dependent_packages PIHOLE_DEPS[@]
+    install_dependent_packages PIHOLE_WEB_DEPS[@]
     sed -i "/sleep 2/ d" /etc/init.d/dnsmasq # SLOW
 elif [[ "$IMAGE" == 'alpine' ]] ; then
     apk add \
@@ -44,6 +45,9 @@ elif [[ "$IMAGE" == 'alpine' ]] ; then
         bc bash curl perl sudo git
 fi
 
+piholeGitUrl="${piholeGitUrl}"
+webInterfaceGitUrl="${webInterfaceGitUrl}"
+webInterfaceDir="${webInterfaceDir}"
 git clone "${piholeGitUrl}" "${PI_HOLE_LOCAL_REPO}"
 pushd "${PI_HOLE_LOCAL_REPO}"; git reset --hard "${CORE_TAG}"; popd;
 git clone "${webInterfaceGitUrl}" "${webInterfaceDir}"
@@ -56,6 +60,8 @@ export PIHOLE_DNS_1=8.8.8.8
 export PIHOLE_DNS_2=8.8.4.4
 export QUERY_LOGGING=true
 
+tmpLog="${tmpLog}"
+instalLogLoc="${instalLogLoc}"
 installPihole | tee "${tmpLog}"
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
 

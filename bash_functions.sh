@@ -1,4 +1,8 @@
+#!/bin/bash
 . /opt/pihole/webpage.sh
+setupVars="$setupVars"
+ServerIP="$ServerIP"
+IPv6="$IPv6"
 
 prepare_setup_vars() {
     touch "$setupVars"
