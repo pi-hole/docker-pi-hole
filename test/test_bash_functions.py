@@ -32,12 +32,25 @@ def test_IPv6_not_True_removes_ipv6(Docker, tag, args, expected_ipv6, expected_s
 ])
 def test_DNS_Envs_override_defaults(Docker, args, expected_stdout, dns1, dns2):
     ''' When DNS environment vars are passed in, they override default dns servers '''
-    function = Docker.run('. /bash_functions.sh ; eval `grep setup_dnsmasq_dns /start.sh`')
+    function = Docker.run('. /bash_functions.sh ; eval `grep setup_dnsmasq /start.sh`')
     assert expected_stdout in function.stdout
 
     docker_dns_servers = Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout
     expected_servers = 'server={}\nserver={}\n'.format(dns1, dns2)
     assert expected_servers == docker_dns_servers
+
+@pytest.mark.parametrize('args, expected_stdout, expected_config_line', [
+    ('-e ServerIP="1.2.3.4"', 'binding to default interface: eth0', 'interface=eth0' ),
+    ('-e ServerIP="1.2.3.4" -e INTERFACE="eth0"', 'binding to default interface: eth0', 'interface=eth0' ),
+    ('-e ServerIP="1.2.3.4" -e INTERFACE="br0"', 'binding to custom interface: br0', 'interface=br0'),
+])
+def test_DNS_interface_override_defaults(Docker, args, expected_stdout, expected_config_line):
+    ''' When INTERFACE environment var is passed in, overwrite dnsmasq interface '''
+    function = Docker.run('. /bash_functions.sh ; eval `grep setup_dnsmasq /start.sh`')
+    assert expected_stdout in function.stdout
+
+    docker_dns_interface = Docker.run('grep "^interface" /etc/dnsmasq.d/01-pihole.conf').stdout
+    assert expected_config_line + '\n' == docker_dns_interface
 
 expected_debian_lines = [
     '"VIRTUAL_HOST" => "192.168.100.2"',

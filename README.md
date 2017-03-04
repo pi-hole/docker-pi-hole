@@ -41,6 +41,12 @@ In addition to the required environment variable you saw above (`-e ServerIP="$I
 | VIRTUAL_HOST | Server_IP | What your web server 'virtual host' is, accessing admin through this Hostname/IP allows you to make changes to the whitelist / blacklists in addition to the default 'http://pi.hole/admin/' address |
 | IPv6         | True      | Allows forced disabling of IPv6 for docker setups that can't support it (like unraid) |
 
+*OPTIONAL Advanced* Environment Variables
+
+| Env Variable | Default   | Description |
+| INTERFACE         | eth0      | The default works fine with our basic example docker run commands.  If you're trying to use DHCP with `--net host` mode then you may have to customize this or DNSMASQ_LISTENING.
+| DNSMASQ_LISTENING |             | If set to `local` or `all` this will override `INTERFACE`.  `local` listens on all local subnets, `all` permits listening on internet origin subnets in addition to local.
+
 ## Tips and Tricks
 
 * A good way to test things are working right is by loading this page: [http://pi.hole/admin/](http://pi.hole/admin/)

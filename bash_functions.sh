@@ -27,7 +27,23 @@ setup_dnsmasq_dns() {
     echo "Using $dnsType DNS servers: $DNS1 & $DNS2"
 	[ -n "$DNS1" ] && change_setting "PIHOLE_DNS_1" "${DNS1}"
 	[ -n "$DNS2" ] && change_setting "PIHOLE_DNS_2" "${DNS2}"
-	ProcessDNSSettings
+}
+
+setup_dnsmasq_interface() {
+    local INTERFACE="${1:-eth0}"
+    local interfaceType='default'
+    if [ "$INTERFACE" != 'eth0' ] ; then
+      interfaceType='custom'
+    fi;
+    echo "DNSMasq binding to $interfaceType interface: $INTERFACE"
+	[ -n "$INTERFACE" ] && change_setting "PIHOLE_INTERFACE" "${INTERFACE}"
+}
+
+setup_dnsmasq() {
+    # Coordinates 
+    setup_dnsmasq_dns "$DNS1" "$DNS2" 
+    setup_dnsmasq_interface "$INTERFACE"
+    ProcessDNSSettings
 }
 
 setup_dnsmasq_hostnames() {
