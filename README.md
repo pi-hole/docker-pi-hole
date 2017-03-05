@@ -44,6 +44,7 @@ In addition to the required environment variable you saw above (`-e ServerIP="$I
 *OPTIONAL Advanced* Environment Variables
 
 | Env Variable | Default   | Description |
+| ------------ | -------   | ----------- |
 | INTERFACE         | eth0      | The default works fine with our basic example docker run commands.  If you're trying to use DHCP with `--net host` mode then you may have to customize this or DNSMASQ_LISTENING.
 | DNSMASQ_LISTENING |             | If set to `local` or `all` this will override `INTERFACE`.  `local` listens on all local subnets, `all` permits listening on internet origin subnets in addition to local.
 
