@@ -1,7 +1,7 @@
 #!/bin/bash -x
 mkdir -p /etc/pihole/
-export CORE_TAG='v2.13.1'
-export WEB_TAG='v2.5.1'
+export CORE_TAG='v2.13.2'
+export WEB_TAG='v2.5.2'
 
 #     Make pihole scripts fail searching for `systemctl`,
 # which fails pretty miserably in docker compared to `service`
