@@ -43,6 +43,8 @@ elif [[ "$IMAGE" == 'alpine' ]] ; then
         ca-certificates \
         php5-fpm php5-json php5-openssl php5-zip libxml2 \
         bc bash curl perl sudo git
+    # S6 service like to be blocking/foreground
+    sed -i 's|^;daemonize = yes|daemonize = no|' /etc/php5/php-fpm.conf
 fi
 
 piholeGitUrl="${piholeGitUrl}"

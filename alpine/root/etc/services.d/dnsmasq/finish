@@ -1,0 +1,3 @@
+#!/usr/bin/with-contenv bash
+
+kill -9 $(pgrep dnsmasq)

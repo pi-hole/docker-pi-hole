@@ -1,55 +1,35 @@
 #!/bin/bash
-# lazy cheap service script patch for alpine
-dnsmasq_start() {
-    dnsmasq -7 /etc/dnsmasq.d
+# This script patches all service commands into the appropriate s6- commands
+# pi-hole upstream scripts need a 'service' interface. why not systemd? docker said so.
+start() {
+    s6-svc -wU -u -T2500 /var/run/s6/services/$service
 }
 
-dnsmasq_stop() {
-    kill -9 $(pidof dnsmasq)
+stop() {
+    s6-svc -wD -d -T2500 /var/run/s6/services/$service
 }
 
-dnsmasq_restart() {
-    dnsmasq_stop; dnsmasq_start;
+restart() {
+    stop
+    start
+    #s6-svc -t -wR -T5000 /var/run/s6/services/$service
 }
 
 status() {
-    if pidof $service 2&>1 > /dev/null ; then
-        echo "$service running"  
-    else 
-        echo "$service not running"
-    fi;
-}
-
-nginx_start() {
-    nginx -t && \
-    nginx
-}
-nginx_stop() {
-    nginx -t && \
-    kill -9 $(pidof nginx)
-}
-nginx_restart() {
-    nginx_stop
-    nginx_start
-}
-dnsmasq_status() {
-    status
-}
-nginx_status() {
-    status
+    s6-svstat /var/run/s6/services/$service
 }
 
 service="$1"
 command="$2"
+
+if [[ ! -d "/var/run/s6/services/$service" ]] ; then
+    echo "s6 service not found for $service, exiting..."
+    exit
+fi;
+
 if [[ "$service" == 'lighttpd' ]] ; then
     echo -e "Lighttpd replaced by nginx in diginc/pi-hole:alpine\nrunning service nginx $command instead";
     service='nginx'
 fi;
 
-
-if [[ "$service" == 'dnsmasq' ]] || [[ "$service" == 'nginx' ]] ; then
-    ${service}_${command} || echo "Unknown option $command"
-else
-    echo "$service service wrapper not patched into alpine container"
-    exit 1
-fi
+${command} "${service}"

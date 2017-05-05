@@ -1,0 +1,6 @@
+#!/usr/bin/with-contenv bash
+
+s6-svwait -u -t 5000 /var/run/s6/services/php-fpm
+s6-echo "Starting nginx"
+
+nginx -g "daemon off;"

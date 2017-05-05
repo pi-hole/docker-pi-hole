@@ -134,7 +134,9 @@ setup_web_password() {
         WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
         echo "Assigning random password: $WEBPASSWORD"
     fi;
+    set -x
     pihole -a -p "$WEBPASSWORD"
+    { set +x; } 2>/dev/null
 }
 setup_ipv4_ipv6() {
     local ip_versions="IPv4 and IPv6"
@@ -182,20 +184,14 @@ test_framework_stubbing() {
 }
 
 docker_main() {
-    echo -n '::: Starting up DNS and Webserver ...'
-    service dnsmasq restart # Just get DNS up. The webserver is down!!!
-
     IMAGE="$1"
     case $IMAGE in # Setup webserver
-        "alpine")
-            php-fpm
-            nginx
-        ;;
         "debian")
+            echo -n '::: Starting up DNS and Webserver ...'
+            service dnsmasq restart
             service lighttpd start
+            gravity.sh
+            tail -F "${WEBLOGDIR}"/*.log /var/log/pihole.log
         ;;
     esac
-
-    gravity.sh # Finally lets update and be awesome.
-    tail -F "${WEBLOGDIR}"/*.log /var/log/pihole.log
 }

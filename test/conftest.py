@@ -10,12 +10,14 @@ check_output = testinfra.get_backend(
 def DockerGeneric(request, args, image, cmd):
     assert 'docker' in check_output('id'), "Are you in the docker group?"
     if 'diginc/pi-hole' in image:
-       args += " -v /dev/null:/etc/pihole/adlists.default -e PYTEST=\"True\""
+       #args += " -v /dev/null:/etc/pihole/adlists.default -e PYTEST=\"True\""
+       args += " -e PYTEST=\"True\""
     docker_run = "docker run -d {} {} {}".format(args, image, cmd)
     docker_id = check_output(docker_run)
 
     def teardown():
-        check_output("docker rm -f %s", docker_id)
+        check_output("docker logs {}".format(docker_id))
+        check_output("docker rm -f {}".format(docker_id))
     request.addfinalizer(teardown)
 
     docker_container = testinfra.get_backend("docker://" + docker_id)
@@ -68,7 +70,7 @@ def image(request, tag):
 
 @pytest.fixture()
 def cmd(request):
-    return '/start.sh'
+    return ''
 
 @pytest.fixture(scope='session')
 def persist_args(request):
@@ -88,7 +90,7 @@ def persist_image(request, persist_tag):
 
 @pytest.fixture(scope='session')
 def persist_cmd(request):
-    return '/start.sh'
+    return ''
 
 @pytest.fixture
 def Slow():

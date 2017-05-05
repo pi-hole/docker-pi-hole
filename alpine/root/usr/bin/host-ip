@@ -1,0 +1,10 @@
+#!/usr/bin/with-contenv sh
+
+#
+# This script will determine the network IP of the container.
+#
+# Return format should be a single IP address.
+#
+
+# Default to using the value of the $HOSTNAME ENV variable.
+getent hosts ${1:-$HOSTNAME} | awk '{print $1}'
