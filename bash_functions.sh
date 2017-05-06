@@ -182,16 +182,3 @@ test_configs_alpine() {
 test_framework_stubbing() {
     if [ -n "$PYTEST" ] ; then sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)"; fi;
 }
-
-docker_main() {
-    IMAGE="$1"
-    case $IMAGE in # Setup webserver
-        "debian")
-            echo -n '::: Starting up DNS and Webserver ...'
-            service dnsmasq restart
-            service lighttpd start
-            gravity.sh
-            tail -F "${WEBLOGDIR}"/*.log /var/log/pihole.log
-        ;;
-    esac
-}

@@ -28,4 +28,4 @@ setup_ipv4_ipv6
 test_configs
 test_framework_stubbing
 
-docker_main "$IMAGE"
+# s6's init takes care of running services now, no more main start services function

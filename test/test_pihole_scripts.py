@@ -5,10 +5,6 @@ def start_cmd():
     ''' broken by default, required override '''
     return None
 
-START_DNS_STDOUT = {
-    'alpine': '',
-    'debian': 'Restarting DNS forwarder and DHCP server: dnsmasq.\n'
-}
 @pytest.fixture
 def RunningPiHole(DockerPersist, Slow, persist_webserver, persist_tag, start_cmd):
     ''' Override the RunningPiHole to run and check for success of a
@@ -46,5 +42,5 @@ def test_pihole_start_cmd(RunningPiHole, Dig, persist_tag, start_cmd, hostname, 
     lookup = RunningPiHole.dig.run(dig_cmd).stdout.rstrip('\n')
     assert lookup == expected_ip
 
-    stdout = "::: Blocking has been {}d!\n{}".format(start_cmd, START_DNS_STDOUT[persist_tag])
+    stdout = "::: Blocking has been {}d!\n".format(start_cmd)
     assert RunningPiHole.cmd.stdout == stdout

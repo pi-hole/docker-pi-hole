@@ -27,9 +27,4 @@ if [[ ! -d "/var/run/s6/services/$service" ]] ; then
     exit
 fi;
 
-if [[ "$service" == 'lighttpd' ]] ; then
-    echo -e "Lighttpd replaced by nginx in diginc/pi-hole:alpine\nrunning service nginx $command instead";
-    service='nginx'
-fi;
-
 ${command} "${service}"
