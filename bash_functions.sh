@@ -135,7 +135,11 @@ setup_web_password() {
         echo "Assigning random password: $WEBPASSWORD"
     fi;
     set -x
-    pihole -a -p "$WEBPASSWORD"
+    if [[ "$WEBPASSWORD" == "" ]] ; then
+		echo "" | pihole -a -p
+    else
+		pihole -a -p "$WEBPASSWORD" "$WEBPASSWORD"
+	fi
     { set +x; } 2>/dev/null
 }
 setup_ipv4_ipv6() {

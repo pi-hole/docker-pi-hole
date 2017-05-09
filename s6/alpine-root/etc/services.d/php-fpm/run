@@ -2,4 +2,4 @@
 
 s6-echo "Starting php-fpm"
 
-php-fpm -d daemonize=no
+php-fpm5 -d daemonize=no

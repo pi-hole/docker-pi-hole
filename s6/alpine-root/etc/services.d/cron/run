@@ -2,6 +2,4 @@
 s6-echo "Starting crond"
 
 exec -c
-fdmove -c 2 1
-
-/usr/sbin/crond -f -L /var/log/cron -l 0 -c /etc/crontabs 
+fdmove -c 2 1 /usr/sbin/crond -f -L /var/log/cron -l 0 -c /etc/crontabs 

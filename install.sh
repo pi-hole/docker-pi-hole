@@ -1,7 +1,8 @@
 #!/bin/bash -x
 mkdir -p /etc/pihole/
-export CORE_TAG='v2.13.2'
-export WEB_TAG='v2.5.2'
+export CORE_TAG='v3.0.1'
+export WEB_TAG='v3.0.1'
+export FTL_TAG='v2.6.2'
 
 #     Make pihole scripts fail searching for `systemctl`,
 # which fails pretty miserably in docker compared to `service`
@@ -21,6 +22,9 @@ if [[ "$IMAGE" == 'alpine' ]] ; then
     sed -i 's/www-data/nginx/g' "$PIHOLE_INSTALL"
     sed -i '/LIGHTTPD_CFG/d' "${PIHOLE_INSTALL}"
     sed -i '/etc\/cron.d\//d' "${PIHOLE_INSTALL}"
+    # For new FTL install lines
+    sed -i 's/sha1sum --status --quiet/sha1sum -s/g' "${PIHOLE_INSTALL}"
+    sed -i 's/install -T/install /g' "${PIHOLE_INSTALL}"
     LIGHTTPD_USER="nginx" # shellcheck disable=SC2034
     LIGHTTPD_GROUP="nginx" # shellcheck disable=SC2034
     LIGHTTPD_CFG="lighttpd.conf.debian" # shellcheck disable=SC2034
