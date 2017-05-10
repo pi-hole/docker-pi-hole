@@ -18,7 +18,7 @@ RUN apk add --update 'gnupg<2.1.17-r0' && \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys 0527A9B7 && \
     gpg --verify /tini.asc && \
     chmod +x /tini && \
-    apk add wget bash && \
+    apk add wget bash php5-sockets && \
     /install.sh && \
     rm -rf /var/cache/apk/*
 
