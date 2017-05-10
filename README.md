@@ -17,8 +17,10 @@ One crucial thing to know before starting is the docker-pi-hole container needs 
 ```
 IMAGE='diginc/pi-hole'
 IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')"  # May not work for VPN / tun0
+IPv6_LOOKUP="$(ip -6 route get 2001:4860:4860::8888 | awk '{ print $10; exit }')"  # May not work for VPN / tun0
 IP="${IP:-$IP_LOOKUP}"  # use $IP, if set, otherwise IP_LOOKUP
-docker run -p 53:53/tcp -p 53:53/udp -p 80:80 --cap-add=NET_ADMIN -e ServerIP="$IP" --restart=always --name pihole -d $IMAGE
+IPv6="${IPv6:-$IPv6_LOOKUP}"  # use $IP, if set, otherwise IP_LOOKUP
+docker run -p 53:53/tcp -p 53:53/udp -p 80:80 --cap-add=NET_ADMIN -e ServerIP="$IP" -e ServerIPv6="$IPv6" --restart=always --name pihole -d $IMAGE
 
 # Recommended auto ad list updates & log rotation:
 wget -O- https://raw.githubusercontent.com/diginc/docker-pi-hole/master/docker-pi-hole.cron | sudo tee /etc/cron.d/docker-pi-hole

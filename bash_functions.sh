@@ -2,6 +2,7 @@
 . /opt/pihole/webpage.sh
 setupVars="$setupVars"
 ServerIP="$ServerIP"
+ServerIP6="$ServerIPv6"
 IPv6="$IPv6"
 
 prepare_setup_vars() {
@@ -170,7 +171,7 @@ test_configs_alpine() {
     echo -n '::: Testing DNSmasq config: '
     dnsmasq --test -7 /etc/dnsmasq.d
     echo -n '::: Testing PHP-FPM config: '
-    php-fpm -t
+    php-fpm5 -t
     echo -n '::: Testing NGINX config: '
     nginx -t
     set +e
@@ -188,7 +189,7 @@ docker_main() {
     IMAGE="$1"
     case $IMAGE in # Setup webserver
         "alpine")
-            php-fpm
+            php-fpm5
             nginx
         ;;
         "debian")
