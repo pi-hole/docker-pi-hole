@@ -33,8 +33,8 @@ def test_pihole_start_cmd(RunningPiHole, start_cmd, persist_tag):
     assert RunningPiHole.cmd.stdout == START_DNS_STDOUT[persist_tag]
 
 @pytest.mark.parametrize('start_cmd,hostname,expected_ip', [
-    ('enable',  'pi.hole', '192.168.100.2'),
-    ('disable', 'pi.hole', '192.168.100.2'),
+    ('enable',  'pi.hole', '127.0.0.1'),
+    ('disable', 'pi.hole', '127.0.0.1'),
 ])
 def test_pihole_start_cmd(RunningPiHole, Dig, persist_tag, start_cmd, hostname, expected_ip):
     ''' the start_cmd tests are all built into the RunningPiHole fixture in this file '''

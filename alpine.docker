@@ -20,7 +20,6 @@ ENTRYPOINT [ "/init" ]
 
 ADD s6/alpine-root /
 COPY s6/service /usr/local/bin/service
-COPY pihole-FTL /usr/bin/pihole-FTL
 
 # Things installer did and fix alpine+nginx differences
 ENV WEBLOGDIR /var/log/nginx
@@ -32,6 +31,7 @@ RUN mkdir -p /etc/pihole/ && \
     touch ${WEBLOGDIR}/access.log ${WEBLOGDIR}/error.log && \
     chown -R nginx:nginx ${WEBLOGDIR} && \
     sed -i 's|^user\s*=.*$|user = nginx|' $PHP_CONFIG && \
+    sed -i '/^;pid/ s|^;||' $PHP_CONFIG && \
     chmod 775 /var/www/html && \
     touch /var/log/pihole.log && \
     chmod 644 /var/log/pihole.log && \

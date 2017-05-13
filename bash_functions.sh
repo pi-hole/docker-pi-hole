@@ -2,6 +2,7 @@
 . /opt/pihole/webpage.sh
 setupVars="$setupVars"
 ServerIP="$ServerIP"
+ServerIPv6="$ServerIPv6"
 IPv6="$IPv6"
 
 prepare_setup_vars() {
@@ -148,7 +149,7 @@ setup_ipv4_ipv6() {
         ip_versions="IPv4"
         case $IMAGE in
             "debian") sed -i '/use-ipv6.pl/ d' /etc/lighttpd/lighttpd.conf ;;
-            "alpine") sed -i '/listen \[::\]:80;/ d' /etc/nginx/nginx.conf ;;
+            "alpine") sed -i '/listen \[::\]:80/ d' /etc/nginx/nginx.conf ;;
         esac
     fi;
     echo "Using $ip_versions"
@@ -176,7 +177,7 @@ test_configs_alpine() {
     echo -n '::: Testing DNSmasq config: '
     dnsmasq --test -7 /etc/dnsmasq.d
     echo -n '::: Testing PHP-FPM config: '
-    php-fpm -t
+    php-fpm5 -t
     echo -n '::: Testing NGINX config: '
     nginx -t
     set +e
@@ -184,5 +185,9 @@ test_configs_alpine() {
 }
 
 test_framework_stubbing() {
-    if [ -n "$PYTEST" ] ; then sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)"; fi;
+    if [ -n "$PYTEST" ] ; then 
+		echo ":::::: Tests are being ran - stub out ad list fetching and add a fake ad block"
+		sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)" 
+		echo 'testblock.pi-hole.local' >> /etc/pihole/blacklist.txt
+	fi
 }

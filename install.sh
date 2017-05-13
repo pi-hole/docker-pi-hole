@@ -1,8 +1,8 @@
-#!/bin/bash -x
+#!/bin/bash -ex
 mkdir -p /etc/pihole/
 export CORE_TAG='v3.0.1'
 export WEB_TAG='v3.0.1'
-export FTL_TAG='v2.6.2'
+export FTL_TAG='v2.7'
 
 #     Make pihole scripts fail searching for `systemctl`,
 # which fails pretty miserably in docker compared to `service`
@@ -25,6 +25,8 @@ if [[ "$IMAGE" == 'alpine' ]] ; then
     # For new FTL install lines
     sed -i 's/sha1sum --status --quiet/sha1sum -s/g' "${PIHOLE_INSTALL}"
     sed -i 's/install -T/install /g' "${PIHOLE_INSTALL}"
+	# shellcheck disable=SC2016
+	sed -i '/FTLinstall/ s/${binary}/pihole-FTL-musl-linux-x86_64/g' "${PIHOLE_INSTALL}"
     LIGHTTPD_USER="nginx" # shellcheck disable=SC2034
     LIGHTTPD_GROUP="nginx" # shellcheck disable=SC2034
     LIGHTTPD_CFG="lighttpd.conf.debian" # shellcheck disable=SC2034
@@ -45,7 +47,7 @@ elif [[ "$IMAGE" == 'alpine' ]] ; then
         dnsmasq \
         nginx \
         ca-certificates \
-        php5-fpm php5-json php5-openssl php5-zip libxml2 \
+        php5-fpm php5-json php5-openssl php5-zip php5-sockets libxml2 \
         bc bash curl perl sudo git
     # S6 service like to be blocking/foreground
     sed -i 's|^;daemonize = yes|daemonize = no|' /etc/php5/php-fpm.conf
@@ -75,4 +77,4 @@ mv "${tmpLog}" "${instalLogLoc}"
 
 # Fix dnsmasq in docker
 grep -q '^user=root' || echo -e '\nuser=root' >> /etc/dnsmasq.conf 
-echo 'done'
+echo 'Docker install successful'

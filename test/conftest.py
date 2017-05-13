@@ -10,9 +10,9 @@ check_output = testinfra.get_backend(
 def DockerGeneric(request, args, image, cmd):
     assert 'docker' in check_output('id'), "Are you in the docker group?"
     if 'diginc/pi-hole' in image:
-       args += " -v /dev/null:/etc/pihole/adlists.default -e PYTEST=\"True\""
-       #args += " -e PYTEST=\"True\""
+       args += " --dns 127.0.0.1 -v /dev/null:/etc/.pihole/adlists.default -e PYTEST=\"True\""
     docker_run = "docker run -d {} {} {}".format(args, image, cmd)
+    print docker_run
     docker_id = check_output(docker_run)
 
     def teardown():
@@ -44,7 +44,7 @@ def Docker(request, args, image, cmd):
     ''' One-off Docker container run '''
     return DockerGeneric(request, args, image, cmd)
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def DockerPersist(request, persist_args, persist_image, persist_cmd, Dig):
     ''' Persistent Docker container for multiple tests '''
     persistent_container = DockerGeneric(request, persist_args, persist_image, persist_cmd)
@@ -54,7 +54,7 @@ def DockerPersist(request, persist_args, persist_image, persist_cmd, Dig):
 
 @pytest.fixture()
 def args(request):
-    return '-e ServerIP="192.168.100.2"'
+    return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
 
 @pytest.fixture(params=['alpine', 'debian'])
 def tag(request):
@@ -70,27 +70,27 @@ def image(request, tag):
 
 @pytest.fixture()
 def cmd(request):
-    return ''
+    return 'tail -f /dev/null'
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def persist_args(request):
-    return '-e ServerIP="192.168.100.2"'
+    return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
 
-@pytest.fixture(scope='session', params=['alpine', 'debian'])
+@pytest.fixture(scope='module', params=['alpine', 'debian'])
 def persist_tag(request):
     return request.param
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def persist_webserver(request, persist_tag):
     return WEB_SERVER[persist_tag]
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def persist_image(request, persist_tag):
     return 'diginc/pi-hole:{}'.format(persist_tag)
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def persist_cmd(request):
-    return ''
+    return 'tail -f /dev/null'
 
 @pytest.fixture
 def Slow():
@@ -98,7 +98,7 @@ def Slow():
     Run a slow check, check if the state is correct for `timeout` seconds.
     """
     import time
-    def slow(check, timeout=5):
+    def slow(check, timeout=20):
         timeout_at = time.time() + timeout
         while True:
             try:
@@ -112,7 +112,7 @@ def Slow():
                 return
     return slow
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def Dig(request):
     ''' separate container to link to pi-hole and perform lookups '''
     ''' a docker pull is faster than running an install of dnsutils '''
