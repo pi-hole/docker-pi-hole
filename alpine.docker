@@ -38,11 +38,8 @@ RUN mkdir -p /etc/pihole/ && \
     chown dnsmasq:root /var/log/pihole.log && \
     sed -i "s/@INT@/eth0/" /etc/dnsmasq.d/01-pihole.conf && \
     setcap CAP_NET_BIND_SERVICE=+eip `which dnsmasq` && \
+    cp -f /usr/bin/list.sh /opt/pihole/list.sh && \
     echo 'Done!'
-
-    #sed -i 's|"cd /etc/.pihole/ && git describe --tags --abbrev=0"|"cat /etc/pi-hole_version.txt"|g' /var/www/html/admin/footer.php && \
-    #sed -i 's|"git describe --tags --abbrev=0"|"cat /etc/AdminLTE_version.txt"|g' /var/www/html/admin/footer.php && \
-    #sed -i 's|www-data|nginx|g' /etc/sudoers.d/pihole && \
 
 # php config start passes special ENVs into
 ENV PHP_ENV_CONFIG '/etc/php5/fpm.d/envs.conf'

@@ -3,11 +3,6 @@ import re
 
 DEFAULTARGS = '-e ServerIP="127.0.0.1" '
 
-# Override these docker command pieces to minimize parameter repititon
-@pytest.fixture()
-def cmd(request):
-    return 'tail -f /dev/null'
-
 @pytest.mark.parametrize('args,expected_ipv6,expected_stdout', [
     (DEFAULTARGS, True, 'IPv4 and IPv6'),
     (DEFAULTARGS + '-e "IPv6=True"', True, 'IPv4 and IPv6'),
