@@ -4,21 +4,22 @@ MAINTAINER adam@diginc.us <adam@diginc.us>
 ENV IMAGE debian
 ENV PATH /opt/pihole:${PATH}
 
-COPY install.sh /install.sh
+COPY install.sh /usr/local/bin/docker-install.sh
 ENV setupVars /etc/pihole/setupVars.conf
 ENV PIHOLE_INSTALL /tmp/ph_install.sh
+ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.18.1.5/s6-overlay-amd64.tar.gz
 
-ENV TINI_VERSION v0.13.0
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc /tini.asc
-
-RUN gpg --keyserver ha.pool.sks-keyservers.net --recv-keys 0527A9B7 && \
-    gpg --verify /tini.asc && \
-    chmod +x /tini && \
-    apt-get -q update && \
-    apt-get install -y wget net-tools && \
-    /install.sh && \
+RUN apt-get update && \
+    apt-get install -y wget curl net-tools cron && \
+    curl -L -s $S6OVERLAY_RELEASE \
+        | tar xvzf - -C / && \
+    docker-install.sh && \
     rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
+
+ENTRYPOINT [ "/init" ]
+
+ADD s6/debian-root /
+COPY s6/service /usr/local/bin/service
 
 # php config start passes special ENVs into
 ENV PHP_ENV_CONFIG '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf'
@@ -33,6 +34,7 @@ ENV IPv6 True
 EXPOSE 53 53/udp
 EXPOSE 80
 
+ENV S6_LOGGING 0
+ENV S6_KEEP_ENV 1
+
 SHELL ["/bin/bash", "-c"]
-ENTRYPOINT ["/tini", "--"]
-CMD [ "/start.sh" ]

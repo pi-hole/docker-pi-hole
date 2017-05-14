@@ -1,0 +1,5 @@
+#!/usr/bin/with-contenv bash
+
+s6-echo "Starting lighttpd"
+
+lighttpd -D -f /etc/lighttpd/lighttpd.conf

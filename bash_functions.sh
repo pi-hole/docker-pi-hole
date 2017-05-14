@@ -2,6 +2,7 @@
 . /opt/pihole/webpage.sh
 setupVars="$setupVars"
 ServerIP="$ServerIP"
+ServerIPv6="$ServerIPv6"
 IPv6="$IPv6"
 
 prepare_setup_vars() {
@@ -134,7 +135,13 @@ setup_web_password() {
         WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
         echo "Assigning random password: $WEBPASSWORD"
     fi;
-    pihole -a -p "$WEBPASSWORD"
+    set -x
+    if [[ "$WEBPASSWORD" == "" ]] ; then
+		echo "" | pihole -a -p
+    else
+		pihole -a -p "$WEBPASSWORD" "$WEBPASSWORD"
+	fi
+    { set +x; } 2>/dev/null
 }
 setup_ipv4_ipv6() {
     local ip_versions="IPv4 and IPv6"
@@ -142,7 +149,7 @@ setup_ipv4_ipv6() {
         ip_versions="IPv4"
         case $IMAGE in
             "debian") sed -i '/use-ipv6.pl/ d' /etc/lighttpd/lighttpd.conf ;;
-            "alpine") sed -i '/listen \[::\]:80;/ d' /etc/nginx/nginx.conf ;;
+            "alpine") sed -i '/listen \[::\]:80/ d' /etc/nginx/nginx.conf ;;
         esac
     fi;
     echo "Using $ip_versions"
@@ -170,7 +177,7 @@ test_configs_alpine() {
     echo -n '::: Testing DNSmasq config: '
     dnsmasq --test -7 /etc/dnsmasq.d
     echo -n '::: Testing PHP-FPM config: '
-    php-fpm -t
+    php-fpm5 -t
     echo -n '::: Testing NGINX config: '
     nginx -t
     set +e
@@ -178,24 +185,9 @@ test_configs_alpine() {
 }
 
 test_framework_stubbing() {
-    if [ -n "$PYTEST" ] ; then sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)"; fi;
-}
-
-docker_main() {
-    echo -n '::: Starting up DNS and Webserver ...'
-    service dnsmasq restart # Just get DNS up. The webserver is down!!!
-
-    IMAGE="$1"
-    case $IMAGE in # Setup webserver
-        "alpine")
-            php-fpm
-            nginx
-        ;;
-        "debian")
-            service lighttpd start
-        ;;
-    esac
-
-    gravity.sh # Finally lets update and be awesome.
-    tail -F "${WEBLOGDIR}"/*.log /var/log/pihole.log
+    if [ -n "$PYTEST" ] ; then 
+		echo ":::::: Tests are being ran - stub out ad list fetching and add a fake ad block"
+		sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)" 
+		echo 'testblock.pi-hole.local' >> /etc/pihole/blacklist.txt
+	fi
 }
