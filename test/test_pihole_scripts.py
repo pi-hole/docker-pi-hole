@@ -13,8 +13,6 @@ def RunningPiHole(DockerPersist, Slow, persist_webserver, persist_tag, start_cmd
     Slow(lambda: DockerPersist.run('pgrep dnsmasq').rc == 0)
     Slow(lambda: DockerPersist.run('pgrep {}'.format(persist_webserver)).rc == 0)
     oldpid = DockerPersist.run('pidof dnsmasq')
-    for service in [ 'dnsmasq', 'nginx', ]:
-        print DockerPersist.run('service {} status'.format(service))
     cmd = DockerPersist.run('pihole {}'.format(start_cmd))
     Slow(lambda: DockerPersist.run('pgrep dnsmasq').rc == 0)
     newpid = DockerPersist.run('pidof dnsmasq')
