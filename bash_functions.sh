@@ -14,6 +14,32 @@ validate_env() {
       echo "ERROR: To function correctly you must pass an environment variables of 'ServerIP' into the docker container with the IP of your docker host from which you are passing web (80) and dns (53) ports from"
       exit 1
     fi;
+
+    # Debian
+    nc_error='Name or service not known'
+    if [[ "$IMAGE" == 'alpine' ]] ; then
+        nc_error='bad address' 
+    fi;
+
+    # Required ServerIP is a valid IP
+    if nc -w1 -z "$ServerIP" 53 2>&1 | grep -q "$nc_error" ; then
+        echo "ERROR: ServerIP Environment variable ($ServerIP) doesn't appear to be a valid IPv4 address"
+        exit 1
+    fi
+
+    # Optional IPv6 is a valid address
+    if [[ -n "$ServerIPv6" ]] ; then
+        if [[ "$ServerIPv6" == 'kernel' ]] ; then
+            echo "WARNING: You passed in IPv6 with a value of 'kernel', this maybe beacuse you do not have IPv6 enabled on your network"
+            unset ServerIPv6
+            return
+        fi
+        if nc -w 1 -z "$ServerIPv6" 53 2>&1 | grep -q "$nc_error" || ! ip route get "$ServerIPv6" ; then
+            echo "ERROR: ServerIPv6 Environment variable ($ServerIPv6) doesn't appear to be a valid IPv6 address"
+            echo "  TIP: If your server is not IPv6 enabled just remove '-e ServerIPv6' from your docker container"
+            exit 1
+        fi
+    fi;
 }
 
 setup_dnsmasq_dns() {

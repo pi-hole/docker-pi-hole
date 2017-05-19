@@ -7,7 +7,7 @@ ENV PATH /opt/pihole:${PATH}
 COPY install.sh /usr/local/bin/docker-install.sh
 ENV setupVars /etc/pihole/setupVars.conf
 ENV PIHOLE_INSTALL /tmp/ph_install.sh
-ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.18.1.5/s6-overlay-amd64.tar.gz
+ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.19.1.1/s6-overlay-amd64.tar.gz
 
 RUN apk upgrade --update && \
     apk add bind-tools wget curl bash libcap && \
@@ -55,5 +55,6 @@ EXPOSE 80
 
 ENV S6_LOGGING 0
 ENV S6_KEEP_ENV 1
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
 
 SHELL ["/bin/bash", "-c"]

@@ -14,12 +14,23 @@ def test_pihole_default_run_command(Docker, tag):
         assert False, '{}: Couldn\'t find proc {}'.format(tag, expected_proc)
 
 @pytest.mark.parametrize('args', [ '' ])
-@pytest.mark.parametrize('cmd', [ 'tail -f /dev/null' ])
 def test_ServerIP_missing_triggers_start_error(Docker):
     ''' When args to docker are empty start.sh exits saying ServerIP is required '''
     start = Docker.run('/start.sh')
     error_msg = "ERROR: To function correctly you must pass an environment variables of 'ServerIP' into the docker container"
     assert start.rc == 1
+    assert error_msg in start.stdout
+
+@pytest.mark.parametrize('args,error_msg,expect_rc', [ 
+    ('-e ServerIP="1.2.3.z"', "ServerIP Environment variable (1.2.3.z) doesn't appear to be a valid IPv4 address",1), 
+    ('-e ServerIP="1.2.3.4" -e ServerIPv6="1234:1234:1234:ZZZZ"', "Environment variable (1234:1234:1234:ZZZZ) doesn't appear to be a valid IPv6 address",1),
+    ('-e ServerIP="1.2.3.4" -e ServerIPv6="kernel"', "WARNING: You passed in IPv6 with a value of 'kernel'",0),
+])
+def test_ServerIP_invalid_IPs_triggers_exit_error(Docker, error_msg, expect_rc):
+    ''' When args to docker are empty start.sh exits saying ServerIP is required '''
+    start = Docker.run('/start.sh')
+    assert start.rc == expect_rc
+    assert 'ERROR' in start.stdout
     assert error_msg in start.stdout
 
 @pytest.mark.parametrize('hostname,expected_ip', [

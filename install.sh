@@ -42,6 +42,8 @@ if [[ "$IMAGE" == 'debian' ]] ; then
     install_dependent_packages PIHOLE_DEPS[@]
     install_dependent_packages PIHOLE_WEB_DEPS[@]
     sed -i "/sleep 2/ d" /etc/init.d/dnsmasq # SLOW
+	# IPv6 support for nc openbsd better than traditional
+	apt-get install -y --force-yes netcat-openbsd
 elif [[ "$IMAGE" == 'alpine' ]] ; then
     apk add \
         dnsmasq \
@@ -72,6 +74,10 @@ tmpLog="${tmpLog}"
 instalLogLoc="${instalLogLoc}"
 installPihole | tee "${tmpLog}"
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
+if [[ "$IMAGE" == 'alpine' ]] ; then
+	cp /etc/.pihole/advanced/pihole.cron /etc/crontabs/pihole
+fi
+ 
 
 mv "${tmpLog}" "${instalLogLoc}"
 
