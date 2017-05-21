@@ -28,6 +28,11 @@ ENV PHP_ERROR_LOG '/var/log/lighttpd/error.log'
 COPY ./start.sh /
 COPY ./bash_functions.sh /
 
+# Make 3.0.1 work
+RUN ln -s /lib/arm-linux-gnueabihf/ld-linux.so.3 /lib/ld-linux.so.3
+RUN touch /var/log/pihole-FTL.log
+RUN chown pihole:pihole /var/log/pihole-FTL.log
+
 # IPv6 disable flag for networks/devices that do not support it
 # not fully supported in debian yet
 ENV IPv6 True
@@ -39,4 +44,4 @@ SHELL ["/bin/bash", "-c"]
 ENTRYPOINT ["/tini", "--"]
 CMD [ "/start.sh" ]
 
-RUN [ "cross-build-end" ]  
+RUN [ "cross-build-end" ]

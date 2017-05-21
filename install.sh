@@ -1,7 +1,7 @@
 #!/bin/bash -x
 mkdir -p /etc/pihole/
-export CORE_TAG='v2.13.2'
-export WEB_TAG='v2.5.2'
+export CORE_TAG='v3.0.1'
+export WEB_TAG='v3.0.1'
 
 #     Make pihole scripts fail searching for `systemctl`,
 # which fails pretty miserably in docker compared to `service`
@@ -68,5 +68,5 @@ sed -i 's/readonly //g' /opt/pihole/webpage.sh
 mv "${tmpLog}" "${instalLogLoc}"
 
 # Fix dnsmasq in docker
-grep -q '^user=root' || echo -e '\nuser=root' >> /etc/dnsmasq.conf 
+grep -q '^user=root' || echo -e '\nuser=root' >> /etc/dnsmasq.conf
 echo 'done'
