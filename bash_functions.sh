@@ -217,3 +217,22 @@ test_framework_stubbing() {
 		echo 'testblock.pi-hole.local' >> /etc/pihole/blacklist.txt
 	fi
 }
+
+docker_main() {
+    echo -n '::: Starting up DNS and Webserver ...'
+    service dnsmasq restart # Just get DNS up. The webserver is down!!!
+
+    IMAGE="$1"
+    case $IMAGE in # Setup webserver
+        "alpine")
+            php-fpm5
+            nginx
+        ;;
+        "debian")
+            service lighttpd start
+        ;;
+    esac
+
+    gravity.sh # Finally lets update and be awesome.
+    tail -F "${WEBLOGDIR}"/*.log /var/log/pihole.log
+}
