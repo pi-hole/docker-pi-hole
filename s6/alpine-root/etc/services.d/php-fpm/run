@@ -1,0 +1,5 @@
+#!/usr/bin/with-contenv bash
+
+s6-echo "Starting php-fpm"
+
+php-fpm5 -d daemonize=no

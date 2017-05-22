@@ -1,0 +1,5 @@
+#!/usr/bin/with-contenv bash
+
+s6-echo "Starting dnsmasq"
+
+s6-setuidgid dnsmasq dnsmasq -7 /etc/dnsmasq.d --no-daemon

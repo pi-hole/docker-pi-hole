@@ -1,0 +1,5 @@
+#!/usr/bin/with-contenv bash
+s6-echo "Starting crond"
+
+exec -c
+fdmove -c 2 1 /usr/sbin/cron -f

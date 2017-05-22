@@ -1,28 +1,25 @@
 import pytest
 import re
 
-# Override these docker command pieces to minimize parameter repititon
-@pytest.fixture()
-def cmd(request):
-    return 'tail -f /dev/null'
+DEFAULTARGS = '-e ServerIP="127.0.0.1" '
 
 @pytest.mark.parametrize('args,expected_ipv6,expected_stdout', [
-    ('-e ServerIP="1.2.3.4"', True, 'IPv4 and IPv6'),
-    ('-e ServerIP="1.2.3.4" -e "IPv6=True"', True, 'IPv4 and IPv6'),
-    ('-e ServerIP="1.2.3.4" -e "IPv6=False"', False, 'IPv4'),
-    ('-e ServerIP="1.2.3.4" -e "IPv6=foobar"', False, 'IPv4'),
+    (DEFAULTARGS, True, 'IPv4 and IPv6'),
+    (DEFAULTARGS + '-e "IPv6=True"', True, 'IPv4 and IPv6'),
+    (DEFAULTARGS + '-e "IPv6=False"', False, 'IPv4'),
+    (DEFAULTARGS + '-e "IPv6=foobar"', False, 'IPv4'),
 ])
 def test_IPv6_not_True_removes_ipv6(Docker, tag, args, expected_ipv6, expected_stdout):
     ''' When a user overrides IPv6=True they only get IPv4 listening webservers '''
-    IPV6_LINE = { 'alpine': 'listen \[::\]:80',
+    IPV6_LINE = { 'alpine': 'listen [::]:80 default_server',
                   'debian': 'use-ipv6.pl' }
     WEB_CONFIG = { 'alpine': '/etc/nginx/nginx.conf',
                    'debian': '/etc/lighttpd/lighttpd.conf' }
 
     function = Docker.run('. /bash_functions.sh ; setup_ipv4_ipv6')
     assert "Using {}".format(expected_stdout) in function.stdout
-    ipv6 = Docker.run('grep -q \'{}\' {}'.format(IPV6_LINE[tag], WEB_CONFIG[tag])).rc == 0
-    assert ipv6 == expected_ipv6
+    config = Docker.run('cat {}'.format( WEB_CONFIG[tag])).stdout
+    assert (IPV6_LINE[tag] in config) == expected_ipv6
 
 @pytest.mark.parametrize('args, expected_stdout, dns1, dns2', [
     ('-e ServerIP="1.2.3.4"', 'default DNS', '8.8.8.8', '8.8.4.4' ),
@@ -53,8 +50,8 @@ def test_DNS_interface_override_defaults(Docker, args, expected_stdout, expected
     assert expected_config_line + '\n' == docker_dns_interface
 
 expected_debian_lines = [
-    '"VIRTUAL_HOST" => "192.168.100.2"',
-    '"ServerIP" => "192.168.100.2"',
+    '"VIRTUAL_HOST" => "127.0.0.1"',
+    '"ServerIP" => "127.0.0.1"',
     '"PHP_ERROR_LOG" => "/var/log/lighttpd/error.log"'
 ]
 @pytest.mark.parametrize('tag,expected_lines,repeat_function', [
@@ -80,13 +77,13 @@ def test_webPassword_env_assigns_password_to_file(Docker, args, secure, setupVar
     ''' When a user sets webPassword env the admin password gets set to that '''
     function = Docker.run('. /bash_functions.sh ; eval `grep setup_web_password /start.sh`')
     if secure and 'WEBPASSWORD' not in args:
-        assert 'Assigning random password' in function.stdout
+        assert 'assigning random password' in function.stdout.lower()
     else:
-        assert 'Assigning random password' not in function.stdout
+        assert 'assigning random password' not in function.stdout.lower()
 
     if secure:
-        assert 'New password set' in function.stdout
+        assert 'new password set' in function.stdout.lower()
         assert Docker.run('grep -q \'{}\' {}'.format(setupVarsHash, '/etc/pihole/setupVars.conf')).rc == 0
     else:
-        assert 'Password removed' in function.stdout
+        assert 'password removed' in function.stdout.lower()
         assert Docker.run('grep -q \'^WEBPASSWORD=$\' /etc/pihole/setupVars.conf').rc == 0

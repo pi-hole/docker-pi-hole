@@ -2,6 +2,7 @@
 . /opt/pihole/webpage.sh
 setupVars="$setupVars"
 ServerIP="$ServerIP"
+ServerIPv6="$ServerIPv6"
 IPv6="$IPv6"
 
 prepare_setup_vars() {
@@ -12,6 +13,32 @@ validate_env() {
     if [ -z "$ServerIP" ] ; then
       echo "ERROR: To function correctly you must pass an environment variables of 'ServerIP' into the docker container with the IP of your docker host from which you are passing web (80) and dns (53) ports from"
       exit 1
+    fi;
+
+    # Debian
+    nc_error='Name or service not known'
+    if [[ "$IMAGE" == 'alpine' ]] ; then
+        nc_error='bad address' 
+    fi;
+
+    # Required ServerIP is a valid IP
+    if nc -w1 -z "$ServerIP" 53 2>&1 | grep -q "$nc_error" ; then
+        echo "ERROR: ServerIP Environment variable ($ServerIP) doesn't appear to be a valid IPv4 address"
+        exit 1
+    fi
+
+    # Optional IPv6 is a valid address
+    if [[ -n "$ServerIPv6" ]] ; then
+        if [[ "$ServerIPv6" == 'kernel' ]] ; then
+            echo "WARNING: You passed in IPv6 with a value of 'kernel', this maybe beacuse you do not have IPv6 enabled on your network"
+            unset ServerIPv6
+            return
+        fi
+        if nc -w 1 -z "$ServerIPv6" 53 2>&1 | grep -q "$nc_error" || ! ip route get "$ServerIPv6" ; then
+            echo "ERROR: ServerIPv6 Environment variable ($ServerIPv6) doesn't appear to be a valid IPv6 address"
+            echo "  TIP: If your server is not IPv6 enabled just remove '-e ServerIPv6' from your docker container"
+            exit 1
+        fi
     fi;
 }
 
@@ -134,7 +161,13 @@ setup_web_password() {
         WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
         echo "Assigning random password: $WEBPASSWORD"
     fi;
-    pihole -a -p "$WEBPASSWORD"
+    set -x
+    if [[ "$WEBPASSWORD" == "" ]] ; then
+		echo "" | pihole -a -p
+    else
+		pihole -a -p "$WEBPASSWORD" "$WEBPASSWORD"
+	fi
+    { set +x; } 2>/dev/null
 }
 setup_ipv4_ipv6() {
     local ip_versions="IPv4 and IPv6"
@@ -142,7 +175,7 @@ setup_ipv4_ipv6() {
         ip_versions="IPv4"
         case $IMAGE in
             "debian") sed -i '/use-ipv6.pl/ d' /etc/lighttpd/lighttpd.conf ;;
-            "alpine") sed -i '/listen \[::\]:80;/ d' /etc/nginx/nginx.conf ;;
+            "alpine") sed -i '/listen \[::\]:80/ d' /etc/nginx/nginx.conf ;;
         esac
     fi;
     echo "Using $ip_versions"
@@ -178,7 +211,11 @@ test_configs_alpine() {
 }
 
 test_framework_stubbing() {
-    if [ -n "$PYTEST" ] ; then sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)"; fi;
+    if [ -n "$PYTEST" ] ; then 
+		echo ":::::: Tests are being ran - stub out ad list fetching and add a fake ad block"
+		sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)" 
+		echo 'testblock.pi-hole.local' >> /etc/pihole/blacklist.txt
+	fi
 }
 
 docker_main() {

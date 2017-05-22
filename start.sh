@@ -16,7 +16,7 @@ export IPv6
 . /bash_functions.sh
 
 echo " ::: Starting docker specific setup for docker diginc/pi-hole"
-validate_env
+validate_env || exit 1
 prepare_setup_vars
 change_setting "IPV4_ADDRESS" "$ServerIP"
 change_setting "IPV6_ADDRESS" "$ServerIPv6"
@@ -27,5 +27,6 @@ setup_dnsmasq_hostnames "$ServerIP" "$ServerIPv6" "$HOSTNAME"
 setup_ipv4_ipv6
 test_configs
 test_framework_stubbing
+echo "::: Docker start setup complete - beginning s6 services"
 
-docker_main "$IMAGE"
+# s6's init takes care of running services now, no more main start services function

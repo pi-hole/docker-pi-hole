@@ -17,16 +17,24 @@ One crucial thing to know before starting is the docker-pi-hole container needs 
 ```
 IMAGE='diginc/pi-hole'
 IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')"  # May not work for VPN / tun0
+IPv6_LOOKUP="$(ip -6 route get 2001:4860:4860::8888 | awk '{ print $10; exit }')"  # May not work for VPN / tun0
 IP="${IP:-$IP_LOOKUP}"  # use $IP, if set, otherwise IP_LOOKUP
-docker run -p 53:53/tcp -p 53:53/udp -p 80:80 --cap-add=NET_ADMIN -e ServerIP="$IP" --restart=always --name pihole -d $IMAGE
+IPv6="${IPv6:-$IPv6_LOOKUP}"  # use $IPv6, if set, otherwise IP_LOOKUP
 
-# Recommended auto ad list updates & log rotation:
-wget -O- https://raw.githubusercontent.com/diginc/docker-pi-hole/master/docker-pi-hole.cron | sudo tee /etc/cron.d/docker-pi-hole
+docker run -d \
+    --name pihole \
+    -p 53:53/tcp -p 53:53/udp -p 80:80 \
+    -v </path/to/store/pihole>:/etc/pihole \
+    -v </path/to/store/dnsmasq.d>:/etc/dnsmasq.d \
+    -e ServerIP="${IP:-$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')}" \
+    -e ServerIPv6="${IPv6:-$(ip -6 route get 2001:4860:4860::8888 | awk '{ print $10; exit }')}" \
+    --restart=always \
+    diginc/pi-hole
 ```
 
-This is just an example and might need changing.  As mentioned on line 2, the auto IP_LOOKUP variable may not work for VPN tunnel interfaces.
+Volumes aren't required but are recommended for persisting data across docker re-creations for updating images.  This is just an example and might need changing.  As mentioned on line 2, the auto IP_LOOKUP variable may not work for VPN tunnel interfaces.
 
-**Automatic Ad List Updates** - [docker-pi-hole.cron](https://github.com/diginc/docker-pi-hole/blob/master/docker-pi-hole.cron) is a modified version of upstream pi-hole's crontab entries using `docker exec` to run the same update scripts inside the docker container.  The cron automatically updates pi-hole ad lists and cleans up pi-hole logs nightly.  If you're not using the `docker run` with `--name pihole` from default container run command be sure to fill in your container's DOCKER_NAME into the variable in the cron file.
+**Automatic Ad List Updates** - since 3.0+ release cron is baked into the container and will grab the newest versions of your lists and flush your logs.  **Set TZ** environment variable to make sure the midnight log rotation syncs up with your timezone's midnight.
 
 ## Environment Variables
 
@@ -34,12 +42,14 @@ In addition to the required environment variable you saw above (`-e ServerIP="$I
 
 | Env Variable | Default   | Description |
 | ------------ | -------   | ----------- |
-| ServerIP     | REQUIRED! | Set to your server's external IP in order to override what Pi-Hole users.  Pi-Hole auto discovers the unusable internal docker IP otherwise |
-| WEBPASSWORD  | <random>  | Set this to your desired password or on first boot we'll randomly set one.  `docker logs pihole` can tell you what it got set to.  To change it check out the tips below |
+| ServerIP     | REQUIRED! | Set to your server's external IP in order to override what Pi-Hole users requests get sent to.  This container is designed to fail when not set since it is pretty useless without it.  |
+| ServerIPv6    | optional | Where IPv6 ad requests end up, not required if you're not running ipv6 network |
+| WEBPASSWORD  | <random>  | Recommended!  Set this to your desired password or on first boot we'll randomly set one.  `docker logs pihole` can tell you what it got set to.  To change it check out the tips below |
 | DNS1         | 8.8.8.8   | Primary upstream DNS for Pi-Hole's DNSMasq to use, defaults to google |
 | DNS2         | 8.8.4.4   | Secondary upstream DNS for Pi-Hole's DNSMasq to use, defaults to google |
 | VIRTUAL_HOST | Server_IP | What your web server 'virtual host' is, accessing admin through this Hostname/IP allows you to make changes to the whitelist / blacklists in addition to the default 'http://pi.hole/admin/' address |
 | IPv6         | True      | Allows forced disabling of IPv6 for docker setups that can't support it (like unraid) |
+| TZ           | UCT       | Customize your container's timezone, useful if you use the cron for pihole updates |
 
 *OPTIONAL Advanced* Environment Variables
 
@@ -52,19 +62,19 @@ In addition to the required environment variable you saw above (`-e ServerIP="$I
 
 * A good way to test things are working right is by loading this page: [http://pi.hole/admin/](http://pi.hole/admin/)
 * [How do I set or reset the Web interface Password?](https://discourse.pi-hole.net/t/how-do-i-set-or-reset-the-web-interface-password/1328)
- * `docker exec pihole_container_name pihole -a -p supersecurepassword`
+  * `docker exec pihole_container_name pihole -a -p supersecurepassword`
 * Port conflicts?  Stop your server's existing DNS / Web services.
- * Ubuntu users especially may need to shutoff dnsmasq on your docker server so it can run in the container on port 53
- * Don't forget to stop your services from auto-starting again after you reboot
+  * Ubuntu users especially may need to shutoff dnsmasq on your docker server so it can run in the container on port 53
+  * Don't forget to stop your services from auto-starting again after you reboot
 * Port 80 is highly recommended because if you have another site/service using port 80 by default then the ads may not transform into blank ads correctly.  To make sure docker-pi-hole plays nicely with an existing webserver you run you'll probably need a reverse proxy webserver config if you don't have one already.  Pi-Hole has to be the default web app on said proxy e.g. if you goto your host by IP instead of domain then pi-hole is served out instead of any other sites hosted by the proxy. This is the '[default_server](http://nginx.org/en/docs/http/ngx_http_core_module.html#listen)' in nginx or ['_default_' virtual host](https://httpd.apache.org/docs/2.4/vhosts/examples.html#default) in Apache and is taken advantage of so any undefined ad domain can be directed to your webserver and get a 'blocked' response instead of ads.
- * You can still map other ports to pi-hole port 80 using docker's port forwarding like this `-p 8080:80`, but again the ads won't render propertly.  Changing the inner port 80 shouldn't be required unless you run docker host networking mode.
- * [Here is an example of running with jwilder/proxy](https://github.com/diginc/docker-pi-hole/blob/master/jwilder-proxy-example-doco.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with pihole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in jwilder/proxy and you need to set the matching `VIRTUAL_HOST` for the pihole's container.  Please read jwilder/proxy readme for more info if you have trouble.  I tested this basic example which is based off what I run.
+  * You can still map other ports to pi-hole port 80 using docker's port forwarding like this `-p 8080:80`, but again the ads won't render propertly.  Changing the inner port 80 shouldn't be required unless you run docker host networking mode.
+  * [Here is an example of running with jwilder/proxy](https://github.com/diginc/docker-pi-hole/blob/master/jwilder-proxy-example-doco.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with pihole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in jwilder/proxy and you need to set the matching `VIRTUAL_HOST` for the pihole's container.  Please read jwilder/proxy readme for more info if you have trouble.  I tested this basic example which is based off what I run.
 
 ## Volume Mounts
 Here are some useful volume mount options to persist your history of stats in the admin interface, or add custom whitelists/blacklists.  **Create these files on the docker host first or you'll get errors**:
 
 * `docker run -v /var/log/pihole.log:/var/log/pihole.log ...` (plus all of the minimum options added)
- * `touch /var/log/pihole.log` on your docker server first or you will end up with a directory there (silly docker!)
+  * `touch /var/log/pihole.log` on your docker server first or you will end up with a directory there (silly docker!)
 * `docker run -v /etc/pihole/:/etc/pihole/ ...` (plus all of the minimum options added)
 
 All of these options get really long when strung together in one command, which is why I'm not showing all the full `docker run` commands variations here.  This is where [docker-compose](https://docs.docker.com/compose/install/) yml files come in handy for representing [really long docker commands in a readable file format](https://github.com/diginc/docker-pi-hole/blob/master/doco-example.yml).
@@ -103,8 +113,8 @@ The standard pi-hole customization abilities apply to this docker, but with dock
 
 1. Download the latest version of the image: `docker pull diginc/pi-hole`
 2. Throw away your container: `docker rm -f pihole`
- * **Warning** When removing your pihole container you may be stuck without DNS until step 3 - **docker pull** before you **docker rm -f** to avoid DNS inturruption **OR** always have a fallback DNS server configured in DHCP to avoid this problem all together.
- * If you care about your data (logs/customizations), make sure you have it volume mapped or it will be deleted in this step
+  * **Warning** When removing your pihole container you may be stuck without DNS until step 3 - **docker pull** before you **docker rm -f** to avoid DNS inturruption **OR** always have a fallback DNS server configured in DHCP to avoid this problem all together.
+  * If you care about your data (logs/customizations), make sure you have it volume mapped or it will be deleted in this step
 3. Start your container with the newer base image: `docker run <args> diginc/pi-hole` (`<args>` being your preferred run volumes and env vars)
 
 Why is this style of upgrading good?  A couple reasons: Everyone is starting from the same base image which has been tested to know it works.  No worrying about upgrading from A to B, B to C, or A to C is required when rolling out updates, it reducing complexity, and simply allows a 'fresh start' every time while preserving customizations with volumes.  Basically I'm encouraging [phoenix servers](https://www.google.com/?q=phoenix+servers) principles for your containers.
