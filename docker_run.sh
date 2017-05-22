@@ -8,7 +8,7 @@ IPv6="${IPv6:-$IPv6_LOOKUP}"  # use $IPv6, if set, otherwise IP_LOOKUP
 echo "IP: ${IP} - IPv6: ${IPv6}"
 
 # Default ports + daemonized docker container
-docker create \
+docker run -d \
     --name pihole \
     -p 53:53/tcp -p 53:53/udp -p 80:80 \
     -v /etc/volumes/pihole:/etc/pihole \
@@ -18,6 +18,4 @@ docker create \
     --restart=always \
     diginc/pi-hole
 
-docker start pihole
-sleep 2
 docker logs pihole 2> /dev/null | grep 'password:'
