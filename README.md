@@ -1,6 +1,6 @@
 A [Docker](https://www.docker.com/what-docker) project to make lightweight x86 and ARM container with [pi-hole](https://pi-hole.net) functionality.  Why?  Originally designed to be a quick, easy, and portable way to run x86 Pi-Hole, it now has an arm specific tag too.
 
-1) Install docker for your [ARM64/x86 system](https://www.docker.com/community-edition) or [ARMv6l/ARMv7 system](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/) using those links.
+1) Install docker for your [x86-64 system](https://www.docker.com/community-edition) or [ARMv6l/ARMv7 system](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/) using those links.
 2) Use the appropriate tag (x86 can use default tag, ARM users need to use the `arm` tag) in the below `docker run` command
 3) Enjoy!
 
