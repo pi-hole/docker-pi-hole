@@ -1,26 +1,28 @@
-pihole:
-  image: diginc/pi-hole
-  ports:
-    - "53:53/tcp"
-    - "53:53/udp"
-    - "80:80/tcp"
-  cap_add:
-    - NET_ADMIN
-  environment:
-    # enter your docker host IP here
-    ServerIP:
-    # jwilder/proxy envs, see readme for more info
-    PROXY_LOCATION: pihole
-    VIRTUAL_HOST: pihole.yourdomain.local
-    VIRTUAL_PORT: 80
-  # Add your own custom hostnames you need for your domain
-  extra_hosts:
-    #   Point any of the jwilder virtual_host addresses
-    # to your docker host ip address
-    - 'pihole.yourdomain.local:192.168.1.55'
-  volumes:
-    # - '/etc/pihole/:/etc/pihole/'
-    # WARNING: if this log don't exist as a file on the host already
-    # docker will try to create a directory in it's place making for lots of errors
-    # - '/var/log/pihole.log:/var/log/pihole.log'
-  restart: always
+version: "3"
+services:
+  pihole:
+    image: diginc/pi-hole:alpine
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "80:80/tcp"
+    environment:
+      # enter your docker host IP here
+      ServerIP:
+      # IPv6 Address if your network supports it
+      #ServerIPv6: 192.168.1.55
+      # jwilder/proxy envs, see readme for more info
+      PROXY_LOCATION: pihole
+      VIRTUAL_HOST: pihole.yourdomain.local
+      VIRTUAL_PORT: 80
+    # Add your own custom hostnames you need for your domain
+    extra_hosts:
+      #   Point any of the jwilder virtual_host addresses
+      # to your docker host ip address
+      - 'pihole.yourdomain.local:192.168.1.55'
+    volumes:
+      # - '/etc/pihole/:/etc/pihole/'
+      # WARNING: if this log don't exist as a file on the host already
+      # docker will try to create a directory in it's place making for lots of errors
+      # - '/var/log/pihole.log:/var/log/pihole.log'
+    restart: always

@@ -3,12 +3,15 @@ services:
   pihole:
     image: diginc/pi-hole:alpine
     environment:
-      # Your docker host IP is required if you run RUN (not build)
-      ServerIP: 192.168.1.55
+      # enter your docker host IP here
+      ServerIP:
+      # IPv6 Address if your network supports it
+      #ServerIPv6: 192.168.1.55
+    volumes:
+      - "./pihole/:/etc/pihole/"
+      - "./dnsmasq.d/:/etc/dnsmasq.d/"
     ports:
       - "53:53/tcp"
       - "53:53/udp"
       - "80:80/tcp"
-    cap_add:
-      - NET_ADMIN
     restart: always
