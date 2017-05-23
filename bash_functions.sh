@@ -66,8 +66,16 @@ setup_dnsmasq_interface() {
 	[ -n "$INTERFACE" ] && change_setting "PIHOLE_INTERFACE" "${INTERFACE}"
 }
 
+setup_dnsmasq_config_if_missing() {
+    # When fresh empty directory volumes are used we miss this file
+    if [ ! -f /etc/dnsmasq.d/01-pihole.conf ] ; then
+        cp /etc/.pihole/advanced/01-pihole.conf /etc/dnsmasq.d/
+    fi;
+}
+
 setup_dnsmasq() {
     # Coordinates 
+    setup_dnsmasq_config_if_missing
     setup_dnsmasq_dns "$DNS1" "$DNS2" 
     setup_dnsmasq_interface "$INTERFACE"
     ProcessDNSSettings

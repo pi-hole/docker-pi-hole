@@ -1,5 +1,4 @@
 #!/bin/bash
-IMAGE=${1:-'diginc/pi-hole:alpine'}
 IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')"  # May not work for VPN / tun0
 IPv6_LOOKUP="$(ip -6 route get 2001:4860:4860::8888 | awk '{ print $10; exit }')"  # May not work for VPN / tun0
 IP="${IP:-$IP_LOOKUP}"  # use $IP, if set, otherwise IP_LOOKUP
@@ -11,11 +10,11 @@ echo "IP: ${IP} - IPv6: ${IPv6}"
 docker run -d \
     --name pihole \
     -p 53:53/tcp -p 53:53/udp -p 80:80 \
-    -v /etc/volumes/pihole:/etc/pihole \
-    -v /etc/volumes/dnsmasq.d:/etc/dnsmasq.d \
+    -v "$(pwd)/pihole/:/etc/pihole/" \
+    -v "$(pwd)/dnsmasq.d/:/etc/dnsmasq.d/" \
     -e ServerIP="${IP:-$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')}" \
     -e ServerIPv6="${IPv6:-$(ip -6 route get 2001:4860:4860::8888 | awk '{ print $10; exit }')}" \
     --restart=always \
-    diginc/pi-hole
+    diginc/pi-hole:alpine
 
 docker logs pihole 2> /dev/null | grep 'password:'
