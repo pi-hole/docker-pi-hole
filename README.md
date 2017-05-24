@@ -23,12 +23,12 @@ IPv6="${IPv6:-$IPv6_LOOKUP}"  # use $IPv6, if set, otherwise IP_LOOKUP
 docker run -d \
     --name pihole \
     -p 53:53/tcp -p 53:53/udp -p 80:80 \
-    -v "$(pwd)/pihole/:/etc/pihole/" \
-    -v "$(pwd)/dnsmasq.d/:/etc/dnsmasq.d/" \
-    -e ServerIP="${IP:-$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')}" \
-    -e ServerIPv6="${IPv6:-$(ip -6 route get 2001:4860:4860::8888 | awk '{ print $10; exit }')}" \
+    -v "/dir/for/pihole/:/etc/pihole/" \
+    -v "/dir/for/dnsmasq.d/:/etc/dnsmasq.d/" \
+    -e ServerIP="${IP}" \
+    -e ServerIPv6="${IPv6} \
     --restart=always \
-    diginc/pi-hole:alpine
+    diginc/pi-hole:latest
 ```
 
 Volumes aren't required but are recommended for persisting data across docker re-creations for updating images.  This is just an example and might need changing.  As mentioned on line 2, the auto IP_LOOKUP variable may not work for VPN tunnel interfaces.
