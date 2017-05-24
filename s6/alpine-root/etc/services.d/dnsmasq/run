@@ -2,4 +2,4 @@
 
 s6-echo "Starting dnsmasq"
 
-s6-setuidgid dnsmasq dnsmasq -7 /etc/dnsmasq.d --no-daemon
+s6-setuidgid root dnsmasq -7 /etc/dnsmasq.d --no-daemon
