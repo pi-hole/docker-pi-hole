@@ -134,6 +134,12 @@ The webserver and DNS service inside the container can be customized if necessar
 
 Similarly for the webserver you can customize configs in /etc/nginx (*:alpine* tag) and /etc/lighttpd (*:debian* tag).
 
+### Systemd init script
+
+If you would like to have your docker container run as a systemd service (useful for always-on servers) add the file "pihole.service" to "/etc/systemd/system".  Then after you have initially created the docker container using the docker run command above, you can control it with "systemctl start pihole" or "systemctl stop pihole".  You can also enable it to auto-start on boot with "systemctl enable pihole".  The service file will also auto-restart the docker container if it stops, so you could remove the "--restart=always" parameter from the initial run command if needed.
+
+NOTE:  After initial run you may need to manually stop the docker container with "docker stop pihole" before the systemctl can start controlling the container.
+
 ## Development
 
 [![Build Status](https://api.travis-ci.org/diginc/docker-pi-hole.svg?branch=dev)](https://travis-ci.org/diginc/docker-pi-hole) If you plan on making a contribution please pull request to the dev branch.  I also build tags of the dev branch for bug fix testing after merges have been made:
