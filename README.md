@@ -26,7 +26,7 @@ docker run -d \
     -v "/dir/for/pihole/:/etc/pihole/" \
     -v "/dir/for/dnsmasq.d/:/etc/dnsmasq.d/" \
     -e ServerIP="${IP}" \
-    -e ServerIPv6="${IPv6} \
+    -e ServerIPv6="${IPv6}" \
     --restart=always \
     diginc/pi-hole:latest
 ```
