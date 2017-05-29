@@ -19,7 +19,7 @@ IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')"  # May not work 
 IPv6_LOOKUP="$(ip -6 route get 2001:4860:4860::8888 | awk '{ print $10; exit }')"  # May not work for VPN / tun0
 IP="${IP:-$IP_LOOKUP}"  # use $IP, if set, otherwise IP_LOOKUP
 IPv6="${IPv6:-$IPv6_LOOKUP}"  # use $IPv6, if set, otherwise IP_LOOKUP
-DOCKER_CONFIGS="$(pwd)"  # Default of directory you run this from, update to whereever.
+DOCKER_CONFIGS="$(pwd)"  # Default of directory you run this from, update to where ever.
 
 docker run -d \
     --name pihole \
