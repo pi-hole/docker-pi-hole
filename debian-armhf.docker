@@ -15,6 +15,7 @@ RUN apt-get update && \
     apt-get install -y wget curl net-tools cron && \
     curl -L -s $S6OVERLAY_RELEASE \
         | tar xvzf - -C / && \
+	ln /lib/ld-linux-armhf.so.3 /lib/ld-linux.so.3 && \
     docker-install.sh && \
     rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
 
