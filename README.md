@@ -23,12 +23,12 @@ IPv6="${IPv6:-$IPv6_LOOKUP}"  # use $IPv6, if set, otherwise IP_LOOKUP
 docker run -d \
     --name pihole \
     -p 53:53/tcp -p 53:53/udp -p 80:80 \
-    -v "$(pwd)/pihole/:/etc/pihole/" \
-    -v "$(pwd)/dnsmasq.d/:/etc/dnsmasq.d/" \
-    -e ServerIP="${IP:-$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')}" \
-    -e ServerIPv6="${IPv6:-$(ip -6 route get 2001:4860:4860::8888 | awk '{ print $10; exit }')}" \
+    -v "/dir/for/pihole/:/etc/pihole/" \
+    -v "/dir/for/dnsmasq.d/:/etc/dnsmasq.d/" \
+    -e ServerIP="${IP}" \
+    -e ServerIPv6="${IPv6}" \
     --restart=always \
-    diginc/pi-hole:alpine
+    diginc/pi-hole:latest
 ```
 
 Volumes aren't required but are recommended for persisting data across docker re-creations for updating images.  This is just an example and might need changing.  As mentioned on line 2, the auto IP_LOOKUP variable may not work for VPN tunnel interfaces.
@@ -133,6 +133,12 @@ We install all pihole utilities so the the built in [pihole commands](https://di
 The webserver and DNS service inside the container can be customized if necessary.  Any configuration files you volume mount into `/etc/dnsmasq.d/` will be loaded by dnsmasq when the container starts or restarts or if you need to modify the pi-hole config it is located at `/etc/dnsmasq.d/01-pihole.conf`.  The docker start scripts runs a config test prior to starting so it will tell you about any errors in the docker log.
 
 Similarly for the webserver you can customize configs in /etc/nginx (*:alpine* tag) and /etc/lighttpd (*:debian* tag).
+
+### Systemd init script
+
+If you would like to have your docker container run as a systemd service (useful for always-on servers) add the file "pihole.service" to "/etc/systemd/system".  Then after you have initially created the docker container using the docker run command above, you can control it with "systemctl start pihole" or "systemctl stop pihole".  You can also enable it to auto-start on boot with "systemctl enable pihole".  The service file will also auto-restart the docker container if it stops, so you could remove the "--restart=always" parameter from the initial run command if needed.
+
+NOTE:  After initial run you may need to manually stop the docker container with "docker stop pihole" before the systemctl can start controlling the container.
 
 ## Development
 
