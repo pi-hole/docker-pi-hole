@@ -19,19 +19,20 @@ IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')"  # May not work 
 IPv6_LOOKUP="$(ip -6 route get 2001:4860:4860::8888 | awk '{ print $10; exit }')"  # May not work for VPN / tun0
 IP="${IP:-$IP_LOOKUP}"  # use $IP, if set, otherwise IP_LOOKUP
 IPv6="${IPv6:-$IPv6_LOOKUP}"  # use $IPv6, if set, otherwise IP_LOOKUP
+DOCKER_CONFIGS="$(pwd)"  # Default of directory you run this from, update to where ever.
 
 docker run -d \
     --name pihole \
     -p 53:53/tcp -p 53:53/udp -p 80:80 \
-    -v "$(pwd)/pihole/:/etc/pihole/" \
-    -v "$(pwd)/dnsmasq.d/:/etc/dnsmasq.d/" \
-    -e ServerIP="${IP:-$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')}" \
-    -e ServerIPv6="${IPv6:-$(ip -6 route get 2001:4860:4860::8888 | awk '{ print $10; exit }')}" \
+    -v "${DOCKER_CONFIGS}/pihole/:/etc/pihole/" \
+    -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/" \
+    -e ServerIP="${IP}" \
+    -e ServerIPv6="${IPv6}" \
     --restart=always \
     diginc/pi-hole:alpine
 ```
 
-Volumes aren't required but are recommended for persisting data across docker re-creations for updating images.  This is just an example and might need changing.  As mentioned on line 2, the auto IP_LOOKUP variable may not work for VPN tunnel interfaces.
+**This is just an example and might need changing.**  Volumes are stored in the directory $DOCKER_CONFIGS and aren't required but are recommended for persisting data across docker re-creations for updating images.  As mentioned on line 2, the auto IP_LOOKUP variable may not work for VPN tunnel interfaces.
 
 **Automatic Ad List Updates** - since 3.0+ release cron is baked into the container and will grab the newest versions of your lists and flush your logs.  **Set TZ** environment variable to make sure the midnight log rotation syncs up with your timezone's midnight.
 
@@ -133,6 +134,12 @@ We install all pihole utilities so the the built in [pihole commands](https://di
 The webserver and DNS service inside the container can be customized if necessary.  Any configuration files you volume mount into `/etc/dnsmasq.d/` will be loaded by dnsmasq when the container starts or restarts or if you need to modify the pi-hole config it is located at `/etc/dnsmasq.d/01-pihole.conf`.  The docker start scripts runs a config test prior to starting so it will tell you about any errors in the docker log.
 
 Similarly for the webserver you can customize configs in /etc/nginx (*:alpine* tag) and /etc/lighttpd (*:debian* tag).
+
+### Systemd init script
+
+As long as your docker system service auto starts on boot and you run your container with `--restart=always` your container should always start on boot and restart on crashes.  If you prefer to have your docker container run as a systemd service instead add the file [pihole.service](https://raw.githubusercontent.com/diginc/docker-pi-hole/master/pihole.service) to "/etc/systemd/system"; customize whatever your container name is and remove `--restart=always` from your docker run.  Then after you have initially created the docker container using the docker run command above, you can control it with "systemctl start pihole" or "systemctl stop pihole" (instead of `docker start`/`docker stop`).  You can also enable it to auto-start on boot with "systemctl enable pihole" (as opposed to `--restart=always` and making sure docker service auto-starts on boot).
+
+NOTE:  After initial run you may need to manually stop the docker container with "docker stop pihole" before the systemctl can start controlling the container.
 
 ## Development
 

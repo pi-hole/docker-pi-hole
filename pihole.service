@@ -1,0 +1,13 @@
+[Unit]
+Description=pihole
+Requires=docker.service multi-user.target
+After=docker.service network-online.target dhcpd.service
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/docker start -a pihole
+ExecStop=/usr/bin/docker stop -t 2 pihole
+
+[Install]
+WantedBy=multi-user.target
+
