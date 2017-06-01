@@ -46,6 +46,7 @@ if [[ "$IMAGE" == 'debian' ]] ; then
 	apt-get install -y --force-yes netcat-openbsd
 elif [[ "$IMAGE" == 'alpine' ]] ; then
     apk add \
+        dnsmasq \
         dnsmasq-dnssec \
         nginx \
         ca-certificates \
