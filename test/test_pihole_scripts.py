@@ -30,15 +30,15 @@ def test_pihole_start_cmd(RunningPiHole, start_cmd, persist_tag):
     ''' the start_cmd tests are all built into the RunningPiHole fixture in this file '''
     assert RunningPiHole.cmd.stdout == START_DNS_STDOUT[persist_tag]
 
-@pytest.mark.parametrize('start_cmd,hostname,expected_ip', [
-    ('enable',  'pi.hole', '127.0.0.1'),
-    ('disable', 'pi.hole', '127.0.0.1'),
+@pytest.mark.parametrize('start_cmd,hostname,expected_ip, expected_message', [
+    ('enable',  'pi.hole', '127.0.0.1', 'enabled'),
+    ('disable 0', 'pi.hole', '127.0.0.1', 'disabled'),
 ])
-def test_pihole_start_cmd(RunningPiHole, Dig, persist_tag, start_cmd, hostname, expected_ip):
+def test_pihole_start_cmd(RunningPiHole, Dig, persist_tag, start_cmd, hostname, expected_ip, expected_message):
     ''' the start_cmd tests are all built into the RunningPiHole fixture in this file '''
     dig_cmd = "dig +time=1 +noall +answer {} @test_pihole | awk '{{ print $5 }}'".format(hostname)
     lookup = RunningPiHole.dig.run(dig_cmd).stdout.rstrip('\n')
     assert lookup == expected_ip
 
-    stdout = "::: Blocking has been {}d!\n".format(start_cmd)
-    assert RunningPiHole.cmd.stdout == stdout
+    stdout = "::: Blocking has been {}!\n".format(expected_message)
+    assert stdout in RunningPiHole.cmd.stdout
