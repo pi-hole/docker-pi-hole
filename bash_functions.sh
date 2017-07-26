@@ -119,16 +119,16 @@ setup_dnsmasq_hostnames() {
 }
 
 setup_lighttpd_bind() {
-if [[ "$IMAGE" == 'debian' ]] ; then
-	# if using '--net=host' only bing lighttpd on $ServerIP
-	HOSTNET='grep "docker" /proc/net/dev/' #docker (docker0 by default) should only be present on the host system
-	if [ -n "$HOSTNET" ] ; then
-		if ! grep -q "server.bind" /etc/lighttpd/lighttpd.conf # if the declaration is already there, don't add it again
-		then
-			sed -i -E "s/server\.port\s+\=\s+80/server.bind\t\t = \"${ServerIP}\"\nserver.port\t\t = 80/" /etc/lighttpd/lighttpd.conf
+	if [[ "$IMAGE" == 'debian' ]] ; then
+		# if using '--net=host' only bing lighttpd on $ServerIP
+		HOSTNET='grep "docker" /proc/net/dev' #docker (docker0 by default) should only be present on the host system
+		if [ -n "$HOSTNET" ] ; then
+			if ! grep -q "server.bind" /etc/lighttpd/lighttpd.conf # if the declaration is already there, don't add it again
+			then
+				sed -i -E "s/server\.port\s+\=\s+80/server.bind\t\t = \"${ServerIP}\"\nserver.port\t\t = 80/" /etc/lighttpd/lighttpd.conf
+			fi
 		fi
 	fi
-fi
 }
 
 setup_php_env() {
