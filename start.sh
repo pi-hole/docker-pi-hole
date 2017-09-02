@@ -25,6 +25,7 @@ setup_dnsmasq
 setup_php_env
 setup_dnsmasq_hostnames "$ServerIP" "$ServerIPv6" "$HOSTNAME"
 setup_ipv4_ipv6
+setup_lighttpd_bind "$ServerIP" "$IMAGE"
 test_configs
 test_framework_stubbing
 echo "::: Docker start setup complete - beginning s6 services"
