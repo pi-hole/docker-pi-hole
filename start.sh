@@ -21,7 +21,7 @@ prepare_setup_vars
 change_setting "IPV4_ADDRESS" "$ServerIP"
 change_setting "IPV6_ADDRESS" "$ServerIPv6"
 setup_web_password "$WEBPASSWORD"
-setup_dnsmasq
+setup_dnsmasq "$DNS1" "$DNS2"
 setup_php_env
 setup_dnsmasq_hostnames "$ServerIP" "$ServerIPv6" "$HOSTNAME"
 setup_ipv4_ipv6
