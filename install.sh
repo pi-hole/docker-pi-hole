@@ -76,6 +76,9 @@ installPihole | tee "${tmpLog}"
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
 if [[ "$IMAGE" == 'alpine' ]] ; then
 	cp /etc/.pihole/advanced/pihole.cron /etc/crontabs/pihole
+	
+	# Fix hostname bug on block page
+    sed -i "s/\(\$_SERVER\['SERVER_NAME'\]\)/\(\$_SERVER\['HTTP_HOST'\]\)/" /var/www/html/pihole/index.php
 fi
  
 
