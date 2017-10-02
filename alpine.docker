@@ -2,12 +2,13 @@ FROM alpine:edge
 MAINTAINER adam@diginc.us <adam@diginc.us>
 
 ENV IMAGE alpine
+ENV ARCH amd64
 ENV PATH /opt/pihole:${PATH}
 
 COPY install.sh /usr/local/bin/docker-install.sh
 ENV setupVars /etc/pihole/setupVars.conf
 ENV PIHOLE_INSTALL /tmp/ph_install.sh
-ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.19.1.1/s6-overlay-amd64.tar.gz
+ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.20.0.0/s6-overlay-amd64.tar.gz
 
 RUN apk upgrade --update && \
     apk add bind-tools wget curl bash libcap && \

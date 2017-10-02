@@ -1,5 +1,5 @@
 FROM debian:jessie
-LABEL adam@diginc.us
+LABEL maintainer="adam@diginc.us"
 
 ENV IMAGE debian
 ENV ARCH amd64

@@ -1,5 +1,5 @@
 FROM {{ image.base }}
-LABEL {{ image.maintainer }}
+LABEL maintainer="{{ image.maintainer }}"
 
 ENV IMAGE {{ os }}
 ENV ARCH {{ image.arch }}

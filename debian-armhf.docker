@@ -1,21 +1,19 @@
-FROM jsurf/rpi-raspbian
-MAINTAINER adam@diginc.us <adam@diginc.us>
+FROM {{ image.base }}
+LABEL maintainer="{{ image.maintainer }}"
 
-RUN [ "cross-build-start" ]
-
-ENV IMAGE debian
+ENV IMAGE {{ os }}
+ENV ARCH {{ image.arch }}
 ENV PATH /opt/pihole:${PATH}
 
 COPY install.sh /usr/local/bin/docker-install.sh
 ENV setupVars /etc/pihole/setupVars.conf
 ENV PIHOLE_INSTALL /tmp/ph_install.sh
-ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.19.1.1/s6-overlay-armhf.tar.gz
+ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.20.0.0/s6-overlay-armhf.tar.gz
 
 RUN apt-get update && \
     apt-get install -y wget curl net-tools cron && \
     curl -L -s $S6OVERLAY_RELEASE \
         | tar xvzf - -C / && \
-	ln /lib/ld-linux-armhf.so.3 /lib/ld-linux.so.3 && \
     docker-install.sh && \
     rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
 
@@ -42,5 +40,3 @@ ENV S6_KEEP_ENV 1
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
 
 SHELL ["/bin/bash", "-c"]
-
-RUN [ "cross-build-end" ]

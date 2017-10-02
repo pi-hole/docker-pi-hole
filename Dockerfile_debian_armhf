@@ -1,5 +1,5 @@
 FROM multiarch/debian-debootstrap:armhf-jessie-slim
-LABEL adam@diginc.us
+LABEL maintainer="adam@diginc.us"
 
 ENV IMAGE debian
 ENV ARCH armhf
