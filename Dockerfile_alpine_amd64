@@ -1,5 +1,5 @@
 FROM alpine:edge
-LABEL adam@diginc.us
+LABEL maintainer="adam@diginc.us"
 
 ENV IMAGE alpine
 ENV ARCH amd64
