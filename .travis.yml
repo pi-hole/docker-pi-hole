@@ -7,4 +7,8 @@ python:
 install:
   - pip install -r requirements.txt
 
-script: py.test -vv test/
+script: 
+  # prepare qemu
+  - docker run --rm --privileged multiarch/qemu-user-static:register --reset
+  # run docker build & tests
+  - py.test -vv test/
