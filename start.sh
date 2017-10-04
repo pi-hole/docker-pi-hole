@@ -1,6 +1,6 @@
 #!/bin/bash -e
 # Dockerfile variables
-export IMAGE
+export TAG
 export ServerIP
 export ServerIPv6
 export PYTEST
@@ -25,7 +25,7 @@ setup_dnsmasq "$DNS1" "$DNS2"
 setup_php_env
 setup_dnsmasq_hostnames "$ServerIP" "$ServerIPv6" "$HOSTNAME"
 setup_ipv4_ipv6
-setup_lighttpd_bind "$ServerIP" "$IMAGE"
+setup_lighttpd_bind "$ServerIP" "$TAG"
 test_configs
 test_framework_stubbing
 echo "::: Docker start setup complete - beginning s6 services"

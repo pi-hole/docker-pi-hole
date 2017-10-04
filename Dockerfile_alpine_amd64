@@ -1,7 +1,10 @@
 FROM alpine:edge
-LABEL maintainer="adam@diginc.us"
 
-ENV IMAGE alpine
+LABEL image="diginc/pi-hole:alpine_amd64"
+LABEL maintainer="adam@diginc.us"
+LABEL url="https://www.github.com/diginc/docker-pi-hole"
+
+ENV TAG alpine
 ENV ARCH amd64
 ENV PATH /opt/pihole:${PATH}
 
