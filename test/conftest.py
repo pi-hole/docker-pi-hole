@@ -1,7 +1,7 @@
 import pytest
 import testinfra
 
-WEB_SERVER = { 'alpine': 'nginx', 'debian': 'lighttpd' }
+WEB_SERVER = { 'alpine_amd64': 'nginx', 'debian_amd64': 'lighttpd' }
 
 check_output = testinfra.get_backend(
     "local://"
@@ -9,7 +9,7 @@ check_output = testinfra.get_backend(
 
 def DockerGeneric(request, args, image, cmd):
     assert 'docker' in check_output('id'), "Are you in the docker group?"
-    if 'diginc/pi-hole' in image:
+    if 'pi-hole' in image:
        args += " --dns 127.0.0.1 -v /dev/null:/etc/.pihole/adlists.default -e PYTEST=\"True\""
     docker_run = "docker run -d {} {} {}".format(args, image, cmd)
     print docker_run
@@ -56,9 +56,17 @@ def DockerPersist(request, persist_args, persist_image, persist_cmd, Dig):
 def args(request):
     return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
 
-@pytest.fixture(params=['alpine', 'debian'])
-def tag(request):
+@pytest.fixture(params=['amd64', 'armhf', 'aarch64'])
+def arch(request):
     return request.param
+
+@pytest.fixture(params=['debian', 'alpine'])
+def os(request):
+    return request.param
+
+@pytest.fixture()
+def tag(request, os, arch):
+    return '{}_{}'.format(os, arch)
 
 @pytest.fixture
 def webserver(request, tag):
@@ -66,7 +74,7 @@ def webserver(request, tag):
 
 @pytest.fixture()
 def image(request, tag):
-    return 'diginc/pi-hole:{}'.format(tag)
+    return 'pi-hole:{}'.format(tag)
 
 @pytest.fixture()
 def cmd(request):
@@ -76,7 +84,7 @@ def cmd(request):
 def persist_args(request):
     return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
 
-@pytest.fixture(scope='module', params=['alpine', 'debian'])
+@pytest.fixture(scope='module', params=['alpine_amd64', 'debian_amd64'])
 def persist_tag(request):
     return request.param
 
@@ -86,7 +94,7 @@ def persist_webserver(request, persist_tag):
 
 @pytest.fixture(scope='module')
 def persist_image(request, persist_tag):
-    return 'diginc/pi-hole:{}'.format(persist_tag)
+    return 'pi-hole:{}'.format(persist_tag)
 
 @pytest.fixture(scope='module')
 def persist_cmd(request):
