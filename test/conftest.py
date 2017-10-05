@@ -56,9 +56,17 @@ def DockerPersist(request, persist_args, persist_image, persist_cmd, Dig):
 def args(request):
     return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
 
-@pytest.fixture(params=['alpine_amd64', 'debian_amd64'])
-def tag(request):
+@pytest.fixture(params=['amd64', 'armhf', 'aarch64'])
+def arch(request):
     return request.param
+
+@pytest.fixture(params=['debian', 'alpine'])
+def os(request):
+    return request.param
+
+@pytest.fixture()
+def tag(request, os, arch):
+    return '{}_{}'.format(os, arch)
 
 @pytest.fixture
 def webserver(request, tag):
