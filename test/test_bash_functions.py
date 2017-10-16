@@ -9,7 +9,7 @@ DEFAULTARGS = '-e ServerIP="127.0.0.1" '
     (DEFAULTARGS + '-e "IPv6=False"', False, 'IPv4'),
     (DEFAULTARGS + '-e "IPv6=foobar"', False, 'IPv4'),
 ])
-def test_IPv6_not_True_removes_ipv6(Docker, tag, args, expected_ipv6, expected_stdout):
+def test_IPv6_not_True_removes_ipv6(Docker, os, args, expected_ipv6, expected_stdout):
     ''' When a user overrides IPv6=True they only get IPv4 listening webservers '''
     IPV6_LINE = { 'alpine': 'listen [::]:80 default_server',
                   'debian': 'use-ipv6.pl' }
@@ -18,8 +18,8 @@ def test_IPv6_not_True_removes_ipv6(Docker, tag, args, expected_ipv6, expected_s
 
     function = Docker.run('. /bash_functions.sh ; setup_ipv4_ipv6')
     assert "Using {}".format(expected_stdout) in function.stdout
-    config = Docker.run('cat {}'.format( WEB_CONFIG[tag])).stdout
-    assert (IPV6_LINE[tag] in config) == expected_ipv6
+    config = Docker.run('cat {}'.format( WEB_CONFIG[os])).stdout
+    assert (IPV6_LINE[os] in config) == expected_ipv6
 
 @pytest.mark.parametrize('args, expected_stdout, dns1, dns2', [
     ('-e ServerIP="1.2.3.4"', 'default DNS', '8.8.8.8', '8.8.4.4' ),
@@ -54,11 +54,11 @@ expected_debian_lines = [
     '"ServerIP" => "127.0.0.1"',
     '"PHP_ERROR_LOG" => "/var/log/lighttpd/error.log"'
 ]
-@pytest.mark.parametrize('tag,expected_lines,repeat_function', [
+@pytest.mark.parametrize('os,expected_lines,repeat_function', [
     ('debian', expected_debian_lines, 1),
     ('debian', expected_debian_lines, 2)
 ])
-def test_debian_setup_php_env(Docker, tag, expected_lines, repeat_function):
+def test_debian_setup_php_env(Docker, os, expected_lines, repeat_function):
     ''' confirm all expected output is there and nothing else '''
     stdout = ''
     for i in range(repeat_function):

@@ -17,7 +17,7 @@ validate_env() {
 
     # Debian
     nc_error='Name or service not known'
-    if [[ "$IMAGE" == 'alpine' ]] ; then
+    if [[ "$TAG" == 'alpine' ]] ; then
         nc_error='bad address' 
     fi;
 
@@ -119,7 +119,7 @@ setup_dnsmasq_hostnames() {
 }
 
 setup_lighttpd_bind() {
-    if [[ "$IMAGE" == 'debian' ]] ; then
+    if [[ "$TAG" == 'debian' ]] ; then
     # if using '--net=host' only bind lighttpd on $ServerIP
         if grep -q "docker" /proc/net/dev ; then #docker (docker0 by default) should only be present on the host system
             if ! grep -q "server.bind" /etc/lighttpd/lighttpd.conf ; then # if the declaration is already there, don't add it again
@@ -130,7 +130,7 @@ setup_lighttpd_bind() {
 }
 
 setup_php_env() {
-    case $IMAGE in
+    case $TAG in
         "debian") setup_php_env_debian ;;
         "alpine") setup_php_env_alpine ;;
     esac
@@ -188,11 +188,12 @@ setup_web_password() {
 	fi
     { set +x; } 2>/dev/null
 }
+
 setup_ipv4_ipv6() {
     local ip_versions="IPv4 and IPv6"
     if [ "$IPv6" != "True" ] ; then
         ip_versions="IPv4"
-        case $IMAGE in
+        case $TAG in
             "debian") sed -i '/use-ipv6.pl/ d' /etc/lighttpd/lighttpd.conf ;;
             "alpine") sed -i '/listen \[::\]:80/ d' /etc/nginx/nginx.conf ;;
         esac
@@ -201,7 +202,7 @@ setup_ipv4_ipv6() {
 }
 
 test_configs() {
-    case $IMAGE in
+    case $TAG in
         "debian") test_configs_debian ;;
         "alpine") test_configs_alpine ;;
     esac
@@ -241,8 +242,8 @@ docker_main() {
     echo -n '::: Starting up DNS and Webserver ...'
     service dnsmasq restart # Just get DNS up. The webserver is down!!!
 
-    IMAGE="$1"
-    case $IMAGE in # Setup webserver
+    TAG="$1"
+    case $TAG in # Setup webserver
         "alpine")
             php-fpm5
             nginx

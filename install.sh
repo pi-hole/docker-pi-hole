@@ -2,7 +2,7 @@
 mkdir -p /etc/pihole/
 export CORE_TAG='v3.1.4'
 export WEB_TAG='v3.1'
-export FTL_TAG='v2.10'
+export FTL_TAG='v2.11.1'
 
 #     Make pihole scripts fail searching for `systemctl`,
 # which fails pretty miserably in docker compared to `service`
@@ -13,7 +13,7 @@ mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
 
 # Get the install functions
 wget -O "$PIHOLE_INSTALL" https://raw.githubusercontent.com/pi-hole/pi-hole/${CORE_TAG}/automated%20install/basic-install.sh
-if [[ "$IMAGE" == 'alpine' ]] ; then
+if [[ "$TAG" == 'alpine' ]] ; then
     sed -i '/OS distribution not supported/ i\  echo "Hi Alpine"' "$PIHOLE_INSTALL"
     sed -i '/OS distribution not supported/,+1d' "$PIHOLE_INSTALL"
     sed -i 's#nologin pihole#nologin pihole 2>/dev/null || adduser -S -s /sbin/nologin pihole#g' "$PIHOLE_INSTALL"
@@ -36,7 +36,7 @@ PH_TEST=true . "${PIHOLE_INSTALL}"
 
 # Run only what we need from installer
 export USER=pihole
-if [[ "$IMAGE" == 'debian' ]] ; then
+if [[ "$TAG" == 'debian' ]] ; then
     distro_check
     install_dependent_packages INSTALLER_DEPS[@]
     install_dependent_packages PIHOLE_DEPS[@]
@@ -44,7 +44,7 @@ if [[ "$IMAGE" == 'debian' ]] ; then
     sed -i "/sleep 2/ d" /etc/init.d/dnsmasq # SLOW
 	# IPv6 support for nc openbsd better than traditional
 	apt-get install -y --force-yes netcat-openbsd
-elif [[ "$IMAGE" == 'alpine' ]] ; then
+elif [[ "$TAG" == 'alpine' ]] ; then
     apk add \
         dnsmasq \
         nginx \
@@ -74,8 +74,11 @@ tmpLog="${tmpLog}"
 instalLogLoc="${instalLogLoc}"
 installPihole | tee "${tmpLog}"
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
-if [[ "$IMAGE" == 'alpine' ]] ; then
+if [[ "$TAG" == 'alpine' ]] ; then
 	cp /etc/.pihole/advanced/pihole.cron /etc/crontabs/pihole
+	
+    # Fix hostname bug on block page
+    sed -i "s/\$_SERVER\['SERVER_NAME'\]/\$_SERVER\['HTTP_HOST'\]/" /var/www/html/pihole/index.php
 fi
  
 
