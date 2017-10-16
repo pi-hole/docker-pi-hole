@@ -188,6 +188,7 @@ setup_web_password() {
 	fi
     { set +x; } 2>/dev/null
 }
+
 setup_ipv4_ipv6() {
     local ip_versions="IPv4 and IPv6"
     if [ "$IPv6" != "True" ] ; then
