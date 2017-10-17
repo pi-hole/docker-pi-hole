@@ -126,8 +126,8 @@ Here are some relevant wiki pages from [pi-hole's documentation](https://github.
 We install all pihole utilities so the the built in [pihole commands](https://discourse.pi-hole.net/t/the-pihole-command-with-examples/738) will work via `docker exec <container> <command>` like so:
 
 * `docker exec pihole_container_name pihole updateGravity`
-* `docker exec pihole_container_name pihole -w spclient.wg.spotify.com
-* `docker exec pihole_container_name pihole -wild example.com
+* `docker exec pihole_container_name pihole -w spclient.wg.spotify.com`
+* `docker exec pihole_container_name pihole -wild example.com`
 
 ### Customizations
 
