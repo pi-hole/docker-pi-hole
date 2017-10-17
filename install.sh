@@ -47,6 +47,7 @@ if [[ "$TAG" == 'debian' ]] ; then
 elif [[ "$TAG" == 'alpine' ]] ; then
     apk add \
         dnsmasq \
+        dnsmasq-dnssec \
         nginx \
         ca-certificates \
         php5-fpm php5-json php5-openssl php5-zip php5-sockets libxml2 \
