@@ -1,5 +1,8 @@
+""" Generates Dockerfiles from template and builds them locally """
+
 from jinja2 import Environment, FileSystemLoader
 import os
+import testinfra
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -69,5 +72,34 @@ def generate_dockerfiles():
                 f.write(template.render(pihole=merged_data))
 
 
+def build_everything():
+    for os in ['debian', 'alpine']:
+        for image, archs in {
+            'pi-hole': ['amd64'], 
+            'pi-hole-multiarch': ['armhf', 'aarch64'],
+        }.iteritems():
+            for arch in archs: 
+                build(image, os, arch)
+
+
+def build(image, os, arch):
+    run_local = testinfra.get_backend(
+        "local://"
+    ).get_module("Command").run
+
+    dockerfile = 'Dockerfile_{}_{}'.format(os, arch)
+    image_tag = '{}:{}_{}'.format(image, os, arch)
+    print " ::: Pulling {} to reuse layers".format(dockerfile, image_tag)
+    pull_cmd = run_local('docker pull {}/{}'.format('diginc', image_tag))
+    print pull_cmd.stdout
+    print " ::: Building {} into {}".format(dockerfile, image_tag)
+    build_cmd = run_local('docker build --pull -f {} -t {} .'.format(dockerfile, image_tag))
+    print build_cmd.stdout
+    if build_cmd.rc != 0:
+        print build_cmd.stderr
+    assert build_cmd.rc == 0
+
+
 if __name__ == '__main__':
     generate_dockerfiles()
+    build_everything()
