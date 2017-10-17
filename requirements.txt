@@ -1,6 +1,7 @@
 docker-compose
+jinja2
 pytest
 pytest-cov
 pytest-xdist
 testinfra==1.5.1
-jinja2
+tox
