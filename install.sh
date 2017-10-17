@@ -75,7 +75,10 @@ instalLogLoc="${instalLogLoc}"
 installPihole | tee "${tmpLog}"
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
 if [[ "$TAG" == 'alpine' ]] ; then
-	cp /etc/.pihole/advanced/pihole.cron /etc/crontabs/pihole
+    cp /etc/.pihole/advanced/pihole.cron /etc/crontabs/pihole
+
+    # More chewing gum patching, post installPihole dnsmasq replacement seems to work probably due to dnsmasq uid missing
+    apk del dnsmasq && apk add dnsmasq-dnssec
 	
     # Fix hostname bug on block page
     sed -i "s/\$_SERVER\['SERVER_NAME'\]/\$_SERVER\['HTTP_HOST'\]/" /var/www/html/pihole/index.php
