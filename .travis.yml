@@ -5,7 +5,6 @@ language: python
 env:
     global:
         - QEMU_VER=v2.9.1
-        - DOCKER_REPO=shaf/test
     matrix:
         - OS=debian ARCH=amd64
         - OS=debian ARCH=armhf
@@ -22,5 +21,6 @@ script:
   - docker run --rm --privileged multiarch/qemu-user-static:register --reset
   # generate and build dockerfile
   - ./Dockerfile.py --os=${OS} --arch=${ARCH} -v
+  - docker images
   # run docker build & tests
-  - py.test -vv -k ${OS}_${ARCH} test/
+  - py.test -vvv -k "${OS}_${ARCH}" test/
