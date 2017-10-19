@@ -83,13 +83,21 @@ def image(request, tag):
 def cmd(request):
     return 'tail -f /dev/null'
 
+@pytest.fixture(scope='module', params=['amd64', 'armhf', 'aarch64'])
+def persist_arch(request):
+    return request.param
+
+@pytest.fixture(scope='module', params=['debian', 'alpine'])
+def persist_os(request):
+    return request.param
+
 @pytest.fixture(scope='module')
 def persist_args(request):
     return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
 
-@pytest.fixture(scope='module', params=['alpine_amd64', 'debian_amd64'])
-def persist_tag(request):
-    return request.param
+@pytest.fixture(scope='module')
+def persist_tag(request, persist_os, persist_arch):
+    return '{}_{}'.format(persist_os, persist_arch)
 
 @pytest.fixture(scope='module')
 def persist_webserver(request, persist_tag):

@@ -23,4 +23,4 @@ script:
   - ./Dockerfile.py --os=${OS} --arch=${ARCH} -v
   - docker images
   # run docker build & tests
-  - py.test -vvv -k "${OS}_${ARCH}" test/
+  - py.test -vv -k "${OS}-${ARCH}" test/
