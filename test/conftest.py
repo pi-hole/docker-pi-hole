@@ -1,8 +1,6 @@
 import pytest
 import testinfra
 
-WEB_SERVER = { 'alpine_amd64': 'nginx', 'debian_amd64': 'lighttpd' }
-
 check_output = testinfra.get_backend(
     "local://"
 ).get_module("Command").check_output
@@ -70,13 +68,16 @@ def tag(request, os, arch):
 
 @pytest.fixture
 def webserver(request, tag):
-    return WEB_SERVER[tag]
+    webserver = 'nginx'
+    if 'debian' in tag:
+        webserver = 'lighttpd'
+    return webserver
 
 @pytest.fixture()
 def image(request, tag):
-    image = 'pi-hole'
-    if 'amd64' not in tag:
-        image = 'pi-hole-multiarch'
+    image = 'pi-hole-multiarch'
+    if 'amd64' in tag:
+        image = 'pi-hole'
     return '{}:{}'.format(image, tag)
 
 @pytest.fixture()
@@ -101,11 +102,17 @@ def persist_tag(request, persist_os, persist_arch):
 
 @pytest.fixture(scope='module')
 def persist_webserver(request, persist_tag):
-    return WEB_SERVER[persist_tag]
+    webserver = 'nginx'
+    if 'debian' in persist_tag:
+        webserver = 'lighttpd'
+    return webserver
 
 @pytest.fixture(scope='module')
 def persist_image(request, persist_tag):
-    return 'pi-hole:{}'.format(persist_tag)
+    image = 'pi-hole-multiarch'
+    if 'amd64' in persist_tag:
+        image = 'pi-hole'
+    return '{}:{}'.format(image, persist_tag)
 
 @pytest.fixture(scope='module')
 def persist_cmd(request):
