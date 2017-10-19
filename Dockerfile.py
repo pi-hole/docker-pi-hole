@@ -1,6 +1,23 @@
-""" Generates Dockerfiles from template and builds them locally """
+#!/usr/bin/env python
 
+""" Dockerfile.py - generates and build dockerfiles
+
+Usage:
+  Dockerfile.py [--os=<os> ...] [--arch=<arch> ...] [-v] [--no-build | --no-generate]
+
+Options:
+    --no-build      Skip building the docker images
+    --no-generate   Skip generating Dockerfiles from template
+    --os=<os>       What OS(s) to build             [default: alpine debian]
+    --arch=<arch>   What Architecture(s) to build   [default: amd64 armhf aarch64]
+    -v              Print docker's command output   [default: False]
+
+Examples:
+"""
+
+from docopt import docopt
 from jinja2 import Environment, FileSystemLoader
+from docopt import docopt
 import os
 import testinfra
 
@@ -54,9 +71,15 @@ images = {
     ]
 }
 
-def generate_dockerfiles():
+def generate_dockerfiles(args):
+    if args['--no-generate']:
+        print " ::: Skipping Dockerfile generation"
+        return
+
     for os, archs in images.iteritems():
         for image in archs:
+            if os not in args['--os'] and image['arch'] not in args['--arch']:
+                return
             merged_data = dict(
                 { 'os': os }.items() +
                 base_vars.items() +
@@ -72,34 +95,44 @@ def generate_dockerfiles():
                 f.write(template.render(pihole=merged_data))
 
 
-def build_everything():
-    for os in ['debian', 'alpine']:
-        for image, archs in {
-            'pi-hole': ['amd64'], 
-            'pi-hole-multiarch': ['armhf', 'aarch64'],
-        }.iteritems():
-            for arch in archs: 
-                build(image, os, arch)
+def build_dockerfiles(args):
+    if args['--no-build']:
+        print " ::: Skipping Dockerfile generation"
+        return
+
+    for os in args['--os']:
+        for arch in args['--arch']:
+            docker_repo = 'pi-hole-multiarch'
+            if arch == 'amd64':
+                docker_repo = 'pi-hole'
+
+            build(docker_repo, os, arch, args)
 
 
-def build(image, os, arch):
+def build(docker_repo, os, arch, args):
     run_local = testinfra.get_backend(
         "local://"
     ).get_module("Command").run
 
     dockerfile = 'Dockerfile_{}_{}'.format(os, arch)
-    image_tag = '{}:{}_{}'.format(image, os, arch)
-    print " ::: Pulling {} to reuse layers".format(dockerfile, image_tag)
-    pull_cmd = run_local('docker pull {}/{}'.format('diginc', image_tag))
-    print pull_cmd.stdout
-    print " ::: Building {} into {}".format(dockerfile, image_tag)
-    build_cmd = run_local('docker build --pull -f {} -t {} .'.format(dockerfile, image_tag))
-    print build_cmd.stdout
+    repo_tag = '{}:{}_{}'.format(docker_repo, os, arch)
+    print " ::: Pulling {} to reuse layers".format(dockerfile, repo_tag)
+    pull_cmd = run_local('docker pull {}/{}'.format('diginc', repo_tag))
+    if args['-v']:
+        print pull_cmd.stdout
+    print " ::: Building {} into {}".format(dockerfile, repo_tag)
+    build_cmd = run_local('docker build --pull -f {} -t {} .'.format(dockerfile, repo_tag))
+    if args['-v']:
+        print build_cmd.stdout
     if build_cmd.rc != 0:
+        print "     ::: Building {} encountered an error".format(dockerfile)
         print build_cmd.stderr
     assert build_cmd.rc == 0
 
 
 if __name__ == '__main__':
-    generate_dockerfiles()
-    build_everything()
+    args = docopt(__doc__, version='Dockerfile 0.1')
+    # print args
+
+    generate_dockerfiles(args)
+    build_dockerfiles(args)
