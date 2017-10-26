@@ -72,7 +72,9 @@ If you're a fan of [docker-compose](https://docs.docker.com/compose/install/) I 
 * [How do I set or reset the Web interface Password?](https://discourse.pi-hole.net/t/how-do-i-set-or-reset-the-web-interface-password/1328)
   * `docker exec pihole_container_name pihole -a -p supersecurepassword`
 * Port conflicts?  Stop your server's existing DNS / Web services.
-  * Ubuntu users especially may need to shutoff dnsmasq on your docker server so it can run in the container on port 53
+  * Ubuntu users especially may need to shutoff dns on your docker server so it can run in the container on port 53
+    * 17.04 and later should disable dnsmasq.
+    * 17.10 should disable systemd-resolved service. See here: https://askubuntu.com/questions/907246/how-to-disable-systemd-resolved-in-ubuntu
   * Don't forget to stop your services from auto-starting again after you reboot
 * Port 80 is highly recommended because if you have another site/service using port 80 by default then the ads may not transform into blank ads correctly.  To make sure docker-pi-hole plays nicely with an existing webserver you run you'll probably need a reverse proxy webserver config if you don't have one already.  Pi-Hole has to be the default web app on said proxy e.g. if you goto your host by IP instead of domain then pi-hole is served out instead of any other sites hosted by the proxy. This is the '[default_server](http://nginx.org/en/docs/http/ngx_http_core_module.html#listen)' in nginx or ['_default_' virtual host](https://httpd.apache.org/docs/2.4/vhosts/examples.html#default) in Apache and is taken advantage of so any undefined ad domain can be directed to your webserver and get a 'blocked' response instead of ads.
   * You can still map other ports to pi-hole port 80 using docker's port forwarding like this `-p 8080:80`, but again the ads won't render propertly.  Changing the inner port 80 shouldn't be required unless you run docker host networking mode.
