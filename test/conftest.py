@@ -1,8 +1,6 @@
 import pytest
 import testinfra
 
-WEB_SERVER = { 'alpine_amd64': 'nginx', 'debian_amd64': 'lighttpd' }
-
 check_output = testinfra.get_backend(
     "local://"
 ).get_module("Command").check_output
@@ -65,36 +63,59 @@ def os(request):
     return request.param
 
 @pytest.fixture()
+@pytest.mark.skipif((os == 'alpine' and arch == 'aarch64'), 'musl does not have aarch64 yet')
 def tag(request, os, arch):
     return '{}_{}'.format(os, arch)
 
 @pytest.fixture
 def webserver(request, tag):
-    return WEB_SERVER[tag]
+    webserver = 'nginx'
+    if 'debian' in tag:
+        webserver = 'lighttpd'
+    return webserver
 
 @pytest.fixture()
 def image(request, tag):
-    return 'pi-hole:{}'.format(tag)
+    image = 'pi-hole-multiarch'
+    if 'amd64' in tag:
+        image = 'pi-hole'
+    return '{}:{}'.format(image, tag)
 
 @pytest.fixture()
 def cmd(request):
     return 'tail -f /dev/null'
 
+@pytest.fixture(scope='module', params=['amd64'])
+def persist_arch(request):
+    '''amd64 only, dnsmasq will not start under qemu-user-static :('''
+    return request.param
+
+@pytest.fixture(scope='module', params=['debian', 'alpine'])
+def persist_os(request):
+    return request.param
+
 @pytest.fixture(scope='module')
 def persist_args(request):
     return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
 
-@pytest.fixture(scope='module', params=['alpine_amd64', 'debian_amd64'])
-def persist_tag(request):
-    return request.param
+@pytest.mark.skipif((persist_os == 'alpine' and persist_arch == 'aarch64'), 'musl does not have aarch64 yet')
+@pytest.fixture(scope='module')
+def persist_tag(request, persist_os, persist_arch):
+    return '{}_{}'.format(persist_os, persist_arch)
 
 @pytest.fixture(scope='module')
 def persist_webserver(request, persist_tag):
-    return WEB_SERVER[persist_tag]
+    webserver = 'nginx'
+    if 'debian' in persist_tag:
+        webserver = 'lighttpd'
+    return webserver
 
 @pytest.fixture(scope='module')
 def persist_image(request, persist_tag):
-    return 'pi-hole:{}'.format(persist_tag)
+    image = 'pi-hole-multiarch'
+    if 'amd64' in persist_tag:
+        image = 'pi-hole'
+    return '{}:{}'.format(image, persist_tag)
 
 @pytest.fixture(scope='module')
 def persist_cmd(request):
@@ -141,4 +162,3 @@ def RunningPiHole(DockerPersist, Slow, persist_webserver):
     Slow(lambda: DockerPersist.run('pgrep dnsmasq').rc == 0)
     Slow(lambda: DockerPersist.run('pgrep {}'.format(persist_webserver) ).rc == 0)
     return DockerPersist
-
