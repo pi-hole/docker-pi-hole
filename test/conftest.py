@@ -63,6 +63,7 @@ def os(request):
     return request.param
 
 @pytest.fixture()
+@pytest.mark.skipif((os == 'alpine' and arch == 'aarch64'), 'musl does not have aarch64 yet')
 def tag(request, os, arch):
     return '{}_{}'.format(os, arch)
 
@@ -84,8 +85,9 @@ def image(request, tag):
 def cmd(request):
     return 'tail -f /dev/null'
 
-@pytest.fixture(scope='module', params=['amd64', 'armhf', 'aarch64'])
+@pytest.fixture(scope='module', params=['amd64'])
 def persist_arch(request):
+    '''amd64 only dnsmasq will not start under qemu-user-static :('''
     return request.param
 
 @pytest.fixture(scope='module', params=['debian', 'alpine'])
@@ -96,6 +98,7 @@ def persist_os(request):
 def persist_args(request):
     return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
 
+@pytest.mark.skipif((persist_os == 'alpine' and persist_arch == 'aarch64'), 'musl does not have aarch64 yet')
 @pytest.fixture(scope='module')
 def persist_tag(request, persist_os, persist_arch):
     return '{}_{}'.format(persist_os, persist_arch)

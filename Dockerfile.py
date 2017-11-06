@@ -64,10 +64,11 @@ images = {
             'base': 'multiarch/alpine:armhf-edge',
             'arch': 'armhf'
         },
-        {
-            'base': 'multiarch/alpine:aarch64-edge',
-            'arch': 'aarch64'
-        }
+        # Impossible combo :(
+        # {
+        #     'base': 'multiarch/alpine:aarch64-edge',
+        #     'arch': 'aarch64'
+        # }
     ]
 }
 
