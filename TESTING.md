@@ -8,7 +8,14 @@ Travis-ci auto runs tests during pull requests (PR) but it only has 2 cores and 
 
 After you have the prereqs, to get the required pip packages run: `pip install -r requirements.txt`
 
-To run the tests I currently use this `py.test` command: `py.test -vv -n auto` 
+To run the Dockerfile templating, image build, and tests all in one command just run: `tox`
 
-* `-n auto` enables multi-core running of tests for as many cores as you have.
-* `-vv` runs verbosity level 2, which is a lot of lines of output but not too much (level 3)
+# Local image names
+
+Docker images built by `tox` or `python Dockerfile.py` are named the same but stripped of the `diginc/` docker repository namespace.
+
+e.g. `pi-hole:debian_amd64` or `pi-hole-multiarch:alpine_aarch64`
+
+You can run the multiarch images on an amd64 development system if you [enable binfmt-support as described in the multiarch image docs](https://hub.docker.com/r/multiarch/alpine/)
+
+`docker run --rm --privileged multiarch/qemu-user-static:register --reset`
