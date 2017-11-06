@@ -87,7 +87,7 @@ def cmd(request):
 
 @pytest.fixture(scope='module', params=['amd64'])
 def persist_arch(request):
-    '''amd64 only dnsmasq will not start under qemu-user-static :('''
+    '''amd64 only, dnsmasq will not start under qemu-user-static :('''
     return request.param
 
 @pytest.fixture(scope='module', params=['debian', 'alpine'])
