@@ -117,12 +117,10 @@ def build(docker_repo, os, arch, args):
 
     dockerfile = 'Dockerfile_{}_{}'.format(os, arch)
     repo_tag = '{}:{}_{}'.format(docker_repo, os, arch)
-    print " ::: Pulling {} to reuse layers".format(dockerfile, repo_tag)
-    pull_cmd = run_local('docker pull {}/{}'.format('diginc', repo_tag))
-    if args['-v']:
-        print pull_cmd.stdout
+    cached_image = '{}/{}'.format('diginc', repo_tag)
     print " ::: Building {} into {}".format(dockerfile, repo_tag)
-    build_cmd = run_local('docker build --pull -f {} -t {} .'.format(dockerfile, repo_tag))
+    build_cmd = run_local('docker build --pull --cache-from="{cache},{create_tag}" -f {dockerfile} -t {create_tag} .'\
+        .format(cache=cached_image, dockerfile=dockerfile, create_tag=repo_tag))
     if args['-v']:
         print build_cmd.stdout
     if build_cmd.rc != 0:
