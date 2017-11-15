@@ -193,10 +193,10 @@ setup_web_port() {
     echo "INFO: Without proper router DNAT forwarding to $ServerIP:$web_port, you may not get any blocked websites on ads"
     case $TAG in
         "debian") 
-            sed -i '/server.port\s*=\s*80\s*$/ s/80/'$WEB_PORT'/g' /etc/lighttpd/lighttpd.conf ;;
+            sed -i '/server.port\s*=\s*80\s*$/ s/80/'$web_port'/g' /etc/lighttpd/lighttpd.conf ;;
         "alpine") 
-            sed -i '/^\s*listen \[::\]:80 default_server/ s/80/'$WEB_PORT'/g' /etc/nginx/nginx.conf
-            sed -i '/^\s*listen 80 default_server/ s/80/'$WEB_PORT'/g' /etc/nginx/nginx.conf ;;
+            sed -i '/^\s*listen \[::\]:80 default_server/ s/80/'$web_port'/g' /etc/nginx/nginx.conf
+            sed -i '/^\s*listen 80 default_server/ s/80/'$web_port'/g' /etc/nginx/nginx.conf ;;
     esac
 
 }
