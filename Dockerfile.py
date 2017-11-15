@@ -3,10 +3,11 @@
 """ Dockerfile.py - generates and build dockerfiles
 
 Usage:
-  Dockerfile.py [--os=<os> ...] [--arch=<arch> ...] [-v] [--no-build | --no-generate]
+  Dockerfile.py [--os=<os> ...] [--arch=<arch> ...] [-v] [--no-build | --no-generate] [--no-cache]
 
 Options:
     --no-build      Skip building the docker images
+    --no-cache      Build without using any cache data
     --no-generate   Skip generating Dockerfiles from template
     --os=<os>       What OS(s) to build             [default: alpine debian]
     --arch=<arch>   What Architecture(s) to build   [default: amd64 armhf aarch64]
@@ -117,18 +118,22 @@ def build(docker_repo, os, arch, args):
 
     dockerfile = 'Dockerfile_{}_{}'.format(os, arch)
     repo_tag = '{}:{}_{}'.format(docker_repo, os, arch)
-    print " ::: Pulling {} to reuse layers".format(dockerfile, repo_tag)
-    pull_cmd = run_local('docker pull {}/{}'.format('diginc', repo_tag))
-    if args['-v']:
-        print pull_cmd.stdout
+    cached_image = '{}/{}'.format('diginc', repo_tag)
+    no_cache = ''
+    if args['--no-cache']:
+        no_cache = '--no-cache'
+    build_command = 'docker build {no_cache} --pull --cache-from="{cache},{create_tag}" -f {dockerfile} -t {create_tag} .'\
+        .format(no_cache=no_cache, cache=cached_image, dockerfile=dockerfile, create_tag=repo_tag)
     print " ::: Building {} into {}".format(dockerfile, repo_tag)
-    build_cmd = run_local('docker build --pull -f {} -t {} .'.format(dockerfile, repo_tag))
     if args['-v']:
-        print build_cmd.stdout
-    if build_cmd.rc != 0:
+        print build_command, '\n'
+    build_result = run_local(build_command) 
+    if args['-v']:
+        print build_result.stdout
+    if build_result.rc != 0:
         print "     ::: Building {} encountered an error".format(dockerfile)
-        print build_cmd.stderr
-    assert build_cmd.rc == 0
+        print build_result.stderr
+    assert build_result.rc == 0
 
 
 if __name__ == '__main__':

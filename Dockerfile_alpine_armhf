@@ -13,7 +13,9 @@ ENV setupVars /etc/pihole/setupVars.conf
 ENV PIHOLE_INSTALL /tmp/ph_install.sh
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.20.0.0/s6-overlay-armhf.tar.gz
 
-RUN apk upgrade --update && \
+# TODO Re-enable upgrade after php5 packages use the latest greatest libressl packages, conflicts are breaking build 2017-11-14
+# RUN apk upgrade --update && \
+RUN apk update && \
     apk add bind-tools wget curl bash libcap && \
     curl -L -s $S6OVERLAY_RELEASE \
         | tar xvzf - -C / && \

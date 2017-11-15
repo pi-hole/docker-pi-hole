@@ -174,6 +174,33 @@ setup_php_env_alpine() {
     cat "$PHP_ENV_CONFIG"
 }
 
+setup_web_port() {
+    local warning="WARNING: Custom WEB_PORT not used"
+    # Quietly exit early for empty or default
+    if [[ -z "${1}" || "${1}" == '80' ]] ; then return ; fi
+
+    if ! echo $1 | grep -q '^[0-9][0-9]*$' ; then 
+        echo "$warning - $1 is not an integer"
+        return
+    fi
+
+    local -i web_port="$1"
+    if (( $web_port < 1 || $web_port > 65535 )); then
+        echo "$warning - $web_port is not within valid port range of 1-65535"
+        return
+    fi
+    echo "Custom WEB_PORT set to $web_port"
+    echo "INFO: Without proper router DNAT forwarding to $ServerIP:$web_port, you may not get any blocked websites on ads"
+    case $TAG in
+        "debian") 
+            sed -i '/server.port\s*=\s*80\s*$/ s/80/'$web_port'/g' /etc/lighttpd/lighttpd.conf ;;
+        "alpine") 
+            sed -i '/^\s*listen \[::\]:80 default_server/ s/80/'$web_port'/g' /etc/nginx/nginx.conf
+            sed -i '/^\s*listen 80 default_server/ s/80/'$web_port'/g' /etc/nginx/nginx.conf ;;
+    esac
+
+}
+
 setup_web_password() {
     if [ -z "${WEBPASSWORD+x}" ] ; then 
         # Not set at all, give the user a random pass

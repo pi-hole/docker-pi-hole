@@ -14,7 +14,9 @@ ENV PIHOLE_INSTALL /tmp/ph_install.sh
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/{{ pihole.s6_version }}/s6-overlay-{{ pihole.arch }}.tar.gz
 
 {% if pihole.os == 'alpine' %}
-RUN apk upgrade --update && \
+# TODO Re-enable upgrade after php5 packages use the latest greatest libressl packages, conflicts are breaking build 2017-11-14
+# RUN apk upgrade --update && \
+RUN apk update && \
     apk add bind-tools wget curl bash libcap && \
 {% else %}
 RUN apt-get update && \
