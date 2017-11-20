@@ -84,8 +84,8 @@ if [[ "$TAG" == 'alpine' ]] ; then
     sed -i "s/\$_SERVER\['SERVER_NAME'\]/\$_SERVER\['HTTP_HOST'\]/" /var/www/html/pihole/index.php
 fi
  
-
 mv "${tmpLog}" "${instalLogLoc}"
+touch /.piholeFirstBoot
 
 # Fix dnsmasq in docker
 grep -q '^user=root' || echo -e '\nuser=root' >> /etc/dnsmasq.conf 

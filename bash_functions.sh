@@ -48,12 +48,27 @@ setup_dnsmasq_dns() {
     local DNS2="${2:-8.8.4.4}"
     local dnsType='default'
     if [ "$DNS1" != '8.8.8.8' ] || [ "$DNS2" != '8.8.4.4' ] ; then
-      dnsType='custom'
+        dnsType='custom'
     fi;
 
+    if [ ! -f /.piholeFirstBoot ] ; then
+        local setupDNS1="$(grep 'PIHOLE_DNS_1' ${setupVars})"
+        local setupDNS2="$(grep 'PIHOLE_DNS_2' ${setupVars})"
+        if [[ -n "$DNS1" && -n "$setupDNS1"  ]] || \
+           [[ -n "$DNS2" && -n "$setupDNS2"  ]] ; then 
+                echo "Docker DNS variables not used"
+        fi
+        echo "Existing DNS servers used"
+        return
+    fi
+
     echo "Using $dnsType DNS servers: $DNS1 & $DNS2"
-	[ -n "$DNS1" ] && change_setting "PIHOLE_DNS_1" "${DNS1}"
-	[ -n "$DNS2" ] && change_setting "PIHOLE_DNS_2" "${DNS2}"
+	if [[ -n "$DNS1" && -z "$setupDNS1" ]] ; then
+        change_setting "PIHOLE_DNS_1" "${DNS1}"
+    fi
+	if [[ -n "$DNS2" && -z "$setupDNS2" ]] ; then
+        change_setting "PIHOLE_DNS_2" "${DNS2}"
+    fi
 }
 
 setup_dnsmasq_interface() {
@@ -193,10 +208,10 @@ setup_web_port() {
     echo "INFO: Without proper router DNAT forwarding to $ServerIP:$web_port, you may not get any blocked websites on ads"
     case $TAG in
         "debian") 
-            sed -i '/server.port\s*=\s*80\s*$/ s/80/'$web_port'/g' /etc/lighttpd/lighttpd.conf ;;
+            sed -i '/server.port\s*=\s*80\s*$/ s/80/'$WEB_PORT'/g' /etc/lighttpd/lighttpd.conf ;;
         "alpine") 
-            sed -i '/^\s*listen \[::\]:80 default_server/ s/80/'$web_port'/g' /etc/nginx/nginx.conf
-            sed -i '/^\s*listen 80 default_server/ s/80/'$web_port'/g' /etc/nginx/nginx.conf ;;
+            sed -i '/^\s*listen \[::\]:80 default_server/ s/80/'$WEB_PORT'/g' /etc/nginx/nginx.conf
+            sed -i '/^\s*listen 80 default_server/ s/80/'$WEB_PORT'/g' /etc/nginx/nginx.conf ;;
     esac
 
 }

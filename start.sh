@@ -33,4 +33,6 @@ test_configs
 test_framework_stubbing
 echo "::: Docker start setup complete - beginning s6 services"
 
+[ -f /.piholeFirstBoot ] && rm /.piholeFirstBoot
+
 # s6's init takes care of running services now, no more main start services function
