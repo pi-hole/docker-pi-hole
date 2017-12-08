@@ -63,10 +63,10 @@ setup_dnsmasq_dns() {
     fi
 
     echo "Using $dnsType DNS servers: $DNS1 & $DNS2"
-	if [[ -n "$DNS1" && -z "$setupDNS1" ]] ; then
+    if [[ -n "$DNS1" && -z "$setupDNS1" ]] ; then
         change_setting "PIHOLE_DNS_1" "${DNS1}"
     fi
-	if [[ -n "$DNS2" && -z "$setupDNS2" ]] ; then
+    if [[ -n "$DNS2" && -z "$setupDNS2" ]] ; then
         change_setting "PIHOLE_DNS_2" "${DNS2}"
     fi
 }
@@ -78,7 +78,7 @@ setup_dnsmasq_interface() {
       interfaceType='custom'
     fi;
     echo "DNSMasq binding to $interfaceType interface: $INTERFACE"
-	[ -n "$INTERFACE" ] && change_setting "PIHOLE_INTERFACE" "${INTERFACE}"
+    [ -n "$INTERFACE" ] && change_setting "PIHOLE_INTERFACE" "${INTERFACE}"
 }
 
 setup_dnsmasq_config_if_missing() {
@@ -224,10 +224,10 @@ setup_web_password() {
     fi;
     set -x
     if [[ "$WEBPASSWORD" == "" ]] ; then
-		echo "" | pihole -a -p
+        echo "" | pihole -a -p
     else
-		pihole -a -p "$WEBPASSWORD" "$WEBPASSWORD"
-	fi
+        pihole -a -p "$WEBPASSWORD" "$WEBPASSWORD"
+    fi
     { set +x; } 2>/dev/null
 }
 
@@ -274,10 +274,12 @@ test_configs_alpine() {
 
 test_framework_stubbing() {
     if [ -n "$PYTEST" ] ; then 
-		echo ":::::: Tests are being ran - stub out ad list fetching and add a fake ad block"
-		sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)" 
-		echo 'testblock.pi-hole.local' >> /etc/pihole/blacklist.txt
-	fi
+        echo ":::::: Tests are being ran - stub out ad list fetching and add a fake ad block"
+        sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)" 
+        echo '123.123.123.123 testblock.pi-hole.local' > /var/www/html/fake.list
+        echo 'file:///var/www/html/fake.list' > /etc/pihole/adlists.list
+        echo 'http://localhost/fake.list' >> /etc/pihole/adlists.list
+    fi
 }
 
 docker_main() {

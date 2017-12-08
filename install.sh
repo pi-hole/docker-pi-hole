@@ -1,8 +1,9 @@
 #!/bin/bash -ex
 mkdir -p /etc/pihole/
-export CORE_TAG='v3.1.4'
-export WEB_TAG='v3.1'
-export FTL_TAG='v2.11.1'
+export CORE_TAG='v3.2'
+export WEB_TAG='v3.2'
+export FTL_TAG='v2.12'
+export USE_DEVELOPMENT_BRANCHES=false
 
 #     Make pihole scripts fail searching for `systemctl`,
 # which fails pretty miserably in docker compared to `service`
@@ -45,7 +46,7 @@ if [[ "$TAG" == 'debian' ]] ; then
 	# IPv6 support for nc openbsd better than traditional
 	apt-get install -y --force-yes netcat-openbsd
 elif [[ "$TAG" == 'alpine' ]] ; then
-    apk add \
+    apk add -U \
         dnsmasq \
         nginx \
         ca-certificates \
@@ -59,9 +60,18 @@ piholeGitUrl="${piholeGitUrl}"
 webInterfaceGitUrl="${webInterfaceGitUrl}"
 webInterfaceDir="${webInterfaceDir}"
 git clone "${piholeGitUrl}" "${PI_HOLE_LOCAL_REPO}"
-pushd "${PI_HOLE_LOCAL_REPO}"; git reset --hard "${CORE_TAG}"; popd;
 git clone "${webInterfaceGitUrl}" "${webInterfaceDir}"
-pushd "${webInterfaceDir}"; git reset --hard "${WEB_TAG}"; popd;
+if [[ $USE_DEVELOPMENT_BRANCHES == true ]] ; then
+    pushd "${PI_HOLE_LOCAL_REPO}"; git checkout development; popd;
+    pushd "${webInterfaceDir}"; git checkout devel; popd;
+else
+    pushd "${PI_HOLE_LOCAL_REPO}"; 
+    git reset --hard "${CORE_TAG}"; 
+    # Can be removed once https://github.com/pi-hole/pi-hole/pull/1779 is in a release
+    git checkout 8d721d086cbe4b49665c9e0b1d81499b284776a9 gravity.sh
+    popd;
+    pushd "${webInterfaceDir}"; git reset --hard "${WEB_TAG}"; popd;
+fi
 
 export PIHOLE_INTERFACE=eth0
 export IPV4_ADDRESS=0.0.0.0
@@ -70,8 +80,8 @@ export PIHOLE_DNS_1=8.8.8.8
 export PIHOLE_DNS_2=8.8.4.4
 export QUERY_LOGGING=true
 
-tmpLog="${tmpLog}"
-instalLogLoc="${instalLogLoc}"
+tmpLog="/tmp/pihole-install.log"
+installLogLoc="${installLogLoc}"
 installPihole | tee "${tmpLog}"
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
 if [[ "$TAG" == 'alpine' ]] ; then
