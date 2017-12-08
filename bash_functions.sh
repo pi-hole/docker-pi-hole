@@ -276,7 +276,7 @@ test_framework_stubbing() {
     if [ -n "$PYTEST" ] ; then 
 		echo ":::::: Tests are being ran - stub out ad list fetching and add a fake ad block"
 		sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)" 
-		echo 'testblock.pi-hole.local' >> /etc/pihole/blacklist.txt
+		echo 'testblock.pi-hole.local' >> /etc/pihole/black.list
 	fi
 }
 

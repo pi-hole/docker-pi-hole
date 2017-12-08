@@ -10,6 +10,7 @@ def RunningPiHole(DockerPersist, Slow, persist_webserver, persist_tag, start_cmd
     ''' Override the RunningPiHole to run and check for success of a
         dnsmasq start based `pihole` script command '''
     #print DockerPersist.run('ps -ef').stdout
+    assert DockerPersist.dig.run('ping -c 1 test_pihole').rc == 0
     Slow(lambda: DockerPersist.run('pgrep dnsmasq').rc == 0)
     Slow(lambda: DockerPersist.run('pgrep {}'.format(persist_webserver)).rc == 0)
     oldpid = DockerPersist.run('pidof dnsmasq')
@@ -30,15 +31,17 @@ def test_pihole_start_cmd(RunningPiHole, start_cmd, persist_tag):
     ''' the start_cmd tests are all built into the RunningPiHole fixture in this file '''
     assert RunningPiHole.cmd.stdout == START_DNS_STDOUT[persist_tag]
 
-@pytest.mark.parametrize('start_cmd,hostname,expected_ip, expected_message', [
-    ('enable',  'pi.hole', '127.0.0.1', 'enabled'),
-    ('disable 0', 'pi.hole', '127.0.0.1', 'disabled'),
+@pytest.mark.parametrize('start_cmd,hostname,expected_ip, expected_messages', [
+    ('enable',  'pi.hole', '127.0.0.1', ['Enabling blocking','Pi-hole Enabled']),
+    ('disable', 'pi.hole', '127.0.0.1', ['Disabling blocking','Pi-hole Disabled']),
 ])
-def test_pihole_start_cmd(RunningPiHole, Dig, persist_tag, start_cmd, hostname, expected_ip, expected_message):
+def test_pihole_start_cmd(RunningPiHole, Dig, persist_tag, start_cmd, hostname, expected_ip, expected_messages):
     ''' the start_cmd tests are all built into the RunningPiHole fixture in this file '''
-    dig_cmd = "dig +time=1 +noall +answer {} @test_pihole | awk '{{ print $5 }}'".format(hostname)
-    lookup = RunningPiHole.dig.run(dig_cmd).stdout.rstrip('\n')
-    assert lookup == expected_ip
+    dig_cmd = "dig +time=1 +noall +answer {} @test_pihole".format(hostname)
+    lookup = RunningPiHole.dig.run(dig_cmd)
+    assert lookup.rc == 0
+    lookup_ip = lookup.stdout.split()[4]
+    assert lookup_ip == expected_ip
 
-    stdout = "::: Blocking has been {}!\n".format(expected_message)
-    assert stdout in RunningPiHole.cmd.stdout
+    for part_of_output in expected_messages:
+        assert part_of_output in RunningPiHole.cmd.stdout

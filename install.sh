@@ -46,7 +46,7 @@ if [[ "$TAG" == 'debian' ]] ; then
 	# IPv6 support for nc openbsd better than traditional
 	apt-get install -y --force-yes netcat-openbsd
 elif [[ "$TAG" == 'alpine' ]] ; then
-    apk add \
+    apk add -U \
         dnsmasq \
         nginx \
         ca-certificates \
