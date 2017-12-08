@@ -174,11 +174,11 @@ setup_php_env_debian() {
 setup_php_env_alpine() {
     # Intentionally tabs, required by HEREDOC de-indentation (<<-)
     cat <<-EOF > "$PHP_ENV_CONFIG"
-        [www]
-        env[PATH] = ${PATH}
-        env[PHP_ERROR_LOG] = ${PHP_ERROR_LOG}
-        env[ServerIP] = ${ServerIP}
-    EOF
+		[www]
+		env[PATH] = ${PATH}
+		env[PHP_ERROR_LOG] = ${PHP_ERROR_LOG}
+		env[ServerIP] = ${ServerIP}
+	EOF
 
     if [ -z "$VIRTUAL_HOST" ] ; then
       VIRTUAL_HOST="$ServerIP"
@@ -277,8 +277,8 @@ test_framework_stubbing() {
         echo ":::::: Tests are being ran - stub out ad list fetching and add a fake ad block"
         sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)" 
         echo '123.123.123.123 testblock.pi-hole.local' > /var/www/html/fake.list
-        echo 'file:///var/www/html/fake.list' > /etc/pihole/adlists.txt
-        echo 'http://localhost/fake.list' >> /etc/pihole/adlists.txt
+        echo 'file:///var/www/html/fake.list' > /etc/pihole/adlists.list
+        echo 'http://localhost/fake.list' >> /etc/pihole/adlists.list
     fi
 }
 

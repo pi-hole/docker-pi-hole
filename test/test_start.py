@@ -56,7 +56,7 @@ def test_html_index_requests_load_as_expected(RunningPiHole, Slow, addr, url):
     assert http_rc.rc == 0
     assert int(http_rc.stdout) == 200
     page_contents = RunningPiHole.run('cat /tmp/curled_file ').stdout
-    assert 'blocked' in page_contents
+    assert 'testblock.pi-hole.local' in page_contents
 
 @pytest.mark.parametrize('addr', [ 'testblock.pi-hole.local' ])
 @pytest.mark.parametrize('url', [ '/index.js', '/any.js'] )
