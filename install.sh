@@ -65,7 +65,11 @@ if [[ $USE_DEVELOPMENT_BRANCHES == true ]] ; then
     pushd "${PI_HOLE_LOCAL_REPO}"; git checkout development; popd;
     pushd "${webInterfaceDir}"; git checkout devel; popd;
 else
-    pushd "${PI_HOLE_LOCAL_REPO}"; git reset --hard "${CORE_TAG}"; popd;
+    pushd "${PI_HOLE_LOCAL_REPO}"; 
+    git reset --hard "${CORE_TAG}"; 
+    # Can be removed once https://github.com/pi-hole/pi-hole/pull/1779 is in a release
+    git checkout 8d721d086cbe4b49665c9e0b1d81499b284776a9 gravity.sh
+    popd;
     pushd "${webInterfaceDir}"; git reset --hard "${WEB_TAG}"; popd;
 fi
 

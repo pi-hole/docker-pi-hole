@@ -65,7 +65,7 @@ def test_javascript_requests_load_as_expected(RunningPiHole, addr, url):
     http_rc = RunningPiHole.run(command)
     assert http_rc.rc == 0
     assert int(http_rc.stdout) == 200
-    assert RunningPiHole.run('md5sum /tmp/curled_file /var/www/html/pihole/index.js').rc == 0
+    assert 'var x = "Pi-hole: A black hole for Internet advertisements."' in RunningPiHole.run('cat /tmp/curled_file').stdout
 
 # IPv6 checks aren't passing CORS, removed :(
 @pytest.mark.parametrize('addr', [ 'localhost' ] )
