@@ -15,9 +15,9 @@ ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/dow
 
 {% if pihole.os == 'alpine' %}
 # TODO Re-enable upgrade after php5 packages use the latest greatest libressl packages, conflicts are breaking build 2017-11-14
-# RUN apk upgrade --update && \
-RUN apk update && \
-    apk add bind-tools wget curl bash libcap && \
+#RUN apk update && \
+RUN apk upgrade --update && \
+    apk add bind-tools wget curl bash libcap ncurses && \
 {% else %}
 RUN apt-get update && \
     apt-get install -y wget curl net-tools cron && \
@@ -54,7 +54,6 @@ RUN mkdir -p /etc/pihole/ && \
     chown dnsmasq:root /var/log/pihole.log && \
     sed -i "s/@INT@/eth0/" /etc/dnsmasq.d/01-pihole.conf && \
     setcap CAP_NET_BIND_SERVICE=+eip `which dnsmasq` && \
-    cp -f /usr/bin/list.sh /opt/pihole/list.sh && \
     echo 'Done!'
 {% endif %}
 

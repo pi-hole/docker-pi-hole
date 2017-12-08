@@ -99,7 +99,7 @@ def generate_dockerfiles(args):
 
 def build_dockerfiles(args):
     if args['--no-build']:
-        print " ::: Skipping Dockerfile generation"
+        print " ::: Skipping Dockerfile building"
         return
 
     for os in args['--os']:
