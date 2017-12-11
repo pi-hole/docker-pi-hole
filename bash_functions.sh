@@ -34,7 +34,7 @@ validate_env() {
             unset ServerIPv6
             return
         fi
-        if nc -w 1 -z "$ServerIPv6" 53 2>&1 | grep -q "$nc_error" || ! ip route get "$ServerIPv6" ; then
+        if nc -w 1 -z "$ServerIPv6" 53 2>&1 | grep -q "$nc_error" || ! ip route get "$ServerIPv6" > /dev/null ; then
             echo "ERROR: ServerIPv6 Environment variable ($ServerIPv6) doesn't appear to be a valid IPv6 address"
             echo "  TIP: If your server is not IPv6 enabled just remove '-e ServerIPv6' from your docker container"
             exit 1

@@ -16,7 +16,8 @@ ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/dow
 # TODO Re-enable upgrade after php5 packages use the latest greatest libressl packages, conflicts are breaking build 2017-11-14
 #RUN apk update && \
 RUN apk upgrade --update && \
-    apk add bind-tools wget curl bash libcap ncurses && \
+    apk add bind-tools wget curl bash libcap ncurses shadow && \
+    usermod -s bash root && \
     curl -L -s $S6OVERLAY_RELEASE \
         | tar xvzf - -C / && \
     docker-install.sh && \
@@ -45,6 +46,7 @@ RUN mkdir -p /etc/pihole/ && \
     sed -i "s/@INT@/eth0/" /etc/dnsmasq.d/01-pihole.conf && \
     setcap CAP_NET_BIND_SERVICE=+eip `which dnsmasq` && \
     echo 'Done!'
+COPY s6/timeout /usr/local/bin/timeout
 
 # php config start passes special ENVs into
 ENV PHP_ENV_CONFIG '/etc/php5/fpm.d/envs.conf'
