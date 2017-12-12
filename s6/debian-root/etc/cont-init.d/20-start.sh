@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bash
+set -e
 
 # Early DNS Startup for the gravity list process to use
 dnsmasq -7 /etc/dnsmasq.d
