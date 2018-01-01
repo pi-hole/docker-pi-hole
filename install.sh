@@ -84,6 +84,13 @@ tmpLog="/tmp/pihole-install.log"
 installLogLoc="${installLogLoc}"
 installPihole | tee "${tmpLog}"
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
+
+# Base pihole functions such as `pihole -up` are unsupported in docker. Replace them in the `pihole` file
+# First inject a new function to `pihole` file above the `helpFunc()` function
+sed -i $'s/helpFunc() {/unsupportedFunc() {\\\n  echo "Function not supported in Docker images"\\\n  exit 0\\\n}\\\n\\\nhelpFunc() {/g' /usr/local/bin/pihole
+# Replace references to `updatePiholeFunc` with new `unsupportedFunc`
+sed -i $'s/updatePiholeFunc;;/unsupportedFunc;;/g' /usr/local/bin/pihole
+
 if [[ "$TAG" == 'alpine' ]] ; then
     cp /etc/.pihole/advanced/pihole.cron /etc/crontabs/pihole
 
