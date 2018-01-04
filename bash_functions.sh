@@ -91,6 +91,7 @@ setup_dnsmasq() {
     setup_dnsmasq_dns "$DNS1" "$DNS2" 
     setup_dnsmasq_interface "$INTERFACE"
     ProcessDNSSettings
+    dnsmasq -7 /etc/dnsmasq.d --interface="${INTERFACE:-eth0}"
 }
 
 setup_dnsmasq_hostnames() {
@@ -241,19 +242,4 @@ test_framework_stubbing() {
         echo 'file:///var/www/html/fake.list' > /etc/pihole/adlists.list
         echo 'http://localhost/fake.list' >> /etc/pihole/adlists.list
     fi
-}
-
-docker_main() {
-    echo -n '::: Starting up DNS and Webserver ...'
-    service dnsmasq restart # Just get DNS up. The webserver is down!!!
-
-    TAG="$1"
-    case $TAG in # Setup webserver
-        "debian")
-            service lighttpd start
-        ;;
-    esac
-
-    gravity.sh # Finally lets update and be awesome.
-    tail -F "${WEBLOGDIR}"/*.log /var/log/pihole.log
 }
