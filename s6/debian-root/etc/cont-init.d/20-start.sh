@@ -7,7 +7,6 @@ if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
     bashCmd='bash -ex'
 fi
 
-
 # Early DNS Startup for the gravity list process to use
 dnsmasq -7 /etc/dnsmasq.d
 
