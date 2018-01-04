@@ -16,6 +16,6 @@ docker run -d \
     -e ServerIP="${IP:-$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')}" \
     -e ServerIPv6="${IPv6:-$(ip -6 route get 2001:4860:4860::8888 | awk '{ print $10; exit }')}" \
     --restart=always \
-    diginc/pi-hole:alpine
+    diginc/pi-hole:latest
 
 docker logs pihole 2> /dev/null | grep 'password:'

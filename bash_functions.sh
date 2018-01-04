@@ -17,9 +17,6 @@ validate_env() {
 
     # Debian
     nc_error='Name or service not known'
-    if [[ "$TAG" == 'alpine' ]] ; then
-        nc_error='bad address' 
-    fi;
 
     # Required ServerIP is a valid IP
     if nc -w1 -z "$ServerIP" 53 2>&1 | grep -q "$nc_error" ; then
@@ -147,7 +144,6 @@ setup_lighttpd_bind() {
 setup_php_env() {
     case $TAG in
         "debian") setup_php_env_debian ;;
-        "alpine") setup_php_env_alpine ;;
     esac
 }
 
@@ -171,24 +167,6 @@ setup_php_env_debian() {
     grep -E '(VIRTUAL_HOST|ServerIP|PHP_ERROR_LOG)' "$PHP_ENV_CONFIG"
 }
 
-setup_php_env_alpine() {
-    # Intentionally tabs, required by HEREDOC de-indentation (<<-)
-    cat <<-EOF > "$PHP_ENV_CONFIG"
-		[www]
-		env[PATH] = ${PATH}
-		env[PHP_ERROR_LOG] = ${PHP_ERROR_LOG}
-		env[ServerIP] = ${ServerIP}
-	EOF
-
-    if [ -z "$VIRTUAL_HOST" ] ; then
-      VIRTUAL_HOST="$ServerIP"
-    fi;
-    echo "env[VIRTUAL_HOST] = ${VIRTUAL_HOST}" >> "$PHP_ENV_CONFIG";
-
-    echo "Added ENV to php:"
-    cat "$PHP_ENV_CONFIG"
-}
-
 setup_web_port() {
     local warning="WARNING: Custom WEB_PORT not used"
     # Quietly exit early for empty or default
@@ -209,9 +187,6 @@ setup_web_port() {
     case $TAG in
         "debian") 
             sed -i '/server.port\s*=\s*80\s*$/ s/80/'$WEB_PORT'/g' /etc/lighttpd/lighttpd.conf ;;
-        "alpine") 
-            sed -i '/^\s*listen \[::\]:80 default_server/ s/80/'$WEB_PORT'/g' /etc/nginx/nginx.conf
-            sed -i '/^\s*listen 80 default_server/ s/80/'$WEB_PORT'/g' /etc/nginx/nginx.conf ;;
     esac
 
 }
@@ -237,7 +212,6 @@ setup_ipv4_ipv6() {
         ip_versions="IPv4"
         case $TAG in
             "debian") sed -i '/use-ipv6.pl/ d' /etc/lighttpd/lighttpd.conf ;;
-            "alpine") sed -i '/listen \[::\]:80/ d' /etc/nginx/nginx.conf ;;
         esac
     fi;
     echo "Using $ip_versions"
@@ -246,7 +220,6 @@ setup_ipv4_ipv6() {
 test_configs() {
     case $TAG in
         "debian") test_configs_debian ;;
-        "alpine") test_configs_alpine ;;
     esac
 }
 
@@ -256,18 +229,6 @@ test_configs_debian() {
     dnsmasq --test -7 /etc/dnsmasq.d
     echo -n '::: Testing lighttpd config: '
     lighttpd -t -f /etc/lighttpd/lighttpd.conf
-    set +e
-    echo "::: All config checks passed, starting ..."
-}
-
-test_configs_alpine() {
-    set -e
-    echo -n '::: Testing DNSmasq config: '
-    dnsmasq --test -7 /etc/dnsmasq.d
-    echo -n '::: Testing PHP-FPM config: '
-    php-fpm5 -t
-    echo -n '::: Testing NGINX config: '
-    nginx -t
     set +e
     echo "::: All config checks passed, starting ..."
 }
@@ -288,10 +249,6 @@ docker_main() {
 
     TAG="$1"
     case $TAG in # Setup webserver
-        "alpine")
-            php-fpm5
-            nginx
-        ;;
         "debian")
             service lighttpd start
         ;;

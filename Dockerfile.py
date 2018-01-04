@@ -9,7 +9,7 @@ Options:
     --no-build      Skip building the docker images
     --no-cache      Build without using any cache data
     --no-generate   Skip generating Dockerfiles from template
-    --os=<os>       What OS(s) to build             [default: alpine debian]
+    --os=<os>       What OS(s) to build             [default: debian]
     --arch=<arch>   What Architecture(s) to build   [default: amd64 armhf aarch64]
     -v              Print docker's command output   [default: False]
 
@@ -35,10 +35,6 @@ os_base_vars = {
         'php_env_config': '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf',
         'php_error_log': '/var/log/lighttpd/error.log'
     },
-    'alpine': {
-        'php_env_config': '/etc/php5/fpm.d/envs.conf',
-        'php_error_log': '/var/log/nginx/error.log'
-    }
 }
 
 images = {
@@ -55,21 +51,6 @@ images = {
             'base': 'multiarch/debian-debootstrap:arm64-jessie-slim',
             'arch': 'aarch64'
         }
-    ],
-    'alpine': [
-        {
-            'base': 'alpine:edge',
-            'arch': 'amd64'
-        },
-        {
-            'base': 'multiarch/alpine:armhf-edge',
-            'arch': 'armhf'
-        },
-        # Impossible combo :(
-        # {
-        #     'base': 'multiarch/alpine:aarch64-edge',
-        #     'arch': 'aarch64'
-        # }
     ]
 }
 

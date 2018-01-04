@@ -2,7 +2,7 @@ import pytest
 import time
 ''' conftest.py provides the defaults through fixtures '''
 ''' Note, testinfra builtins don't seem fully compatible with
-        docker containers (esp. alpine) stripped down nature '''
+        docker containers (esp. musl based OSs) stripped down nature '''
 
 def test_pihole_default_run_command(Docker, tag):
     expected_proc = '/sbin/tini -- /start.sh'
