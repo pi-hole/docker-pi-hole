@@ -56,7 +56,11 @@ tmpLog="/tmp/pihole-install.log"
 installLogLoc="${installLogLoc}"
 installPihole | tee "${tmpLog}"
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
- 
+
+sed -i $'s/helpFunc() {/unsupportedFunc() {\\\n  echo "Function not supported in Docker images"\\\n  exit 0\\\n}\\\n\\\nhelpFunc() {/g' /usr/local/bin/pihole
+# Replace references to `updatePiholeFunc` with new `unsupportedFunc`
+sed -i $'s/updatePiholeFunc;;/unsupportedFunc;;/g' /usr/local/bin/pihole
+
 mv "${tmpLog}" "${instalLogLoc}"
 touch /.piholeFirstBoot
 
