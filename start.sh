@@ -34,7 +34,4 @@ test_framework_stubbing
 
 [ -f /.piholeFirstBoot ] && rm /.piholeFirstBoot
 
-gravity.sh
-killall -9 dnsmasq
-
-echo "::: Docker start setup complete - beginning s6 services"
+echo "::: Docker start setup complete"

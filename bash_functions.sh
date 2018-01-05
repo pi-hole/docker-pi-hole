@@ -27,9 +27,9 @@ validate_env() {
     # Optional IPv6 is a valid address
     if [[ -n "$ServerIPv6" ]] ; then
         if [[ "$ServerIPv6" == 'kernel' ]] ; then
-            echo "WARNING: You passed in IPv6 with a value of 'kernel', this maybe beacuse you do not have IPv6 enabled on your network"
+            echo "ERROR: You passed in IPv6 with a value of 'kernel', this maybe beacuse you do not have IPv6 enabled on your network"
             unset ServerIPv6
-            return
+            exit 1
         fi
         if nc -w 1 -z "$ServerIPv6" 53 2>&1 | grep -q "$nc_error" || ! ip route get "$ServerIPv6" > /dev/null ; then
             echo "ERROR: ServerIPv6 Environment variable ($ServerIPv6) doesn't appear to be a valid IPv6 address"
@@ -91,7 +91,7 @@ setup_dnsmasq() {
     setup_dnsmasq_dns "$DNS1" "$DNS2" 
     setup_dnsmasq_interface "$INTERFACE"
     ProcessDNSSettings
-    dnsmasq -7 /etc/dnsmasq.d --interface="${INTERFACE:-eth0}"
+    # dnsmasq -7 /etc/dnsmasq.d --interface="${INTERFACE:-eth0}"
 }
 
 setup_dnsmasq_hostnames() {

@@ -24,7 +24,7 @@ def test_ServerIP_missing_triggers_start_error(Docker):
 @pytest.mark.parametrize('args,error_msg,expect_rc', [ 
     ('-e ServerIP="1.2.3.z"', "ServerIP Environment variable (1.2.3.z) doesn't appear to be a valid IPv4 address",1), 
     ('-e ServerIP="1.2.3.4" -e ServerIPv6="1234:1234:1234:ZZZZ"', "Environment variable (1234:1234:1234:ZZZZ) doesn't appear to be a valid IPv6 address",1),
-    ('-e ServerIP="1.2.3.4" -e ServerIPv6="kernel"', "WARNING: You passed in IPv6 with a value of 'kernel'",0),
+    ('-e ServerIP="1.2.3.4" -e ServerIPv6="kernel"', "ERROR: You passed in IPv6 with a value of 'kernel'",1),
 ])
 def test_ServerIP_invalid_IPs_triggers_exit_error(Docker, error_msg, expect_rc):
     ''' When args to docker are empty start.sh exits saying ServerIP is required '''
