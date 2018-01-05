@@ -1,11 +1,14 @@
 #!/usr/bin/with-contenv bash
-set -e
+set
 
-# Early DNS Startup for the gravity list process to use
+bashCmd='bash -e'
+if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then 
+    set -x ;
+    bashCmd='bash -e -x'
+fi
+
+$bashCmd /start.sh
+
 dnsmasq -7 /etc/dnsmasq.d
-
-/start.sh
 gravity.sh
-
-# Done with DNS, let s6 services start up properly configured dns now
-killall -9 dnsmasq
+kill -9 $(pgrep dnsmasq) || true

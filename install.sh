@@ -14,25 +14,6 @@ mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
 
 # Get the install functions
 wget -O "$PIHOLE_INSTALL" https://raw.githubusercontent.com/pi-hole/pi-hole/${CORE_TAG}/automated%20install/basic-install.sh
-if [[ "$TAG" == 'alpine' ]] ; then
-    sed -i '/OS distribution not supported/ i\  echo "Hi Alpine"' "$PIHOLE_INSTALL"
-    sed -i '/OS distribution not supported/,+1d' "$PIHOLE_INSTALL"
-    sed -i 's#nologin pihole#nologin pihole 2>/dev/null || adduser -S -s /sbin/nologin pihole#g' "$PIHOLE_INSTALL"
-    # shellcheck disable=SC2016
-    sed -i '/usermod -a -G/ s#$# 2> /dev/null || addgroup pihole ${LIGHTTPD_GROUP}#g' "$PIHOLE_INSTALL"
-    sed -i 's/www-data/nginx/g' "$PIHOLE_INSTALL"
-    sed -i '/LIGHTTPD_CFG/d' "${PIHOLE_INSTALL}"
-    sed -i '/etc\/cron.d\//d' "${PIHOLE_INSTALL}"
-    # For new FTL install lines
-    sed -i 's/sha1sum --status --quiet/sha1sum -s/g' "${PIHOLE_INSTALL}"
-    sed -i 's/install -T/install /g' "${PIHOLE_INSTALL}"
-	# shellcheck disable=SC2016
-	sed -i '/FTLinstall/ s/${binary}/pihole-FTL-musl-linux-x86_64/g' "${PIHOLE_INSTALL}"
-    LIGHTTPD_USER="nginx" # shellcheck disable=SC2034
-    LIGHTTPD_GROUP="nginx" # shellcheck disable=SC2034
-    LIGHTTPD_CFG="lighttpd.conf.debian" # shellcheck disable=SC2034
-    DNSMASQ_USER="dnsmasq" # shellcheck disable=SC2034
-fi
 PH_TEST=true . "${PIHOLE_INSTALL}"
 
 # Run only what we need from installer
@@ -45,15 +26,6 @@ if [[ "$TAG" == 'debian' ]] ; then
     sed -i "/sleep 2/ d" /etc/init.d/dnsmasq # SLOW
 	# IPv6 support for nc openbsd better than traditional
 	apt-get install -y --force-yes netcat-openbsd
-elif [[ "$TAG" == 'alpine' ]] ; then
-    apk add -U \
-        dnsmasq \
-        nginx \
-        ca-certificates \
-        php5-fpm php5-json php5-openssl php5-zip php5-sockets libxml2 \
-        bc bash curl perl sudo git
-    # S6 service like to be blocking/foreground
-    sed -i 's|^;daemonize = yes|daemonize = no|' /etc/php5/php-fpm.conf
 fi
 
 piholeGitUrl="${piholeGitUrl}"
@@ -84,16 +56,11 @@ tmpLog="/tmp/pihole-install.log"
 installLogLoc="${installLogLoc}"
 installPihole | tee "${tmpLog}"
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
-if [[ "$TAG" == 'alpine' ]] ; then
-    cp /etc/.pihole/advanced/pihole.cron /etc/crontabs/pihole
 
-    # More chewing gum patching, post installPihole dnsmasq replacement seems to work probably due to dnsmasq uid missing
-    apk del dnsmasq && apk add dnsmasq-dnssec
-	
-    # Fix hostname bug on block page
-    sed -i "s/\$_SERVER\['SERVER_NAME'\]/\$_SERVER\['HTTP_HOST'\]/" /var/www/html/pihole/index.php
-fi
- 
+sed -i $'s/helpFunc() {/unsupportedFunc() {\\\n  echo "Function not supported in Docker images"\\\n  exit 0\\\n}\\\n\\\nhelpFunc() {/g' /usr/local/bin/pihole
+# Replace references to `updatePiholeFunc` with new `unsupportedFunc`
+sed -i $'s/updatePiholeFunc;;/unsupportedFunc;;/g' /usr/local/bin/pihole
+
 mv "${tmpLog}" "${instalLogLoc}"
 touch /.piholeFirstBoot
 

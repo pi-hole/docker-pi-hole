@@ -9,7 +9,7 @@ applist:
   restart: always
 
 pihole:
-  image: diginc/pi-hole:alpine
+  image: diginc/pi-hole:latest
   ports:
     - '53:53/tcp'
     - '53:53/udp'

@@ -1,0 +1,15 @@
+#!/bin/bash
+# A shim to make busybox timeout take in debian style args
+# v1 only need support for this style: `timeout 1 getent hosts github.com`
+
+# Busybox args:
+#   Usage: timeout [-t SECS] [-s SIG] PROG ARGS
+# Debian args:
+#   Usage: timeout [OPTION] DURATION COMMAND [ARG]...
+#     or:  timeout [OPTION]
+
+TIMEOUT=/usr/bin/timeout
+SECS="${1}"
+ARGS="${@:2}"
+
+$TIMEOUT -t $SECS $ARGS

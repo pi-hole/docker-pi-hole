@@ -29,7 +29,7 @@ docker run -d \
     -e ServerIP="${IP}" \
     -e ServerIPv6="${IPv6}" \
     --restart=always \
-    diginc/pi-hole:alpine
+    diginc/pi-hole:latest
 ```
 
 **This is just an example and might need changing.**  Volumes are stored in the directory $DOCKER_CONFIGS and aren't required but are recommended for persisting data across docker re-creations for updating images.  As mentioned on line 2, the auto IP_LOOKUP variable may not work for VPN tunnel interfaces.
@@ -87,23 +87,15 @@ The primary docker tags / versions are explained in the following table.  [Click
 
 | tag                 | architecture | description                                                             | Dockerfile |
 | ---                 | ------------ | -----------                                                             | ---------- |
-| `alpine` / `latest` | x86          | Alpine x86 image, small size container running nginx and dnsmasq        | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/alpine.docker) |
-| `debian`            | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/debian.docker) |
-| `arm`               | ARM          | Debian ARM image, container running lighttpd and dnsmasq built for ARM  | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/debian-armhf.docker) |
-
-### `diginc/pi-hole:alpine` [![](https://images.microbadger.com/badges/image/diginc/pi-hole:alpine.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:alpine.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:latest.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
-
-Alpine is also the default, aka `latest` tag.  If you don't specify a tag you will get this version.  This is only an x86 version and will not work on Raspberry Pi's ARM architecture.  Use this if you like a small image.
+| `debian` / `latest` | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/debian.docker) |
 
 ### `diginc/pi-hole:debian` [![](https://images.microbadger.com/badges/image/diginc/pi-hole:debian.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:debian.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
 
 This version of the docker aims to be as close to a standard pi-hole installation by using the same base OS and the exact configs and scripts (minimally modified to get them working).  This serves as a stable baseline for merging and testing upstream repository pi-hole changes.  Use this if you don't care about image size and want as stable of a product as possible.
 
-### `diginc/pi-hole:arm` [![](https://images.microbadger.com/badges/image/diginc/pi-hole:arm.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:arm.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
+### `diginc/pi-hole:alpine` [![](https://images.microbadger.com/badges/image/diginc/pi-hole:alpine.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:alpine.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:latest.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
 
-Same as the debian image, but cross compiled for ARM architecture hardware through [resin.io's awesome Qemu wrapper](https://resin.io/blog/building-arm-containers-on-any-x86-machine-even-dockerhub/).
-
-Alpine doesn't have an arm cross compilable image at this time.
+**DEPRECATED** - no longer supported
 
 ## Upgrading, Persistence, and Customizations
 
@@ -111,7 +103,7 @@ The standard pi-hole customization abilities apply to this docker, but with dock
 
 ### Upgrading
 
-**If you try to use pihole's built in updater it is not guaranteed to work**; it almost assuredly won't work for alpine but debian may.  The preferred 'docker way' to upgrade is: 
+`pihole -up` is disabled.  Upgrad ethe docker way instead please.  Long living docker containers are an not the docker way.
 
 1. Download the latest version of the image: `docker pull diginc/pi-hole`
 2. Throw away your container: `docker rm -f pihole`
@@ -136,7 +128,7 @@ We install all pihole utilities so the the built in [pihole commands](https://di
 
 The webserver and DNS service inside the container can be customized if necessary.  Any configuration files you volume mount into `/etc/dnsmasq.d/` will be loaded by dnsmasq when the container starts or restarts or if you need to modify the pi-hole config it is located at `/etc/dnsmasq.d/01-pihole.conf`.  The docker start scripts runs a config test prior to starting so it will tell you about any errors in the docker log.
 
-Similarly for the webserver you can customize configs in /etc/nginx (*:alpine* tag) and /etc/lighttpd (*:debian* tag).
+Similarly for the webserver you can customize configs in /etc/lighttpd (*:debian* tag).
 
 ### Systemd init script
 
@@ -150,9 +142,7 @@ NOTE:  After initial run you may need to manually stop the docker container with
 
 | tag                 | architecture | description                                                             | Dockerfile |
 | ---                 | ------------ | -----------                                                             | ---------- |
-| `alpine_dev`        | x86          | Alpine x86 image, small size container running nginx and dnsmasq        | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/dev/alpine.docker) |
 | `debian_dev`        | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/dev/debian.docker) |
-| `arm_dev`           | ARM          | Debian ARM image, container running lighttpd and dnsmasq built for ARM  | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/dev/debian-armhf.docker) |
 
 # User Feedback
 
