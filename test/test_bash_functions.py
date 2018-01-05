@@ -11,10 +11,8 @@ DEFAULTARGS = '-e ServerIP="127.0.0.1" '
 ])
 def test_IPv6_not_True_removes_ipv6(Docker, os, args, expected_ipv6, expected_stdout):
     ''' When a user overrides IPv6=True they only get IPv4 listening webservers '''
-    IPV6_LINE = { 'alpine': 'listen [::]:80 default_server',
-                  'debian': 'use-ipv6.pl' }
-    WEB_CONFIG = { 'alpine': '/etc/nginx/nginx.conf',
-                   'debian': '/etc/lighttpd/lighttpd.conf' }
+    IPV6_LINE = { 'debian': 'use-ipv6.pl' }
+    WEB_CONFIG = { 'debian': '/etc/lighttpd/lighttpd.conf' }
 
     function = Docker.run('. /bash_functions.sh ; setup_ipv4_ipv6')
     assert "Using {}".format(expected_stdout) in function.stdout
@@ -24,11 +22,8 @@ def test_IPv6_not_True_removes_ipv6(Docker, os, args, expected_ipv6, expected_st
 @pytest.mark.parametrize('args', [DEFAULTARGS + '-e "WEB_PORT=999"'])
 def test_overrides_default_WEB_PORT(Docker, os, args):
     ''' When a --net=host user sets WEB_PORT to avoid synology's 80 default IPv4 and or IPv6 ports are updated'''
-    CONFIG_LINES = { 'alpine': ['listen 999 default_server',
-                                'listen\s*\[::\]:999\s*default_server;'],
-                     'debian': ['server.port\s*=\s*999'] }
-    WEB_CONFIG = { 'alpine': '/etc/nginx/nginx.conf',
-                   'debian': '/etc/lighttpd/lighttpd.conf' }
+    CONFIG_LINES = { 'debian': ['server.port\s*=\s*999'] }
+    WEB_CONFIG = { 'debian': '/etc/lighttpd/lighttpd.conf' }
 
     function = Docker.run('. /bash_functions.sh ; eval `grep setup_web_port /start.sh`')
     assert "Custom WEB_PORT set to 999" in function.stdout

@@ -9,9 +9,6 @@ env:
         - OS=debian ARCH=amd64
         - OS=debian ARCH=armhf
         - OS=debian ARCH=aarch64
-        - OS=alpine ARCH=amd64
-        - OS=alpine ARCH=armhf
-        # - OS=alpine ARCH=aarch64 # Impossible combo :(
 python:
   - "2.7"
 install:

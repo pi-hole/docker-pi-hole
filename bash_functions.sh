@@ -17,9 +17,6 @@ validate_env() {
 
     # Debian
     nc_error='Name or service not known'
-    if [[ "$TAG" == 'alpine' ]] ; then
-        nc_error='bad address' 
-    fi;
 
     # Required ServerIP is a valid IP
     if nc -w1 -z "$ServerIP" 53 2>&1 | grep -q "$nc_error" ; then
@@ -30,11 +27,11 @@ validate_env() {
     # Optional IPv6 is a valid address
     if [[ -n "$ServerIPv6" ]] ; then
         if [[ "$ServerIPv6" == 'kernel' ]] ; then
-            echo "WARNING: You passed in IPv6 with a value of 'kernel', this maybe beacuse you do not have IPv6 enabled on your network"
+            echo "ERROR: You passed in IPv6 with a value of 'kernel', this maybe beacuse you do not have IPv6 enabled on your network"
             unset ServerIPv6
-            return
+            exit 1
         fi
-        if nc -w 1 -z "$ServerIPv6" 53 2>&1 | grep -q "$nc_error" || ! ip route get "$ServerIPv6" ; then
+        if nc -w 1 -z "$ServerIPv6" 53 2>&1 | grep -q "$nc_error" || ! ip route get "$ServerIPv6" > /dev/null ; then
             echo "ERROR: ServerIPv6 Environment variable ($ServerIPv6) doesn't appear to be a valid IPv6 address"
             echo "  TIP: If your server is not IPv6 enabled just remove '-e ServerIPv6' from your docker container"
             exit 1
@@ -63,10 +60,10 @@ setup_dnsmasq_dns() {
     fi
 
     echo "Using $dnsType DNS servers: $DNS1 & $DNS2"
-	if [[ -n "$DNS1" && -z "$setupDNS1" ]] ; then
+    if [[ -n "$DNS1" && -z "$setupDNS1" ]] ; then
         change_setting "PIHOLE_DNS_1" "${DNS1}"
     fi
-	if [[ -n "$DNS2" && -z "$setupDNS2" ]] ; then
+    if [[ -n "$DNS2" && -z "$setupDNS2" ]] ; then
         change_setting "PIHOLE_DNS_2" "${DNS2}"
     fi
 }
@@ -78,7 +75,7 @@ setup_dnsmasq_interface() {
       interfaceType='custom'
     fi;
     echo "DNSMasq binding to $interfaceType interface: $INTERFACE"
-	[ -n "$INTERFACE" ] && change_setting "PIHOLE_INTERFACE" "${INTERFACE}"
+    [ -n "$INTERFACE" ] && change_setting "PIHOLE_INTERFACE" "${INTERFACE}"
 }
 
 setup_dnsmasq_config_if_missing() {
@@ -94,6 +91,7 @@ setup_dnsmasq() {
     setup_dnsmasq_dns "$DNS1" "$DNS2" 
     setup_dnsmasq_interface "$INTERFACE"
     ProcessDNSSettings
+    # dnsmasq -7 /etc/dnsmasq.d --interface="${INTERFACE:-eth0}"
 }
 
 setup_dnsmasq_hostnames() {
@@ -147,7 +145,6 @@ setup_lighttpd_bind() {
 setup_php_env() {
     case $TAG in
         "debian") setup_php_env_debian ;;
-        "alpine") setup_php_env_alpine ;;
     esac
 }
 
@@ -171,24 +168,6 @@ setup_php_env_debian() {
     grep -E '(VIRTUAL_HOST|ServerIP|PHP_ERROR_LOG)' "$PHP_ENV_CONFIG"
 }
 
-setup_php_env_alpine() {
-    # Intentionally tabs, required by HEREDOC de-indentation (<<-)
-    cat <<-EOF > "$PHP_ENV_CONFIG"
-		[www]
-		env[PATH] = ${PATH}
-		env[PHP_ERROR_LOG] = ${PHP_ERROR_LOG}
-		env[ServerIP] = ${ServerIP}
-	EOF
-
-    if [ -z "$VIRTUAL_HOST" ] ; then
-      VIRTUAL_HOST="$ServerIP"
-    fi;
-    echo "env[VIRTUAL_HOST] = ${VIRTUAL_HOST}" >> "$PHP_ENV_CONFIG";
-
-    echo "Added ENV to php:"
-    cat "$PHP_ENV_CONFIG"
-}
-
 setup_web_port() {
     local warning="WARNING: Custom WEB_PORT not used"
     # Quietly exit early for empty or default
@@ -209,9 +188,6 @@ setup_web_port() {
     case $TAG in
         "debian") 
             sed -i '/server.port\s*=\s*80\s*$/ s/80/'$WEB_PORT'/g' /etc/lighttpd/lighttpd.conf ;;
-        "alpine") 
-            sed -i '/^\s*listen \[::\]:80 default_server/ s/80/'$WEB_PORT'/g' /etc/nginx/nginx.conf
-            sed -i '/^\s*listen 80 default_server/ s/80/'$WEB_PORT'/g' /etc/nginx/nginx.conf ;;
     esac
 
 }
@@ -224,10 +200,10 @@ setup_web_password() {
     fi;
     set -x
     if [[ "$WEBPASSWORD" == "" ]] ; then
-		echo "" | pihole -a -p
+        echo "" | pihole -a -p
     else
-		pihole -a -p "$WEBPASSWORD" "$WEBPASSWORD"
-	fi
+        pihole -a -p "$WEBPASSWORD" "$WEBPASSWORD"
+    fi
     { set +x; } 2>/dev/null
 }
 
@@ -237,7 +213,6 @@ setup_ipv4_ipv6() {
         ip_versions="IPv4"
         case $TAG in
             "debian") sed -i '/use-ipv6.pl/ d' /etc/lighttpd/lighttpd.conf ;;
-            "alpine") sed -i '/listen \[::\]:80/ d' /etc/nginx/nginx.conf ;;
         esac
     fi;
     echo "Using $ip_versions"
@@ -246,7 +221,6 @@ setup_ipv4_ipv6() {
 test_configs() {
     case $TAG in
         "debian") test_configs_debian ;;
-        "alpine") test_configs_alpine ;;
     esac
 }
 
@@ -260,41 +234,12 @@ test_configs_debian() {
     echo "::: All config checks passed, starting ..."
 }
 
-test_configs_alpine() {
-    set -e
-    echo -n '::: Testing DNSmasq config: '
-    dnsmasq --test -7 /etc/dnsmasq.d
-    echo -n '::: Testing PHP-FPM config: '
-    php-fpm5 -t
-    echo -n '::: Testing NGINX config: '
-    nginx -t
-    set +e
-    echo "::: All config checks passed, starting ..."
-}
-
 test_framework_stubbing() {
     if [ -n "$PYTEST" ] ; then 
-		echo ":::::: Tests are being ran - stub out ad list fetching and add a fake ad block"
-		sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)" 
-		echo 'testblock.pi-hole.local' >> /etc/pihole/blacklist.txt
-	fi
-}
-
-docker_main() {
-    echo -n '::: Starting up DNS and Webserver ...'
-    service dnsmasq restart # Just get DNS up. The webserver is down!!!
-
-    TAG="$1"
-    case $TAG in # Setup webserver
-        "alpine")
-            php-fpm5
-            nginx
-        ;;
-        "debian")
-            service lighttpd start
-        ;;
-    esac
-
-    gravity.sh # Finally lets update and be awesome.
-    tail -F "${WEBLOGDIR}"/*.log /var/log/pihole.log
+        echo ":::::: Tests are being ran - stub out ad list fetching and add a fake ad block"
+        sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)" 
+        echo '123.123.123.123 testblock.pi-hole.local' > /var/www/html/fake.list
+        echo 'file:///var/www/html/fake.list' > /etc/pihole/adlists.list
+        echo 'http://localhost/fake.list' >> /etc/pihole/adlists.list
+    fi
 }
