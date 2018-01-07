@@ -97,7 +97,7 @@ This version of the docker aims to be as close to a standard pi-hole installatio
 
 **DEPRECATED** - no longer supported
 
-### `diginc/pi-hole-multiarch:debian-aarch64`
+### `diginc/pi-hole-multiarch:debian-armhf`
 Latest version of ARM-compatible pihole image
 
 ## Upgrading, Persistence, and Customizations
