@@ -1,7 +1,7 @@
 A [Docker](https://www.docker.com/what-docker) project to make lightweight x86 and ARM container with [pi-hole](https://pi-hole.net) functionality.  Why?  Originally designed to be a quick, easy, and portable way to run x86 Pi-Hole, it now has an arm specific tag too.
 
 1) Install docker for your [x86-64 system](https://www.docker.com/community-edition) or [ARMv6l/ARMv7 system](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/) using those links.
-2) Use the appropriate tag (x86 can use default tag, ARM users need to use the `arm` tag) in the below `docker run` command
+2) Use the appropriate tag (x86 can use default tag, ARM users need to use images from `diginc/docker-pi-hole-multiarch`) in the below `docker run` command
 3) Enjoy!
 
 [![Build Status](https://api.travis-ci.org/diginc/docker-pi-hole.svg?branch=master)](https://travis-ci.org/diginc/docker-pi-hole) [![Docker Stars](https://img.shields.io/docker/stars/diginc/pi-hole.svg?maxAge=604800)](https://store.docker.com/community/images/diginc/pi-hole) [![Docker Pulls](https://img.shields.io/docker/pulls/diginc/pi-hole.svg?maxAge=604800)](https://store.docker.com/community/images/diginc/pi-hole)
@@ -96,6 +96,9 @@ This version of the docker aims to be as close to a standard pi-hole installatio
 ### `diginc/pi-hole:alpine` [![](https://images.microbadger.com/badges/image/diginc/pi-hole:alpine.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:alpine.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:latest.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
 
 **DEPRECATED** - no longer supported
+
+### `diginc/pi-hole-multiarch:debian-armhf`
+Latest version of ARM-compatible pihole image
 
 ## Upgrading, Persistence, and Customizations
 
