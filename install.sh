@@ -13,7 +13,7 @@ mv "$(which systemctl)" /bin/no_systemctl && \
 mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
 
 # Get the install functions
-CUSTOM_INSTALL='677033afcae14738116f1080a4dc08031b72eb62'
+# CUSTOM_INSTALL='677033afcae14738116f1080a4dc08031b72eb62'
 wget -O "$PIHOLE_INSTALL" https://raw.githubusercontent.com/pi-hole/pi-hole/${CUSTOM_INSTALL:-$CORE_TAG}/automated%20install/basic-install.sh
 PH_TEST=true . "${PIHOLE_INSTALL}"
 
