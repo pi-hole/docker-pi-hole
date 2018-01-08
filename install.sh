@@ -2,7 +2,7 @@
 mkdir -p /etc/pihole/
 export CORE_TAG='v3.2.1'
 export WEB_TAG='v3.2.1'
-export FTL_TAG='2.13.1'
+export FTL_TAG='v2.13.2'
 export USE_DEVELOPMENT_BRANCHES=false
 
 #     Make pihole scripts fail searching for `systemctl`,
