@@ -13,7 +13,8 @@ mv "$(which systemctl)" /bin/no_systemctl && \
 mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
 
 # Get the install functions
-wget -O "$PIHOLE_INSTALL" https://raw.githubusercontent.com/pi-hole/pi-hole/${CORE_TAG}/automated%20install/basic-install.sh
+CUSTOM_INSTALL='677033afcae14738116f1080a4dc08031b72eb62'
+wget -O "$PIHOLE_INSTALL" https://raw.githubusercontent.com/pi-hole/pi-hole/${CUSTOM_INSTALL:-$CORE_TAG}/automated%20install/basic-install.sh
 PH_TEST=true . "${PIHOLE_INSTALL}"
 
 # Run only what we need from installer
@@ -39,8 +40,6 @@ if [[ $USE_DEVELOPMENT_BRANCHES == true ]] ; then
 else
     pushd "${PI_HOLE_LOCAL_REPO}"; 
     git reset --hard "${CORE_TAG}"; 
-    # Can be removed once https://github.com/pi-hole/pi-hole/pull/1779 is in a release
-    git checkout 8d721d086cbe4b49665c9e0b1d81499b284776a9 gravity.sh
     popd;
     pushd "${webInterfaceDir}"; git reset --hard "${WEB_TAG}"; popd;
 fi
