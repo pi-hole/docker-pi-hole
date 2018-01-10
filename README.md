@@ -95,13 +95,17 @@ The primary docker tags / versions are explained in the following table.  [Click
 
 ### `diginc/pi-hole:debian` [![](https://images.microbadger.com/badges/image/diginc/pi-hole:debian.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:debian.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:latest.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
 
-This version of the docker aims to be as close to a standard pi-hole installation by using the same base OS and the exact configs and scripts (minimally modified to get them working).  This serves as a stable baseline for merging and testing upstream repository pi-hole changes.  Use this if you don't care about image size and want as stable of a product as possible.
+This version of the docker aims to be as close to a standard pi-hole installation by using the recommended base OS and the exact configs and scripts (minimally modified to get them working).  This enables fast updating when an update comes from pi-hole.
 
-### `diginc/pi-hole-multiarch:debian_armhf` [![](https://images.microbadger.com/badges/image/diginc/pi-hole-multiarch:debian_armhf.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com")
+### `diginc/pi-hole-multiarch:debian_armhf` [![](https://images.microbadger.com/badges/image/diginc/pi-hole-multiarch:debian_armhf.svg)](https://microbadger.com/images/diginc/pi-hole-multiarch "Get your own image badge on microbadger.com")
 Latest version of ARM-compatible pihole image
 
-### `diginc/pi-hole-multiarch:debian_aarch64` [![](https://images.microbadger.com/badges/image/diginc/pi-hole-multiarch:debian_aarch64.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com")
+https://hub.docker.com/r/diginc/pi-hole-multiarch/tags/
+
+### `diginc/pi-hole-multiarch:debian_aarch64` [![](https://images.microbadger.com/badges/image/diginc/pi-hole-multiarch:debian_aarch64.svg)](https://microbadger.com/images/diginc/pi-hole-multiarch "Get your own image badge on microbadger.com")
 Latest version of ARM64-compatible pihole image
+
+https://hub.docker.com/r/diginc/pi-hole-multiarch/tags/
 
 ## Upgrading, Persistence, and Customizations
 
