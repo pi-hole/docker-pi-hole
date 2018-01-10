@@ -1,9 +1,9 @@
 #!/bin/bash -ex
 mkdir -p /etc/pihole/
-export CORE_TAG='v3.3-rc1'
+export CORE_TAG='v3.2.1'
 export WEB_TAG='v3.2.1'
 export FTL_TAG='v2.13.2'
-export USE_DEVELOPMENT_BRANCHES=false
+export USE_DEVELOPMENT_BRANCHES=true
 
 #     Make pihole scripts fail searching for `systemctl`,
 # which fails pretty miserably in docker compared to `service`
@@ -13,7 +13,7 @@ mv "$(which systemctl)" /bin/no_systemctl && \
 mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
 
 # Get the install functions
-# CUSTOM_INSTALL='677033afcae14738116f1080a4dc08031b72eb62'
+CUSTOM_INSTALL='development'
 wget -O "$PIHOLE_INSTALL" https://raw.githubusercontent.com/pi-hole/pi-hole/${CUSTOM_INSTALL:-$CORE_TAG}/automated%20install/basic-install.sh
 PH_TEST=true . "${PIHOLE_INSTALL}"
 
