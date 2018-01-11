@@ -41,6 +41,6 @@ ENV S6_LOGGING 0
 ENV S6_KEEP_ENV 1
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
 
-HEALTHCHECK CMD ["dig", "@127.0.0.1", "pi.hole"]
+HEALTHCHECK CMD dig @127.0.0.1 pi.hole || exit 1
 
 SHELL ["/bin/bash", "-c"]
