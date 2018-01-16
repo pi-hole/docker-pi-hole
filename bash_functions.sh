@@ -133,10 +133,10 @@ setup_dnsmasq_hostnames() {
 
 setup_lighttpd_bind() {
     if [[ "$TAG" == 'debian' ]] ; then
-    # if using '--net=host' only bind lighttpd on $ServerIP
+    # if using '--net=host' only bind lighttpd on $ServerIP and localhost
         if grep -q "docker" /proc/net/dev ; then #docker (docker0 by default) should only be present on the host system
             if ! grep -q "server.bind" /etc/lighttpd/lighttpd.conf ; then # if the declaration is already there, don't add it again
-                sed -i -E "s/server\.port\s+\=\s+80/server.bind\t\t = \"${ServerIP}\"\nserver.port\t\t = 80/" /etc/lighttpd/lighttpd.conf
+                sed -i -E "s/server\.port\s+\=\s+80/server.bind\t\t = \"${ServerIP}\"\nserver.port\t\t = 80\n"\$SERVER"\[\"socket\"\] == \"127\.0\.0\.1:80\" \{\}/" /etc/lighttpd/lighttpd.conf
             fi
         fi
     fi
