@@ -40,7 +40,7 @@ os_base_vars = {
 images = {
     'debian': [
         {
-            'base': 'debian:jessie',
+            'base': 'debian:stretch',
             'arch': 'amd64'
         },
         {
