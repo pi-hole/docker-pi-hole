@@ -8,7 +8,7 @@ check_output = testinfra.get_backend(
 def DockerGeneric(request, args, image, cmd):
     assert 'docker' in check_output('id'), "Are you in the docker group?"
     if 'pi-hole' in image:
-       args += " --dns 127.0.0.1 -v /dev/null:/etc/pihole/adlists.default -e PYTEST=\"True\""
+       args += " -v /dev/null:/etc/pihole/adlists.default -e PYTEST=\"True\""
     docker_run = "docker run -d {} {} {}".format(args, image, cmd)
     print docker_run
     docker_id = check_output(docker_run)
