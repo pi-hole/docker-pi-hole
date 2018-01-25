@@ -227,9 +227,9 @@ test_configs() {
 test_configs_debian() {
     set -e
     echo -n '::: Testing DNSmasq config: '
-    dnsmasq --test -7 /etc/dnsmasq.d
+    dnsmasq --test -7 /etc/dnsmasq.d || exit 1
     echo -n '::: Testing lighttpd config: '
-    lighttpd -t -f /etc/lighttpd/lighttpd.conf
+    lighttpd -t -f /etc/lighttpd/lighttpd.conf || exit 1
     set +e
     echo "::: All config checks passed, starting ..."
 }
