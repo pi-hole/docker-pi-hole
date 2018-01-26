@@ -4,6 +4,7 @@ LABEL image="{{ pihole.name }}:{{ pihole.os }}_{{ pihole.arch }}"
 LABEL maintainer="{{ pihole.maintainer }}"
 LABEL url="https://www.github.com/diginc/docker-pi-hole"
 
+ARG DEBIAN_FRONTED=noninteractive
 ENV TAG {{ pihole.os }}
 ENV ARCH {{ pihole.arch }}
 ENV PATH /opt/pihole:${PATH}
