@@ -8,9 +8,9 @@ export USE_DEVELOPMENT_BRANCHES=true
 #     Make pihole scripts fail searching for `systemctl`,
 # which fails pretty miserably in docker compared to `service`
 # For more info see docker/docker issue #7459
-mv "$(which systemctl)" /bin/no_systemctl && \
+which systemctl && mv "$(which systemctl)" /bin/no_systemctl
 # debconf-apt-progress seems to hang so get rid of it too
-mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
+which which debconf-apt-progress && mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
 
 # Get the install functions
 CUSTOM_INSTALL='development'
