@@ -1,9 +1,10 @@
-FROM debian:jessie
+FROM debian:stretch
 
 LABEL image="diginc/pi-hole:debian_amd64"
 LABEL maintainer="adam@diginc.us"
 LABEL url="https://www.github.com/diginc/docker-pi-hole"
 
+ARG DEBIAN_FRONTED=noninteractive
 ENV TAG debian
 ENV ARCH amd64
 ENV PATH /opt/pihole:${PATH}
@@ -14,7 +15,7 @@ ENV PIHOLE_INSTALL /tmp/ph_install.sh
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.2.2/s6-overlay-amd64.tar.gz
 
 RUN apt-get update && \
-    apt-get install -y wget curl net-tools cron && \
+    apt-get install -y wget curl net-tools cron procps && \
     curl -L -s $S6OVERLAY_RELEASE \
         | tar xvzf - -C / && \
     docker-install.sh && \

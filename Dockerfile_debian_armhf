@@ -1,9 +1,10 @@
-FROM multiarch/debian-debootstrap:armhf-jessie-slim
+FROM multiarch/debian-debootstrap:armhf-stretch-slim
 
 LABEL image="diginc/pi-hole:debian_armhf"
 LABEL maintainer="adam@diginc.us"
 LABEL url="https://www.github.com/diginc/docker-pi-hole"
 
+ARG DEBIAN_FRONTED=noninteractive
 ENV TAG debian
 ENV ARCH armhf
 ENV PATH /opt/pihole:${PATH}
@@ -14,7 +15,7 @@ ENV PIHOLE_INSTALL /tmp/ph_install.sh
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.2.2/s6-overlay-armhf.tar.gz
 
 RUN apt-get update && \
-    apt-get install -y wget curl net-tools cron && \
+    apt-get install -y wget curl net-tools cron procps && \
     curl -L -s $S6OVERLAY_RELEASE \
         | tar xvzf - -C / && \
     docker-install.sh && \
