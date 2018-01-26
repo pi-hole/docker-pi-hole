@@ -15,7 +15,7 @@ ENV PIHOLE_INSTALL /tmp/ph_install.sh
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/{{ pihole.s6_version }}/s6-overlay-{{ pihole.arch }}.tar.gz
 
 RUN apt-get update && \
-    apt-get install -y wget curl net-tools cron && \
+    apt-get install -y wget curl net-tools cron procps && \
     curl -L -s $S6OVERLAY_RELEASE \
         | tar xvzf - -C / && \
     docker-install.sh && \
