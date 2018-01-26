@@ -40,15 +40,15 @@ os_base_vars = {
 images = {
     'debian': [
         {
-            'base': 'debian:jessie',
+            'base': 'debian:stretch',
             'arch': 'amd64'
         },
         {
-            'base': 'multiarch/debian-debootstrap:armhf-jessie-slim',
+            'base': 'multiarch/debian-debootstrap:armhf-stretch-slim',
             'arch': 'armhf'
         },
         {
-            'base': 'multiarch/debian-debootstrap:arm64-jessie-slim',
+            'base': 'multiarch/debian-debootstrap:arm64-stretch-slim',
             'arch': 'aarch64'
         }
     ]
