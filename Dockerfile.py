@@ -15,6 +15,7 @@ Options:
 
 Examples:
 """
+from __future__ import print_function
 
 from docopt import docopt
 from jinja2 import Environment, FileSystemLoader
@@ -56,18 +57,18 @@ images = {
 
 def generate_dockerfiles(args):
     if args['--no-generate']:
-        print " ::: Skipping Dockerfile generation"
+        print(" ::: Skipping Dockerfile generation")
         return
 
-    for os, archs in images.iteritems():
+    for os, archs in images.items():
         for image in archs:
             if os not in args['--os'] and image['arch'] not in args['--arch']:
                 return
             merged_data = dict(
-                { 'os': os }.items() +
-                base_vars.items() +
-                os_base_vars[os].items() +
-                image.items()
+                list({ 'os': os }.items()) +
+                list(base_vars.items()) +
+                list(os_base_vars[os].items()) +
+                list(image.items())
             )
             j2_env = Environment(loader=FileSystemLoader(THIS_DIR),
                                  trim_blocks=True)
@@ -80,7 +81,7 @@ def generate_dockerfiles(args):
 
 def build_dockerfiles(args):
     if args['--no-build']:
-        print " ::: Skipping Dockerfile building"
+        print(" ::: Skipping Dockerfile building")
         return
 
     for os in args['--os']:
@@ -105,15 +106,15 @@ def build(docker_repo, os, arch, args):
         no_cache = '--no-cache'
     build_command = 'docker build {no_cache} --pull --cache-from="{cache},{create_tag}" -f {dockerfile} -t {create_tag} .'\
         .format(no_cache=no_cache, cache=cached_image, dockerfile=dockerfile, create_tag=repo_tag)
-    print " ::: Building {} into {}".format(dockerfile, repo_tag)
+    print(" ::: Building {} into {}".format(dockerfile, repo_tag))
     if args['-v']:
-        print build_command, '\n'
+        print(build_command, '\n')
     build_result = run_local(build_command) 
     if args['-v']:
-        print build_result.stdout
+        print(build_result.stdout)
     if build_result.rc != 0:
-        print "     ::: Building {} encountered an error".format(dockerfile)
-        print build_result.stderr
+        print("     ::: Building {} encountered an error".format(dockerfile))
+        print(build_result.stderr)
     assert build_result.rc == 0
 
 
