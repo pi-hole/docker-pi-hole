@@ -7,8 +7,11 @@ if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
     bashCmd='bash -e -x'
 fi
 
-$bashCmd /start.sh
-
+# Start dnsmasq for validate_env and gravity.sh
 dnsmasq -7 /etc/dnsmasq.d
+
+$bashCmd /start.sh
 gravity.sh
+
+# Kill dnsmasq because s6 won't like it if it's running when s6 services start
 kill -9 $(pgrep dnsmasq) || true

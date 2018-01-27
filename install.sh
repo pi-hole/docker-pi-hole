@@ -3,14 +3,19 @@ mkdir -p /etc/pihole/
 export CORE_TAG='v3.2.1'
 export WEB_TAG='v3.2.1'
 export FTL_TAG='v2.13.2'
-export USE_DEVELOPMENT_BRANCHES=false
+export USE_DEVELOPMENT_BRANCHES=true
+
+if [[ $USE_DEVELOPMENT_BRANCHES == true ]] ; then
+    # install from custom hash or branch
+    CORE_TAG='development'
+fi
 
 #     Make pihole scripts fail searching for `systemctl`,
 # which fails pretty miserably in docker compared to `service`
 # For more info see docker/docker issue #7459
-mv "$(which systemctl)" /bin/no_systemctl && \
+which systemctl && mv "$(which systemctl)" /bin/no_systemctl
 # debconf-apt-progress seems to hang so get rid of it too
-mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
+which debconf-apt-progress && mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
 
 # Get the install functions
 wget -O "$PIHOLE_INSTALL" https://raw.githubusercontent.com/pi-hole/pi-hole/${CORE_TAG}/automated%20install/basic-install.sh
@@ -39,8 +44,6 @@ if [[ $USE_DEVELOPMENT_BRANCHES == true ]] ; then
 else
     pushd "${PI_HOLE_LOCAL_REPO}"; 
     git reset --hard "${CORE_TAG}"; 
-    # Can be removed once https://github.com/pi-hole/pi-hole/pull/1779 is in a release
-    git checkout 8d721d086cbe4b49665c9e0b1d81499b284776a9 gravity.sh
     popd;
     pushd "${webInterfaceDir}"; git reset --hard "${WEB_TAG}"; popd;
 fi
@@ -61,7 +64,7 @@ sed -i $'s/helpFunc() {/unsupportedFunc() {\\\n  echo "Function not supported in
 # Replace references to `updatePiholeFunc` with new `unsupportedFunc`
 sed -i $'s/updatePiholeFunc;;/unsupportedFunc;;/g' /usr/local/bin/pihole
 
-mv "${tmpLog}" "${instalLogLoc}"
+mv "${tmpLog}" /
 touch /.piholeFirstBoot
 
 # Fix dnsmasq in docker
