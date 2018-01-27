@@ -4,7 +4,6 @@ LABEL image="diginc/pi-hole:debian_armhf"
 LABEL maintainer="adam@diginc.us"
 LABEL url="https://www.github.com/diginc/docker-pi-hole"
 
-ARG DEBIAN_FRONTED=noninteractive
 ENV TAG debian
 ENV ARCH armhf
 ENV PATH /opt/pihole:${PATH}
@@ -19,9 +18,10 @@ RUN apt-get update && \
     curl -L -s $S6OVERLAY_RELEASE \
         | tar xvzf - -C / && \
     docker-install.sh && \
-    rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
+    rm -rf /var/cache/apt/archives /var/lib/apt/lists/* && \
+    mv /init /s6-init
 
-ENTRYPOINT [ "/init" ]
+ENTRYPOINT [ "/s6-init" ]
 
 ADD s6/debian-root /
 COPY s6/service /usr/local/bin/service

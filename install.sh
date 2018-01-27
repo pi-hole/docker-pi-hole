@@ -10,7 +10,7 @@ export USE_DEVELOPMENT_BRANCHES=true
 # For more info see docker/docker issue #7459
 which systemctl && mv "$(which systemctl)" /bin/no_systemctl
 # debconf-apt-progress seems to hang so get rid of it too
-which which debconf-apt-progress && mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
+which debconf-apt-progress && mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
 
 # Get the install functions
 CUSTOM_INSTALL='development'
