@@ -5,6 +5,11 @@ export WEB_TAG='v3.2.1'
 export FTL_TAG='v2.13.2'
 export USE_DEVELOPMENT_BRANCHES=false
 
+if [[ $USE_DEVELOPMENT_BRANCHES == true ]] ; then
+    # install from custom hash or branch
+    CORE_TAG='development'
+fi
+
 #     Make pihole scripts fail searching for `systemctl`,
 # which fails pretty miserably in docker compared to `service`
 # For more info see docker/docker issue #7459
@@ -13,8 +18,7 @@ which systemctl && mv "$(which systemctl)" /bin/no_systemctl
 which debconf-apt-progress && mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
 
 # Get the install functions
-CUSTOM_INSTALL='development'
-wget -O "$PIHOLE_INSTALL" https://raw.githubusercontent.com/pi-hole/pi-hole/${CUSTOM_INSTALL:-$CORE_TAG}/automated%20install/basic-install.sh
+wget -O "$PIHOLE_INSTALL" https://raw.githubusercontent.com/pi-hole/pi-hole/${CORE_TAG}/automated%20install/basic-install.sh
 PH_TEST=true . "${PIHOLE_INSTALL}"
 
 # Run only what we need from installer
