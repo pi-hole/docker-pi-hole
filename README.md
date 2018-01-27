@@ -32,7 +32,7 @@ docker run -d \
     -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/" \
     -e ServerIP="${IP}" \
     -e ServerIPv6="${IPv6}" \
-    --restart=always \
+    --restart=unless-stopped \
     diginc/pi-hole:latest
 ```
 
@@ -63,7 +63,7 @@ Here is a rundown of the other arguments passed into the example `docker run`
 | Docker Arguments | Description |
 | ---------------- | ----------- |
 | `-p 80:80`<br/>`-p 53:53/tcp -p 53:53/udp`<br/> **Recommended** | Ports to expose, the bare minimum ports required for pi-holes HTTP and DNS services
-| `--restart=always`<br/> **Recommended** | Automatically (re)start your pihole on boot or in the event of a crash
+| `--restart=unless-stopped`<br/> **Recommended** | Automatically (re)start your pihole on boot or in the event of a crash
 | `-v /dir/for/pihole:/etc/pihole`<br/> **Recommended** | Volumes for your pihole configs help persist changes across docker image updates
 | `-v /dir/for/dnsmasq.d:/etc/dnsmasq.d`<br/> **Recommended** | Volumes for your dnsmasq configs help persist changes across docker image updates
 | `--net=host`<br/> *Optional* | Alternative to `-p <port>:<port>` arguments (Cannot be used at same time as -p) if you don't run any other web application
@@ -142,7 +142,7 @@ Similarly for the webserver you can customize configs in /etc/lighttpd (*:debian
 
 ### Systemd init script
 
-As long as your docker system service auto starts on boot and you run your container with `--restart=always` your container should always start on boot and restart on crashes.  If you prefer to have your docker container run as a systemd service instead add the file [pihole.service](https://raw.githubusercontent.com/diginc/docker-pi-hole/master/pihole.service) to "/etc/systemd/system"; customize whatever your container name is and remove `--restart=always` from your docker run.  Then after you have initially created the docker container using the docker run command above, you can control it with "systemctl start pihole" or "systemctl stop pihole" (instead of `docker start`/`docker stop`).  You can also enable it to auto-start on boot with "systemctl enable pihole" (as opposed to `--restart=always` and making sure docker service auto-starts on boot).
+As long as your docker system service auto starts on boot and you run your container with `--restart=unless-stopped` your container should always start on boot and restart on crashes.  If you prefer to have your docker container run as a systemd service instead add the file [pihole.service](https://raw.githubusercontent.com/diginc/docker-pi-hole/master/pihole.service) to "/etc/systemd/system"; customize whatever your container name is and remove `--restart=unless-stopped` from your docker run.  Then after you have initially created the docker container using the docker run command above, you can control it with "systemctl start pihole" or "systemctl stop pihole" (instead of `docker start`/`docker stop`).  You can also enable it to auto-start on boot with "systemctl enable pihole" (as opposed to `--restart=unless-stopped` and making sure docker service auto-starts on boot).
 
 NOTE:  After initial run you may need to manually stop the docker container with "docker stop pihole" before the systemctl can start controlling the container.
 
