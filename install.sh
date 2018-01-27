@@ -3,7 +3,7 @@ mkdir -p /etc/pihole/
 export CORE_TAG='v3.2.1'
 export WEB_TAG='v3.2.1'
 export FTL_TAG='v2.13.2'
-export USE_DEVELOPMENT_BRANCHES=false
+export USE_DEVELOPMENT_BRANCHES=true
 
 if [[ $USE_DEVELOPMENT_BRANCHES == true ]] ; then
     # install from custom hash or branch
