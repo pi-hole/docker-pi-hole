@@ -3,7 +3,7 @@ mkdir -p /etc/pihole/
 export CORE_TAG='v3.2.1'
 export WEB_TAG='v3.2.1'
 export FTL_TAG='v2.13.2'
-export USE_DEVELOPMENT_BRANCHES=true
+export USE_DEVELOPMENT_BRANCHES=false
 
 #     Make pihole scripts fail searching for `systemctl`,
 # which fails pretty miserably in docker compared to `service`
