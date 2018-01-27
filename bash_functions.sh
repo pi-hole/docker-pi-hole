@@ -19,7 +19,7 @@ validate_env() {
     nc_error='Name or service not known'
 
     # Required ServerIP is a valid IP
-    if nc -w1 -z "$ServerIP" 53 2>&1 | grep -q "$nc_error" ; then
+    if [[ "$(nc -4 -w1 -z "$ServerIP" 53 2>&1)" != "" ]]; then
         echo "ERROR: ServerIP Environment variable ($ServerIP) doesn't appear to be a valid IPv4 address"
         exit 1
     fi

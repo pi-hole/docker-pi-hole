@@ -60,7 +60,7 @@ sed -i $'s/helpFunc() {/unsupportedFunc() {\\\n  echo "Function not supported in
 # Replace references to `updatePiholeFunc` with new `unsupportedFunc`
 sed -i $'s/updatePiholeFunc;;/unsupportedFunc;;/g' /usr/local/bin/pihole
 
-mv "${tmpLog}" "${instalLogLoc}"
+mv "${tmpLog}" /
 touch /.piholeFirstBoot
 
 # Fix dnsmasq in docker
