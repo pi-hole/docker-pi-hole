@@ -17,8 +17,7 @@ script:
   # prepare qemu
   - docker run --rm --privileged multiarch/qemu-user-static:register --reset
   # generate and build dockerfile
-  - ./Dockerfile.py --os=${OS} --arch=${ARCH} -v --no-build
-  - docker build  --pull --cache-from="diginc/pi-hole:debian_${ARCH},pi-hole:debian_${ARCH}" -f Dockerfile_debian_${ARCH} -t pi-hole:debian_${ARCH} . 
+  - ./Dockerfile.py --os=${OS} --arch=${ARCH} -v
   - docker images
   # run docker build & tests
   - py.test -vv -n auto -k "${OS}-${ARCH}" ./test/
