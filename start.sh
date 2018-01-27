@@ -18,7 +18,6 @@ export WEB_PORT
 . /bash_functions.sh
 
 echo " ::: Starting docker specific setup for docker diginc/pi-hole"
-set -e
 validate_env || exit 1
 prepare_setup_vars
 change_setting "IPV4_ADDRESS" "$ServerIP"
