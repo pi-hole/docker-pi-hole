@@ -38,15 +38,6 @@ webInterfaceGitUrl="${webInterfaceGitUrl}"
 webInterfaceDir="${webInterfaceDir}"
 git clone "${piholeGitUrl}" "${PI_HOLE_LOCAL_REPO}"
 git clone "${webInterfaceGitUrl}" "${webInterfaceDir}"
-if [[ $USE_DEVELOPMENT_BRANCHES == true ]] ; then
-    pushd "${PI_HOLE_LOCAL_REPO}"; git checkout development; popd;
-    pushd "${webInterfaceDir}"; git checkout devel; popd;
-else
-    pushd "${PI_HOLE_LOCAL_REPO}"; 
-    git reset --hard "${CORE_TAG}"; 
-    popd;
-    pushd "${webInterfaceDir}"; git reset --hard "${WEB_TAG}"; popd;
-fi
 
 export PIHOLE_INTERFACE=eth0
 export IPV4_ADDRESS=0.0.0.0
@@ -58,13 +49,24 @@ export QUERY_LOGGING=true
 tmpLog="/tmp/pihole-install.log"
 installLogLoc="${installLogLoc}"
 installPihole | tee "${tmpLog}"
+mv "${tmpLog}" /
+
+if [[ $USE_DEVELOPMENT_BRANCHES == true ]] ; then
+    pihole checkout core development
+    pihole checkout web devel
+    pihole checkout ftl development
+else
+    # Reset to our tags so version numbers get detected correctly
+    pushd "${PI_HOLE_LOCAL_REPO}"; git reset --hard "${CORE_TAG}"; popd;
+    pushd "${webInterfaceDir}"; git reset --hard "${WEB_TAG}"; popd;
+fi
+
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
 
 sed -i $'s/helpFunc() {/unsupportedFunc() {\\\n  echo "Function not supported in Docker images"\\\n  exit 0\\\n}\\\n\\\nhelpFunc() {/g' /usr/local/bin/pihole
 # Replace references to `updatePiholeFunc` with new `unsupportedFunc`
 sed -i $'s/updatePiholeFunc;;/unsupportedFunc;;/g' /usr/local/bin/pihole
 
-mv "${tmpLog}" /
 touch /.piholeFirstBoot
 
 # Fix dnsmasq in docker
