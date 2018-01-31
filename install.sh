@@ -52,9 +52,11 @@ installPihole | tee "${tmpLog}"
 mv "${tmpLog}" /
 
 if [[ $USE_DEVELOPMENT_BRANCHES == true ]] ; then
-    pihole checkout core development
-    pihole checkout web devel
-    pihole checkout ftl development
+    ln -s /bin/true /usr/local/bin/service
+    echo y | bash -x pihole checkout core development
+    echo y | bash -x pihole checkout web devel
+    echo y | bash -x pihole checkout ftl development
+    unlink /usr/local/bin/service
 else
     # Reset to our tags so version numbers get detected correctly
     pushd "${PI_HOLE_LOCAL_REPO}"; git reset --hard "${CORE_TAG}"; popd;
