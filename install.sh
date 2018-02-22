@@ -1,10 +1,10 @@
 #!/bin/bash -ex
 mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
-export CORE_TAG='v3.2.1'
-export WEB_TAG='v3.2.1'
-export FTL_TAG='v2.13.2'
-export USE_DEVELOPMENT_BRANCHES=true
+export CORE_TAG='v3.3'
+export WEB_TAG='v3.3'
+export FTL_TAG='v3.0'
+export USE_DEVELOPMENT_BRANCHES=false
 
 if [[ $USE_DEVELOPMENT_BRANCHES == true ]] ; then
     # install from custom hash or branch
