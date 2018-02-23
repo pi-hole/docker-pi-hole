@@ -15,11 +15,10 @@ validate_env() {
       exit 1
     fi;
 
-    # Debian
-    nc_error='Name or service not known'
-
     # Required ServerIP is a valid IP
-    if nc -w1 -z "$ServerIP" 53 2>&1 | grep -q "$nc_error" ; then
+    # nc won't throw any text based errors when it times out connecting to a valid IP, otherwise it complains about the DNS name being garbage
+    # if nc doesn't behave as we expect on a valid IP the routing table should be able to look it up and return a 0 retcode
+    if [[ "$(nc -4 -w1 -z "$ServerIP" 53 2>&1)" != "" ]] || ! ip route get "$ServerIP" > /dev/null ; then
         echo "ERROR: ServerIP Environment variable ($ServerIP) doesn't appear to be a valid IPv4 address"
         exit 1
     fi
@@ -31,7 +30,7 @@ validate_env() {
             unset ServerIPv6
             exit 1
         fi
-        if nc -w 1 -z "$ServerIPv6" 53 2>&1 | grep -q "$nc_error" || ! ip route get "$ServerIPv6" > /dev/null ; then
+        if [[ "$(nc -6 -w1 -z "$ServerIPv6" 53 2>&1)" != "" ]] || ! ip route get "$ServerIPv6" > /dev/null ; then
             echo "ERROR: ServerIPv6 Environment variable ($ServerIPv6) doesn't appear to be a valid IPv6 address"
             echo "  TIP: If your server is not IPv6 enabled just remove '-e ServerIPv6' from your docker container"
             exit 1
@@ -133,10 +132,10 @@ setup_dnsmasq_hostnames() {
 
 setup_lighttpd_bind() {
     if [[ "$TAG" == 'debian' ]] ; then
-    # if using '--net=host' only bind lighttpd on $ServerIP
+    # if using '--net=host' only bind lighttpd on $ServerIP and localhost
         if grep -q "docker" /proc/net/dev ; then #docker (docker0 by default) should only be present on the host system
             if ! grep -q "server.bind" /etc/lighttpd/lighttpd.conf ; then # if the declaration is already there, don't add it again
-                sed -i -E "s/server\.port\s+\=\s+80/server.bind\t\t = \"${ServerIP}\"\nserver.port\t\t = 80/" /etc/lighttpd/lighttpd.conf
+                sed -i -E "s/server\.port\s+\=\s+80/server.bind\t\t = \"${ServerIP}\"\nserver.port\t\t = 80\n"\$SERVER"\[\"socket\"\] == \"127\.0\.0\.1:80\" \{\}/" /etc/lighttpd/lighttpd.conf
             fi
         fi
     fi
@@ -185,10 +184,12 @@ setup_web_port() {
     fi
     echo "Custom WEB_PORT set to $web_port"
     echo "INFO: Without proper router DNAT forwarding to $ServerIP:$web_port, you may not get any blocked websites on ads"
-    case $TAG in
-        "debian") 
-            sed -i '/server.port\s*=\s*80\s*$/ s/80/'$WEB_PORT'/g' /etc/lighttpd/lighttpd.conf ;;
-    esac
+
+    # Update lighttpd's port
+    sed -i '/server.port\s*=\s*80\s*$/ s/80/'$WEB_PORT'/g' /etc/lighttpd/lighttpd.conf
+    # Update any default port 80 references in the HTML
+    grep -Prl '://127\.0\.0\.1/' /var/www/html/ | xargs -r sed -i "s|/127\.0\.0\.1/|/127.0.0.1:${WEB_PORT}/|g"
+    grep -Prl '://pi\.hole/' /var/www/html/ | xargs -r sed -i "s|/pi\.hole/|/pi\.hole:${WEB_PORT}/|g"
 
 }
 
@@ -227,9 +228,9 @@ test_configs() {
 test_configs_debian() {
     set -e
     echo -n '::: Testing DNSmasq config: '
-    dnsmasq --test -7 /etc/dnsmasq.d
+    dnsmasq --test -7 /etc/dnsmasq.d || exit 1
     echo -n '::: Testing lighttpd config: '
-    lighttpd -t -f /etc/lighttpd/lighttpd.conf
+    lighttpd -t -f /etc/lighttpd/lighttpd.conf || exit 1
     set +e
     echo "::: All config checks passed, starting ..."
 }
