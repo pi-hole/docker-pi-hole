@@ -31,6 +31,13 @@ def test_overrides_default_WEB_PORT(Docker, os, args):
     config = Docker.run('cat {}'.format( WEB_CONFIG[os])).stdout
     for expected_line in CONFIG_LINES[os]:
         assert re.search(expected_line, config) != None
+    # grep fails to find any of the old address w/o port
+    assert Docker.run('grep -rq "://127.0.0.1/" /var/www/html/').rc == 1
+    assert Docker.run('grep -rq "://pi.hole/" /var/www/html/').rc == 1
+    # Find at least one instance of our changes 
+    # upstream repos determines how many and I don't want to keep updating this test
+    assert int(Docker.run('grep -rl "://127.0.0.1:999/" /var/www/html/ | wc -l').stdout) >= 1
+    assert int(Docker.run('grep -rl "://pi.hole:999/" /var/www/html/ | wc -l').stdout) >= 1
 
 @pytest.mark.parametrize('args,expected_error', [
     (DEFAULTARGS + '-e WEB_PORT="LXXX"', 'WARNING: Custom WEB_PORT not used - LXXX is not an integer'),
