@@ -7,7 +7,7 @@ if [ ! -f ~/.docker/config.json ] ; then
 fi
 
 if [[ "$1" == 'prod' ]] ; then
-    export version='3.2.1'
+    export version='3.3'
     for tag in debian_armhf debian_aarch64; do 
         # Verison specific tags for ongoing history
         docker tag pi-hole-multiarch:$tag diginc/pi-hole-multiarch:v${version}_${tag} 
