@@ -1,4 +1,4 @@
 #!/usr/bin/with-contenv bash
 
-s6-echo "Starting pihole-FTL"
-pihole-FTL no-daemon
+s6-echo "Starting pihole-FTL ($FTL_CMD)"
+pihole-FTL "${FTL_CMD}"
