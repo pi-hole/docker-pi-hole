@@ -1,9 +1,10 @@
-Please note the following about this [traefik]() example for pihole.
+Please note the following about this [traefik](https://traefik.io/) example for pihole.
 
+- Still requires standard pi-hole setup steps, make sure you've gone through the [README](https://github.com/diginc/docker-pi-hole/blob/master/README.md) and understand how to setup pihole without traefik first
 - Update these things before using:
     - set instances of `homedomain.lan` below to your home domain (typically set in your router)
     - set your pihole ENV WEBPASSWORD
-- This works for me, Your milage may vary!
+- This works for me, Your mileage may vary!
 - For support, do your best to figure out traefik issues on your own:
     - by looking at logs and traefik web interface on port 8080
     - also by searching the web and searching their forums/docker issues for similar question/problems
@@ -21,6 +22,8 @@ services:
     
     image: traefik
     restart: unless-stopped
+    # Note I opt to whitelist certain apps for exposure to traefik instead of auto discovery
+    # use `--docker.exposedbydefault=true` if you don't want to have to do this
     command: "--web --docker --docker.domain=homedomain.lan --docker.exposedbydefault=false --logLevel=DEBUG"
     ports:
       - "80:80"
@@ -58,6 +61,7 @@ services:
       TZ: 'America/Chicago'
     restart: unless-stopped
     labels:
+       # required when using --docker.exposedbydefault=false
        - "traefik.enable=true"
        # https://www.techjunktrunk.com/docker/2017/11/03/traefik-default-server-catch-all/
        - "traefik.frontend.rule=HostRegexp:pihole.homedomain.lan,{catchall:.*}"
