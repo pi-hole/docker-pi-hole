@@ -1,6 +1,8 @@
-## Imporant Note to alpine / arm tag users: 
+## Important Note to alpine / arm tag users: 
 
-**Debian is now the only supported base OS for `diginc/pi-hole`** to improve consistency and updates.  Alpine OS was dropped and ARM has moved to a new image/tag name.  The ARM Debian tag was removed from `diginc/pi-hole` but is still supported at it's now image repostiroy home,  [diginc/pi-hole-multiarch](https://hub.docker.com/r/diginc/pi-hole-multiarch/tags/) where it has both an `:debian_armhf` and `:debian_aarch64` version
+**Debian is now the only supported base OS for `diginc/pi-hole`** to improve consistency and updates.  Alpine OS was dropped and ARM has moved to a new image/tag name.  The ARM Debian tag was removed from `diginc/pi-hole` but is still supported at its new image repository home,  [diginc/pi-hole-multiarch](https://hub.docker.com/r/diginc/pi-hole-multiarch/tags/) where it has both an `:debian_armhf` and `:debian_aarch64` version
+
+## Overview
 
 A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86 ~~and ARM~~ container with [pi-hole](https://pi-hole.net) functionality.
 
