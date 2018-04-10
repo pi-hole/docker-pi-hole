@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
-export CORE_TAG='v3.3'
+export CORE_TAG='v3.3.1'
 export WEB_TAG='v3.3'
 export FTL_TAG='v3.0'
 export USE_DEVELOPMENT_BRANCHES=false

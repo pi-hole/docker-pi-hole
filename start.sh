@@ -14,6 +14,7 @@ export INTERFACE
 export IPv6
 export WEBPASSWORD
 export WEB_PORT
+export FTL_CMD="${FTL_CMD:-no-daemon}"
 
 . /bash_functions.sh
 
