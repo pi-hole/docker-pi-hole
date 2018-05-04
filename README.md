@@ -1,4 +1,4 @@
-## Important Note to alpine / arm tag users: 
+## Important Note to alpine / arm tag users:
 
 **Debian is now the only supported base OS for `diginc/pi-hole`** to improve consistency and updates.  Alpine OS was dropped and ARM has moved to a new image/tag name.  The ARM Debian tag was removed from `diginc/pi-hole` but is still supported at its new image repository home,  [diginc/pi-hole-multiarch](https://hub.docker.com/r/diginc/pi-hole-multiarch/tags/) where it has both an `:debian_armhf` and `:debian_aarch64` version
 
@@ -29,7 +29,7 @@ DOCKER_CONFIGS="$(pwd)"  # Default of directory you run this from, update to whe
 
 docker run -d \
     --name pihole \
-    -p 53:53/tcp -p 53:53/udp -p 80:80 \
+    -p 53:53/tcp -p 53:53/udp -p 80:80 -p 443:443 \
     -v "${DOCKER_CONFIGS}/pihole/:/etc/pihole/" \
     -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/" \
     -e ServerIP="${IP}" \
@@ -37,6 +37,10 @@ docker run -d \
     --restart=unless-stopped \
     diginc/pi-hole:latest
 ```
+
+**Scripts that try to reach a blocked domain on port 443 will timeout because the domain is redirected to the docker host, while no service listens on port 443. Pages on the client will load very slowly on
+sited doing this type of connection. Adding the port 443 forwarding to the container run results in a inmediate REJECT: the page will continue loading inmediately instead of waiting for the resource. An
+alternative is instead of binding port 443 is blocking it by the firewall of the docker host, e.g. with `sudo ufw reject https`.
 
 **This is just an example and might need changing.**  Volumes are stored in the directory `$DOCKER_CONFIGS` and aren't required but are recommended for persisting data across docker re-creations for updating images.  As mentioned on line 2, the auto `IP_LOOKUP` variable may not work for VPN tunnel interfaces.
 
