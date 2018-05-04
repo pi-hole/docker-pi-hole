@@ -38,7 +38,7 @@ docker run -d \
     diginc/pi-hole:latest
 ```
 
-**Scripts that try to reach a blocked domain on port 443 will timeout because the domain is redirected to the docker host, while no service listens on port 443. Pages on the client will load very slowly on
+Scripts that try to reach a blocked domain on port 443 will timeout because the domain is redirected to the docker host, while no service listens on port 443. Pages on the client will load very slowly on
 sited doing this type of connection. Adding the port 443 forwarding to the container run results in a inmediate REJECT: the page will continue loading inmediately instead of waiting for the resource. An
 alternative is instead of binding port 443 is blocking it by the firewall of the docker host, e.g. with `sudo ufw reject https`.
 
