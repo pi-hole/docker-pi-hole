@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -ex
 # Script for manually pushing the docker arm images for diginc only 
 # (no one else has docker repo permissions)
 if [ ! -f ~/.docker/config.json ] ; then
@@ -7,7 +7,7 @@ if [ ! -f ~/.docker/config.json ] ; then
 fi
 
 if [[ "$1" == 'prod' ]] ; then
-    export version='3.3'
+    export version="${latest}"
     for tag in debian_armhf debian_aarch64; do 
         # Verison specific tags for ongoing history
         docker tag pi-hole-multiarch:$tag diginc/pi-hole-multiarch:v${version}_${tag} 

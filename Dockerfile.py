@@ -27,7 +27,7 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 base_vars = {
     'name': 'diginc/pi-hole',
     'maintainer' : 'adam@diginc.us',
-    's6_version' : 'v1.21.2.2',
+    's6_version' : 'v1.21.4.0',
 }
 
 os_base_vars = {
@@ -111,6 +111,7 @@ def build(docker_repo, os, arch, args):
     build_result = run_local(build_command) 
     if args['-v']:
         print build_result.stdout
+        print build_result.stderr
     if build_result.rc != 0:
         print "     ::: Building {} encountered an error".format(dockerfile)
         print build_result.stderr
