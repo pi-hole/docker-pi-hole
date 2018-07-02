@@ -1,5 +1,4 @@
 #!/usr/bin/with-contenv bash
-set
 set -e
 
 bashCmd='bash -e'
