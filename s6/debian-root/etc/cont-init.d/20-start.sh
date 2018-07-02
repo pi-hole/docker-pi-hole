@@ -1,5 +1,6 @@
 #!/usr/bin/with-contenv bash
 set
+set -e
 
 bashCmd='bash -e'
 if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then 
