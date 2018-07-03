@@ -8,18 +8,18 @@ def start_cmd():
 @pytest.fixture
 def RunningPiHole(DockerPersist, Slow, persist_webserver, persist_tag, start_cmd):
     ''' Override the RunningPiHole to run and check for success of a
-        dnsmasq start based `pihole` script command '''
+        pihole-FTL start based `pihole` script command '''
     #print DockerPersist.run('ps -ef').stdout
     assert DockerPersist.dig.run('ping -c 1 test_pihole').rc == 0
-    Slow(lambda: DockerPersist.run('pgrep dnsmasq').rc == 0)
+    Slow(lambda: DockerPersist.run('pgrep pihole-FTL').rc == 0)
     Slow(lambda: DockerPersist.run('pgrep {}'.format(persist_webserver)).rc == 0)
-    oldpid = DockerPersist.run('pidof dnsmasq')
+    oldpid = DockerPersist.run('pidof pihole-FTL')
     cmd = DockerPersist.run('pihole {}'.format(start_cmd))
-    Slow(lambda: DockerPersist.run('pgrep dnsmasq').rc == 0)
-    newpid = DockerPersist.run('pidof dnsmasq')
+    Slow(lambda: DockerPersist.run('pgrep pihole-FTL').rc == 0)
+    newpid = DockerPersist.run('pidof pihole-FTL')
     for pid in [oldpid, newpid]:
         assert pid != ''
-    # ensure a new pid for dnsmasq appeared due to service restart
+    # ensure a new pid for pihole-FTL appeared due to service restart
     assert oldpid != newpid
     assert cmd.rc == 0
     # Save out cmd result to check different stdout of start/enable/disable

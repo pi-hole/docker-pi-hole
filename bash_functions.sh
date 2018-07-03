@@ -90,7 +90,6 @@ setup_dnsmasq() {
     setup_dnsmasq_dns "$DNS1" "$DNS2" 
     setup_dnsmasq_interface "$INTERFACE"
     ProcessDNSSettings
-    # dnsmasq -7 /etc/dnsmasq.d --interface="${INTERFACE:-eth0}"
 }
 
 setup_dnsmasq_hostnames() {
@@ -228,7 +227,7 @@ test_configs() {
 test_configs_debian() {
     set -e
     echo -n '::: Testing DNSmasq config: '
-    dnsmasq --test -7 /etc/dnsmasq.d || exit 1
+    pihole-FTL --test -7 /etc/dnsmasq.d || exit 1
     echo -n '::: Testing lighttpd config: '
     lighttpd -t -f /etc/lighttpd/lighttpd.conf || exit 1
     set +e
