@@ -226,8 +226,8 @@ test_configs() {
 
 test_configs_debian() {
     set -e
-    echo -n '::: Testing DNSmasq config: '
-    pihole-FTL --test -7 /etc/dnsmasq.d || exit 1
+    echo -n '::: Testing pihole-FTL DNS: '
+    pihole-FTL test || exit 1
     echo -n '::: Testing lighttpd config: '
     lighttpd -t -f /etc/lighttpd/lighttpd.conf || exit 1
     set +e

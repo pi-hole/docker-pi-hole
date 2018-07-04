@@ -7,8 +7,7 @@ if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
     bashCmd='bash -e -x'
 fi
 
-# Start dnsmasq for validate_env and gravity.sh
-pihole-FTL 
+# used to start dnsmasq here for gravity to use...now that conflicts port 53
 
 $bashCmd /start.sh
 gravity.sh
