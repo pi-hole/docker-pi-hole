@@ -63,7 +63,11 @@ setup_dnsmasq_dns() {
         change_setting "PIHOLE_DNS_1" "${DNS1}"
     fi
     if [[ -n "$DNS2" && -z "$setupDNS2" ]] ; then
-        change_setting "PIHOLE_DNS_2" "${DNS2}"
+        if [ "$DNS2" = "no" ] ; then
+            delete_setting "PIHOLE_DNS_2"
+        else
+            change_setting "PIHOLE_DNS_2" "${DNS2}"
+        fi
     fi
 }
 
