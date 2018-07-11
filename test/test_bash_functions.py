@@ -55,6 +55,8 @@ def test_bad_input_to_WEB_PORT(Docker, args, expected_error):
     ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4"',                   'custom DNS',  '1.2.3.4', '8.8.4.4' ),
     ('-e ServerIP="1.2.3.4" -e DNS2="1.2.3.4"',                   'custom DNS',  '8.8.8.8', '1.2.3.4' ),
     ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4" -e DNS2="2.2.3.4"', 'custom DNS',  '1.2.3.4', '2.2.3.4' ),
+    ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4" -e DNS2="no"', 'custom DNS',  '1.2.3.4', None ),
+    ('-e ServerIP="1.2.3.4" -e DNS2="no"', 'custom DNS',  '8.8.8.8', None ),
 ])
 def test_override_default_servers_with_DNS_EnvVars(Docker, args, expected_stdout, dns1, dns2):
     ''' on first boot when DNS vars are NOT set explain default google DNS settings are used
@@ -64,7 +66,7 @@ def test_override_default_servers_with_DNS_EnvVars(Docker, args, expected_stdout
     assert expected_stdout in function.stdout
 
     docker_dns_servers = Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout
-    expected_servers = 'server={}\nserver={}\n'.format(dns1, dns2)
+    expected_servers = 'server={}\n'.format(dns1) if dns2 == None else 'server={}\nserver={}\n'.format(dns1, dns2)
     assert expected_servers == docker_dns_servers
 
 @pytest.mark.parametrize('args, dns1, dns2, expected_stdout', [
