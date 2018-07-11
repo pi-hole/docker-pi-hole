@@ -57,7 +57,7 @@ services:
       PROXY_LOCATION: pihole
       VIRTUAL_HOST: pihole.homedomain.lan
       VIRTUAL_PORT: 80
-      WEBPASSWORD: yoursecurepass
+      # WEBPASSWORD: put your own pass in, seriously
       TZ: 'America/Chicago'
     restart: unless-stopped
     labels:
