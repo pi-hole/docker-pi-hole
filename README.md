@@ -1,13 +1,9 @@
-## Important Note to alpine / arm tag users: 
-
-**Debian is now the only supported base OS for `diginc/pi-hole`** to improve consistency and updates.  Alpine OS was dropped and ARM has moved to a new image/tag name.  The ARM Debian tag was removed from `diginc/pi-hole` but is still supported at its new image repository home,  [diginc/pi-hole-multiarch](https://hub.docker.com/r/diginc/pi-hole-multiarch/tags/) where it has both an `:debian_armhf` and `:debian_aarch64` version
-
 ## Overview
 
-A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86 ~~and ARM~~ container with [pi-hole](https://pi-hole.net) functionality.
+A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86 ~~and ARM~~ container with [Pi-hole](https://pi-hole.net) functionality.
 
 1) Install docker for your [x86-64 system](https://www.docker.com/community-edition) or [ARMv6l/ARMv7 system](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/) using those links.
-2) Use the appropriate tag (x86 can use default tag, ARM users need to use images from `diginc/pi-hole-multiarch:debian_armhf`) in the below `docker run` command
+2) Use the appropriate tag (x86 can use default tag, ARM users need to use images from [diginc/pi-hole-multiarch:debian_armhf](https://store.docker.com/community/images/diginc/pi-hole-multiarch/tags)) in the below `docker run` command
 3) Enjoy!
 
 [![Build Status](https://api.travis-ci.org/diginc/docker-pi-hole.svg?branch=master)](https://travis-ci.org/diginc/docker-pi-hole) [![Docker Stars](https://img.shields.io/docker/stars/diginc/pi-hole.svg?maxAge=604800)](https://store.docker.com/community/images/diginc/pi-hole) [![Docker Pulls](https://img.shields.io/docker/pulls/diginc/pi-hole.svg?maxAge=604800)](https://store.docker.com/community/images/diginc/pi-hole)
@@ -27,18 +23,28 @@ IP="${IP:-$IP_LOOKUP}"  # use $IP, if set, otherwise IP_LOOKUP
 IPv6="${IPv6:-$IPv6_LOOKUP}"  # use $IPv6, if set, otherwise IP_LOOKUP
 DOCKER_CONFIGS="$(pwd)"  # Default of directory you run this from, update to where ever.
 
+echo "### Make sure your IPs are correct, hard code ServerIP ENV VARs if necessary\nIP: ${IP}\nIPv6: ${IPv6}"
 docker run -d \
     --name pihole \
-    -p 53:53/tcp -p 53:53/udp -p 80:80 \
+    -p 53:53/tcp -p 53:53/udp \
+    -p 67:67/udp \
+    -p 80:80 \
+    -p 443:443 \
     -v "${DOCKER_CONFIGS}/pihole/:/etc/pihole/" \
     -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/" \
     -e ServerIP="${IP}" \
     -e ServerIPv6="${IPv6}" \
     --restart=unless-stopped \
+    --cap-add=NET_ADMIN \
     diginc/pi-hole:latest
+
+echo -n "Your password for https://${IP}/admin/ is "
+docker logs pihole 2> /dev/null | grep 'password:'
 ```
 
-**This is just an example and might need changing.**  Volumes are stored in the directory `$DOCKER_CONFIGS` and aren't required but are recommended for persisting data across docker re-creations for updating images.  As mentioned on line 2, the auto `IP_LOOKUP` variable may not work for VPN tunnel interfaces.
+**This is just an example and might need changing.**  Volumes are stored in the directory `$DOCKER_CONFIGS` and are recommended for persisting data across docker re-creations for updating images.  As mentioned on line 2, the auto `IP_LOOKUP` variable may not work for VPN tunnel interfaces.
+
+Two recently added ports to the `docker run` and `docker-compose` examples are port 67 and 443.  Port 67 is for users who wish to have Pi-hole run a DHCP server.  Port 443 is to provide a sinkhole for ads that use SSL.  Unline port 80, the Pi-hole blockpage is not advertised over 443/SSL instead docker forwards 443 to nothing, and this helps get a REJECT back to your browser fast, preventing slowdowns from SSL ads commonly seen in the past.  An alternative is instead of binding port 443 is blocking it by the firewall of the docker host, e.g. with `sudo ufw reject https`.
 
 **Automatic Ad List Updates** - since the 3.0+ release, `cron` is baked into the container and will grab the newest versions of your lists and flush your logs.  **Set your TZ** environment variable to make sure the midnight log rotation syncs up with your timezone's midnight.
 
@@ -65,11 +71,11 @@ Here is a rundown of the other arguments passed into the example `docker run`:
 | Docker Arguments | Description |
 | ---------------- | ----------- |
 | `-p 80:80`<br/>`-p 53:53/tcp -p 53:53/udp`<br/> **Recommended** | Ports to expose, the bare minimum ports required for pi-holes HTTP and DNS services
-| `--restart=unless-stopped`<br/> **Recommended** | Automatically (re)start your pihole on boot or in the event of a crash
-| `-v /dir/for/pihole:/etc/pihole`<br/> **Recommended** | Volumes for your pihole configs help persist changes across docker image updates
+| `--restart=unless-stopped`<br/> **Recommended** | Automatically (re)start your Pi-hole on boot or in the event of a crash
+| `-v /dir/for/pihole:/etc/pihole`<br/> **Recommended** | Volumes for your Pi-hole configs help persist changes across docker image updates
 | `-v /dir/for/dnsmasq.d:/etc/dnsmasq.d`<br/> **Recommended** | Volumes for your dnsmasq configs help persist changes across docker image updates
 | `--net=host`<br/> *Optional* | Alternative to `-p <port>:<port>` arguments (Cannot be used at same time as -p) if you don't run any other web application
-| `--cap-add=NET_ADMIN`<br/> *Optional* | If you want to attempt DHCP (not fully tested or supported) I'd suggest this with --net=host
+| `--cap-add=NET_ADMIN`<br/> *Optional* | If you're forwarding port 67 you will also needs this for DHCP to work. (DHCP Reportedly works, I have not used however)
 
 If you're a fan of [docker-compose](https://docs.docker.com/compose/install/) I have [example docker-compose.yml files](https://github.com/diginc/docker-pi-hole/blob/master/doco-example.yml) in github which I think are a nicer way to represent such long run commands.
 
@@ -85,15 +91,16 @@ If you're a fan of [docker-compose](https://docs.docker.com/compose/install/) I 
   * Don't forget to stop your services from auto-starting again after you reboot
 * Port 80 is highly recommended because if you have another site/service using port 80 by default then the ads may not transform into blank ads correctly.  To make sure docker-pi-hole plays nicely with an existing webserver you run you'll probably need a reverse proxy webserver config if you don't have one already.  Pi-Hole must be the default web app on the proxy e.g. if you go to your host by IP instead of domain then pi-hole is served out instead of any other sites hosted by the proxy. This is the '[default_server](http://nginx.org/en/docs/http/ngx_http_core_module.html#listen)' in nginx or ['_default_' virtual host](https://httpd.apache.org/docs/2.4/vhosts/examples.html#default) in Apache and is taken advantage of so any undefined ad domain can be directed to your webserver and get a 'blocked' response instead of ads.
   * You can still map other ports to pi-hole port 80 using docker's port forwarding like this `-p 8080:80`, but again the ads won't render properly.  Changing the inner port 80 shouldn't be required unless you run docker host networking mode.
-  * [Here is an example of running with jwilder/proxy](https://github.com/diginc/docker-pi-hole/blob/master/jwilder-proxy-example-doco.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with pihole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in jwilder/proxy and you need to set the matching `VIRTUAL_HOST` for the pihole's container.  Please read jwilder/proxy readme for more info if you have trouble.  I tested this basic example which is based off what I run.
+  * [Here is an example of running with jwilder/proxy](https://github.com/diginc/docker-pi-hole/blob/master/jwilder-proxy-example-doco.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with Pi-hole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in jwilder/proxy and you need to set the matching `VIRTUAL_HOST` for the Pi-hole's container.  Please read jwilder/proxy readme for more info if you have trouble.  I tested this basic example which is based off what I run.
 
 ## Docker tags and versioning
 
-The primary docker tags / versions are explained in the following table.  [Click here to see the full list of tags](https://store.docker.com/community/images/diginc/pi-hole/tags), I also try to tag with the specific version of Pi-Hole Core for version pinning purposes, the web version that comes with the core releases should be in the [GitHub Release notes](https://github.com/diginc/docker-pi-hole/releases).
+The primary docker tags / versions are explained in the following table.  [Click here to see the full list of x86 tags](https://store.docker.com/community/images/diginc/pi-hole/tags) ([arm tags are here](https://store.docker.com/community/images/diginc/pi-hole-multiarch/tags)), I also try to tag with the specific version of Pi-Hole Core for version archival purposes, the web version that comes with the core releases should be in the [GitHub Release notes](https://github.com/diginc/docker-pi-hole/releases).
 
 | tag                 | architecture | description                                                             | Dockerfile |
 | ---                 | ------------ | -----------                                                             | ---------- |
 | `debian` / `latest` | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/debian.docker) |
+| `alpine`            | x86          | **Deprecated release**                                                  | |
 
 ### `diginc/pi-hole:debian` [![](https://images.microbadger.com/badges/image/diginc/pi-hole:debian.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:debian.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:latest.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
 
