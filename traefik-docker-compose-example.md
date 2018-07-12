@@ -3,7 +3,7 @@ Please note the following about this [traefik](https://traefik.io/) example for 
 - Still requires standard pi-hole setup steps, make sure you've gone through the [README](https://github.com/diginc/docker-pi-hole/blob/master/README.md) and understand how to setup pihole without traefik first
 - Update these things before using:
     - set instances of `homedomain.lan` below to your home domain (typically set in your router)
-    - set your pihole ENV WEBPASSWORD
+    - set your pihole ENV WEBPASSWORD if you don't want a random admin pass
 - This works for me, Your mileage may vary!
 - For support, do your best to figure out traefik issues on your own:
     - by looking at logs and traefik web interface on port 8080
@@ -27,6 +27,7 @@ services:
     command: "--web --docker --docker.domain=homedomain.lan --docker.exposedbydefault=false --logLevel=DEBUG"
     ports:
       - "80:80"
+      - "443:443"
       - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -46,6 +47,7 @@ services:
     ports:
       - '0.0.0.0:53:53/tcp'
       - '0.0.0.0:53:53/udp'
+      - '0.0.0.0:67:67/udp'
       - '0.0.0.0:8053:80/tcp'
     volumes:
     # run `touch ./pihole.log` first unless you like errors
@@ -57,8 +59,8 @@ services:
       PROXY_LOCATION: pihole
       VIRTUAL_HOST: pihole.homedomain.lan
       VIRTUAL_PORT: 80
-      WEBPASSWORD: yoursecurepass
       TZ: 'America/Chicago'
+      # WEBPASSWORD:
     restart: unless-stopped
     labels:
        # required when using --docker.exposedbydefault=false
