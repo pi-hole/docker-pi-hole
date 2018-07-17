@@ -3,14 +3,14 @@
 """ Dockerfile.py - generates and build dockerfiles
 
 Usage:
-  Dockerfile.py [--os=<os> ...] [--arch=<arch> ...] [-v] [--no-build | --no-generate] [--no-cache]
+  Dockerfile.py [--os=<os> ...] [--arch=<arch> ...] [--skip=<arch> ...] [-v] [--no-build | --no-generate] [--no-cache]
 
 Options:
     --no-build      Skip building the docker images
     --no-cache      Build without using any cache data
     --no-generate   Skip generating Dockerfiles from template
-    --os=<os>       What OS(s) to build             [default: debian]
-    --arch=<arch>   What Architecture(s) to build   [default: amd64 armhf aarch64]
+    --arch=<arch>   What Architecture(s) to build   [default: amd64 armel armhf aarch64]
+    --skip=<arch>   What Architectures(s) to skip   [default: None]
     -v              Print docker's command output   [default: False]
 
 Examples:
@@ -27,7 +27,7 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 base_vars = {
     'name': 'diginc/pi-hole',
     'maintainer' : 'adam@diginc.us',
-    's6_version' : 'v1.21.2.2',
+    's6_version' : 'v1.21.4.0',
 }
 
 os_base_vars = {
@@ -42,6 +42,10 @@ images = {
         {
             'base': 'debian:stretch',
             'arch': 'amd64'
+        },
+        {
+            'base': 'multiarch/debian-debootstrap:armel-stretch-slim',
+            'arch': 'armel'
         },
         {
             'base': 'multiarch/debian-debootstrap:armhf-stretch-slim',
@@ -61,13 +65,18 @@ def generate_dockerfiles(args):
 
     for os, archs in images.iteritems():
         for image in archs:
-            if os not in args['--os'] and image['arch'] not in args['--arch']:
-                return
+            if os not in args['--os'] and image['arch'] not in args['--arch'] or \
+                image['arch'] in args['--skip']:
+                    return
+            s6arch = image['arch']
+            if image['arch'] == 'armel':
+                s6arch = 'arm'
             merged_data = dict(
                 { 'os': os }.items() +
                 base_vars.items() +
                 os_base_vars[os].items() +
-                image.items()
+                image.items() +
+                { 's6arch': s6arch }.items()
             )
             j2_env = Environment(loader=FileSystemLoader(THIS_DIR),
                                  trim_blocks=True)
