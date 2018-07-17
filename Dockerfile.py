@@ -3,7 +3,7 @@
 """ Dockerfile.py - generates and build dockerfiles
 
 Usage:
-  Dockerfile.py [--os=<os> ...] [--arch=<arch> ...] [--skip=<arch> ...] [-v] [--no-build | --no-generate] [--no-cache]
+  Dockerfile.py [--arch=<arch> ...] [--skip=<arch> ...] [-v] [--no-build | --no-generate] [--no-cache]
 
 Options:
     --no-build      Skip building the docker images
@@ -65,8 +65,7 @@ def generate_dockerfiles(args):
 
     for os, archs in images.iteritems():
         for image in archs:
-            if os not in args['--os'] and image['arch'] not in args['--arch'] or \
-                image['arch'] in args['--skip']:
+            if image['arch'] not in args['--arch'] or image['arch'] in args['--skip']:
                     return
             s6arch = image['arch']
             if image['arch'] == 'armel':
@@ -92,13 +91,12 @@ def build_dockerfiles(args):
         print " ::: Skipping Dockerfile building"
         return
 
-    for os in args['--os']:
-        for arch in args['--arch']:
-            docker_repo = 'pi-hole-multiarch'
-            if arch == 'amd64':
-                docker_repo = 'pi-hole'
+    for arch in args['--arch']:
+        docker_repo = 'pi-hole-multiarch'
+        if arch == 'amd64':
+            docker_repo = 'pi-hole'
 
-            build(docker_repo, os, arch, args)
+        build(docker_repo, 'debian', arch, args)
 
 
 def build(docker_repo, os, arch, args):
@@ -127,7 +125,7 @@ def build(docker_repo, os, arch, args):
 
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='Dockerfile 0.1')
+    args = docopt(__doc__, version='Dockerfile 0.2')
     # print args
 
     generate_dockerfiles(args)
