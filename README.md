@@ -107,12 +107,17 @@ The primary docker tags / versions are explained in the following table.  [Click
 This version of the docker aims to be as close to a standard pi-hole installation by using the recommended base OS and the exact configs and scripts (minimally modified to get them working).  This enables fast updating when an update comes from pi-hole.
 
 ### `diginc/pi-hole-multiarch:debian_armhf` [![](https://images.microbadger.com/badges/image/diginc/pi-hole-multiarch:debian_armhf.svg)](https://microbadger.com/images/diginc/pi-hole-multiarch "Get your own image badge on microbadger.com")
-Latest version of ARM-compatible pihole image
+Latest version of ARMv7-compatible pihole image
 
 https://hub.docker.com/r/diginc/pi-hole-multiarch/tags/
 
 ### `diginc/pi-hole-multiarch:debian_aarch64` [![](https://images.microbadger.com/badges/image/diginc/pi-hole-multiarch:debian_aarch64.svg)](https://microbadger.com/images/diginc/pi-hole-multiarch "Get your own image badge on microbadger.com")
 Latest version of ARM64-compatible pihole image
+
+https://hub.docker.com/r/diginc/pi-hole-multiarch/tags/
+
+### `diginc/pi-hole-multiarch:debian_armel` [![](https://images.microbadger.com/badges/image/diginc/pi-hole-multiarch:debian_armel.svg)](https://microbadger.com/images/diginc/pi-hole-multiarch "Get your own image badge on microbadger.com")
+Latest version of ARMv6-compatible pihole image
 
 https://hub.docker.com/r/diginc/pi-hole-multiarch/tags/
 
