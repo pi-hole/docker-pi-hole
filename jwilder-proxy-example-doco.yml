@@ -13,7 +13,9 @@ pihole:
   ports:
     - '53:53/tcp'
     - '53:53/udp'
+    - "67:67/udp"
     - '8053:80/tcp'
+    - "443:443/tcp"
   volumes:
     - '/var/log/pihole.log:/var/log/pihole.log'
   #net: host

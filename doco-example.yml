@@ -5,7 +5,9 @@ services:
     ports:
       - "53:53/tcp"
       - "53:53/udp"
+      - "67:67/udp"
       - "80:80/tcp"
+      - "443:443/tcp"
     environment:
       # enter your docker host IP here
       ServerIP:

@@ -11,7 +11,7 @@ ENV PATH /opt/pihole:${PATH}
 COPY install.sh /usr/local/bin/docker-install.sh
 ENV setupVars /etc/pihole/setupVars.conf
 ENV PIHOLE_INSTALL /tmp/ph_install.sh
-ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/{{ pihole.s6_version }}/s6-overlay-{{ pihole.arch }}.tar.gz
+ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/{{ pihole.s6_version }}/s6-overlay-{{ pihole.s6arch }}.tar.gz
 
 RUN apt-get update && \
     apt-get install -y wget curl net-tools cron procps && \
@@ -36,7 +36,9 @@ COPY ./bash_functions.sh /
 ENV IPv6 True
 
 EXPOSE 53 53/udp
+EXPOSE 67/udp
 EXPOSE 80
+EXPOSE 443
 
 ENV S6_LOGGING 0
 ENV S6_KEEP_ENV 1

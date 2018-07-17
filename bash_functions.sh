@@ -63,7 +63,11 @@ setup_dnsmasq_dns() {
         change_setting "PIHOLE_DNS_1" "${DNS1}"
     fi
     if [[ -n "$DNS2" && -z "$setupDNS2" ]] ; then
-        change_setting "PIHOLE_DNS_2" "${DNS2}"
+        if [ "$DNS2" = "no" ] ; then
+            delete_setting "PIHOLE_DNS_2"
+        else
+            change_setting "PIHOLE_DNS_2" "${DNS2}"
+        fi
     fi
 }
 
@@ -135,7 +139,7 @@ setup_lighttpd_bind() {
     # if using '--net=host' only bind lighttpd on $ServerIP and localhost
         if grep -q "docker" /proc/net/dev ; then #docker (docker0 by default) should only be present on the host system
             if ! grep -q "server.bind" /etc/lighttpd/lighttpd.conf ; then # if the declaration is already there, don't add it again
-                sed -i -E "s/server\.port\s+\=\s+80/server.bind\t\t = \"${ServerIP}\"\nserver.port\t\t = 80\n"\$SERVER"\[\"socket\"\] == \"127\.0\.0\.1:80\" \{\}/" /etc/lighttpd/lighttpd.conf
+                sed -i -E "s/server\.port\s+\=\s+([0-9]+)/server.bind\t\t = \"${ServerIP}\"\nserver.port\t\t = \1\n"\$SERVER"\[\"socket\"\] == \"127\.0\.0\.1:\1\" \{\}/" /etc/lighttpd/lighttpd.conf
             fi
         fi
     fi
