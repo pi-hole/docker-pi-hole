@@ -1,34 +1,34 @@
-FROM {{ pihole.base }}
+FROM multiarch/debian-debootstrap:armel-stretch-slim
 
-LABEL image="{{ pihole.name }}:{{ pihole.os }}_{{ pihole.arch }}"
-LABEL maintainer="{{ pihole.maintainer }}"
+LABEL image="diginc/pi-hole:debian_armel"
+LABEL maintainer="adam@diginc.us"
 LABEL url="https://www.github.com/diginc/docker-pi-hole"
 
-ENV TAG {{ pihole.os }}
-ENV ARCH {{ pihole.arch }}
+ENV TAG debian
+ENV ARCH armel
 ENV PATH /opt/pihole:${PATH}
 
 COPY install.sh /usr/local/bin/docker-install.sh
 ENV setupVars /etc/pihole/setupVars.conf
 ENV PIHOLE_INSTALL /tmp/ph_install.sh
-ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/{{ pihole.s6_version }}/s6-overlay-{{ pihole.s6arch }}.tar.gz
+ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.4.0/s6-overlay-arm.tar.gz
 
 RUN apt-get update && \
-    apt-get install -y curl procps && \
-    curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C / && \
+    apt-get install -y wget curl net-tools cron procps && \
+    curl -L -s $S6OVERLAY_RELEASE \
+        | tar xvzf - -C / && \
+    docker-install.sh && \
     rm -rf /var/cache/apt/archives /var/lib/apt/lists/* && \
     mv /init /s6-init
 
-RUN apt-get update && bash -ex docker-install.sh 2>&1
-
 ENTRYPOINT [ "/s6-init" ]
 
-ADD s6/{{ pihole.os }}-root /
+ADD s6/debian-root /
 COPY s6/service /usr/local/bin/service
 
 # php config start passes special ENVs into
-ENV PHP_ENV_CONFIG '{{ pihole.php_env_config }}'
-ENV PHP_ERROR_LOG '{{ pihole.php_error_log }}'
+ENV PHP_ENV_CONFIG '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf'
+ENV PHP_ERROR_LOG '/var/log/lighttpd/error.log'
 COPY ./start.sh /
 COPY ./bash_functions.sh /
 

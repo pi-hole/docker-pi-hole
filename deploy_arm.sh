@@ -6,7 +6,6 @@ if [ ! -f ~/.docker/config.json ] ; then
     exit 1
 fi
 
-
 parse_git_branch() {
   git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'
 }
