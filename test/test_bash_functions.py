@@ -135,7 +135,7 @@ def test_debian_setup_php_env(Docker, os, expected_lines, repeat_function):
         search_config_count = Docker.run(search_config_cmd)
         found_lines = int(search_config_count.stdout.rstrip('\n'))
         if found_lines > 1:
-            assert False, "Found line {} times (more than once): {}".format(searexpected_line)
+            assert False, "Found line {} times (more than once): {}".format(expected_line)
 
 @pytest.mark.parametrize('args,secure,setupVarsHash', [
     ('-e ServerIP=1.2.3.4 -e WEBPASSWORD=login', True, 'WEBPASSWORD=6060d59351e8c2f48140f01b2c3f3b61652f396c53a5300ae239ebfbe7d5ff08'),
