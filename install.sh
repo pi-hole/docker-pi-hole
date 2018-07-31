@@ -8,7 +8,7 @@ export USE_FTLDNS_BRANCHES=true
 export USE_DEVELOPMENT_BRANCHES=false
 
 if [[ $USE_FTLDNS_BRANCHES == true ]] ; then
-    CORE_TAG='FTLDNS'
+    CORE_TAG='release/v4.0'
 elif [[ $USE_DEVELOPMENT_BRANCHES == true ]] ; then
     CORE_TAG='development'
 fi
