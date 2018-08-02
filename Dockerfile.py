@@ -118,6 +118,7 @@ def build(docker_repo, os, arch, args):
     build_result = run_local(build_command) 
     if args['-v']:
         print build_result.stdout
+        print build_result.stderr
     if build_result.rc != 0:
         print "     ::: Building {} encountered an error".format(dockerfile)
         print build_result.stderr

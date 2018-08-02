@@ -9,17 +9,16 @@ ENV ARCH {{ pihole.arch }}
 ENV PATH /opt/pihole:${PATH}
 
 COPY install.sh /usr/local/bin/docker-install.sh
-ENV setupVars /etc/pihole/setupVars.conf
-ENV PIHOLE_INSTALL /tmp/ph_install.sh
+ENV PIHOLE_INSTALL /root/ph_install.sh
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/{{ pihole.s6_version }}/s6-overlay-{{ pihole.s6arch }}.tar.gz
 
 RUN apt-get update && \
-    apt-get install -y wget curl net-tools cron procps && \
-    curl -L -s $S6OVERLAY_RELEASE \
-        | tar xvzf - -C / && \
-    docker-install.sh && \
+    apt-get install -y curl procps && \
+    curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C / && \
     rm -rf /var/cache/apt/archives /var/lib/apt/lists/* && \
     mv /init /s6-init
+
+RUN apt-get update && bash -ex docker-install.sh 2>&1
 
 ENTRYPOINT [ "/s6-init" ]
 

@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 # Script for manually pushing the docker arm images for diginc only 
 # (no one else has docker repo permissions)
 if [ ! -f ~/.docker/config.json ] ; then
@@ -21,10 +21,11 @@ if [[ "$version" == 'unset' && "$branch" == 'master' ]]; then
     exit 1
 fi
 
-echo "# DEPLOYING:\n"
+echo "# DEPLOYING:"
 echo "version: $version"
 echo "branch: $branch"
 [[ -n "$dry" ]] && echo "DRY RUN: $dry"
+echo
 
 $dry ./Dockerfile.py
 

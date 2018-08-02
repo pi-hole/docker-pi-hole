@@ -86,7 +86,7 @@ def cmd(request):
 
 @pytest.fixture(scope='module', params=['amd64'])
 def persist_arch(request):
-    '''amd64 only, dnsmasq will not start under qemu-user-static :('''
+    '''amd64 only, dnsmasq/pihole-FTL(?untested?) will not start under qemu-user-static :('''
     return request.param
 
 @pytest.fixture(scope='module', params=['debian'])
@@ -157,6 +157,6 @@ Persistent Docker container for testing service post start.sh
 @pytest.fixture
 def RunningPiHole(DockerPersist, Slow, persist_webserver):
     ''' Persist a fully started docker-pi-hole to help speed up subsequent tests '''
-    Slow(lambda: DockerPersist.run('pgrep dnsmasq').rc == 0)
+    Slow(lambda: DockerPersist.run('pgrep pihole-FTL').rc == 0)
     Slow(lambda: DockerPersist.run('pgrep {}'.format(persist_webserver) ).rc == 0)
     return DockerPersist

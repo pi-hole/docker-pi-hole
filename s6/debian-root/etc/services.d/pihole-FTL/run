@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bash
 
 s6-echo "Starting pihole-FTL ($FTL_CMD)"
-pihole-FTL ${FTL_CMD}
+s6-setuidgid root pihole-FTL $FTL_CMD
+

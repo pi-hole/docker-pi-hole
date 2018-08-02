@@ -133,7 +133,9 @@ def test_debian_setup_php_env(Docker, os, expected_lines, repeat_function):
     for expected_line in expected_lines:
         search_config_cmd = "grep -c '{}' /etc/lighttpd/conf-enabled/15-fastcgi-php.conf".format(expected_line)
         search_config_count = Docker.run(search_config_cmd)
-        assert search_config_count.stdout.rstrip('\n') == '1'
+        found_lines = int(search_config_count.stdout.rstrip('\n'))
+        if found_lines > 1:
+            assert False, "Found line {} times (more than once): {}".format(expected_line)
 
 @pytest.mark.parametrize('args,secure,setupVarsHash', [
     ('-e ServerIP=1.2.3.4 -e WEBPASSWORD=login', True, 'WEBPASSWORD=6060d59351e8c2f48140f01b2c3f3b61652f396c53a5300ae239ebfbe7d5ff08'),

@@ -1,0 +1,4 @@
+#!/usr/bin/with-contenv bash
+
+s6-echo "Stopping pihole-FTL"
+/etc/init.d/pihole-FTL stop
