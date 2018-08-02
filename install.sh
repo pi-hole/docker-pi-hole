@@ -3,7 +3,6 @@ mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
 export CORE_TAG='v3.3.1'
 export WEB_TAG='v3.3'
-export FTL_TAG='v3.0'
 export USE_FTLDNS_BRANCHES=true
 export USE_DEVELOPMENT_BRANCHES=false
 
@@ -65,9 +64,9 @@ mv "${tmpLog}" /
 
 if [[ $USE_FTLDNS_BRANCHES == true ]] ; then
     ln -s /bin/true /usr/local/bin/service
-    echo "FTLDNS" | tee /etc/pihole/ftlbranch
-    echo y | bash -x pihole checkout core FTLDNS
-    echo y | bash -x pihole checkout web FTLDNS
+    echo "$CORE_TAG" | tee /etc/pihole/ftlbranch
+    echo y | bash -x pihole checkout core $CORE_TAG
+    echo y | bash -x pihole checkout web $CORE_TAG
     unlink /usr/local/bin/service
 elif [[ $USE_DEVELOPMENT_BRANCHES == true ]] ; then
     ln -s /bin/true /usr/local/bin/service
