@@ -1,7 +1,42 @@
 #!/bin/bash
 
-prepare_setup_vars() {
+prepare_configs() {
+    PH_TEST=true . $PIHOLE_INSTALL
+    distro_check
+    installConfigs
     touch "$setupVars"
+    set +e
+    mkdir -p /var/run/pihole /var/log/pihole
+    # Re-apply perms from basic-install over any volume mounts that may be present (or not)
+    chown pihole:root /etc/lighttpd
+    chown pihole:pihole "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" "/var/log/pihole" "${regexFile}"
+    chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" "${regexFile}"
+    touch /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
+    chown pihole:pihole /var/run/pihole /var/log/pihole
+    test -f /var/run/pihole/FTL.sock && rm /var/run/pihole/FTL.sock
+    chown pihole:pihole /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /etc/pihole /etc/pihole/dhcp.leases /var/log/pihole.log
+    chmod 0644 /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
+    set -e
+    # Re-write all of the setupVars to ensure required ones are present (like QUERY_LOGGING)
+    
+    # If the setup variable file exists,
+    if [[ -e "${setupVars}" ]]; then
+        # update the variables in the file
+        sed -i.update.bak '/PIHOLE_INTERFACE/d;/IPV4_ADDRESS/d;/IPV6_ADDRESS/d;/PIHOLE_DNS_1/d;/PIHOLE_DNS_2/d;/QUERY_LOGGING/d;/INSTALL_WEB_SERVER/d;/INSTALL_WEB_INTERFACE/d;/LIGHTTPD_ENABLED/d;' "${setupVars}"
+        . "${setupVars}"
+    fi
+    # echo the information to the user
+    {
+    echo "PIHOLE_INTERFACE=${PIHOLE_INTERFACE}"
+    echo "IPV4_ADDRESS=${IPV4_ADDRESS}"
+    echo "IPV6_ADDRESS=${IPV6_ADDRESS}"
+    echo "PIHOLE_DNS_1=${PIHOLE_DNS_1}"
+    echo "PIHOLE_DNS_2=${PIHOLE_DNS_2}"
+    echo "QUERY_LOGGING=${QUERY_LOGGING}"
+    echo "INSTALL_WEB_SERVER=${INSTALL_WEB_SERVER}"
+    echo "INSTALL_WEB_INTERFACE=${INSTALL_WEB_INTERFACE}"
+    echo "LIGHTTPD_ENABLED=${LIGHTTPD_ENABLED}"
+    }>> "${setupVars}"
 }
 
 validate_env() {

@@ -59,7 +59,7 @@ git clone "${webInterfaceGitUrl}" "${webInterfaceDir}"
 
 tmpLog="/tmp/pihole-install.log"
 installLogLoc="${installLogLoc}"
-installPihole | tee "${tmpLog}"
+installPihole 2>&1 | tee "${tmpLog}"
 mv "${tmpLog}" /
 
 if [[ $USE_FTLDNS_BRANCHES == true ]] ; then

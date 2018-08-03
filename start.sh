@@ -27,7 +27,7 @@ PH_TEST=true . $PIHOLE_INSTALL
 
 echo " ::: Starting docker specific setup for docker diginc/pi-hole"
 validate_env || exit 1
-prepare_setup_vars
+prepare_configs
 change_setting "IPV4_ADDRESS" "$ServerIP"
 change_setting "IPV6_ADDRESS" "$ServerIPv6"
 setup_web_port "$WEB_PORT"
@@ -42,4 +42,12 @@ test_configs
 
 [ -f /.piholeFirstBoot ] && rm /.piholeFirstBoot
 
-echo "::: Docker start setup complete"
+echo " ::: Docker start setup complete"
+
+#echo " ::: ::: ::: ::: ::: ::: ::: ::: ::: :::"
+#echo " ::: Image moved / deprection notice"
+#echo " :::    OLD IMAGE : diginc/pi-hole"
+#echo " :::    NEW IMAGE : pihole/pi-hole"
+#echo " ::: Please update your image references"
+#echo " ::: ::: ::: ::: ::: ::: ::: ::: ::: :::"
+
