@@ -30,6 +30,8 @@ echo
 $dry ./Dockerfile.py
 
 if [[ "$branch" == 'master' ]] ; then
+    # ARMv6/armel doesn't have a FTL binary for v4.0 pi-hole 
+    # for tag in debian_armhf debian_aarch64 debian_armel; do 
     for tag in debian_armhf debian_aarch64; do 
         # Verison specific tags for ongoing history
         $dry docker tag pi-hole-multiarch:$tag diginc/pi-hole-multiarch:v${version}_${tag} 
