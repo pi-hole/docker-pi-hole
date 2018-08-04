@@ -8,7 +8,7 @@ A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86
 2) Use the appropriate tag (x86 can use default tag, ARM users need to use images from [pihole/pihole:v4.0_armhf](https://store.docker.com/community/images/pihole/pihole-multiarch/tags)) in the below `docker run` command
 3) Enjoy!
 
-[![Build Status](https://api.travis-ci.org/pihole/docker-pi-hole.svg?branch=master)](https://travis-ci.org/pihole/docker-pi-hole) [![Docker Stars](https://img.shields.io/docker/stars/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole) [![Docker Pulls](https://img.shields.io/docker/pulls/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole)
+[![Build Status](https://api.travis-ci.org/pi-hole/docker-pi-hole.svg?branch=master)](https://travis-ci.org/pi-hole/docker-pi-hole) [![Docker Stars](https://img.shields.io/docker/stars/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole) [![Docker Pulls](https://img.shields.io/docker/pulls/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole)
 
 [![Join the chat at https://gitter.im/pihole/docker-pi-hole](https://badges.gitter.im/pihole/docker-pi-hole.svg)](https://gitter.im/pihole/docker-pi-hole?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -167,7 +167,7 @@ NOTE:  After initial run you may need to manually stop the docker container with
 Development image tags coming soon
 
 <!-- # Old dev tag info section
-[![Build Status](https://api.travis-ci.org/pihole/docker-pi-hole.svg?branch=dev)](https://travis-ci.org/pihole/docker-pi-hole) If you plan on making a contribution please pull request to the dev branch.  I also build tags of the dev branch for bug fix testing after merges have been made:
+[![Build Status](https://api.travis-ci.org/pihole/docker-pi-hole.svg?branch=dev)](https://travis-ci.org/pi-hole/docker-pi-hole) If you plan on making a contribution please pull request to the dev branch.  I also build tags of the dev branch for bug fix testing after merges have been made:
 
 | tag                 | architecture | description                                                             | Dockerfile |
 | ---                 | ------------ | -----------                                                             | ---------- |
