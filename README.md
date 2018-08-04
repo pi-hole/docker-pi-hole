@@ -1,8 +1,8 @@
-## Overview
-
 <p align="center">
 <a href="https://pi-hole.net"><img src="https://pi-hole.github.io/graphics/Vortex/Vortex_with_text.png" width="150" height="255" alt="Pi-hole"></a><br/>
 </p>
+
+## Overview
 
 #### Renamed from `diginc/pi-hole` to `pihole/pihole`
 
@@ -20,7 +20,7 @@ A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86
 
 [DockerCloud](https://store.docker.com/community/images/pihole/pihole) automatically builds the latest docker-pi-hole changes into images which can easily be pulled and ran with a simple `docker run` command.  Changes and updates under development or testing can be found in the [dev tags](#development) section.
 
-One crucial thing to know before starting is this container needs port 53 and port 80, two very popular ports that may conflict with existing applications.  If you have no other services or docker containers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pihole/docker-pi-hole/blob/master/docker_run.sh) or summarized here:
+One crucial thing to know before starting is this container needs port 53 and port 80, two very popular ports that may conflict with existing applications.  If you have no other services or docker containers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh) or summarized here:
 
 ```
 IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')"  # May not work for VPN / tun0
@@ -50,7 +50,7 @@ docker logs pihole 2> /dev/null | grep 'password:'
 
 **This is just an example and might need changing.**  Volumes are stored in the directory `$DOCKER_CONFIGS` and are recommended for persisting data across docker re-creations for updating images.  As mentioned on line 2, the auto `IP_LOOKUP` variable may not work for VPN tunnel interfaces.
 
-Two recently added ports to the `docker run` and `docker-compose` examples are port 67 and 443.  Port 67 is for users who wish to have Pi-hole run a DHCP server.  Port 443 is to provide a sinkhole for ads that use SSL.  Unlike port 80, the Pi-hole blockpage is not advertised over 443/SSL instead docker forwards 443 to nothing, and this helps get a REJECT back to your browser fast, preventing slowdowns from SSL ads commonly seen in the past.  An alternative is instead of binding port 443 is blocking it by the firewall of the docker host, e.g. with `sudo ufw reject https`.
+Two recently added ports to the `docker run` and `docker-compose` examples are port 67 and 443.  Port 67 is for users who wish to have Pi-hole run a DHCP server.  Port 443 is to provide a sinkhole for ads that use SSL.  If only port 80 is used, then blocked HTTPS queries will fail to connect to port 443 and may cause long loading times.  An alternative is instead of binding port 443 is blocking it by the firewall of the docker host, e.g. with `sudo ufw reject https`.
 
 **Automatic Ad List Updates** - since the 3.0+ release, `cron` is baked into the container and will grab the newest versions of your lists and flush your logs.  **Set your TZ** environment variable to make sure the midnight log rotation syncs up with your timezone's midnight.
 
@@ -83,7 +83,7 @@ Here is a rundown of the other arguments passed into the example `docker run`:
 | `--net=host`<br/> *Optional* | Alternative to `-p <port>:<port>` arguments (Cannot be used at same time as -p) if you don't run any other web application
 | `--cap-add=NET_ADMIN`<br/> *Optional* | If you're forwarding port 67 you will also needs this for DHCP to work. (DHCP Reportedly works, I have not used however)
 
-If you're a fan of [docker-compose](https://docs.docker.com/compose/install/) I have [example docker-compose.yml files](https://github.com/pihole/docker-pi-hole/blob/master/doco-example.yml) in github which I think are a nicer way to represent such long run commands.
+If you're a fan of [docker-compose](https://docs.docker.com/compose/install/) I have [example docker-compose.yml files](https://github.com/pi-hole/docker-pi-hole/blob/master/doco-example.yml) in github which I think are a nicer way to represent such long run commands.
 
 ## Tips and Tricks
 
@@ -97,15 +97,15 @@ If you're a fan of [docker-compose](https://docs.docker.com/compose/install/) I 
   * Don't forget to stop your services from auto-starting again after you reboot
 * Port 80 is highly recommended because if you have another site/service using port 80 by default then the ads may not transform into blank ads correctly.  To make sure docker-pi-hole plays nicely with an existing webserver you run you'll probably need a reverse proxy webserver config if you don't have one already.  Pi-hole must be the default web app on the proxy e.g. if you go to your host by IP instead of domain then Pi-hole is served out instead of any other sites hosted by the proxy. This is the '[default_server](http://nginx.org/en/docs/http/ngx_http_core_module.html#listen)' in nginx or ['_default_' virtual host](https://httpd.apache.org/docs/2.4/vhosts/examples.html#default) in Apache and is taken advantage of so any undefined ad domain can be directed to your webserver and get a 'blocked' response instead of ads.
   * You can still map other ports to Pi-hole port 80 using docker's port forwarding like this `-p 8080:80`, but again the ads won't render properly.  Changing the inner port 80 shouldn't be required unless you run docker host networking mode.
-  * [Here is an example of running with jwilder/proxy](https://github.com/pihole/docker-pi-hole/blob/master/jwilder-proxy-example-doco.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with Pi-hole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in jwilder/proxy and you need to set the matching `VIRTUAL_HOST` for the Pi-hole's container.  Please read jwilder/proxy readme for more info if you have trouble.  I tested this basic example which is based off what I run.
+  * [Here is an example of running with jwilder/proxy](https://github.com/pi-hole/docker-pi-hole/blob/master/jwilder-proxy-example-doco.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with Pi-hole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in jwilder/proxy and you need to set the matching `VIRTUAL_HOST` for the Pi-hole's container.  Please read jwilder/proxy readme for more info if you have trouble.  I tested this basic example which is based off what I run.
 
 ## Docker tags and versioning
 
-The primary docker tags / versions are explained in the following table.  [Click here to see the full list of x86 tags](https://store.docker.com/community/images/pihole/pihole/tags) ([arm tags are here](https://store.docker.com/community/images/pihole/pihole-multiarch/tags)), I also try to tag with the specific version of Pi-hole Core for version archival purposes, the web version that comes with the core releases should be in the [GitHub Release notes](https://github.com/pihole/docker-pi-hole/releases).
+The primary docker tags / versions are explained in the following table.  [Click here to see the full list of x86 tags](https://store.docker.com/community/images/pihole/pihole/tags) ([arm tags are here](https://store.docker.com/community/images/pihole/pihole-multiarch/tags)), I also try to tag with the specific version of Pi-hole Core for version archival purposes, the web version that comes with the core releases should be in the [GitHub Release notes](https://github.com/pi-hole/docker-pi-hole/releases).
 
 | tag                 | architecture | description                                                             | Dockerfile |
 | ---                 | ------------ | -----------                                                             | ---------- |
-| `latest` / `v4.0`   | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/pihole/docker-pi-hole/blob/master/Dockerfile_amd64) |
+| `latest` / `v4.0`   | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/pi-hole/docker-pi-hole/blob/master/Dockerfile_amd64) |
 
 ### `pihole/pihole:latest` [![](https://images.microbadger.com/badges/image/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com")
 
@@ -144,7 +144,7 @@ The standard Pi-hole customization abilities apply to this docker, but with dock
 Why is this style of upgrading good?  A couple reasons: Everyone is starting from the same base image which has been tested to know it works.  No worrying about upgrading from A to B, B to C, or A to C is required when rolling out updates, it reducing complexity, and simply allows a 'fresh start' every time while preserving customizations with volumes.  Basically I'm encouraging [phoenix servers](https://www.google.com/?q=phoenix+servers) principles for your containers.
 
 
-### Pihole features
+### Pi-hole features
 
 Here are some relevant wiki pages from [Pi-hole's documentation](https://github.com/pi-hole/pi-hole/blob/master/README.md#get-help-or-connect-with-us-on-the-web).  The web interface or command line tools can be used to implement changes to pihole.
 
@@ -175,9 +175,9 @@ Development image tags coming soon
 
 | tag                 | architecture | description                                                             | Dockerfile |
 | ---                 | ------------ | -----------                                                             | ---------- |
-| `v4.0_dev`          | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/pihole/docker-pi-hole/blob/dev/Dockerfile_amd64) |
+| `v4.0_dev`          | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/pi-hole/docker-pi-hole/blob/dev/Dockerfile_amd64) |
 --> 
 
 # User Feedback
 
-Please report issues on the [GitHub project](https://github.com/pihole/docker-pi-hole) when you suspect something docker related.  Pi-hole questions are best answered on our [user forums](https://github.com/pi-hole/pi-hole/blob/master/README.md#get-help-or-connect-with-us-on-the-web).  Ping me (@diginc) on the forums if it's a docker container and you're not sure if it's docker related.
+Please report issues on the [GitHub project](https://github.com/pi-hole/docker-pi-hole) when you suspect something docker related.  Pi-hole questions are best answered on our [user forums](https://github.com/pi-hole/pi-hole/blob/master/README.md#get-help-or-connect-with-us-on-the-web).  Ping me (@diginc) on the forums if it's a docker container and you're not sure if it's docker related.
