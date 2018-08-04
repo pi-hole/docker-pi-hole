@@ -1,8 +1,10 @@
 ## Overview
 
-A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86 ~~and ARM~~ container with [Pi-hole](https://pi-hole.net) functionality.
+#### Renamed from `diginc/pi-hole` to `pihole/pihole`
 
-1) Install docker for your [x86-64 system](https://www.docker.com/community-edition) or [ARMv6l/ARMv7 system](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/) using those links.
+A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86 and ARM container with [Pi-hole](https://pi-hole.net) functionality.
+
+1) Install docker for your [x86-64 system](https://www.docker.com/community-edition) or [ARMv7 system](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/) using those links.
 2) Use the appropriate tag (x86 can use default tag, ARM users need to use images from [pihole/pihole-multiarch:v4.0_armhf](https://store.docker.com/community/images/pihole/pihole-multiarch/tags)) in the below `docker run` command
 3) Enjoy!
 
@@ -115,18 +117,19 @@ Latest version of ARM64-compatible pihole image
 
 https://hub.docker.com/r/pihole/pihole-multiarch/tags/
 
+<!--
 ### `pihole/pihole-multiarch:v4.0_armel` [![](https://images.microbadger.com/badges/image/pihole/pihole-multiarch:v4.0_armel.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
 Latest version of ARMv6-compatible pihole image
 
 https://hub.docker.com/r/pihole/pihole-multiarch/tags/
-
+-->
 ## Upgrading, Persistence, and Customizations
 
 The standard pi-hole customization abilities apply to this docker, but with docker twists such as using docker volume mounts to map host stored file configurations over the container defaults.  Volumes are also important to persist the configuration in case you have removed the pi-hole container which is a typical docker upgrade pattern.
 
 ### Upgrading
 
-`pihole -up` is disabled.  Upgrade the docker way instead, please.  Long-living docker containers are not the docker way.
+`pihole -up` is disabled.  Upgrade the docker way instead, please.  Long-living docker containers are not the docker way since they aim to be portable and reproducible, why not re-create them often!  Just to prove you can.
 
 1. Download the latest version of the image: `docker pull pihole/pihole`
 2. Throw away your container: `docker rm -f pihole`
