@@ -1,5 +1,7 @@
 ## Overview
 
+[![Pi-hole logo](https://pi-hole.github.io/graphics/Vortex/Vortex_with_text.png)]
+
 #### Renamed from `diginc/pi-hole` to `pihole/pihole`
 
 A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86 and ARM container with [Pi-hole](https://pi-hole.net) functionality.
@@ -16,7 +18,7 @@ A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86
 
 [DockerCloud](https://store.docker.com/community/images/pihole/pihole) automatically builds the latest docker-pi-hole changes into images which can easily be pulled and ran with a simple `docker run` command.  Changes and updates under development or testing can be found in the [dev tags](#development) section.
 
-One crucial thing to know before starting is this container needs port 53 and port 80, two very popular ports that may conflict with existing applications.  If you have no other services or dockers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pihole/docker-pi-hole/blob/master/docker_run.sh) or summarized here:
+One crucial thing to know before starting is this container needs port 53 and port 80, two very popular ports that may conflict with existing applications.  If you have no other services or docker containers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pihole/docker-pi-hole/blob/master/docker_run.sh) or summarized here:
 
 ```
 IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')"  # May not work for VPN / tun0
@@ -176,4 +178,4 @@ Development image tags coming soon
 
 # User Feedback
 
-Please report issues on the [GitHub project](https://github.com/pihole/docker-pi-hole) when you suspect something docker related.  Pi-hole questions are best answered on their [user forums](https://github.com/pi-hole/pi-hole/blob/master/README.md#get-help-or-connect-with-us-on-the-web).  Ping me (@diginc) on there if it's a docker and you're not sure if it's docker related.
+Please report issues on the [GitHub project](https://github.com/pihole/docker-pi-hole) when you suspect something docker related.  Pi-hole questions are best answered on our [user forums](https://github.com/pi-hole/pi-hole/blob/master/README.md#get-help-or-connect-with-us-on-the-web).  Ping me (@diginc) on the forums if it's a docker container and you're not sure if it's docker related.
