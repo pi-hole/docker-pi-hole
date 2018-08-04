@@ -1,7 +1,7 @@
 version: "3"
 services:
   pihole:
-    image: diginc/pi-hole:latest
+    image: pihole/pihole:latest
     ports:
       - "53:53/tcp"
       - "53:53/udp"

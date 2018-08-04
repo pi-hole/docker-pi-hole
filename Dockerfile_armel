@@ -1,16 +1,16 @@
-FROM multiarch/debian-debootstrap:arm64-stretch-slim
+FROM multiarch/debian-debootstrap:armel-stretch-slim
 
-LABEL image="diginc/pi-hole:debian_aarch64"
+LABEL image="pihole/pihole:v4.0_armel"
 LABEL maintainer="adam@diginc.us"
-LABEL url="https://www.github.com/diginc/docker-pi-hole"
+LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
 
-ENV TAG debian
-ENV ARCH aarch64
+ENV VERSION v4.0
+ENV ARCH armel
 ENV PATH /opt/pihole:${PATH}
 
 COPY install.sh /usr/local/bin/docker-install.sh
 ENV PIHOLE_INSTALL /root/ph_install.sh
-ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.4.0/s6-overlay-aarch64.tar.gz
+ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.4.0/s6-overlay-arm.tar.gz
 
 RUN apt-get update && \
     apt-get install -y curl procps && \

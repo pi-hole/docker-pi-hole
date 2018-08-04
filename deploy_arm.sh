@@ -34,15 +34,15 @@ if [[ "$branch" == 'master' ]] ; then
     # for tag in debian_armhf debian_aarch64 debian_armel; do 
     for tag in debian_armhf debian_aarch64; do 
         # Verison specific tags for ongoing history
-        $dry docker tag pi-hole-multiarch:$tag diginc/pi-hole-multiarch:v${version}_${tag} 
-        $dry docker push diginc/pi-hole-multiarch:v${version}_${tag} 
+        $dry docker tag pi-hole-multiarch:$tag pihole/pihole-multiarch:v${version}_${tag} 
+        $dry docker push pihole/pihole-multiarch:v${version}_${tag} 
         # Floating latest tags 
-        $dry docker tag pi-hole-multiarch:$tag diginc/pi-hole-multiarch:${tag} 
-        $dry docker push diginc/pi-hole-multiarch:${tag} 
+        $dry docker tag pi-hole-multiarch:$tag pihole/pihole-multiarch:${tag} 
+        $dry docker push pihole/pihole-multiarch:${tag} 
     done
 else
     for tag in debian_armhf debian_aarch64; do 
-        $dry docker tag pi-hole-multiarch:$tag diginc/pi-hole-multiarch:${tag}_${branch}
-        $dry docker push diginc/pi-hole-multiarch:${tag}_${branch}
+        $dry docker tag pi-hole-multiarch:$tag pihole/pihole-multiarch:${tag}_${branch}
+        $dry docker push pihole/pihole-multiarch:${tag}_${branch}
     done
 fi

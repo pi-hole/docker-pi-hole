@@ -3,16 +3,16 @@
 A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86 ~~and ARM~~ container with [Pi-hole](https://pi-hole.net) functionality.
 
 1) Install docker for your [x86-64 system](https://www.docker.com/community-edition) or [ARMv6l/ARMv7 system](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/) using those links.
-2) Use the appropriate tag (x86 can use default tag, ARM users need to use images from [diginc/pi-hole-multiarch:debian_armhf](https://store.docker.com/community/images/diginc/pi-hole-multiarch/tags)) in the below `docker run` command
+2) Use the appropriate tag (x86 can use default tag, ARM users need to use images from [pihole/pihole-multiarch:debian_armhf](https://store.docker.com/community/images/pihole/pihole-multiarch/tags)) in the below `docker run` command
 3) Enjoy!
 
-[![Build Status](https://api.travis-ci.org/diginc/docker-pi-hole.svg?branch=master)](https://travis-ci.org/diginc/docker-pi-hole) [![Docker Stars](https://img.shields.io/docker/stars/diginc/pi-hole.svg?maxAge=604800)](https://store.docker.com/community/images/diginc/pi-hole) [![Docker Pulls](https://img.shields.io/docker/pulls/diginc/pi-hole.svg?maxAge=604800)](https://store.docker.com/community/images/diginc/pi-hole)
+[![Build Status](https://api.travis-ci.org/diginc/docker-pi-hole.svg?branch=master)](https://travis-ci.org/diginc/docker-pi-hole) [![Docker Stars](https://img.shields.io/docker/stars/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole) [![Docker Pulls](https://img.shields.io/docker/pulls/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole)
 
 [![Join the chat at https://gitter.im/diginc/docker-pi-hole](https://badges.gitter.im/diginc/docker-pi-hole.svg)](https://gitter.im/diginc/docker-pi-hole?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Running Pi-Hole Docker
 
-[DockerCloud](https://store.docker.com/community/images/diginc/pi-hole) automatically builds the latest docker-pi-hole changes into images which can easily be pulled and ran with a simple `docker run` command.  Changes and updates under development or testing can be found in the [dev tags](#development) section.
+[DockerCloud](https://store.docker.com/community/images/pihole/pihole) automatically builds the latest docker-pi-hole changes into images which can easily be pulled and ran with a simple `docker run` command.  Changes and updates under development or testing can be found in the [dev tags](#development) section.
 
 One crucial thing to know before starting is this container needs port 53 and port 80, two very popular ports that may conflict with existing applications.  If you have no other services or dockers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/diginc/docker-pi-hole/blob/master/docker_run.sh) or summarized here:
 
@@ -36,7 +36,7 @@ docker run -d \
     -e ServerIPv6="${IPv6}" \
     --restart=unless-stopped \
     --cap-add=NET_ADMIN \
-    diginc/pi-hole:latest
+    pihole/pihole:latest
 
 echo -n "Your password for https://${IP}/admin/ is "
 docker logs pihole 2> /dev/null | grep 'password:'
@@ -95,31 +95,31 @@ If you're a fan of [docker-compose](https://docs.docker.com/compose/install/) I 
 
 ## Docker tags and versioning
 
-The primary docker tags / versions are explained in the following table.  [Click here to see the full list of x86 tags](https://store.docker.com/community/images/diginc/pi-hole/tags) ([arm tags are here](https://store.docker.com/community/images/diginc/pi-hole-multiarch/tags)), I also try to tag with the specific version of Pi-Hole Core for version archival purposes, the web version that comes with the core releases should be in the [GitHub Release notes](https://github.com/diginc/docker-pi-hole/releases).
+The primary docker tags / versions are explained in the following table.  [Click here to see the full list of x86 tags](https://store.docker.com/community/images/pihole/pihole/tags) ([arm tags are here](https://store.docker.com/community/images/pihole/pihole-multiarch/tags)), I also try to tag with the specific version of Pi-Hole Core for version archival purposes, the web version that comes with the core releases should be in the [GitHub Release notes](https://github.com/diginc/docker-pi-hole/releases).
 
 | tag                 | architecture | description                                                             | Dockerfile |
 | ---                 | ------------ | -----------                                                             | ---------- |
 | `debian` / `latest` | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/diginc/docker-pi-hole/blob/master/debian.docker) |
 | `alpine`            | x86          | **Deprecated release**                                                  | |
 
-### `diginc/pi-hole:debian` [![](https://images.microbadger.com/badges/image/diginc/pi-hole:debian.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:debian.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/diginc/pi-hole:latest.svg)](https://microbadger.com/images/diginc/pi-hole "Get your own version badge on microbadger.com")
+### `pihole/pihole:debian` [![](https://images.microbadger.com/badges/image/pihole/pihole:debian.svg)](https://microbadger.com/images/pihole/pihole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:debian.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com")
 
 This version of the docker aims to be as close to a standard pi-hole installation by using the recommended base OS and the exact configs and scripts (minimally modified to get them working).  This enables fast updating when an update comes from pi-hole.
 
-### `diginc/pi-hole-multiarch:debian_armhf` [![](https://images.microbadger.com/badges/image/diginc/pi-hole-multiarch:debian_armhf.svg)](https://microbadger.com/images/diginc/pi-hole-multiarch "Get your own image badge on microbadger.com")
+### `pihole/pihole-multiarch:debian_armhf` [![](https://images.microbadger.com/badges/image/pihole/pihole-multiarch:debian_armhf.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
 Latest version of ARMv7-compatible pihole image
 
-https://hub.docker.com/r/diginc/pi-hole-multiarch/tags/
+https://hub.docker.com/r/pihole/pihole-multiarch/tags/
 
-### `diginc/pi-hole-multiarch:debian_aarch64` [![](https://images.microbadger.com/badges/image/diginc/pi-hole-multiarch:debian_aarch64.svg)](https://microbadger.com/images/diginc/pi-hole-multiarch "Get your own image badge on microbadger.com")
+### `pihole/pihole-multiarch:debian_aarch64` [![](https://images.microbadger.com/badges/image/pihole/pihole-multiarch:debian_aarch64.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
 Latest version of ARM64-compatible pihole image
 
-https://hub.docker.com/r/diginc/pi-hole-multiarch/tags/
+https://hub.docker.com/r/pihole/pihole-multiarch/tags/
 
-### `diginc/pi-hole-multiarch:debian_armel` [![](https://images.microbadger.com/badges/image/diginc/pi-hole-multiarch:debian_armel.svg)](https://microbadger.com/images/diginc/pi-hole-multiarch "Get your own image badge on microbadger.com")
+### `pihole/pihole-multiarch:debian_armel` [![](https://images.microbadger.com/badges/image/pihole/pihole-multiarch:debian_armel.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
 Latest version of ARMv6-compatible pihole image
 
-https://hub.docker.com/r/diginc/pi-hole-multiarch/tags/
+https://hub.docker.com/r/pihole/pihole-multiarch/tags/
 
 ## Upgrading, Persistence, and Customizations
 
@@ -129,11 +129,11 @@ The standard pi-hole customization abilities apply to this docker, but with dock
 
 `pihole -up` is disabled.  Upgrade the docker way instead, please.  Long-living docker containers are not the docker way.
 
-1. Download the latest version of the image: `docker pull diginc/pi-hole`
+1. Download the latest version of the image: `docker pull pihole/pihole`
 2. Throw away your container: `docker rm -f pihole`
   * **Warning** When removing your pihole container you may be stuck without DNS until step 3; **docker pull** before **docker rm -f** to avoid DNS inturruption **OR** always have a fallback DNS server configured in DHCP to avoid this problem altogether.
   * If you care about your data (logs/customizations), make sure you have it volume-mapped or it will be deleted in this step.
-3. Start your container with the newer base image: `docker run <args> diginc/pi-hole` (`<args>` being your preferred run volumes and env vars)
+3. Start your container with the newer base image: `docker run <args> pihole/pihole` (`<args>` being your preferred run volumes and env vars)
 
 Why is this style of upgrading good?  A couple reasons: Everyone is starting from the same base image which has been tested to know it works.  No worrying about upgrading from A to B, B to C, or A to C is required when rolling out updates, it reducing complexity, and simply allows a 'fresh start' every time while preserving customizations with volumes.  Basically I'm encouraging [phoenix servers](https://www.google.com/?q=phoenix+servers) principles for your containers.
 

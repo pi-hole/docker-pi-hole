@@ -25,20 +25,18 @@ import testinfra
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 base_vars = {
-    'name': 'diginc/pi-hole',
+    'name': 'pihole/pihole',
     'maintainer' : 'adam@diginc.us',
     's6_version' : 'v1.21.4.0',
 }
 
 os_base_vars = {
-    'debian': {
-        'php_env_config': '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf',
-        'php_error_log': '/var/log/lighttpd/error.log'
-    },
+    'php_env_config': '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf',
+    'php_error_log': '/var/log/lighttpd/error.log'
 }
 
 images = {
-    'debian': [
+    'v4.0': [
         {
             'base': 'debian:stretch',
             'arch': 'amd64'
@@ -63,7 +61,7 @@ def generate_dockerfiles(args):
         print " ::: Skipping Dockerfile generation"
         return
 
-    for os, archs in images.iteritems():
+    for version, archs in images.iteritems():
         for image in archs:
             if image['arch'] not in args['--arch'] or image['arch'] in args['--skip']:
                     return
@@ -71,9 +69,9 @@ def generate_dockerfiles(args):
             if image['arch'] == 'armel':
                 s6arch = 'arm'
             merged_data = dict(
-                { 'os': os }.items() +
+                { 'version': version }.items() +
                 base_vars.items() +
-                os_base_vars[os].items() +
+                os_base_vars.items() +
                 image.items() +
                 { 's6arch': s6arch }.items()
             )
@@ -81,7 +79,7 @@ def generate_dockerfiles(args):
                                  trim_blocks=True)
             template = j2_env.get_template('Dockerfile.template')
 
-            dockerfile = 'Dockerfile_{}_{}'.format(os, image['arch'])
+            dockerfile = 'Dockerfile_{}'.format(image['arch'])
             with open(dockerfile, 'w') as f:
                 f.write(template.render(pihole=merged_data))
 
@@ -96,16 +94,17 @@ def build_dockerfiles(args):
         if arch == 'amd64':
             docker_repo = 'pi-hole'
 
-        build(docker_repo, 'debian', arch, args)
+        # TODO make version an argument, or auto-detect branch for non production tags
+        build(docker_repo, 'v4.0', arch, args)
 
 
-def build(docker_repo, os, arch, args):
+def build(docker_repo, version, arch, args):
     run_local = testinfra.get_backend(
         "local://"
     ).get_module("Command").run
 
-    dockerfile = 'Dockerfile_{}_{}'.format(os, arch)
-    repo_tag = '{}:{}_{}'.format(docker_repo, os, arch)
+    dockerfile = 'Dockerfile_{}'.format(arch)
+    repo_tag = '{}:{}_{}'.format(docker_repo, version, arch)
     cached_image = '{}/{}'.format('diginc', repo_tag)
     no_cache = ''
     if args['--no-cache']:
@@ -126,7 +125,7 @@ def build(docker_repo, os, arch, args):
 
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='Dockerfile 0.2')
+    args = docopt(__doc__, version='Dockerfile 1.0')
     # print args
 
     generate_dockerfiles(args)
