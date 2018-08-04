@@ -5,7 +5,7 @@
 A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86 and ARM container with [Pi-hole](https://pi-hole.net) functionality.
 
 1) Install docker for your [x86-64 system](https://www.docker.com/community-edition) or [ARMv7 system](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/) using those links.
-2) Use the appropriate tag (x86 can use default tag, ARM users need to use images from [pihole/pihole-multiarch:v4.0_armhf](https://store.docker.com/community/images/pihole/pihole-multiarch/tags)) in the below `docker run` command
+2) Use the appropriate tag (x86 can use default tag, ARM users need to use images from [pihole/pihole:v4.0_armhf](https://store.docker.com/community/images/pihole/pihole-multiarch/tags)) in the below `docker run` command
 3) Enjoy!
 
 [![Build Status](https://api.travis-ci.org/pihole/docker-pi-hole.svg?branch=master)](https://travis-ci.org/pihole/docker-pi-hole) [![Docker Stars](https://img.shields.io/docker/stars/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole) [![Docker Pulls](https://img.shields.io/docker/pulls/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole)
@@ -107,18 +107,18 @@ The primary docker tags / versions are explained in the following table.  [Click
 
 This version of the docker aims to be as close to a standard pi-hole installation by using the recommended base OS and the exact configs and scripts (minimally modified to get them working).  This enables fast updating when an update comes from pi-hole.
 
-### `pihole/pihole-multiarch:v4.0_armhf` [![](https://images.microbadger.com/badges/image/pihole/pihole-multiarch:v4.0_armhf.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
+### `pihole/pihole:v4.0_armhf` [![](https://images.microbadger.com/badges/image/pihole/pihole:v4.0_armhf.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
 Latest version of ARMv7-compatible pihole image
 
 https://hub.docker.com/r/pihole/pihole-multiarch/tags/
 
-### `pihole/pihole-multiarch:v4.0_aarch64` [![](https://images.microbadger.com/badges/image/pihole/pihole-multiarch:v4.0_aarch64.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
+### `pihole/pihole:v4.0_aarch64` [![](https://images.microbadger.com/badges/image/pihole/pihole:v4.0_aarch64.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
 Latest version of ARM64-compatible pihole image
 
 https://hub.docker.com/r/pihole/pihole-multiarch/tags/
 
 <!--
-### `pihole/pihole-multiarch:v4.0_armel` [![](https://images.microbadger.com/badges/image/pihole/pihole-multiarch:v4.0_armel.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
+### `pihole/pihole:v4.0_armel` [![](https://images.microbadger.com/badges/image/pihole/pihole:v4.0_armel.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
 Latest version of ARMv6-compatible pihole image
 
 https://hub.docker.com/r/pihole/pihole-multiarch/tags/
