@@ -105,7 +105,7 @@ def build(docker_repo, version, arch, args):
 
     dockerfile = 'Dockerfile_{}'.format(arch)
     repo_tag = '{}:{}_{}'.format(docker_repo, version, arch)
-    cached_image = '{}/{}'.format('diginc', repo_tag)
+    cached_image = '{}/{}'.format('pihole', repo_tag)
     no_cache = ''
     if args['--no-cache']:
         no_cache = '--no-cache'
