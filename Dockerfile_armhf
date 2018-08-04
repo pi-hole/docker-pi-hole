@@ -1,10 +1,10 @@
 FROM multiarch/debian-debootstrap:armhf-stretch-slim
 
-LABEL image="diginc/pi-hole:debian_armhf"
+LABEL image="pihole/pihole:v4.0_armhf"
 LABEL maintainer="adam@diginc.us"
-LABEL url="https://www.github.com/diginc/docker-pi-hole"
+LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
 
-ENV TAG debian
+ENV VERSION v4.0
 ENV ARCH armhf
 ENV PATH /opt/pihole:${PATH}
 

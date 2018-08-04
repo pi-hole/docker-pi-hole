@@ -9,28 +9,27 @@ DEFAULTARGS = '-e ServerIP="127.0.0.1" '
     (DEFAULTARGS + '-e "IPv6=False"', False, 'IPv4'),
     (DEFAULTARGS + '-e "IPv6=foobar"', False, 'IPv4'),
 ])
-def test_IPv6_not_True_removes_ipv6(Docker, os, args, expected_ipv6, expected_stdout):
+def test_IPv6_not_True_removes_ipv6(Docker, args, expected_ipv6, expected_stdout):
     ''' When a user overrides IPv6=True they only get IPv4 listening webservers '''
-    IPV6_LINE = { 'debian': 'use-ipv6.pl' }
-    WEB_CONFIG = { 'debian': '/etc/lighttpd/lighttpd.conf' }
+    IPV6_LINE = 'use-ipv6.pl'
+    WEB_CONFIG = '/etc/lighttpd/lighttpd.conf'
 
     function = Docker.run('. /bash_functions.sh ; setup_ipv4_ipv6')
     assert "Using {}".format(expected_stdout) in function.stdout
-    config = Docker.run('cat {}'.format( WEB_CONFIG[os])).stdout
-    assert (IPV6_LINE[os] in config) == expected_ipv6
+    config = Docker.run('cat {}'.format(WEB_CONFIG)).stdout
+    assert (IPV6_LINE in config) == expected_ipv6
 
 @pytest.mark.parametrize('args', [DEFAULTARGS + '-e "WEB_PORT=999"'])
-def test_overrides_default_WEB_PORT(Docker, os, args):
+def test_overrides_default_WEB_PORT(Docker, args):
     ''' When a --net=host user sets WEB_PORT to avoid synology's 80 default IPv4 and or IPv6 ports are updated'''
-    CONFIG_LINES = { 'debian': ['server.port\s*=\s*999'] }
-    WEB_CONFIG = { 'debian': '/etc/lighttpd/lighttpd.conf' }
+    CONFIG_LINE = 'server.port\s*=\s*999'
+    WEB_CONFIG = '/etc/lighttpd/lighttpd.conf'
 
     function = Docker.run('. /bash_functions.sh ; eval `grep setup_web_port /start.sh`')
     assert "Custom WEB_PORT set to 999" in function.stdout
     assert "INFO: Without proper router DNAT forwarding to 127.0.0.1:999, you may not get any blocked websites on ads" in function.stdout
-    config = Docker.run('cat {}'.format( WEB_CONFIG[os])).stdout
-    for expected_line in CONFIG_LINES[os]:
-        assert re.search(expected_line, config) != None
+    config = Docker.run('cat {}'.format(WEB_CONFIG)).stdout
+    assert re.search(CONFIG_LINE, config) != None
     # grep fails to find any of the old address w/o port
     assert Docker.run('grep -rq "://127.0.0.1/" /var/www/html/').rc == 1
     assert Docker.run('grep -rq "://pi.hole/" /var/www/html/').rc == 1
@@ -121,11 +120,11 @@ expected_debian_lines = [
     '"ServerIP" => "127.0.0.1"',
     '"PHP_ERROR_LOG" => "/var/log/lighttpd/error.log"'
 ]
-@pytest.mark.parametrize('os,expected_lines,repeat_function', [
-    ('debian', expected_debian_lines, 1),
-    ('debian', expected_debian_lines, 2)
+@pytest.mark.parametrize('expected_lines,repeat_function', [
+    (expected_debian_lines, 1),
+    (expected_debian_lines, 2)
 ])
-def test_debian_setup_php_env(Docker, os, expected_lines, repeat_function):
+def test_debian_setup_php_env(Docker, expected_lines, repeat_function):
     ''' confirm all expected output is there and nothing else '''
     stdout = ''
     for i in range(repeat_function):

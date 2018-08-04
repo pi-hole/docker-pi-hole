@@ -223,23 +223,25 @@ setup_web_port() {
 }
 
 setup_web_password() {
-    if [ -z "${WEBPASSWORD+x}" ] ; then 
-        # Not set at all, give the user a random pass
-        WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
-        echo "Assigning random password: $WEBPASSWORD"
-    fi;
-    # Turn bash debug on while setting up password (to print it)
-    set -x
-    if [[ "$WEBPASSWORD" == "" ]] ; then
-        echo "" | pihole -a -p
-    else
-        pihole -a -p "$WEBPASSWORD" "$WEBPASSWORD"
-    fi
-    if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then 
-        # Turn bash debug back off after print password setup 
-        # (subshell to null hides printing output)
-        { set +x; } 2>/dev/null
-    fi
+    #if ! grep -q 'WEBPASSWORD' ${setupVars}; then
+        if [ -z "${WEBPASSWORD+x}" ] ; then 
+            # Not set at all, give the user a random pass
+            WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
+            echo "Assigning random password: $WEBPASSWORD"
+        fi;
+        # Turn bash debug on while setting up password (to print it)
+        set -x
+        if [[ "$WEBPASSWORD" == "" ]] ; then
+            echo "" | pihole -a -p
+        else
+            pihole -a -p "$WEBPASSWORD" "$WEBPASSWORD"
+        fi
+        if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then 
+            # Turn bash debug back off after print password setup 
+            # (subshell to null hides printing output)
+            { set +x; } 2>/dev/null
+        fi
+    #fi
 }
 
 setup_ipv4_ipv6() {

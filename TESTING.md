@@ -12,7 +12,7 @@ To run the Dockerfile templating, image build, and tests all in one command just
 
 # Local image names
 
-Docker images built by `tox` or `python Dockerfile.py` are named the same but stripped of the `diginc/` docker repository namespace.
+Docker images built by `tox` or `python Dockerfile.py` are named the same but stripped of the `pihole/` docker repository namespace.
 
 e.g. `pi-hole:debian_amd64` or `pi-hole-multiarch:debian_aarch64`
 

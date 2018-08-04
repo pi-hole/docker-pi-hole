@@ -25,7 +25,7 @@ export adlistFile='/etc/pihole/adlists.list'
 # PH_TEST prevents the install from actually running (someone should rename that)
 PH_TEST=true . $PIHOLE_INSTALL
 
-echo " ::: Starting docker specific setup for docker diginc/pi-hole"
+echo " ::: Starting docker specific setup for docker pihole/pihole"
 validate_env || exit 1
 prepare_configs
 change_setting "IPV4_ADDRESS" "$ServerIP"
@@ -44,10 +44,12 @@ test_configs
 
 echo " ::: Docker start setup complete"
 
-#echo " ::: ::: ::: ::: ::: ::: ::: ::: ::: :::"
-#echo " ::: Image moved / deprection notice"
-#echo " :::    OLD IMAGE : diginc/pi-hole"
-#echo " :::    NEW IMAGE : pihole/pi-hole"
-#echo " ::: Please update your image references"
-#echo " ::: ::: ::: ::: ::: ::: ::: ::: ::: :::"
-
+echo """
+:: ::: ::: ::: ::: ::: ::: ::: ::: :::
+:: Image moved / deprecation notice
+::    OLD IMAGE : diginc/pi-hole
+::    NEW IMAGE : pihole/pihole
+:: In order to get the latest updates 
+:: please update your image references
+:: ::: ::: ::: ::: ::: ::: ::: ::: :::
+"""
