@@ -1,6 +1,6 @@
 Please note the following about this [traefik](https://traefik.io/) example for pihole.
 
-- Still requires standard pi-hole setup steps, make sure you've gone through the [README](https://github.com/diginc/docker-pi-hole/blob/master/README.md) and understand how to setup pihole without traefik first
+- Still requires standard pi-hole setup steps, make sure you've gone through the [README](https://github.com/pihole/docker-pi-hole/blob/master/README.md) and understand how to setup pihole without traefik first
 - Update these things before using:
     - set instances of `homedomain.lan` below to your home domain (typically set in your router)
     - set your pihole ENV WEBPASSWORD if you don't want a random admin pass
@@ -83,7 +83,7 @@ After running `docker-compose up -d` you should see this if you look at logs on 
 
 ```
 traefik    | time="2018-03-07T18:57:41Z" level=debug msg="Provider event received {Status:health_status: healthy ID:33567e94e02c5adba3d47fa44c391e94fdea359fb05eecb196c95de288ffb861 From:pihole/pihole:debian Type:container Action:health_status: healthy Actor:{ID:33567e94
-e02c5adba3d47fa44c391e94fdea359fb05eecb196c95de288ffb861 Attributes:map[com.docker.compose.project:traefik image:pihole/pihole:debian traefik.frontend.priority:1 com.docker.compose.container-number:1 com.docker.compose.service:pihole com.docker.compose.version:1.19.0 name:pihole traefik.enable:true url:https://www.github.com/diginc/docker-pi-hole com.docker.compose.oneoff:False maintainer:adam@diginc.us traefik.backend:pihole traefik.frontend.rule:HostRegexp:pihole.homedomain.lan,{catchall:.*} traefik.port:80 com.docker.compose.config-
+e02c5adba3d47fa44c391e94fdea359fb05eecb196c95de288ffb861 Attributes:map[com.docker.compose.project:traefik image:pihole/pihole:debian traefik.frontend.priority:1 com.docker.compose.container-number:1 com.docker.compose.service:pihole com.docker.compose.version:1.19.0 name:pihole traefik.enable:true url:https://www.github.com/pihole/docker-pi-hole com.docker.compose.oneoff:False maintainer:adam@diginc.us traefik.backend:pihole traefik.frontend.rule:HostRegexp:pihole.homedomain.lan,{catchall:.*} traefik.port:80 com.docker.compose.config-
 hash:7551c3f4bd11766292c7dad81473ef21da91cae8666d1b04a42d1daab53fba0f]} Scope:local Time:1520449061 TimeNano:1520449061934970670}"
 traefik    | time="2018-03-07T18:57:42Z" level=debug msg="Filtering disabled container /traefik"
 traefik    | time="2018-03-07T18:57:42Z" level=debug msg="Could not load traefik.frontend.whitelistSourceRange labels"
