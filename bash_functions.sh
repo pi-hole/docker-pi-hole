@@ -23,7 +23,9 @@ prepare_configs() {
     if [[ -e "${setupVars}" ]]; then
         # update the variables in the file
         sed -i.update.bak '/PIHOLE_INTERFACE/d;/IPV4_ADDRESS/d;/IPV6_ADDRESS/d;/PIHOLE_DNS_1/d;/PIHOLE_DNS_2/d;/QUERY_LOGGING/d;/INSTALL_WEB_SERVER/d;/INSTALL_WEB_INTERFACE/d;/LIGHTTPD_ENABLED/d;' "${setupVars}"
+        local USERWEBPASSWORD="${WEBPASSWORD}"
         . "${setupVars}"
+        export WEBPASSWORD="${USERWEBPASSWORD}"
     fi
     # echo the information to the user
     {
@@ -223,25 +225,23 @@ setup_web_port() {
 }
 
 setup_web_password() {
-    #if ! grep -q 'WEBPASSWORD' ${setupVars}; then
-        if [ -z "${WEBPASSWORD+x}" ] ; then 
-            # Not set at all, give the user a random pass
-            WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
-            echo "Assigning random password: $WEBPASSWORD"
-        fi;
-        # Turn bash debug on while setting up password (to print it)
-        set -x
-        if [[ "$WEBPASSWORD" == "" ]] ; then
-            echo "" | pihole -a -p
-        else
-            pihole -a -p "$WEBPASSWORD" "$WEBPASSWORD"
-        fi
-        if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then 
-            # Turn bash debug back off after print password setup 
-            # (subshell to null hides printing output)
-            { set +x; } 2>/dev/null
-        fi
-    #fi
+    if [ -z "${WEBPASSWORD+x}" ]; then
+        # Not set at all, give the user a random pass
+        WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
+        echo "Assigning random password: $WEBPASSWORD"
+    fi;
+    # Turn bash debug on while setting up password (to print it)
+    set -x
+    if [[ "$WEBPASSWORD" == "" ]]; then
+        echo "" | pihole -a -p
+    else
+        pihole -a -p "$WEBPASSWORD" "$WEBPASSWORD"
+    fi
+    if [ "${PH_VERBOSE:-0}" -gt 0 ]; then
+        # Turn bash debug back off after print password setup
+        # (subshell to null hides printing output)
+        { set +x; } 2>/dev/null
+    fi
 }
 
 setup_ipv4_ipv6() {
