@@ -3,7 +3,7 @@
 A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86 ~~and ARM~~ container with [Pi-hole](https://pi-hole.net) functionality.
 
 1) Install docker for your [x86-64 system](https://www.docker.com/community-edition) or [ARMv6l/ARMv7 system](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/) using those links.
-2) Use the appropriate tag (x86 can use default tag, ARM users need to use images from [pihole/pihole-multiarch:debian_armhf](https://store.docker.com/community/images/pihole/pihole-multiarch/tags)) in the below `docker run` command
+2) Use the appropriate tag (x86 can use default tag, ARM users need to use images from [pihole/pihole-multiarch:v4.0_armhf](https://store.docker.com/community/images/pihole/pihole-multiarch/tags)) in the below `docker run` command
 3) Enjoy!
 
 [![Build Status](https://api.travis-ci.org/pihole/docker-pi-hole.svg?branch=master)](https://travis-ci.org/pihole/docker-pi-hole) [![Docker Stars](https://img.shields.io/docker/stars/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole) [![Docker Pulls](https://img.shields.io/docker/pulls/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole)
@@ -99,24 +99,23 @@ The primary docker tags / versions are explained in the following table.  [Click
 
 | tag                 | architecture | description                                                             | Dockerfile |
 | ---                 | ------------ | -----------                                                             | ---------- |
-| `debian` / `latest` | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/pihole/docker-pi-hole/blob/master/debian.docker) |
-| `alpine`            | x86          | **Deprecated release**                                                  | |
+| `latest` / `v4.0`   | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/pihole/docker-pi-hole/blob/master/Dockerfile_amd64) |
 
-### `pihole/pihole:debian` [![](https://images.microbadger.com/badges/image/pihole/pihole:debian.svg)](https://microbadger.com/images/pihole/pihole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:debian.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com")
+### `pihole/pihole:latest` [![](https://images.microbadger.com/badges/image/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com")
 
 This version of the docker aims to be as close to a standard pi-hole installation by using the recommended base OS and the exact configs and scripts (minimally modified to get them working).  This enables fast updating when an update comes from pi-hole.
 
-### `pihole/pihole-multiarch:debian_armhf` [![](https://images.microbadger.com/badges/image/pihole/pihole-multiarch:debian_armhf.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
+### `pihole/pihole-multiarch:v4.0_armhf` [![](https://images.microbadger.com/badges/image/pihole/pihole-multiarch:v4.0_armhf.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
 Latest version of ARMv7-compatible pihole image
 
 https://hub.docker.com/r/pihole/pihole-multiarch/tags/
 
-### `pihole/pihole-multiarch:debian_aarch64` [![](https://images.microbadger.com/badges/image/pihole/pihole-multiarch:debian_aarch64.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
+### `pihole/pihole-multiarch:v4.0_aarch64` [![](https://images.microbadger.com/badges/image/pihole/pihole-multiarch:v4.0_aarch64.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
 Latest version of ARM64-compatible pihole image
 
 https://hub.docker.com/r/pihole/pihole-multiarch/tags/
 
-### `pihole/pihole-multiarch:debian_armel` [![](https://images.microbadger.com/badges/image/pihole/pihole-multiarch:debian_armel.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
+### `pihole/pihole-multiarch:v4.0_armel` [![](https://images.microbadger.com/badges/image/pihole/pihole-multiarch:v4.0_armel.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
 Latest version of ARMv6-compatible pihole image
 
 https://hub.docker.com/r/pihole/pihole-multiarch/tags/
@@ -152,7 +151,7 @@ We install all pihole utilities so the the built in [pihole commands](https://di
 
 The webserver and DNS service inside the container can be customized if necessary.  Any configuration files you volume mount into `/etc/dnsmasq.d/` will be loaded by dnsmasq when the container starts or restarts or if you need to modify the pi-hole config it is located at `/etc/dnsmasq.d/01-pihole.conf`.  The docker start scripts runs a config test prior to starting so it will tell you about any errors in the docker log.
 
-Similarly for the webserver you can customize configs in /etc/lighttpd (*:debian* tag).
+Similarly for the webserver you can customize configs in /etc/lighttpd
 
 ### Systemd init script
 
@@ -162,11 +161,15 @@ NOTE:  After initial run you may need to manually stop the docker container with
 
 ## Development
 
+Development image tags coming soon
+
+<!-- # Old dev tag info section
 [![Build Status](https://api.travis-ci.org/pihole/docker-pi-hole.svg?branch=dev)](https://travis-ci.org/pihole/docker-pi-hole) If you plan on making a contribution please pull request to the dev branch.  I also build tags of the dev branch for bug fix testing after merges have been made:
 
 | tag                 | architecture | description                                                             | Dockerfile |
 | ---                 | ------------ | -----------                                                             | ---------- |
-| `debian_dev`        | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/pihole/docker-pi-hole/blob/dev/debian.docker) |
+| `v4.0_dev`          | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/pihole/docker-pi-hole/blob/dev/Dockerfile_amd64) |
+--> 
 
 # User Feedback
 
