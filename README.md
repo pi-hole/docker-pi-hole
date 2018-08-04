@@ -89,7 +89,7 @@ If you're a fan of [docker-compose](https://docs.docker.com/compose/install/) I 
 
 * A good way to test things are working right is by loading this page: [http://pi.hole/admin/](http://pi.hole/admin/)
 * [How do I set or reset the Web interface Password?](https://discourse.pi-hole.net/t/how-do-i-set-or-reset-the-web-interface-password/1328)
-  * `docker exec pihole_container_name pihole -a -p supersecurepassword`
+  * `docker exec -it pihole_container_name pihole -a -p` - then enter your password into the prompt
 * Port conflicts?  Stop your server's existing DNS / Web services.
   * Ubuntu users especially may need to shut off dns on your docker server so it can run in the container on port 53
     * 17.04 and later should disable dnsmasq.
