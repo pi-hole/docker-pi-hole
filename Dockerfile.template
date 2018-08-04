@@ -1,13 +1,5 @@
 FROM {{ pihole.base }}
 
-LABEL image="{{ pihole.name }}:{{ pihole.version }}_{{ pihole.arch }}"
-LABEL maintainer="{{ pihole.maintainer }}"
-LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
-
-ENV VERSION {{ pihole.version }}
-ENV ARCH {{ pihole.arch }}
-ENV PATH /opt/pihole:${PATH}
-
 COPY install.sh /usr/local/bin/docker-install.sh
 ENV PIHOLE_INSTALL /root/ph_install.sh
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/{{ pihole.s6_version }}/s6-overlay-{{ pihole.s6arch }}.tar.gz
@@ -43,6 +35,14 @@ ENV S6_LOGGING 0
 ENV S6_KEEP_ENV 1
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
 ENV FTL_CMD no-daemon
+
+ENV VERSION {{ pihole.version }}
+ENV ARCH {{ pihole.arch }}
+ENV PATH /opt/pihole:${PATH}
+
+LABEL image="{{ pihole.name }}:{{ pihole.version }}_{{ pihole.arch }}"
+LABEL maintainer="{{ pihole.maintainer }}"
+LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
 
 HEALTHCHECK CMD dig @127.0.0.1 pi.hole || exit 1
 

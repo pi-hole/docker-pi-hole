@@ -90,12 +90,8 @@ def build_dockerfiles(args):
         return
 
     for arch in args['--arch']:
-        docker_repo = 'pi-hole-multiarch'
-        if arch == 'amd64':
-            docker_repo = 'pi-hole'
-
-        # TODO make version an argument, or auto-detect branch for non production tags
-        build(docker_repo, 'v4.0', arch, args)
+        # TODO: include from external .py that can be shared with Dockerfile.py / Tests / deploy scripts '''
+        build('pihole', 'v4.0', arch, args)
 
 
 def build(docker_repo, version, arch, args):

@@ -44,7 +44,7 @@ test_configs
 
 echo " ::: Docker start setup complete"
 
-echo <EOF>>
+echo """
 :: ::: ::: ::: ::: ::: ::: ::: ::: :::
 :: Image moved / deprecation notice
 ::    OLD IMAGE : diginc/pi-hole
@@ -52,4 +52,4 @@ echo <EOF>>
 :: In order to get the latest updates 
 :: please update your image references
 :: ::: ::: ::: ::: ::: ::: ::: ::: :::
-EOF
+"""

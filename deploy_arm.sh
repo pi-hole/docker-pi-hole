@@ -10,39 +10,45 @@ parse_git_branch() {
   git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'
 }
 
+namespace='pihole'
+localimg='pihole'
+remoteimg="$namespace/$localimg"
 branch="$(parse_git_branch)"
 version="${version:-unset}"
 dry="${dry}"
 
 if [[ -n "$dry" ]] ; then dry='echo ' ; fi
 
-if [[ "$version" == 'unset' && "$branch" == 'master' ]]; then
-    echo "Version is unset and master/prod branch wants a version...pass in \$version!"
-    exit 1
+if [[ "$version" == 'unset' ]]; then
+    version="$branch"
+    if [[ "$branch" == "master" ]]; then
+        echo "Version number var is unset and master branch needs a version...pass in \$version variable!"
+        exit 1
+    else if [[ "$branch" = "release/"* ]] 
+        echo "Version number is being taken from this release branch"
+        version="$(echo $branch | grep -Po 'v[\d.-]')"
+    fi
+    echo "Using the branch ($branch) for deployed image version since not passed in"
 fi
 
 echo "# DEPLOYING:"
 echo "version: $version"
 echo "branch: $branch"
 [[ -n "$dry" ]] && echo "DRY RUN: $dry"
+echo "Example tagging: docker tag $localimg:$tag $remoteimg:${version}_${tag}"
 echo
 
 $dry ./Dockerfile.py
 
-if [[ "$branch" == 'master' ]] ; then
+if [[ "$branch" == "master" ]] || [[ "$branch" = "release/"* ]] ; then
     # ARMv6/armel doesn't have a FTL binary for v4.0 pi-hole 
     # for tag in debian_armhf debian_aarch64 debian_armel; do 
-    for tag in debian_armhf debian_aarch64; do 
+    for tag in amd64 armhf aarch64; do 
         # Verison specific tags for ongoing history
-        $dry docker tag pi-hole-multiarch:$tag pihole/pihole-multiarch:v${version}_${tag} 
-        $dry docker push pihole/pihole-multiarch:v${version}_${tag} 
+        $dry docker tag $localimg:$tag $remoteimg:${version}_${tag} 
+        $dry docker push pihole/pihole-multiarch:${version}_${tag} 
         # Floating latest tags 
         $dry docker tag pi-hole-multiarch:$tag pihole/pihole-multiarch:${tag} 
         $dry docker push pihole/pihole-multiarch:${tag} 
-    done
-else
-    for tag in debian_armhf debian_aarch64; do 
-        $dry docker tag pi-hole-multiarch:$tag pihole/pihole-multiarch:${tag}_${branch}
-        $dry docker push pihole/pihole-multiarch:${tag}_${branch}
     done
 fi
