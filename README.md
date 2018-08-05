@@ -9,7 +9,7 @@
 A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86 and ARM container with [Pi-hole](https://pi-hole.net) functionality.
 
 1) Install docker for your [x86-64 system](https://www.docker.com/community-edition) or [ARMv7 system](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/) using those links.
-2) Use the appropriate tag (x86 can use default tag, ARM users need to use images from [pihole/pihole:v4.0_armhf](https://store.docker.com/community/images/pihole/pihole-multiarch/tags)) in the below `docker run` command
+2) Use the appropriate tag (x86 can use default tag, ARM users need to use images from [pihole/pihole:v4.0_armhf](https://store.docker.com/community/images/pihole/pihole/tags)) in the below `docker run` command
 3) Enjoy!
 
 [![Build Status](https://api.travis-ci.org/pi-hole/docker-pi-hole.svg?branch=master)](https://travis-ci.org/pi-hole/docker-pi-hole) [![Docker Stars](https://img.shields.io/docker/stars/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole) [![Docker Pulls](https://img.shields.io/docker/pulls/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole)
@@ -101,7 +101,7 @@ If you're a fan of [docker-compose](https://docs.docker.com/compose/install/) I 
 
 ## Docker tags and versioning
 
-The primary docker tags / versions are explained in the following table.  [Click here to see the full list of x86 tags](https://store.docker.com/community/images/pihole/pihole/tags) ([arm tags are here](https://store.docker.com/community/images/pihole/pihole-multiarch/tags)), I also try to tag with the specific version of Pi-hole Core for version archival purposes, the web version that comes with the core releases should be in the [GitHub Release notes](https://github.com/pi-hole/docker-pi-hole/releases).
+The primary docker tags / versions are explained in the following table.  [Click here to see the full list of x86 tags](https://store.docker.com/community/images/pihole/pihole/tags) ([arm tags are here](https://store.docker.com/community/images/pihole/pihole/tags)), I also try to tag with the specific version of Pi-hole Core for version archival purposes, the web version that comes with the core releases should be in the [GitHub Release notes](https://github.com/pi-hole/docker-pi-hole/releases).
 
 | tag                 | architecture | description                                                             | Dockerfile |
 | ---                 | ------------ | -----------                                                             | ---------- |
@@ -111,22 +111,16 @@ The primary docker tags / versions are explained in the following table.  [Click
 
 This version of the docker aims to be as close to a standard Pi-hole installation by using the recommended base OS and the exact configs and scripts (minimally modified to get them working).  This enables fast updating when an update comes from Pi-hole.
 
-### `pihole/pihole:v4.0_armhf` [![](https://images.microbadger.com/badges/image/pihole/pihole:v4.0_armhf.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
+### `pihole/pihole:v4.0_armhf` [![](https://images.microbadger.com/badges/image/pihole/pihole:v4.0_armhf.svg)](https://microbadger.com/images/pihole/pihole "Get your own image badge on microbadger.com")
 Latest version of ARMv7-compatible pihole image
 
-https://hub.docker.com/r/pihole/pihole-multiarch/tags/
+https://hub.docker.com/r/pihole/pihole/tags/
 
-### `pihole/pihole:v4.0_aarch64` [![](https://images.microbadger.com/badges/image/pihole/pihole:v4.0_aarch64.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
+### `pihole/pihole:v4.0_aarch64` [![](https://images.microbadger.com/badges/image/pihole/pihole:v4.0_aarch64.svg)](https://microbadger.com/images/pihole/pihole "Get your own image badge on microbadger.com")
 Latest version of ARM64-compatible pihole image
 
-https://hub.docker.com/r/pihole/pihole-multiarch/tags/
+https://hub.docker.com/r/pihole/pihole/tags/
 
-<!--
-### `pihole/pihole:v4.0_armel` [![](https://images.microbadger.com/badges/image/pihole/pihole:v4.0_armel.svg)](https://microbadger.com/images/pihole/pihole-multiarch "Get your own image badge on microbadger.com")
-Latest version of ARMv6-compatible pihole image
-
-https://hub.docker.com/r/pihole/pihole-multiarch/tags/
--->
 ## Upgrading, Persistence, and Customizations
 
 The standard Pi-hole customization abilities apply to this docker, but with docker twists such as using docker volume mounts to map host stored file configurations over the container defaults.  Volumes are also important to persist the configuration in case you have removed the Pi-hole container which is a typical docker upgrade pattern.
@@ -169,14 +163,6 @@ NOTE:  After initial run you may need to manually stop the docker container with
 ## Development
 
 Development image tags coming soon
-
-<!-- # Old dev tag info section
-[![Build Status](https://api.travis-ci.org/pihole/docker-pi-hole.svg?branch=dev)](https://travis-ci.org/pi-hole/docker-pi-hole) If you plan on making a contribution please pull request to the dev branch.  I also build tags of the dev branch for bug fix testing after merges have been made:
-
-| tag                 | architecture | description                                                             | Dockerfile |
-| ---                 | ------------ | -----------                                                             | ---------- |
-| `v4.0_dev`          | x86          | Debian x86 image, container running lighttpd and dnsmasq                | [Dockerfile](https://github.com/pi-hole/docker-pi-hole/blob/dev/Dockerfile_amd64) |
---> 
 
 # User Feedback
 
