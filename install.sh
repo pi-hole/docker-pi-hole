@@ -1,14 +1,13 @@
 #!/bin/bash -ex
 mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
-export CORE_TAG='v3.3.1'
-export WEB_TAG='v3.3'
-export USE_FTLDNS_BRANCHES=true
-export USE_DEVELOPMENT_BRANCHES=false
+# Production tags with valid web footers
+export CORE_TAG='v4.0'
+export WEB_TAG='v4.0'
+# Only use for pre-production / testing
+export USE_CUSTOM_BRANCHES=false
 
-if [[ $USE_FTLDNS_BRANCHES == true ]] ; then
-    CORE_TAG='release/v4.0'
-elif [[ $USE_DEVELOPMENT_BRANCHES == true ]] ; then
+if [[ $USE_CUSTOM_BRANCHES == true ]] ; then
     CORE_TAG='development'
 fi
 
@@ -62,17 +61,11 @@ installLogLoc="${installLogLoc}"
 installPihole 2>&1 | tee "${tmpLog}"
 mv "${tmpLog}" /
 
-if [[ $USE_FTLDNS_BRANCHES == true ]] ; then
+if [[ $USE_CUSTOM_BRANCHES == true ]] ; then
     ln -s /bin/true /usr/local/bin/service
     echo "$CORE_TAG" | tee /etc/pihole/ftlbranch
     echo y | bash -x pihole checkout core $CORE_TAG
     echo y | bash -x pihole checkout web $CORE_TAG
-    unlink /usr/local/bin/service
-elif [[ $USE_DEVELOPMENT_BRANCHES == true ]] ; then
-    ln -s /bin/true /usr/local/bin/service
-    echo y | bash -x pihole checkout core development
-    echo y | bash -x pihole checkout web devel
-    echo y | bash -x pihole checkout ftl development
     unlink /usr/local/bin/service
 else
     # Reset to our tags so version numbers get detected correctly
