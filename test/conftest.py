@@ -5,11 +5,11 @@ check_output = testinfra.get_backend(
     "local://"
 ).get_module("Command").check_output
 
-def DockerGeneric(request, args, image, cmd):
+def DockerGeneric(request, args, image, cmd, entrypoint=''):
     assert 'docker' in check_output('id'), "Are you in the docker group?"
     if 'pihole' in image:
        args += " --dns 127.0.0.1 -v /dev/null:/etc/pihole/adlists.default -e PYTEST=\"True\""
-    docker_run = "docker run -d {} {} {}".format(args, image, cmd)
+    docker_run = "docker run -d {args} {entry} {image} {cmd}".format(args, image, cmd)
     print docker_run
     docker_id = check_output(docker_run)
 
@@ -37,10 +37,11 @@ def DockerGeneric(request, args, image, cmd):
     docker_container.run = funcType(run_bash, docker_container, testinfra.backend.docker.DockerBackend)
     return docker_container
 
+
 @pytest.fixture
-def Docker(request, args, image, cmd):
+def Docker(request, args, image, cmd, entrypoint):
     ''' One-off Docker container run '''
-    return DockerGeneric(request, args, image, cmd)
+    return DockerGeneric(request, args, image, cmd, entrypoint)
 
 @pytest.fixture(scope='module')
 def DockerPersist(request, persist_args, persist_image, persist_cmd, Dig):
@@ -50,6 +51,10 @@ def DockerPersist(request, persist_args, persist_image, persist_cmd, Dig):
     ''' attach a dig conatiner for lookups '''
     persistent_container.dig = Dig(persistent_container.id)
     return persistent_container
+
+@pytest.fixture
+def entrypoint():
+    return ''
 
 @pytest.fixture()
 def args(request):
