@@ -4,7 +4,8 @@ import time
 ''' Note, testinfra builtins don't seem fully compatible with
         docker containers (esp. musl based OSs) stripped down nature '''
 
-@pytest.mark.parametrize('entrypoint', ['--entrypoint=/bin/bash'])
+# If the test runs /start.sh, do not let s6 run it too!  Kill entrypoint to avoid race condition/duplicated execution
+@pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
 @pytest.mark.parametrize('args', [ '' ])
 def test_ServerIP_missing_triggers_start_error(Docker):
     ''' When args to docker are empty start.sh exits saying ServerIP is required '''
@@ -13,7 +14,8 @@ def test_ServerIP_missing_triggers_start_error(Docker):
     assert start.rc == 1
     assert error_msg in start.stdout
 
-@pytest.mark.parametrize('entrypoint', ['--entrypoint=/bin/bash'])
+# If the test runs /start.sh, do not let s6 run it too!  Kill entrypoint to avoid race condition/duplicated execution
+@pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
 @pytest.mark.parametrize('args,error_msg,expect_rc', [ 
     ('-e ServerIP="1.2.3.z"', "ServerIP Environment variable (1.2.3.z) doesn't appear to be a valid IPv4 address",1), 
     ('-e ServerIP="1.2.3.4" -e ServerIPv6="1234:1234:1234:ZZZZ"', "Environment variable (1234:1234:1234:ZZZZ) doesn't appear to be a valid IPv6 address",1),

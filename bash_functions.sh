@@ -1,6 +1,7 @@
 #!/bin/bash
 
 prepare_configs() {
+    # Done in /start.sh, don't do twice
     PH_TEST=true . $PIHOLE_INSTALL
     distro_check
     installConfigs
@@ -17,6 +18,8 @@ prepare_configs() {
     chown pihole:pihole /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /etc/pihole /etc/pihole/dhcp.leases /var/log/pihole.log
     chmod 0644 /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
     set -e
+    # Update version numbers
+    pihole updatechecker
     # Re-write all of the setupVars to ensure required ones are present (like QUERY_LOGGING)
     
     # If the setup variable file exists,

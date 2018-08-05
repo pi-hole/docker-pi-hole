@@ -9,7 +9,7 @@ def DockerGeneric(request, args, image, cmd, entrypoint=''):
     assert 'docker' in check_output('id'), "Are you in the docker group?"
     if 'pihole' in image:
        args += " --dns 127.0.0.1 -v /dev/null:/etc/pihole/adlists.default -e PYTEST=\"True\""
-    docker_run = "docker run -d {args} {entry} {image} {cmd}".format(args, image, cmd)
+    docker_run = "docker run -d {args} {entry} {image} {cmd}".format(args=args, entry=entrypoint, image=image, cmd=cmd)
     print docker_run
     docker_id = check_output(docker_run)
 
