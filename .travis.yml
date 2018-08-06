@@ -7,7 +7,6 @@ env:
         - QEMU_VER=v2.9.1
     matrix:
         - ARCH=amd64
-        - ARCH=armel
         - ARCH=armhf
         - ARCH=aarch64
 python:
@@ -21,4 +20,5 @@ script:
   - ./Dockerfile.py --arch=${ARCH} -v
   - docker images
   # run docker build & tests
-  - py.test -vv -n auto -k "${ARCH}" ./test/
+  # 2 parallel max b/c race condition with docker fixture (I think?)
+  - py.test -vv -n 2 -k "${ARCH}" ./test/

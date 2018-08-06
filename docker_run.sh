@@ -24,7 +24,7 @@ docker run -d \
     -e ServerIP="${IP}" \
     -e ServerIPv6="${IPv6}" \
     --restart=unless-stopped \
-    diginc/pi-hole:latest
+    pihole/pihole:latest
 
 echo -n "Your password for https://${IP}/admin/ is "
 docker logs pihole 2> /dev/null | grep 'password:'

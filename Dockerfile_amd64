@@ -1,25 +1,16 @@
 FROM debian:stretch
 
-LABEL image="diginc/pi-hole:debian_amd64"
-LABEL maintainer="adam@diginc.us"
-LABEL url="https://www.github.com/diginc/docker-pi-hole"
-
-ENV TAG debian
-ENV ARCH amd64
-ENV PATH /opt/pihole:${PATH}
-
 COPY install.sh /usr/local/bin/docker-install.sh
-ENV setupVars /etc/pihole/setupVars.conf
-ENV PIHOLE_INSTALL /tmp/ph_install.sh
+ENV PIHOLE_INSTALL /root/ph_install.sh
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.4.0/s6-overlay-amd64.tar.gz
 
 RUN apt-get update && \
-    apt-get install -y wget curl net-tools cron procps && \
-    curl -L -s $S6OVERLAY_RELEASE \
-        | tar xvzf - -C / && \
-    docker-install.sh && \
+    apt-get install -y curl procps && \
+    curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C / && \
     rm -rf /var/cache/apt/archives /var/lib/apt/lists/* && \
     mv /init /s6-init
+
+RUN apt-get update && bash -ex docker-install.sh 2>&1
 
 ENTRYPOINT [ "/s6-init" ]
 
@@ -44,6 +35,14 @@ ENV S6_LOGGING 0
 ENV S6_KEEP_ENV 1
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
 ENV FTL_CMD no-daemon
+
+ENV VERSION v4.0
+ENV ARCH amd64
+ENV PATH /opt/pihole:${PATH}
+
+LABEL image="pihole/pihole:v4.0_amd64"
+LABEL maintainer="adam@diginc.us"
+LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
 
 HEALTHCHECK CMD dig @127.0.0.1 pi.hole || exit 1
 

@@ -1,12 +1,50 @@
 #!/bin/bash
-. /opt/pihole/webpage.sh
-setupVars="$setupVars"
-ServerIP="$ServerIP"
-ServerIPv6="$ServerIPv6"
-IPv6="$IPv6"
 
-prepare_setup_vars() {
+prepare_configs() {
+    # Done in /start.sh, don't do twice
+    PH_TEST=true . $PIHOLE_INSTALL
+    distro_check
+    installConfigs
     touch "$setupVars"
+    set +e
+    mkdir -p /var/run/pihole /var/log/pihole
+    # Re-apply perms from basic-install over any volume mounts that may be present (or not)
+    chown pihole:root /etc/lighttpd
+    chown pihole:pihole "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" "/var/log/pihole" "${regexFile}"
+    chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" 
+    # not sure why pihole:pihole user/group write perms are not enough for web to write...dirty fix:
+    chmod 777 "${regexFile}"
+    touch /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
+    chown pihole:pihole /var/run/pihole /var/log/pihole
+    test -f /var/run/pihole/FTL.sock && rm /var/run/pihole/FTL.sock
+    chown pihole:pihole /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /etc/pihole /etc/pihole/dhcp.leases /var/log/pihole.log
+    chmod 0644 /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
+    set -e
+    # Update version numbers
+    pihole updatechecker
+    # Re-write all of the setupVars to ensure required ones are present (like QUERY_LOGGING)
+    
+    # If the setup variable file exists,
+    if [[ -e "${setupVars}" ]]; then
+        # update the variables in the file
+        sed -i.update.bak '/PIHOLE_INTERFACE/d;/IPV4_ADDRESS/d;/IPV6_ADDRESS/d;/PIHOLE_DNS_1/d;/PIHOLE_DNS_2/d;/QUERY_LOGGING/d;/INSTALL_WEB_SERVER/d;/INSTALL_WEB_INTERFACE/d;/LIGHTTPD_ENABLED/d;' "${setupVars}"
+        local USERWEBPASSWORD="${WEBPASSWORD}"
+        . "${setupVars}"
+        # Stash and pop the user password to avoid setting the password to the hashed setupVar variable
+        WEBPASSWORD="${USERWEBPASSWORD}"
+    fi
+    # echo the information to the user
+    {
+    echo "PIHOLE_INTERFACE=${PIHOLE_INTERFACE}"
+    echo "IPV4_ADDRESS=${IPV4_ADDRESS}"
+    echo "IPV6_ADDRESS=${IPV6_ADDRESS}"
+    echo "PIHOLE_DNS_1=${PIHOLE_DNS_1}"
+    echo "PIHOLE_DNS_2=${PIHOLE_DNS_2}"
+    echo "QUERY_LOGGING=${QUERY_LOGGING}"
+    echo "INSTALL_WEB_SERVER=${INSTALL_WEB_SERVER}"
+    echo "INSTALL_WEB_INTERFACE=${INSTALL_WEB_INTERFACE}"
+    echo "LIGHTTPD_ENABLED=${LIGHTTPD_ENABLED}"
+    }>> "${setupVars}"
 }
 
 validate_env() {
@@ -72,13 +110,13 @@ setup_dnsmasq_dns() {
 }
 
 setup_dnsmasq_interface() {
-    local INTERFACE="${1:-eth0}"
+    local interface="${1:-eth0}"
     local interfaceType='default'
-    if [ "$INTERFACE" != 'eth0' ] ; then
+    if [ "$interface" != 'eth0' ] ; then
       interfaceType='custom'
     fi;
-    echo "DNSMasq binding to $interfaceType interface: $INTERFACE"
-    [ -n "$INTERFACE" ] && change_setting "PIHOLE_INTERFACE" "${INTERFACE}"
+    echo "DNSMasq binding to $interfaceType interface: $interface"
+    [ -n "$interface" ] && change_setting "PIHOLE_INTERFACE" "${interface}"
 }
 
 setup_dnsmasq_config_if_missing() {
@@ -89,12 +127,14 @@ setup_dnsmasq_config_if_missing() {
 }
 
 setup_dnsmasq() {
+    local dns1="$1"
+    local dns2="$2"
+    local interface="$3"
     # Coordinates 
     setup_dnsmasq_config_if_missing
-    setup_dnsmasq_dns "$DNS1" "$DNS2" 
-    setup_dnsmasq_interface "$INTERFACE"
+    setup_dnsmasq_dns "$dns1" "$dns2" 
+    setup_dnsmasq_interface "$interface"
     ProcessDNSSettings
-    # dnsmasq -7 /etc/dnsmasq.d --interface="${INTERFACE:-eth0}"
 }
 
 setup_dnsmasq_hostnames() {
@@ -135,23 +175,16 @@ setup_dnsmasq_hostnames() {
 }
 
 setup_lighttpd_bind() {
-    if [[ "$TAG" == 'debian' ]] ; then
+    local serverip="$1"
     # if using '--net=host' only bind lighttpd on $ServerIP and localhost
-        if grep -q "docker" /proc/net/dev ; then #docker (docker0 by default) should only be present on the host system
-            if ! grep -q "server.bind" /etc/lighttpd/lighttpd.conf ; then # if the declaration is already there, don't add it again
-                sed -i -E "s/server\.port\s+\=\s+([0-9]+)/server.bind\t\t = \"${ServerIP}\"\nserver.port\t\t = \1\n"\$SERVER"\[\"socket\"\] == \"127\.0\.0\.1:\1\" \{\}/" /etc/lighttpd/lighttpd.conf
-            fi
+    if grep -q "docker" /proc/net/dev ; then #docker (docker0 by default) should only be present on the host system
+        if ! grep -q "server.bind" /etc/lighttpd/lighttpd.conf ; then # if the declaration is already there, don't add it again
+            sed -i -E "s/server\.port\s+\=\s+([0-9]+)/server.bind\t\t = \"${serverip}\"\nserver.port\t\t = \1\n"\$SERVER"\[\"socket\"\] == \"127\.0\.0\.1:\1\" \{\}/" /etc/lighttpd/lighttpd.conf
         fi
     fi
 }
 
 setup_php_env() {
-    case $TAG in
-        "debian") setup_php_env_debian ;;
-    esac
-}
-
-setup_php_env_debian() {
     if [ -z "$VIRTUAL_HOST" ] ; then
       VIRTUAL_HOST="$ServerIP"
     fi;
@@ -198,53 +231,86 @@ setup_web_port() {
 }
 
 setup_web_password() {
-    if [ -z "${WEBPASSWORD+x}" ] ; then 
+    if [ -z "${WEBPASSWORD+x}" ] ; then
         # Not set at all, give the user a random pass
         WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
         echo "Assigning random password: $WEBPASSWORD"
     fi;
+    # Turn bash debug on while setting up password (to print it)
     set -x
     if [[ "$WEBPASSWORD" == "" ]] ; then
         echo "" | pihole -a -p
     else
         pihole -a -p "$WEBPASSWORD" "$WEBPASSWORD"
     fi
-    { set +x; } 2>/dev/null
+    if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
+        # Turn bash debug back off after print password setup
+        # (subshell to null hides printing output)
+        { set +x; } 2>/dev/null
+    fi
 }
 
 setup_ipv4_ipv6() {
     local ip_versions="IPv4 and IPv6"
     if [ "$IPv6" != "True" ] ; then
         ip_versions="IPv4"
-        case $TAG in
-            "debian") sed -i '/use-ipv6.pl/ d' /etc/lighttpd/lighttpd.conf ;;
-        esac
+        sed -i '/use-ipv6.pl/ d' /etc/lighttpd/lighttpd.conf
     fi;
     echo "Using $ip_versions"
 }
 
 test_configs() {
-    case $TAG in
-        "debian") test_configs_debian ;;
-    esac
-}
-
-test_configs_debian() {
     set -e
-    echo -n '::: Testing DNSmasq config: '
-    dnsmasq --test -7 /etc/dnsmasq.d || exit 1
+    echo -n '::: Testing pihole-FTL DNS: '
+    pihole-FTL test || exit 1
     echo -n '::: Testing lighttpd config: '
     lighttpd -t -f /etc/lighttpd/lighttpd.conf || exit 1
     set +e
-    echo "::: All config checks passed, starting ..."
+    echo "::: All config checks passed, cleared for startup ..."
 }
 
-test_framework_stubbing() {
-    if [ -n "$PYTEST" ] ; then 
-        echo ":::::: Tests are being ran - stub out ad list fetching and add a fake ad block"
-        sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)" 
-        echo '123.123.123.123 testblock.pi-hole.local' > /var/www/html/fake.list
-        echo 'file:///var/www/html/fake.list' > /etc/pihole/adlists.list
-        echo 'http://localhost/fake.list' >> /etc/pihole/adlists.list
+
+setup_blocklists() {
+    local blocklists="$1"   
+    # Exit/return early without setting up adlists with defaults for any of the following conditions:
+    # 1. NO_SETUP env is set
+    exit_string="(exiting ${FUNCNAME[0]} early)"
+
+    if [ -n "${NO_SETUP}" ]; then
+        echo "::: NO_SETUP requested ($exit_string)"
+        return
     fi
+
+    # 2. The adlist file exists already (restarted container or volume mounted list)
+    if [ -f "${adlistFile}" ]; then
+        echo "::: Preexisting ad list ${adlistFile} detected ($exit_string)"
+        cat "${adlistFile}"
+        return
+    fi
+
+    # 3. If we're running tests, use a small list of fake tests to speed everything up
+    if [ -n "$PYTEST" ]; then 
+        echo ":::::: Tests are being ran - stub out ad list fetching and add a fake ad block ${exit_string}"
+        sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)" 
+        echo '123.123.123.123 testblock.pi-hole.local' > "/var/www/html/fake.list"
+        echo 'file:///var/www/html/fake.list' > "${adlistFile}"
+        echo 'http://localhost/fake.list' >> "${adlistFile}"
+        return
+    fi
+
+    echo "::: ${FUNCNAME[0]} now setting default blocklists up: "
+    echo "::: TIP: Use a docker volume for ${adlistFile} if you want to customize for first boot"
+    > "${adlistFile}"
+    # Just copied outa the choices for now
+    # https://github.com/pi-hole/pi-hole/blob/FTLDNS/automated%20install/basic-install.sh#L1014
+    echo "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" >> "${adlistFile}"
+    echo "https://mirror1.malwaredomains.com/files/justdomains" >> "${adlistFile}"
+    echo "http://sysctl.org/cameleon/hosts" >> "${adlistFile}"
+    echo "https://zeustracker.abuse.ch/blocklist.php?download=domainblocklist" >> "${adlistFile}"
+    echo "https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt" >> "${adlistFile}"
+    echo "https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt" >> "${adlistFile}"
+    echo "https://hosts-file.net/ad_servers.txt" >> "${adlistFile}"
+
+    echo "::: Blocklists (${adlistFile}) now set to:"
+    cat "${adlistFile}"
 }

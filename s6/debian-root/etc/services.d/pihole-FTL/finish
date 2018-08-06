@@ -1,0 +1,4 @@
+#!/usr/bin/with-contenv bash
+
+s6-echo "Stopping pihole-FTL"
+kill -9 $(pgrep pihole-FTL)

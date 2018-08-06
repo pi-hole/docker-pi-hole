@@ -5,11 +5,11 @@ check_output = testinfra.get_backend(
     "local://"
 ).get_module("Command").check_output
 
-def DockerGeneric(request, args, image, cmd):
+def DockerGeneric(request, args, image, cmd, entrypoint=''):
     assert 'docker' in check_output('id'), "Are you in the docker group?"
-    if 'pi-hole' in image:
+    if 'pihole' in image:
        args += " --dns 127.0.0.1 -v /dev/null:/etc/pihole/adlists.default -e PYTEST=\"True\""
-    docker_run = "docker run -d {} {} {}".format(args, image, cmd)
+    docker_run = "docker run -d {args} {entry} {image} {cmd}".format(args=args, entry=entrypoint, image=image, cmd=cmd)
     print docker_run
     docker_id = check_output(docker_run)
 
@@ -37,18 +37,24 @@ def DockerGeneric(request, args, image, cmd):
     docker_container.run = funcType(run_bash, docker_container, testinfra.backend.docker.DockerBackend)
     return docker_container
 
+
 @pytest.fixture
-def Docker(request, args, image, cmd):
+def Docker(request, args, image, cmd, entrypoint):
     ''' One-off Docker container run '''
-    return DockerGeneric(request, args, image, cmd)
+    return DockerGeneric(request, args, image, cmd, entrypoint)
 
 @pytest.fixture(scope='module')
 def DockerPersist(request, persist_args, persist_image, persist_cmd, Dig):
-    ''' Persistent Docker container for multiple tests '''
+    ''' Persistent Docker container for multiple tests, instead of stopping container after one test '''
+    ''' Uses DUP'd module scoped fixtures because smaller scoped fixtures won't mix with module scope '''
     persistent_container = DockerGeneric(request, persist_args, persist_image, persist_cmd)
     ''' attach a dig conatiner for lookups '''
     persistent_container.dig = Dig(persistent_container.id)
     return persistent_container
+
+@pytest.fixture
+def entrypoint():
+    return ''
 
 @pytest.fixture()
 def args(request):
@@ -58,26 +64,23 @@ def args(request):
 def arch(request):
     return request.param
 
-@pytest.fixture(params=['debian'])
-def os(request):
-    return request.param
+@pytest.fixture()
+def version(request):
+    ''' TODO: include from external .py that can be shared with Dockerfile.py / Tests / deploy scripts '''
+    return 'v4.0'
 
 @pytest.fixture()
-def tag(request, os, arch):
-    return '{}_{}'.format(os, arch)
+def tag(request, version, arch):
+    return '{}_{}'.format(version, arch)
 
 @pytest.fixture
 def webserver(request, tag):
-    webserver = 'nginx'
-    if 'debian' in tag:
-        webserver = 'lighttpd'
-    return webserver
+    ''' TODO: this is obvious without alpine+nginx as the alternative, remove fixture, hard code lighttpd in tests? '''
+    return 'lighttpd'
 
 @pytest.fixture()
 def image(request, tag):
-    image = 'pi-hole-multiarch'
-    if 'amd64' in tag:
-        image = 'pi-hole'
+    image = 'pihole'
     return '{}:{}'.format(image, tag)
 
 @pytest.fixture()
@@ -86,33 +89,30 @@ def cmd(request):
 
 @pytest.fixture(scope='module', params=['amd64'])
 def persist_arch(request):
-    '''amd64 only, dnsmasq will not start under qemu-user-static :('''
+    '''amd64 only, dnsmasq/pihole-FTL(?untested?) will not start under qemu-user-static :('''
     return request.param
 
-@pytest.fixture(scope='module', params=['debian'])
-def persist_os(request):
-    return request.param
+@pytest.fixture(scope='module')
+def persist_version(request):
+    ''' TODO: include from external .py that can be shared with Dockerfile.py / Tests / deploy scripts '''
+    return 'v4.0'
 
 @pytest.fixture(scope='module')
 def persist_args(request):
     return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
 
 @pytest.fixture(scope='module')
-def persist_tag(request, persist_os, persist_arch):
-    return '{}_{}'.format(persist_os, persist_arch)
+def persist_tag(request, persist_version, persist_arch):
+    return '{}_{}'.format(persist_version, persist_arch)
 
 @pytest.fixture(scope='module')
 def persist_webserver(request, persist_tag):
-    webserver = 'nginx'
-    if 'debian' in persist_tag:
-        webserver = 'lighttpd'
-    return webserver
+    ''' TODO: this is obvious without alpine+nginx as the alternative, remove fixture, hard code lighttpd in tests? '''
+    return 'lighttpd'
 
 @pytest.fixture(scope='module')
 def persist_image(request, persist_tag):
-    image = 'pi-hole-multiarch'
-    if 'amd64' in persist_tag:
-        image = 'pi-hole'
+    image = 'pihole'
     return '{}:{}'.format(image, persist_tag)
 
 @pytest.fixture(scope='module')
@@ -157,6 +157,6 @@ Persistent Docker container for testing service post start.sh
 @pytest.fixture
 def RunningPiHole(DockerPersist, Slow, persist_webserver):
     ''' Persist a fully started docker-pi-hole to help speed up subsequent tests '''
-    Slow(lambda: DockerPersist.run('pgrep dnsmasq').rc == 0)
-    Slow(lambda: DockerPersist.run('pgrep {}'.format(persist_webserver) ).rc == 0)
+    Slow(lambda: DockerPersist.run('pgrep pihole-FTL').rc == 0)
+    Slow(lambda: DockerPersist.run('pgrep lighttpd').rc == 0)
     return DockerPersist

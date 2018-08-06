@@ -4,15 +4,8 @@ import time
 ''' Note, testinfra builtins don't seem fully compatible with
         docker containers (esp. musl based OSs) stripped down nature '''
 
-def test_pihole_default_run_command(Docker, tag):
-    expected_proc = '/sbin/tini -- /start.sh'
-    pgrep = 'pgrep -f "{}" | wc -l || echo 0'.format(expected_proc)
-    find_proc = Docker.run(pgrep).stdout
-    if int(find_proc) < 1:
-        print Docker.run('ps -ef')
-        print "{} : {}".format(pgrep, find_proc)
-        assert False, '{}: Couldn\'t find proc {}'.format(tag, expected_proc)
-
+# If the test runs /start.sh, do not let s6 run it too!  Kill entrypoint to avoid race condition/duplicated execution
+@pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
 @pytest.mark.parametrize('args', [ '' ])
 def test_ServerIP_missing_triggers_start_error(Docker):
     ''' When args to docker are empty start.sh exits saying ServerIP is required '''
@@ -21,6 +14,8 @@ def test_ServerIP_missing_triggers_start_error(Docker):
     assert start.rc == 1
     assert error_msg in start.stdout
 
+# If the test runs /start.sh, do not let s6 run it too!  Kill entrypoint to avoid race condition/duplicated execution
+@pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
 @pytest.mark.parametrize('args,error_msg,expect_rc', [ 
     ('-e ServerIP="1.2.3.z"', "ServerIP Environment variable (1.2.3.z) doesn't appear to be a valid IPv4 address",1), 
     ('-e ServerIP="1.2.3.4" -e ServerIPv6="1234:1234:1234:ZZZZ"', "Environment variable (1234:1234:1234:ZZZZ) doesn't appear to be a valid IPv6 address",1),
