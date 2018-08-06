@@ -11,7 +11,9 @@ prepare_configs() {
     # Re-apply perms from basic-install over any volume mounts that may be present (or not)
     chown pihole:root /etc/lighttpd
     chown pihole:pihole "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" "/var/log/pihole" "${regexFile}"
-    chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" "${regexFile}"
+    chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" 
+    # not sure why pihole:pihole user/group write perms are not enough for web to write...dirty fix:
+    chmod 777 "${regexFile}"
     touch /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
     chown pihole:pihole /var/run/pihole /var/log/pihole
     test -f /var/run/pihole/FTL.sock && rm /var/run/pihole/FTL.sock

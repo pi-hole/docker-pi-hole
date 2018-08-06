@@ -51,7 +51,7 @@ for tag in amd64 armhf aarch64; do
     # Floating latest tags (Conditionalize these to master?)
     if [[ "$tag" == 'amd64' ]] && [[ "$branch" == 'master' || "$latest" == 'true' ]] ; then
         # Latest tag should become a manifest for multiple architectures, not just amd64!
-        $dry docker tag pi-hole:v4.0_amd64 pihole/pihole:latest
+        $dry docker tag pihole:v4.0_amd64 pihole/pihole:latest
         $dry docker push pihole/pihole:latest
     fi;
 done
