@@ -262,8 +262,10 @@ setup_ipv4_ipv6() {
 
 test_configs() {
     set -e
-    echo -n '::: Testing pihole-FTL DNS: '
+    echo -n '::: Testing pihole-FTL configs: '
     pihole-FTL test || exit 1
+    echo -n '::: Testing pihole-dnsmasq configs: '
+    pihole-FTL dnsmasq-test || exit 1
     echo -n '::: Testing lighttpd config: '
     lighttpd -t -f /etc/lighttpd/lighttpd.conf || exit 1
     set +e
