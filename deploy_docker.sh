@@ -10,6 +10,20 @@ parse_git_branch() {
   git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'
 }
 
+annotate() {
+    local base=$1
+    local image=$2
+    local arch=${image##*_}
+    local docker_arch=${arch_map[$arch]}
+
+    if [ -z $docker_arch ]; then
+        echo "Unknown arch in docker tag: ${arch}"
+        exit 1
+    else
+        $dry docker manifest annotate ${base} ${image} --os linux --arch ${docker_arch}
+    fi
+}
+
 namespace='pihole'
 localimg='pihole'
 remoteimg="$namespace/$localimg"
@@ -17,6 +31,9 @@ branch="$(parse_git_branch)"
 version="${version:-unset}"
 dry="${dry}"
 latest="${latest:-false}" # true as shell env var to deploy latest
+
+# arch aliases
+declare -A arch_map=( ["amd64"]="amd64" ["armhf"]="arm" ["aarch64"]="arm64")
 
 if [[ -n "$dry" ]]; then dry='echo '; fi
 
@@ -42,16 +59,29 @@ echo "Example tagging: docker tag $localimg:$tag $remoteimg:${version}_amd64"
 
 $dry ./Dockerfile.py --arch=amd64 --arch=armhf --arch=aarch64
 
+images=()
 # ARMv6/armel doesn't have a FTL binary for v4.0 pi-hole 
 # for tag in debian_armhf debian_aarch64 debian_armel; do 
-for tag in amd64 armhf aarch64; do 
+for tag in ${!arch_map[@]}; do
     # Verison specific tags for ongoing history
     $dry docker tag $localimg:v4.0_$tag $remoteimg:${version}_${tag} 
-    $dry docker push pihole/pihole:${version}_${tag} 
-    # Floating latest tags (Conditionalize these to master?)
-    if [[ "$tag" == 'amd64' ]] && [[ "$branch" == 'master' || "$latest" == 'true' ]] ; then
-        # Latest tag should become a manifest for multiple architectures, not just amd64!
-        $dry docker tag pihole:v4.0_amd64 pihole/pihole:latest
-        $dry docker push pihole/pihole:latest
-    fi;
+    $dry docker push pihole/pihole:${version}_${tag}
+    images+=(pihole/pihole:${version}_${tag})
 done
+
+$dry docker manifest create --amend pihole/pihole:${version} ${images[*]}
+
+for image in "${images[@]}"; do
+    annotate pihole/pihole:${version} ${image}
+done
+
+$dry docker manifest push pihole/pihole:${version}
+
+# Floating latest tags (Conditionalize these to master?)
+if [[ "$branch" == 'master' || "$latest" == 'true' ]] ; then
+    $dry docker manifest create --amend pihole/pihole:latest ${images[*]}
+    for image in "${images[@]}"; do
+        annotate pihole/pihole:latest ${image}
+    done
+    $dry docker manifest push pihole/pihole:latest
+fi
