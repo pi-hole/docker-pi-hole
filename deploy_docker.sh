@@ -1,5 +1,5 @@
 #!/bin/bash -ex
-# Script for manually pushing the docker arm images for diginc only 
+# Script for manually pushing the docker arm images for diginc only
 # (no one else has docker repo permissions)
 if [ ! -f ~/.docker/config.json ] ; then
     echo "Error: You should setup your docker push authorization first"
@@ -46,7 +46,8 @@ if [[ "$version" == 'unset' ]]; then
         echo "Version number is being taken from this release branch $version"
     else
         version="$branch"
-        remoteimg="${namespace}/${localimg}-dev"
+        # Use a different image for segregating dev tags maybe?  Not right now, just a thought I had
+        #remoteimg="${namespace}/${localimg}-dev"
         echo "Using the branch ($branch) for deployed image version since not passed in"
     fi
 fi
@@ -60,11 +61,10 @@ echo "Example tagging: docker tag $localimg:$tag $remoteimg:${version}_amd64"
 $dry ./Dockerfile.py --arch=amd64 --arch=armhf --arch=aarch64
 
 images=()
-# ARMv6/armel doesn't have a FTL binary for v4.0 pi-hole 
-# for tag in debian_armhf debian_aarch64 debian_armel; do 
+# ARMv6/armel doesn't have a FTL binary for v4.0 pi-hole
 for tag in ${!arch_map[@]}; do
     # Verison specific tags for ongoing history
-    $dry docker tag $localimg:v4.0_$tag $remoteimg:${version}_${tag} 
+    $dry docker tag $localimg:v4.0_$tag $remoteimg:${version}_${tag}
     $dry docker push pihole/pihole:${version}_${tag}
     images+=(pihole/pihole:${version}_${tag})
 done
@@ -77,11 +77,12 @@ done
 
 $dry docker manifest push pihole/pihole:${version}
 
-# Floating latest tags (Conditionalize these to master?)
-if [[ "$branch" == 'master' || "$latest" == 'true' ]] ; then
-    $dry docker manifest create --amend pihole/pihole:latest ${images[*]}
+# Floating latest tag alias
+if [[ "$latest" == 'true' && "$branch" == "master" ]] ; then
+    latestimg="$remoteimg:latest"
+    $dry docker manifest create --amend "$latestimg" ${images[*]}
     for image in "${images[@]}"; do
-        annotate pihole/pihole:latest ${image}
+        annotate "$latestimg" "${image}"
     done
-    $dry docker manifest push pihole/pihole:latest
+    $dry docker manifest push "$latestimg"
 fi
