@@ -43,13 +43,3 @@ test_configs
 [ -f /.piholeFirstBoot ] && rm /.piholeFirstBoot
 
 echo " ::: Docker start setup complete"
-
-echo """
-:: ::: ::: ::: ::: ::: ::: ::: ::: :::
-:: Image moved / deprecation notice
-::    OLD IMAGE : diginc/pi-hole
-::    NEW IMAGE : pihole/pihole
-:: In order to get the latest updates 
-:: please update your image references
-:: ::: ::: ::: ::: ::: ::: ::: ::: :::
-"""
