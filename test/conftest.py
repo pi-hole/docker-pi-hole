@@ -60,7 +60,7 @@ def entrypoint():
 def args(request):
     return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
 
-@pytest.fixture(params=['amd64', 'armel', 'armhf', 'aarch64'])
+@pytest.fixture(params=['amd64', 'armhf', 'aarch64'])
 def arch(request):
     return request.param
 
