@@ -231,18 +231,22 @@ setup_web_port() {
 
 }
 
-setup_web_password() {
+generate_password() {
     if [ -z "${WEBPASSWORD+x}" ] ; then
         # Not set at all, give the user a random pass
         WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
         echo "Assigning random password: $WEBPASSWORD"
     fi;
+}
+
+setup_web_password() {
+    PASS="$1"
     # Turn bash debug on while setting up password (to print it)
     set -x
-    if [[ "$WEBPASSWORD" == "" ]] ; then
+    if [[ "$PASS" == "" ]] ; then
         echo "" | pihole -a -p
     else
-        pihole -a -p "$WEBPASSWORD" "$WEBPASSWORD"
+        pihole -a -p "$PASS" "$PASS"
     fi
     if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
         # Turn bash debug back off after print password setup
@@ -262,10 +266,8 @@ setup_ipv4_ipv6() {
 
 test_configs() {
     set -e
-    echo -n '::: Testing pihole-FTL configs: '
+    echo -n '::: Testing pihole-FTL DNS: '
     pihole-FTL test || exit 1
-    echo -n '::: Testing pihole-dnsmasq configs: '
-    pihole-FTL dnsmasq-test || exit 1
     echo -n '::: Testing lighttpd config: '
     lighttpd -t -f /etc/lighttpd/lighttpd.conf || exit 1
     set +e
