@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM debian:stretch-slim
 
 COPY install.sh /usr/local/bin/docker-install.sh
 ENV PIHOLE_INSTALL /root/ph_install.sh
