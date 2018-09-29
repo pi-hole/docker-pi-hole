@@ -120,6 +120,14 @@ setup_dnsmasq_interface() {
     [ -n "$interface" ] && change_setting "PIHOLE_INTERFACE" "${interface}"
 }
 
+setup_dnsmasq_listening_behaviour() {
+    local dnsmasq_listening_behaviour="${1}"
+
+    if [ -n "$dnsmasq_listening_behaviour" ]; then
+      change_setting "DNSMASQ_LISTENING" "${dnsmasq_listening_behaviour}"
+    fi;
+}
+
 setup_dnsmasq_config_if_missing() {
     # When fresh empty directory volumes are used we miss this file
     if [ ! -f /etc/dnsmasq.d/01-pihole.conf ] ; then
@@ -131,10 +139,12 @@ setup_dnsmasq() {
     local dns1="$1"
     local dns2="$2"
     local interface="$3"
+    local dnsmasq_listening_behaviour="$4"
     # Coordinates 
     setup_dnsmasq_config_if_missing
     setup_dnsmasq_dns "$dns1" "$dns2" 
     setup_dnsmasq_interface "$interface"
+    setup_dnsmasq_listening_behaviour "$dnsmasq_listening_behaviour"
     ProcessDNSSettings
 }
 
