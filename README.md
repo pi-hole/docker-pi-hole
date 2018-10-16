@@ -45,6 +45,7 @@ docker run -d \
     -e ServerIPv6="${IPv6}" \
     --restart=unless-stopped \
     --cap-add=NET_ADMIN \
+    --dns=127.0.0.1 --dns=1.1.1.1 \
     pihole/pihole:latest
 
 echo -n "Your password for https://${IP}/admin/ is "
@@ -85,6 +86,8 @@ Here is a rundown of the other arguments passed into the example `docker run`:
 | `-v /dir/for/dnsmasq.d:/etc/dnsmasq.d`<br/> **Recommended** | Volumes for your dnsmasq configs help persist changes across docker image updates
 | `--net=host`<br/> *Optional* | Alternative to `-p <port>:<port>` arguments (Cannot be used at same time as -p) if you don't run any other web application
 | `--cap-add=NET_ADMIN`<br/> *Optional* | If you're forwarding port 67 you will also needs this for DHCP to work. (DHCP Reportedly works, I have not used however)
+| `--dns=127.0.0.1`<br/> *Recommended* | Sets your container's resolve settings to localhost so it can resolve DHCP hostnames from Pi-hole's DNSMasq
+| `--dns=1.1.1.1`<br/> | For when DNSMasq is not running, useful to have a backup server
 
 If you're a fan of [docker-compose](https://docs.docker.com/compose/install/) I have [example docker-compose.yml files](https://github.com/pi-hole/docker-pi-hole/blob/master/doco-example.yml) in github which I think are a nicer way to represent such long run commands.
 

@@ -44,6 +44,9 @@ services:
     domainname: homedomain.lan
     
     image: pihole/pihole:latest
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
     ports:
       - '0.0.0.0:53:53/tcp'
       - '0.0.0.0:53:53/udp'
