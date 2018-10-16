@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 # Script for manually pushing the docker arm images for diginc only
 # (no one else has docker repo permissions)
 if [ ! -f ~/.docker/config.json ] ; then
@@ -33,8 +33,10 @@ dry="${dry}"
 latest="${latest:-false}" # true as shell env var to deploy latest
 
 # arch aliases
+# ARMv6/armel doesn't have a FTL binary for v4.0 pi-hole
 declare -A arch_map=( ["amd64"]="amd64" ["armhf"]="arm" ["aarch64"]="arm64")
 
+# Set anything to dry prior to running this in order to print what would run instead of actually run it.
 if [[ -n "$dry" ]]; then dry='echo '; fi
 
 if [[ "$version" == 'unset' ]]; then
@@ -56,12 +58,11 @@ echo "# DEPLOYING:"
 echo "version: $version"
 echo "branch: $branch"
 [[ -n "$dry" ]] && echo "DRY RUN: $dry"
-echo "Example tagging: docker tag $localimg:$tag $remoteimg:${version}_amd64"
+echo "Example tagging: docker tag ${localimg}:armhf ${remoteimg}:${version}_amd64"
 
 $dry ./Dockerfile.py --arch=amd64 --arch=armhf --arch=aarch64
 
 images=()
-# ARMv6/armel doesn't have a FTL binary for v4.0 pi-hole
 for tag in ${!arch_map[@]}; do
     # Verison specific tags for ongoing history
     $dry docker tag $localimg:v4.0_$tag $remoteimg:${version}_${tag}
