@@ -1,7 +1,9 @@
 import pytest
 import re
 
+
 DEFAULTARGS = '-e ServerIP="127.0.0.1" '
+
 
 @pytest.mark.parametrize('args,expected_ipv6,expected_stdout', [
     (DEFAULTARGS, True, 'IPv4 and IPv6'),
@@ -18,6 +20,7 @@ def test_IPv6_not_True_removes_ipv6(Docker, args, expected_ipv6, expected_stdout
     assert "Using {}".format(expected_stdout) in function.stdout
     config = Docker.run('cat {}'.format(WEB_CONFIG)).stdout
     assert (IPV6_LINE in config) == expected_ipv6
+
 
 @pytest.mark.parametrize('args', [DEFAULTARGS + '-e "WEB_PORT=999"'])
 def test_overrides_default_WEB_PORT(Docker, args):
@@ -37,6 +40,7 @@ def test_overrides_default_WEB_PORT(Docker, args):
     # upstream repos determines how many and I don't want to keep updating this test
     assert int(Docker.run('grep -rl "://127.0.0.1:999/" /var/www/html/ | wc -l').stdout) >= 1
     assert int(Docker.run('grep -rl "://pi.hole:999/" /var/www/html/ | wc -l').stdout) >= 1
+
 
 @pytest.mark.parametrize('args,expected_error', [
     (DEFAULTARGS + '-e WEB_PORT="LXXX"', 'WARNING: Custom WEB_PORT not used - LXXX is not an integer'),
@@ -67,6 +71,7 @@ def test_override_default_servers_with_DNS_EnvVars(Docker, args, expected_stdout
     docker_dns_servers = Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout
     expected_servers = 'server={}\n'.format(dns1) if dns2 == None else 'server={}\nserver={}\n'.format(dns1, dns2)
     assert expected_servers == docker_dns_servers
+
 
 @pytest.mark.parametrize('args, dns1, dns2, expected_stdout', [
     ('-e ServerIP="1.2.3.4"', '9.9.9.1', '9.9.9.2',
@@ -102,6 +107,7 @@ def test_DNS_Envs_are_secondary_to_setupvars(Docker, args, expected_stdout, dns1
     assert 'server={}'.format(dns1) == searchDns1
     assert 'server={}'.format(dns2) == searchDns2
 
+
 @pytest.mark.parametrize('args, expected_stdout, expected_config_line', [
     ('-e ServerIP="1.2.3.4"', 'binding to default interface: eth0', 'interface=eth0' ),
     ('-e ServerIP="1.2.3.4" -e INTERFACE="eth0"', 'binding to default interface: eth0', 'interface=eth0' ),
@@ -115,11 +121,14 @@ def test_DNS_interface_override_defaults(Docker, args, expected_stdout, expected
     docker_dns_interface = Docker.run('grep "^interface" /etc/dnsmasq.d/01-pihole.conf').stdout
     assert expected_config_line + '\n' == docker_dns_interface
 
+
 expected_debian_lines = [
     '"VIRTUAL_HOST" => "127.0.0.1"',
     '"ServerIP" => "127.0.0.1"',
     '"PHP_ERROR_LOG" => "/var/log/lighttpd/error.log"'
 ]
+
+
 @pytest.mark.parametrize('expected_lines,repeat_function', [
     (expected_debian_lines, 1),
     (expected_debian_lines, 2)
@@ -136,18 +145,24 @@ def test_debian_setup_php_env(Docker, expected_lines, repeat_function):
         if found_lines > 1:
             assert False, "Found line {} times (more than once): {}".format(expected_line)
 
+
+# Overwrite entrypoint / cmd with noop, just run our method for this unit
+@pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
+@pytest.mark.parametrize('args', [('-e ServerIP=1.2.3.4')])
+def test_webPassword_random_generation(Docker, args):
+    ''' When a user sets webPassword env the admin password gets set to that '''
+    function = Docker.run('. /bash_functions.sh ; eval `grep generate_password /start.sh`')
+    assert 'assigning random password' in function.stdout.lower()
+
+
+@pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
 @pytest.mark.parametrize('args,secure,setupVarsHash', [
     ('-e ServerIP=1.2.3.4 -e WEBPASSWORD=login', True, 'WEBPASSWORD=6060d59351e8c2f48140f01b2c3f3b61652f396c53a5300ae239ebfbe7d5ff08'),
     ('-e ServerIP=1.2.3.4 -e WEBPASSWORD=""', False, ''),
-    ('-e ServerIP=1.2.3.4', True, 'WEBPASSWORD='),
 ])
-def test_webPassword_env_assigns_password_to_file(Docker, args, secure, setupVarsHash):
-    ''' When a user sets webPassword env the admin password gets set to that '''
+def test_webPassword_env_assigns_password_to_file_or_removes_if_empty(Docker, args, secure, setupVarsHash):
+    ''' When a user sets webPassword env the admin password gets set or removed if empty '''
     function = Docker.run('. /bash_functions.sh ; eval `grep setup_web_password /start.sh`')
-    if secure and 'WEBPASSWORD' not in args:
-        assert 'assigning random password' in function.stdout.lower()
-    else:
-        assert 'assigning random password' not in function.stdout.lower()
 
     if secure:
         assert 'new password set' in function.stdout.lower()
