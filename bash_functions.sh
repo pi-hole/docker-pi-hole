@@ -248,7 +248,7 @@ setup_web_password() {
     else
         pihole -a -p "$PASS" "$PASS"
     fi
-    if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
+    if [ "${PH_VERBOSE:-0}" -lt 1 ] ; then
         # Turn bash debug back off after print password setup
         # (subshell to null hides printing output)
         { set +x; } 2>/dev/null
