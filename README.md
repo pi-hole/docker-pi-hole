@@ -49,7 +49,7 @@ docker run -d \
     pihole/pihole:latest
 
 echo -n "Your password for https://${IP}/admin/ is "
-docker logs pihole 2> /dev/null | grep 'password:'
+docker logs pihole 2> /dev/null | grep 'password'
 ```
 
 **This is just an example and might need changing.**  Volumes are stored in the directory `$DOCKER_CONFIGS` and are recommended for persisting data across docker re-creations for updating images.  As mentioned on line 2, the auto `IP_LOOKUP` variable may not work for VPN tunnel interfaces.
