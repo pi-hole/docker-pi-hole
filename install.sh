@@ -42,6 +42,11 @@ distro_check
 # fix permission denied to resolvconf post-inst /etc/resolv.conf moby/moby issue #1297
 apt-get -y install debconf-utils && echo resolvconf resolvconf/linkify-resolvconf boolean false | debconf-set-selections
 
+# fix error AUDIT: Allow login in non-init namespaces
+# Credit to https://github.com/sequenceiq/docker-pam/blob/master/ubuntu-14.04/Dockerfile
+apt-get -y build-dep pam && 
+export CONFIGURE_OPTS=--disable-audit && cd /tmp && apt-get -b source pam && dpkg -i libpam-doc*.deb libpam-modules*.deb libpam-runtime*.deb libpam0g*.deb
+
 # Tried this - unattended causes starting services during a build, should probably PR a flag to shut that off and switch to that 
 #bash -ex "./${PIHOLE_INSTALL}" --unattended
 install_dependent_packages INSTALLER_DEPS[@]

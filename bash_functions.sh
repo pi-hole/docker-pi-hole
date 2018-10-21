@@ -242,16 +242,21 @@ generate_password() {
 setup_web_password() {
     PASS="$1"
     # Turn bash debug on while setting up password (to print it)
-    set -x
     if [[ "$PASS" == "" ]] ; then
         echo "" | pihole -a -p
     else
+        echo "Setting password: ${PASS}"
+        set -x
         pihole -a -p "$PASS" "$PASS"
     fi
+    # Turn bash debug back off after print password setup
+    # (subshell to null hides printing output)
+    { set +x; } 2>/dev/null
+
+    # To avoid printing this if conditional in bash debug, turn off  debug above..
+    # then re-enable debug if necessary (more code but cleaner printed output)
     if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
-        # Turn bash debug back off after print password setup
-        # (subshell to null hides printing output)
-        { set +x; } 2>/dev/null
+        set -x
     fi
 }
 
