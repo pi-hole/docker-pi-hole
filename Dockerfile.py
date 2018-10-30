@@ -3,7 +3,7 @@
 """ Dockerfile.py - generates and build dockerfiles
 
 Usage:
-  Dockerfile.py [--arch=<arch> ...] [--skip=<arch> ...] [-v] [--no-build | --no-generate] [--no-cache]
+  Dockerfile.py [--arch=<arch> ...] [--skip=<arch> ...] [-v] [-t] [--no-build | --no-generate] [--no-cache]
 
 Options:
     --no-build      Skip building the docker images
@@ -12,6 +12,7 @@ Options:
     --arch=<arch>   What Architecture(s) to build   [default: amd64 armel armhf aarch64]
     --skip=<arch>   What Architectures(s) to skip   [default: None]
     -v              Print docker's command output   [default: False]
+    -t              Print docker's build time       [default: False]
 
 Examples:
 """
@@ -102,11 +103,14 @@ def build(docker_repo, version, arch, args):
     dockerfile = 'Dockerfile_{}'.format(arch)
     repo_tag = '{}:{}_{}'.format(docker_repo, version, arch)
     cached_image = '{}/{}'.format('pihole', repo_tag)
+    time=''
+    if args['-t']:
+        time='time '
     no_cache = ''
     if args['--no-cache']:
         no_cache = '--no-cache'
-    build_command = 'docker build {no_cache} --pull --cache-from="{cache},{create_tag}" -f {dockerfile} -t {create_tag} .'\
-        .format(no_cache=no_cache, cache=cached_image, dockerfile=dockerfile, create_tag=repo_tag)
+    build_command = '{time}docker build {no_cache} --pull --cache-from="{cache},{create_tag}" -f {dockerfile} -t {create_tag} .'\
+        .format(time=time, no_cache=no_cache, cache=cached_image, dockerfile=dockerfile, create_tag=repo_tag)
     print " ::: Building {} into {}".format(dockerfile, repo_tag)
     if args['-v']:
         print build_command, '\n'

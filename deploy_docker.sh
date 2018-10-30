@@ -60,7 +60,7 @@ echo "branch: $branch"
 [[ -n "$dry" ]] && echo "DRY RUN: $dry"
 echo "Example tagging: docker tag ${localimg}:armhf ${remoteimg}:${version}_amd64"
 
-$dry ./Dockerfile.py --arch=amd64 --arch=armhf --arch=aarch64
+$dry tox
 
 images=()
 for tag in ${!arch_map[@]}; do
