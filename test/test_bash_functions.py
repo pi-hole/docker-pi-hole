@@ -1,4 +1,5 @@
 import pytest
+import time
 import re
 
 
@@ -18,7 +19,10 @@ def test_IPv6_not_True_removes_ipv6(Docker, args, expected_ipv6, expected_stdout
 
     function = Docker.run('. /bash_functions.sh ; setup_ipv4_ipv6')
     assert "Using {}".format(expected_stdout) in function.stdout
-    config = Docker.run('cat {}'.format(WEB_CONFIG)).stdout
+    if expected_stdout == 'IPv4':
+        assert 'IPv6' not in function.stdout
+    time.sleep(.25)
+    config = Docker.run('grep \'use-ipv6.pl\' {}'.format(WEB_CONFIG)).stdout
     assert (IPV6_LINE in config) == expected_ipv6
 
 
