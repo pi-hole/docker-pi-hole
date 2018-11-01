@@ -1,15 +1,11 @@
 FROM multiarch/debian-debootstrap:armel-stretch-slim
 
-COPY install.sh /usr/local/bin/docker-install.sh
+ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.4.0/s6-overlay-amd64.tar.gz
+COPY install.sh /usr/local/bin/install.sh
 ENV PIHOLE_INSTALL /root/ph_install.sh
-ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.4.0/s6-overlay-arm.tar.gz
 
-RUN apt-get update && \
-    apt-get install -y curl procps && \
-    curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C / && \
-    bash -ex docker-install.sh 2>&1 && \
-    rm -rf /var/cache/apt/archives /var/lib/apt/lists/* && \
-    mv /init /s6-init
+RUN bash -ex install.sh 2>&1 && \
+    rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
 
 ENTRYPOINT [ "/s6-init" ]
 
