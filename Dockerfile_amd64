@@ -1,11 +1,6 @@
-FROM debian:stretch-slim
+FROM pihole/debian-base:latest
 
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.4.0/s6-overlay-amd64.tar.gz
-
-# Intentionally split out really long step, docker cache = fast builds!
-COPY setup.sh /usr/local/bin/setup.sh
-RUN bash -ex setup.sh 2>&1
-
 COPY install.sh /usr/local/bin/install.sh
 ENV PIHOLE_INSTALL /root/ph_install.sh
 

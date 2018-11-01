@@ -39,7 +39,7 @@ os_base_vars = {
 images = {
     'v4.0': [
         {
-            'base': 'debian:stretch-slim',
+            'base': 'pihole/debian-base:latest',
             'arch': 'amd64'
         },
         {
@@ -92,6 +92,9 @@ def build_dockerfiles(args):
 
     for arch in args['--arch']:
         # TODO: include from external .py that can be shared with Dockerfile.py / Tests / deploy scripts '''
+        if arch == 'armel':
+            print "Skipping armel, incompatible upstream binaries/broken"
+            continue
         build('pihole', 'v4.0', arch, args)
 
 
