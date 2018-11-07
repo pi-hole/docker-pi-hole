@@ -110,7 +110,7 @@ The primary docker tags / versions are explained in the following table.  [Click
 | `latest`            | auto detect  | x86, arm, or arm64 container, docker auto detects your architecture.    | [Dockerfile](https://github.com/pi-hole/docker-pi-hole/blob/master/Dockerfile_amd64) |
 | `v4.0.0-1`          | auto detect  | Versioned tags, if you want to pin against a specific version, use one of thesse |  |
 | `v4.0.0-1_<arch>`   | based on tag | Specific architectures tags | |
-| `development`       | auto detect  | like latest tag, but for the development branch (pushed occasionally)   | |
+| `dev`       | auto detect  | like latest tag, but for the development branch (pushed occasionally)   | |
     
 ### `pihole/pihole:latest` [![](https://images.microbadger.com/badges/image/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com")
 
