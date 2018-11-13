@@ -22,7 +22,7 @@ A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86
 This container uses 2 popular ports, port 53 and port 80, so **may conflict with existing applications ports**.  If you have no other services or docker containers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh) or summarized here:
 
 ```bash
-IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')"  # May not work for VPN / tun0
+IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"  # May not work for VPN / tun0
 IPv6_LOOKUP="$(ip -6 route get 2001:4860:4860::8888 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"  # May not work for VPN / tun0
 IP="${IP:-$IP_LOOKUP}"  # use $IP, if set, otherwise IP_LOOKUP
 IPv6="${IPv6:-$IPv6_LOOKUP}"  # use $IPv6, if set, otherwise IP_LOOKUP
@@ -110,7 +110,7 @@ The primary docker tags / versions are explained in the following table.  [Click
 | `latest`            | auto detect  | x86, arm, or arm64 container, docker auto detects your architecture.    | [Dockerfile](https://github.com/pi-hole/docker-pi-hole/blob/master/Dockerfile_amd64) |
 | `v4.0.0-1`          | auto detect  | Versioned tags, if you want to pin against a specific version, use one of thesse |  |
 | `v4.0.0-1_<arch>`   | based on tag | Specific architectures tags | |
-| `development`       | auto detect  | like latest tag, but for the development branch (pushed occasionally)   | |
+| `dev`       | auto detect  | like latest tag, but for the development branch (pushed occasionally)   | |
     
 ### `pihole/pihole:latest` [![](https://images.microbadger.com/badges/image/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com")
 
