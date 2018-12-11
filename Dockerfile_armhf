@@ -29,13 +29,13 @@ EXPOSE 443
 ENV S6_LOGGING 0
 ENV S6_KEEP_ENV 1
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
-ENV FTL_CMD no-daemon
+ENV FTL_CMD debug
 
-ENV VERSION v4.0
+ENV VERSION v4.1
 ENV ARCH armhf
 ENV PATH /opt/pihole:${PATH}
 
-LABEL image="pihole/pihole:v4.0_armhf"
+LABEL image="pihole/pihole:v4.1_armhf"
 LABEL maintainer="adam@diginc.us"
 LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
 

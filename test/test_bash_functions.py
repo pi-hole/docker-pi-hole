@@ -21,7 +21,8 @@ def test_IPv6_not_True_removes_ipv6(Docker, args, expected_ipv6, expected_stdout
     assert "Using {}".format(expected_stdout) in function.stdout
     if expected_stdout == 'IPv4':
         assert 'IPv6' not in function.stdout
-    time.sleep(.25)
+    # weird slow write/sync problem; no sleep == old state of file, sleep == updated/setup state of file
+    time.sleep(1)
     config = Docker.run('grep \'use-ipv6.pl\' {}'.format(WEB_CONFIG)).stdout
     assert (IPV6_LINE in config) == expected_ipv6
 
