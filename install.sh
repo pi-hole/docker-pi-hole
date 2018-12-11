@@ -81,9 +81,9 @@ fi
 
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
 
+# Replace the call to `updatePiholeFunc` in arg parse with new `unsupportedFunc`
 sed -i $'s/helpFunc() {/unsupportedFunc() {\\\n  echo "Function not supported in Docker images"\\\n  exit 0\\\n}\\\n\\\nhelpFunc() {/g' /usr/local/bin/pihole
-# Replace references to `updatePiholeFunc` with new `unsupportedFunc`
-sed -i $'s/updatePiholeFunc;;/unsupportedFunc;;/g' /usr/local/bin/pihole
+sed -i $'s/)\s*updatePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 
 touch /.piholeFirstBoot
 
