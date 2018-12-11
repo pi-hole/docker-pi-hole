@@ -1,10 +1,10 @@
-#!/bin/bash -ex
+#!/bin/bash -ex / 
 
 mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
 # Production tags with valid web footers
-export CORE_TAG='v4.0'
-export WEB_TAG='v4.0'
+export CORE_TAG='v4.1'
+export WEB_TAG='v4.1'
 # Only use for pre-production / testing
 export USE_CUSTOM_BRANCHES=false
 
@@ -14,7 +14,7 @@ curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
 mv /init /s6-init
 
 if [[ $USE_CUSTOM_BRANCHES == true ]] ; then
-    CORE_TAG='development'
+    CORE_TAG='release/v4.1'
 fi
 
 # debconf-apt-progress seems to hang so get rid of it too
@@ -67,10 +67,12 @@ mv "${tmpLog}" /
 
 if [[ $USE_CUSTOM_BRANCHES == true ]] ; then
     ln -s /bin/true /usr/local/bin/service
-    echo "$CORE_TAG" | tee /etc/pihole/ftlbranch
+    ln -s /bin/true /usr/local/bin/update-rc.d
     echo y | bash -x pihole checkout core $CORE_TAG
     echo y | bash -x pihole checkout web $CORE_TAG
+    echo y | bash -x pihole checkout ftl ${CORE_TAG/v/}
     unlink /usr/local/bin/service
+    unlink /usr/local/bin/update-rc.d
 else
     # Reset to our tags so version numbers get detected correctly
     pushd "${PI_HOLE_LOCAL_REPO}"; git reset --hard "${CORE_TAG}"; popd;
@@ -86,5 +88,5 @@ sed -i $'s/updatePiholeFunc;;/unsupportedFunc;;/g' /usr/local/bin/pihole
 touch /.piholeFirstBoot
 
 # Fix dnsmasq in docker
-grep -q '^user=root' || echo -e '\nuser=root' >> /etc/dnsmasq.conf 
+#grep -q '^user=root' || echo -e '\nuser=root' >> /etc/dnsmasq.conf 
 echo 'Docker install successful'

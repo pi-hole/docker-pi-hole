@@ -28,7 +28,7 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 base_vars = {
     'name': 'pihole/pihole',
     'maintainer' : 'adam@diginc.us',
-    's6_version' : 'v1.21.4.0',
+    's6_version' : 'v1.21.7.0',
 }
 
 os_base_vars = {
@@ -37,7 +37,7 @@ os_base_vars = {
 }
 
 images = {
-    'v4.0': [
+    'v4.1': [
         {
             'base': 'pihole/debian-base:latest',
             'arch': 'amd64'
@@ -95,7 +95,7 @@ def build_dockerfiles(args):
         if arch == 'armel':
             print "Skipping armel, incompatible upstream binaries/broken"
             continue
-        build('pihole', 'v4.0', arch, args)
+        build('pihole', 'v4.1', arch, args)
 
 
 def build(docker_repo, version, arch, args):
