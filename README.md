@@ -48,6 +48,11 @@ echo -n "Your password for https://${IP}/admin/ is "
 docker logs pihole 2> /dev/null | grep 'password'
 ```
 
+If you used RHEL based distrubution with SELinux Enforcing policy add to line with volumes :z
+``` -v "${DOCKER_CONFIGS}/pihole/:/etc/pihole/:z" \
+    -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/:z" \
+```
+
 **This is just an example and might need changing.**  Volumes are stored in the directory `$DOCKER_CONFIGS` and are recommended for persisting data across docker re-creations for updating images.  The IP lookup variables may not work for everyone, please review their values and hard code IP and IPv6 if necessary.
 
 Two recently added ports to the `docker run` and `docker-compose` examples are port 67 and 443.  Port 67 is for users who wish to have Pi-hole run a DHCP server.  Port 443 is to provide a sinkhole for ads that use SSL.  If only port 80 is used, then blocked HTTPS queries will fail to connect to port 443 and may cause long loading times.  Rejecting 443 on your firewall can also serve this same purpose.  Ubuntu firewall example: `sudo ufw reject https`
