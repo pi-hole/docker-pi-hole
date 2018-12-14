@@ -65,7 +65,7 @@ $dry tox
 images=()
 for tag in ${!arch_map[@]}; do
     # Verison specific tags for ongoing history
-    $dry docker tag $localimg:v4.0_$tag $remoteimg:${version}_${tag}
+    $dry docker tag $localimg:v4.1_$tag $remoteimg:${version}_${tag}
     $dry docker push pihole/pihole:${version}_${tag}
     images+=(pihole/pihole:${version}_${tag})
 done
