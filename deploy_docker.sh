@@ -60,6 +60,11 @@ echo "branch: $branch"
 [[ -n "$dry" ]] && echo "DRY RUN: $dry"
 echo "Example tagging: docker tag ${localimg}:armhf ${remoteimg}:${version}_amd64"
 
+if [[ -z "$dry" ]] ; then
+    echo "Deleting all manifest data to work around cached old copies preventing updates"
+    rm -rf ~/.docker/manifests/*
+fi
+
 $dry tox
 
 images=()
