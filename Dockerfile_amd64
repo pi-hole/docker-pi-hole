@@ -1,6 +1,6 @@
 FROM pihole/debian-base:latest
 
-ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.4.0/s6-overlay-amd64.tar.gz
+ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.7.0/s6-overlay-amd64.tar.gz
 COPY install.sh /usr/local/bin/install.sh
 ENV PIHOLE_INSTALL /root/ph_install.sh
 
