@@ -1,22 +1,25 @@
-#!/bin/bash -ex
+#!/bin/bash -ex / 
+
 mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
 # Production tags with valid web footers
-export CORE_TAG='v4.0'
-export WEB_TAG='v4.0'
+export CORE_TAG='v4.1'
+export WEB_TAG='v4.1'
 # Only use for pre-production / testing
 export USE_CUSTOM_BRANCHES=false
 
+apt-get update
+apt-get install -y curl procps
+curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
+mv /init /s6-init
+
 if [[ $USE_CUSTOM_BRANCHES == true ]] ; then
-    CORE_TAG='development'
+    CORE_TAG='release/v4.1'
 fi
 
-#     Make pihole scripts fail searching for `systemctl`,
-# which fails pretty miserably in docker compared to `service`
-# For more info see docker/docker issue #7459
-which systemctl && mv "$(which systemctl)" /bin/no_systemctl
 # debconf-apt-progress seems to hang so get rid of it too
-which debconf-apt-progress && mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
+which debconf-apt-progress
+mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
 
 # Get the install functions
 curl https://raw.githubusercontent.com/pi-hole/pi-hole/${CORE_TAG}/automated%20install/basic-install.sh > "$PIHOLE_INSTALL" 
@@ -40,7 +43,8 @@ export USER=pihole
 distro_check
 
 # fix permission denied to resolvconf post-inst /etc/resolv.conf moby/moby issue #1297
-apt-get -y install debconf-utils && echo resolvconf resolvconf/linkify-resolvconf boolean false | debconf-set-selections
+apt-get -y install debconf-utils
+echo resolvconf resolvconf/linkify-resolvconf boolean false | debconf-set-selections
 
 # Tried this - unattended causes starting services during a build, should probably PR a flag to shut that off and switch to that 
 #bash -ex "./${PIHOLE_INSTALL}" --unattended
@@ -63,10 +67,12 @@ mv "${tmpLog}" /
 
 if [[ $USE_CUSTOM_BRANCHES == true ]] ; then
     ln -s /bin/true /usr/local/bin/service
-    echo "$CORE_TAG" | tee /etc/pihole/ftlbranch
+    ln -s /bin/true /usr/local/bin/update-rc.d
     echo y | bash -x pihole checkout core $CORE_TAG
     echo y | bash -x pihole checkout web $CORE_TAG
+    echo y | bash -x pihole checkout ftl ${CORE_TAG/v/}
     unlink /usr/local/bin/service
+    unlink /usr/local/bin/update-rc.d
 else
     # Reset to our tags so version numbers get detected correctly
     pushd "${PI_HOLE_LOCAL_REPO}"; git reset --hard "${CORE_TAG}"; popd;
@@ -82,5 +88,5 @@ sed -i $'s/updatePiholeFunc;;/unsupportedFunc;;/g' /usr/local/bin/pihole
 touch /.piholeFirstBoot
 
 # Fix dnsmasq in docker
-grep -q '^user=root' || echo -e '\nuser=root' >> /etc/dnsmasq.conf 
+#grep -q '^user=root' || echo -e '\nuser=root' >> /etc/dnsmasq.conf 
 echo 'Docker install successful'

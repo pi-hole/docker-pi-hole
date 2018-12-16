@@ -1,4 +1,5 @@
 import pytest
+import time
 import re
 
 
@@ -18,7 +19,11 @@ def test_IPv6_not_True_removes_ipv6(Docker, args, expected_ipv6, expected_stdout
 
     function = Docker.run('. /bash_functions.sh ; setup_ipv4_ipv6')
     assert "Using {}".format(expected_stdout) in function.stdout
-    config = Docker.run('cat {}'.format(WEB_CONFIG)).stdout
+    if expected_stdout == 'IPv4':
+        assert 'IPv6' not in function.stdout
+    # weird slow write/sync problem; no sleep == old state of file, sleep == updated/setup state of file
+    time.sleep(1)
+    config = Docker.run('grep \'use-ipv6.pl\' {}'.format(WEB_CONFIG)).stdout
     assert (IPV6_LINE in config) == expected_ipv6
 
 
@@ -99,9 +104,13 @@ def test_DNS_Envs_are_secondary_to_setupvars(Docker, args, expected_stdout, dns1
     assert expected_stdout in function.stdout
 
     expected_servers = 'server={}\nserver={}\n'.format(dns1, dns2)
-    servers = Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout
-    searchDns1 = servers.split('\n')[0]
-    searchDns2 = servers.split('\n')[1]
+    servers = Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf')
+    servers = servers.stdout.strip().split('\n')
+    expected_count = 2
+    if len(servers) != expected_count:
+        assert False, "{} is not {}".format(servers, expected_count)
+    searchDns1 = servers[0]
+    searchDns2 = servers[1]
 
     # Then the servers are still what the user had customized if forced dnsmasq is not set
     assert 'server={}'.format(dns1) == searchDns1
