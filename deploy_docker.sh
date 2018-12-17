@@ -60,12 +60,17 @@ echo "branch: $branch"
 [[ -n "$dry" ]] && echo "DRY RUN: $dry"
 echo "Example tagging: docker tag ${localimg}:armhf ${remoteimg}:${version}_amd64"
 
-$dry ./Dockerfile.py --arch=amd64 --arch=armhf --arch=aarch64
+if [[ -z "$dry" ]] ; then
+    echo "Deleting all manifest data to work around cached old copies preventing updates"
+    rm -rf ~/.docker/manifests/*
+fi
+
+$dry tox
 
 images=()
 for tag in ${!arch_map[@]}; do
     # Verison specific tags for ongoing history
-    $dry docker tag $localimg:v4.0_$tag $remoteimg:${version}_${tag}
+    $dry docker tag $localimg:v4.1_$tag $remoteimg:${version}_${tag}
     $dry docker push pihole/pihole:${version}_${tag}
     images+=(pihole/pihole:${version}_${tag})
 done

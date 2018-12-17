@@ -1,6 +1,6 @@
 docker-compose
 jinja2
-pytest
+pytest>=3.6.0
 pytest-cov
 pytest-xdist
 testinfra==1.5.1
