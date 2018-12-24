@@ -3,8 +3,8 @@
 mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
 # Production tags with valid web footers
-export CORE_TAG='v4.1'
-export WEB_TAG='v4.1'
+export CORE_TAG='v4.1.1'
+export WEB_TAG='v4.1.1'
 # Only use for pre-production / testing
 export USE_CUSTOM_BRANCHES=false
 
@@ -14,7 +14,7 @@ curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
 mv /init /s6-init
 
 if [[ $USE_CUSTOM_BRANCHES == true ]] ; then
-    CORE_TAG='release/v4.1'
+    CORE_TAG='release/vx.y.z'
 fi
 
 # debconf-apt-progress seems to hang so get rid of it too
