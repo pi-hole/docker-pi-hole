@@ -37,7 +37,7 @@ os_base_vars = {
 }
 
 images = {
-    'v4.1': [
+    'v4.1.1': [
         {
             'base': 'pihole/debian-base:latest',
             'arch': 'amd64'
@@ -95,7 +95,7 @@ def build_dockerfiles(args):
         if arch == 'armel':
             print "Skipping armel, incompatible upstream binaries/broken"
             continue
-        build('pihole', 'v4.1', arch, args)
+        build('pihole', 'v4.1.1', arch, args)
 
 
 def build(docker_repo, version, arch, args):

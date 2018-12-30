@@ -67,7 +67,7 @@ def arch(request):
 @pytest.fixture()
 def version(request):
     ''' TODO: include from external .py that can be shared with Dockerfile.py / Tests / deploy scripts '''
-    return 'v4.1'
+    return 'v4.1.1'
 
 @pytest.fixture()
 def tag(request, version, arch):
@@ -95,7 +95,7 @@ def persist_arch(request):
 @pytest.fixture(scope='module')
 def persist_version(request):
     ''' TODO: include from external .py that can be shared with Dockerfile.py / Tests / deploy scripts '''
-    return 'v4.1'
+    return 'v4.1.1'
 
 @pytest.fixture(scope='module')
 def persist_args(request):
