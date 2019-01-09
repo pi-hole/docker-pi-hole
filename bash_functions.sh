@@ -1,5 +1,9 @@
 #!/bin/bash
 
+docker_checks() {
+    echo hi
+}
+
 prepare_configs() {
     # Done in /start.sh, don't do twice
     PH_TEST=true . $PIHOLE_INSTALL
@@ -9,6 +13,7 @@ prepare_configs() {
     set +e
     mkdir -p /var/run/pihole /var/log/pihole
     # Re-apply perms from basic-install over any volume mounts that may be present (or not)
+    # Also  similar to preflights for FTL https://github.com/pi-hole/pi-hole/blob/master/advanced/Templates/pihole-FTL.service
     chown pihole:root /etc/lighttpd
     chown pihole:pihole "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" "/var/log/pihole" "${regexFile}"
     chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" 

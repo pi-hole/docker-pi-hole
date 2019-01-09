@@ -5,11 +5,38 @@ check_output = testinfra.get_backend(
     "local://"
 ).get_module("Command").check_output
 
-def DockerGeneric(request, args, image, cmd, entrypoint=''):
+@pytest.fixture()
+def args_dns():
+    return '--dns 127.0.0.1 --dns 1.1.1.1'
+
+@pytest.fixture()
+def args_caps():
+    return '--cap-add=NET_ADMIN'
+
+@pytest.fixture()
+def args_volumes():
+    return '-v /dev/null:/etc/pihole/adlists.default'
+
+@pytest.fixture()
+def args_env():
+    return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
+
+@pytest.fixture()
+def args(args_dns, args_caps, args_volumes, args_env):
+    return "{} {} {} {}".format(args_dns, args_caps, args_volumes, args_env)
+
+@pytest.fixture()
+def test_args(request):
+    ''' arguments provided by tests '''
+    return ''
+
+def DockerGeneric(request, args, test_args, image, cmd, entrypoint):
     assert 'docker' in check_output('id'), "Are you in the docker group?"
+    # Always appended PYTEST arg to tell pihole we're testing
     if 'pihole' in image:
-       args += " --dns 127.0.0.1 --dns 1.1.1.1 -v /dev/null:/etc/pihole/adlists.default -e PYTEST=1 --cap-add=NET_ADMIN"
-    docker_run = "docker run -d -t {args} {entry} {image} {cmd}".format(args=args, entry=entrypoint, image=image, cmd=cmd)
+       args = '{} -e PYTEST=1'.format(args)
+    docker_run = 'docker run -d -t {args} {test_args} {entry} {image} {cmd}'\
+        .format(args=args, test_args=test_args, entry=entrypoint, image=image, cmd=cmd)
     print docker_run
     docker_id = check_output(docker_run)
 
@@ -39,15 +66,16 @@ def DockerGeneric(request, args, image, cmd, entrypoint=''):
 
 
 @pytest.fixture
-def Docker(request, args, image, cmd, entrypoint):
+def Docker(request, test_args, args, image, cmd, entrypoint):
     ''' One-off Docker container run '''
-    return DockerGeneric(request, args, image, cmd, entrypoint)
+    return DockerGeneric(request, test_args, args, image, cmd, entrypoint)
 
 @pytest.fixture(scope='module')
 def DockerPersist(request, persist_args, persist_image, persist_cmd, Dig):
     ''' Persistent Docker container for multiple tests, instead of stopping container after one test '''
     ''' Uses DUP'd module scoped fixtures because smaller scoped fixtures won't mix with module scope '''
-    persistent_container = DockerGeneric(request, persist_args, persist_image, persist_cmd)
+    default_args = '--dns 127.0.0.1 --dns 1.1.1.1 -v /dev/null:/etc/pihole/adlists.default -e PYTEST=1 --cap-add=NET_ADMIN'
+    persistent_container = DockerGeneric(request, default_args, persist_args, persist_image, persist_cmd, '')
     ''' attach a dig conatiner for lookups '''
     persistent_container.dig = Dig(persistent_container.id)
     return persistent_container
@@ -55,10 +83,6 @@ def DockerPersist(request, persist_args, persist_image, persist_cmd, Dig):
 @pytest.fixture
 def entrypoint():
     return ''
-
-@pytest.fixture()
-def args(request):
-    return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
 
 @pytest.fixture(params=['amd64', 'armhf', 'aarch64'])
 def arch(request):
@@ -147,7 +171,7 @@ def Dig(request):
         args  = '--link {}:test_pihole'.format(docker_id)
         image = 'azukiapp/dig'
         cmd   = 'tail -f /dev/null'
-        dig_container = DockerGeneric(request, args, image, cmd)
+        dig_container = DockerGeneric(request, '', args, image, cmd, '')
         return dig_container
     return dig
 
