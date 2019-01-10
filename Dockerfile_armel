@@ -1,16 +1,11 @@
 FROM multiarch/debian-debootstrap:armel-stretch-slim
 
-COPY install.sh /usr/local/bin/docker-install.sh
+ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.7.0/s6-overlay-arm.tar.gz
+COPY install.sh /usr/local/bin/install.sh
 ENV PIHOLE_INSTALL /root/ph_install.sh
-ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.4.0/s6-overlay-arm.tar.gz
 
-RUN apt-get update && \
-    apt-get install -y curl procps && \
-    curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C / && \
-    rm -rf /var/cache/apt/archives /var/lib/apt/lists/* && \
-    mv /init /s6-init
-
-RUN apt-get update && bash -ex docker-install.sh 2>&1
+RUN bash -ex install.sh 2>&1 && \
+    rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
 
 ENTRYPOINT [ "/s6-init" ]
 
@@ -36,11 +31,11 @@ ENV S6_KEEP_ENV 1
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
 ENV FTL_CMD no-daemon
 
-ENV VERSION v4.0
+ENV VERSION v4.1.1
 ENV ARCH armel
 ENV PATH /opt/pihole:${PATH}
 
-LABEL image="pihole/pihole:v4.0_armel"
+LABEL image="pihole/pihole:v4.1.1_armel"
 LABEL maintainer="adam@diginc.us"
 LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
 

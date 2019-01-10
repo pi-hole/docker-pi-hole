@@ -1,5 +1,5 @@
 #!/usr/bin/with-contenv bash
 
 s6-echo "Starting pihole-FTL ($FTL_CMD)"
-s6-setuidgid root pihole-FTL $FTL_CMD
-
+# /var/log/pihole*.log has this data - this duplicates it in docker logs unless you send to dev null
+s6-setuidgid root pihole-FTL $FTL_CMD >/dev/null 2>&1

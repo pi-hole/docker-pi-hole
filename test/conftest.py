@@ -8,8 +8,8 @@ check_output = testinfra.get_backend(
 def DockerGeneric(request, args, image, cmd, entrypoint=''):
     assert 'docker' in check_output('id'), "Are you in the docker group?"
     if 'pihole' in image:
-       args += " --dns 127.0.0.1 -v /dev/null:/etc/pihole/adlists.default -e PYTEST=\"True\""
-    docker_run = "docker run -d {args} {entry} {image} {cmd}".format(args=args, entry=entrypoint, image=image, cmd=cmd)
+       args += " --dns 127.0.0.1 --dns 1.1.1.1 -v /dev/null:/etc/pihole/adlists.default -e PYTEST=1 --cap-add=NET_ADMIN"
+    docker_run = "docker run -d -t {args} {entry} {image} {cmd}".format(args=args, entry=entrypoint, image=image, cmd=cmd)
     print docker_run
     docker_id = check_output(docker_run)
 
@@ -67,7 +67,7 @@ def arch(request):
 @pytest.fixture()
 def version(request):
     ''' TODO: include from external .py that can be shared with Dockerfile.py / Tests / deploy scripts '''
-    return 'v4.0'
+    return 'v4.1.1'
 
 @pytest.fixture()
 def tag(request, version, arch):
@@ -95,7 +95,7 @@ def persist_arch(request):
 @pytest.fixture(scope='module')
 def persist_version(request):
     ''' TODO: include from external .py that can be shared with Dockerfile.py / Tests / deploy scripts '''
-    return 'v4.0'
+    return 'v4.1.1'
 
 @pytest.fixture(scope='module')
 def persist_args(request):
