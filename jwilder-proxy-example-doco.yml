@@ -16,14 +16,14 @@ pihole:
   ports:
     - '53:53/tcp'
     - '53:53/udp'
-    - "67:67/udp"
     - '8053:80/tcp'
     - "443:443/tcp"
   volumes:
     - '/var/log/pihole.log:/var/log/pihole.log'
-  #net: host
-  cap_add:
-    - NET_ADMIN
+  # The 3 lines below are required if Pi-hole is to provide DHCP
+  # cap_add:
+  #  - NET_ADMIN
+  # network_mode: "host"
   environment:
     ServerIP: 192.168.41.55
     PROXY_LOCATION: pihole

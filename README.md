@@ -22,30 +22,39 @@ A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86
 This container uses 2 popular ports, port 53 and port 80, so **may conflict with existing applications ports**.  If you have no other services or docker containers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh) or summarized here:
 
 ```bash
-IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"  # May not work for VPN / tun0
-IPv6_LOOKUP="$(ip -6 route get 2001:4860:4860::8888 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"  # May not work for VPN / tun0
+#!/bin/bash
+# Lookups may not work for VPN / tun0
+IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"
+IPv6_LOOKUP="$(ip -6 route get 2001:4860:4860::8888 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"
+
+# Just hard code these to your docker server's LAN IP if lookups aren't working
 IP="${IP:-$IP_LOOKUP}"  # use $IP, if set, otherwise IP_LOOKUP
 IPv6="${IPv6:-$IPv6_LOOKUP}"  # use $IPv6, if set, otherwise IP_LOOKUP
-DOCKER_CONFIGS="$(pwd)"  # Default of directory you run this from, update to where ever.
+
+# Default of directory you run this from, update to where ever.
+DOCKER_CONFIGS="$(pwd)"
 
 echo "### Make sure your IPs are correct, hard code ServerIP ENV VARs if necessary\nIP: ${IP}\nIPv6: ${IPv6}"
+
+# Default ports + daemonized docker container
 docker run -d \
     --name pihole \
     -p 53:53/tcp -p 53:53/udp \
-    -p 67:67/udp \
     -p 80:80 \
     -p 443:443 \
+    `# The 2 arguments below are required if Pi-hole is to provide DHCP:` \
+    `# --net=host` \
+    `# --cap-add=NET_ADMIN` \
     -v "${DOCKER_CONFIGS}/pihole/:/etc/pihole/" \
     -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/" \
     -e ServerIP="${IP}" \
     -e ServerIPv6="${IPv6}" \
     --restart=unless-stopped \
-    --cap-add=NET_ADMIN \
     --dns=127.0.0.1 --dns=1.1.1.1 \
     pihole/pihole:latest
 
 echo -n "Your password for https://${IP}/admin/ is "
-docker logs pihole 2> /dev/null | grep 'password'
+docker logs pihole 2> /dev/null | grep 'password:'
 ```
 
 If you used RHEL based distrubution with SELinux Enforcing policy add to line with volumes :z
@@ -55,7 +64,7 @@ If you used RHEL based distrubution with SELinux Enforcing policy add to line wi
 
 **This is just an example and might need changing.**  Volumes are stored in the directory `$DOCKER_CONFIGS` and are recommended for persisting data across docker re-creations for updating images.  The IP lookup variables may not work for everyone, please review their values and hard code IP and IPv6 if necessary.
 
-Two recently added ports to the `docker run` and `docker-compose` examples are port 67 and 443.  Port 67 is for users who wish to have Pi-hole run a DHCP server.  Port 443 is to provide a sinkhole for ads that use SSL.  If only port 80 is used, then blocked HTTPS queries will fail to connect to port 443 and may cause long loading times.  Rejecting 443 on your firewall can also serve this same purpose.  Ubuntu firewall example: `sudo ufw reject https`
+Port 443 is to provide a sinkhole for ads that use SSL.  If only port 80 is used, then blocked HTTPS queries will fail to connect to port 443 and may cause long loading times.  Rejecting 443 on your firewall can also serve this same purpose.  Ubuntu firewall example: `sudo ufw reject https`
 
 **Automatic Ad List Updates** - since the 3.0+ release, `cron` is baked into the container and will grab the newest versions of your lists and flush your logs.  **Set your TZ** environment variable to make sure the midnight log rotation syncs up with your timezone's midnight.
 
@@ -85,8 +94,8 @@ Here is a rundown of the other arguments passed into the example `docker run`:
 | `--restart=unless-stopped`<br/> **Recommended** | Automatically (re)start your Pi-hole on boot or in the event of a crash
 | `-v /dir/for/pihole:/etc/pihole`<br/> **Recommended** | Volumes for your Pi-hole configs help persist changes across docker image updates
 | `-v /dir/for/dnsmasq.d:/etc/dnsmasq.d`<br/> **Recommended** | Volumes for your dnsmasq configs help persist changes across docker image updates
-| `--net=host`<br/> *Optional* | Alternative to `-p <port>:<port>` arguments (Cannot be used at same time as -p) if you don't run any other web application
-| `--cap-add=NET_ADMIN`<br/> *Optional* | If you're forwarding port 67 you will also needs this for DHCP to work. (DHCP Reportedly works, I have not used however)
+| `--net=host`<br/> *Optional* | Alternative to `-p <port>:<port>` arguments (Cannot be used at same time as -p) if you don't run any other web application. Required if Pi-hole is to provide DHCP.
+| `--cap-add=NET_ADMIN`<br/> *Optional* | Required if Pi-hole is to provide DHCP.
 | `--dns=127.0.0.1`<br/> *Recommended* | Sets your container's resolve settings to localhost so it can resolve DHCP hostnames from Pi-hole's DNSMasq <!-- also fixes common resolution errors on container restart -->
 | `--dns=1.1.1.1`<br/> *Optional* | Sets a backup server of your choosing in case DNSMasq has problems starting
 
@@ -116,7 +125,7 @@ The primary docker tags / versions are explained in the following table.  [Click
 | `v4.0.0-1`          | auto detect  | Versioned tags, if you want to pin against a specific version, use one of thesse |  |
 | `v4.0.0-1_<arch>`   | based on tag | Specific architectures tags | |
 | `dev`       | auto detect  | like latest tag, but for the development branch (pushed occasionally)   | |
-    
+
 ### `pihole/pihole:latest` [![](https://images.microbadger.com/badges/image/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com")
 
 This version of the docker aims to be as close to a standard Pi-hole installation by using the recommended base OS and the exact configs and scripts (minimally modified to get them working).  This enables fast updating when an update comes from Pi-hole.
