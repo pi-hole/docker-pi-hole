@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # Lookups may not work for VPN / tun0
 IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"
 IPv6_LOOKUP="$(ip -6 route get 2001:4860:4860::8888 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"
