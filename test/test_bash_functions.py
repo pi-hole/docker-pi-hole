@@ -179,5 +179,17 @@ def test_webPassword_env_assigns_password_to_file_or_removes_if_empty(Docker, ar
 
 
 
-def test_docker_checks_for_resolvconf_misconfiguration(Docker):
-    pass
+@pytest.mark.parametrize('args_dns, expected_stdout', [
+    # No DNS passed will vary by the host this is ran on, bad idea for a test
+    #('', 'WARNING Misconfigured DNS in /etc/resolv.conf: Primary DNS should be 127.0.0.1'),
+    ('--dns 1.1.1.1',                 'WARNING Misconfigured DNS in /etc/resolv.conf: Two DNS servers are recommended, 127.0.0.1 and any backup server\n'
+                                      'WARNING Misconfigured DNS in /etc/resolv.conf: Primary DNS should be 127.0.0.1 (found 1.1.1.1)'),
+    ('--dns 127.0.0.1',               'WARNING Misconfigured DNS in /etc/resolv.conf: Two DNS servers are recommended, 127.0.0.1 and any backup server'),
+    ('--dns 1.1.1.1 --dns 127.0.0.1', 'WARNING Misconfigured DNS in /etc/resolv.conf: Primary DNS should be 127.0.0.1 (found 1.1.1.1)'),
+    ('--dns 127.0.0.1 --dns 1.1.1.1', 'OK: Checks passed for /etc/resolv.conf DNS servers'),
+])
+def test_docker_checks_for_resolvconf_misconfiguration(Docker, args_dns, expected_stdout):
+    ''' The container checks for misconfigured resolv.conf '''
+    function = Docker.run('. /bash_functions.sh ; eval `grep docker_checks /start.sh`')
+    print function.stdout
+    assert expected_stdout in function.stdout

@@ -12,7 +12,7 @@ Starting with the v4.1.1 release your Pi-hole container may encounter issues sta
 - `--cap-add=NET_ADMIN` This previously optional argument is now required or strongly encouraged
   - Starting in version 4.1.2 FTL, the DNS Service, is going to check this setting automatically
 - `--dns=127.0.0.1 --dns=1.1.1.1` The second server can be any DNS IP of your choosing, but the **first dns must be 127.0.0.1**
-  - A WARNING stating "resolv.conf misconfiguration, see v4.1.1 release notes" may show in docker logs without this.
+  - A WARNING stating "Misconfigured DNS in /etc/resolv.conf" may show in docker logs without this.
 
 These are the raw [docker run cli](https://docs.docker.com/engine/reference/commandline/cli/) versions of the commands.  We provide no official support for docker GUIs but the community forums may be able to help if you do not see a place for these settings.  Remember, always consult your manual too!
  

@@ -1,7 +1,28 @@
 #!/bin/bash
 
 docker_checks() {
-    echo hi
+    warn_msg='WARNING Misconfigured DNS in /etc/resolv.conf'
+    ns_count="$(grep -c nameserver /etc/resolv.conf)"
+    ns_primary="$(grep nameserver /etc/resolv.conf | head -1)"
+    ns_primary="${ns_primary/nameserver /}"
+    warned=false
+
+    if [ "$ns_count" -lt 2 ] ; then
+        echo "$warn_msg: Two DNS servers are recommended, 127.0.0.1 and any backup server"
+        warned=true
+    fi
+
+    if [ "$ns_primary" != "127.0.0.1" ] ; then
+        echo "$warn_msg: Primary DNS should be 127.0.0.1 (found ${ns_primary})"
+        warned=true
+    fi
+
+    if ! $warned ; then
+        echo "OK: Checks passed for /etc/resolv.conf DNS servers"
+    fi
+
+    echo
+    cat /etc/resolv.conf
 }
 
 prepare_configs() {
