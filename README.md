@@ -5,6 +5,17 @@
 </p>
 <!-- Delete above HTML and insert markdown for dockerhub : ![Pi-hole](https://pi-hole.github.io/graphics/Vortex/Vortex_with_text.png) -->
 
+## Docker Pi-Hole v4.1.1+ IMPORTANT upgrade notes
+
+Starting with the v4.1.1 release your Pi-hole container may encounter issues starting the DNS service unless ran with the following settings:
+
+- `--cap-add=NET_ADMIN` This previously optional argument is now required or strongly encouraged
+  - Starting in version 4.1.2 FTL, the DNS Service, is going to check this setting automatically
+- `--dns=127.0.0.1 --dns=1.1.1.1` The second server can be any DNS IP of your choosing, but the **first dns must be 127.0.0.1**
+  - A WARNING stating "Misconfigured DNS in /etc/resolv.conf" may show in docker logs without this.
+
+These are the raw [docker run cli](https://docs.docker.com/engine/reference/commandline/cli/) versions of the commands.  We provide no official support for docker GUIs but the community forums may be able to help if you do not see a place for these settings.  Remember, always consult your manual too!
+ 
 ## Overview
 
 #### Renamed from `diginc/pi-hole` to `pihole/pihole`
@@ -94,8 +105,8 @@ Here is a rundown of the other arguments passed into the example `docker run`:
 | `--restart=unless-stopped`<br/> **Recommended** | Automatically (re)start your Pi-hole on boot or in the event of a crash
 | `-v /dir/for/pihole:/etc/pihole`<br/> **Recommended** | Volumes for your Pi-hole configs help persist changes across docker image updates
 | `-v /dir/for/dnsmasq.d:/etc/dnsmasq.d`<br/> **Recommended** | Volumes for your dnsmasq configs help persist changes across docker image updates
-| `--net=host`<br/> *Optional* | Alternative to `-p <port>:<port>` arguments (Cannot be used at same time as -p) if you don't run any other web application. Required if Pi-hole is to provide DHCP.
-| `--cap-add=NET_ADMIN`<br/> *Optional* | Required if Pi-hole is to provide DHCP.
+| `--net=host`<br/> *Optional* | Alternative to `-p <port>:<port>` arguments (Cannot be used at same time as -p) if you don't run any other web application. DHCP runs best with --net=host, otherwise your router must support dhcp-relay settings.
+| `--cap-add=NET_ADMIN`<br/> *Required* | You will need this for FTL to work.
 | `--dns=127.0.0.1`<br/> *Recommended* | Sets your container's resolve settings to localhost so it can resolve DHCP hostnames from Pi-hole's DNSMasq <!-- also fixes common resolution errors on container restart -->
 | `--dns=1.1.1.1`<br/> *Optional* | Sets a backup server of your choosing in case DNSMasq has problems starting
 
@@ -140,6 +151,9 @@ The standard Pi-hole customization abilities apply to this docker, but with dock
 
 Do not attempt to upgrade (`pihole -up`) or reconfigure (`pihole -r`).  New images will be released for upgrades, upgrading by replacing your old container with a fresh upgraded image is the 'docker way'.  Long-living docker containers are not the docker way since they aim to be portable and reproducible, why not re-create them often!  Just to prove you can.
 
+0. Read the release notes for both this Docker release and the Pi-hole release
+  * This will help you avoid common problems due to any known issues with upgrading or newly required arguments or variables
+  * We will try to put common break/fixes at the top of this readme too
 1. Download the latest version of the image: `docker pull pihole/pihole`
 2. Throw away your container: `docker rm -f pihole`
   * **Warning** When removing your pihole container you may be stuck without DNS until step 3; **docker pull** before **docker rm -f** to avoid DNS inturruption **OR** always have a fallback DNS server configured in DHCP to avoid this problem altogether.

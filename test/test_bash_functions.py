@@ -3,16 +3,13 @@ import time
 import re
 
 
-DEFAULTARGS = '-e ServerIP="127.0.0.1" '
-
-
-@pytest.mark.parametrize('args,expected_ipv6,expected_stdout', [
-    (DEFAULTARGS, True, 'IPv4 and IPv6'),
-    (DEFAULTARGS + '-e "IPv6=True"', True, 'IPv4 and IPv6'),
-    (DEFAULTARGS + '-e "IPv6=False"', False, 'IPv4'),
-    (DEFAULTARGS + '-e "IPv6=foobar"', False, 'IPv4'),
+@pytest.mark.parametrize('test_args,expected_ipv6,expected_stdout', [
+    ('', True, 'IPv4 and IPv6'),
+    ('-e "IPv6=True"', True, 'IPv4 and IPv6'),
+    ('-e "IPv6=False"', False, 'IPv4'),
+    ('-e "IPv6=foobar"', False, 'IPv4'),
 ])
-def test_IPv6_not_True_removes_ipv6(Docker, args, expected_ipv6, expected_stdout):
+def test_IPv6_not_True_removes_ipv6(Docker, test_args, expected_ipv6, expected_stdout):
     ''' When a user overrides IPv6=True they only get IPv4 listening webservers '''
     IPV6_LINE = 'use-ipv6.pl'
     WEB_CONFIG = '/etc/lighttpd/lighttpd.conf'
@@ -27,8 +24,8 @@ def test_IPv6_not_True_removes_ipv6(Docker, args, expected_ipv6, expected_stdout
     assert (IPV6_LINE in config) == expected_ipv6
 
 
-@pytest.mark.parametrize('args', [DEFAULTARGS + '-e "WEB_PORT=999"'])
-def test_overrides_default_WEB_PORT(Docker, args):
+@pytest.mark.parametrize('test_args', ['-e "WEB_PORT=999"'])
+def test_overrides_default_WEB_PORT(Docker, test_args):
     ''' When a --net=host user sets WEB_PORT to avoid synology's 80 default IPv4 and or IPv6 ports are updated'''
     CONFIG_LINE = 'server.port\s*=\s*999'
     WEB_CONFIG = '/etc/lighttpd/lighttpd.conf'
@@ -47,26 +44,26 @@ def test_overrides_default_WEB_PORT(Docker, args):
     assert int(Docker.run('grep -rl "://pi.hole:999/" /var/www/html/ | wc -l').stdout) >= 1
 
 
-@pytest.mark.parametrize('args,expected_error', [
-    (DEFAULTARGS + '-e WEB_PORT="LXXX"', 'WARNING: Custom WEB_PORT not used - LXXX is not an integer'),
-    (DEFAULTARGS + '-e WEB_PORT="1,000"', 'WARNING: Custom WEB_PORT not used - 1,000 is not an integer'),
-    (DEFAULTARGS + '-e WEB_PORT="99999"', 'WARNING: Custom WEB_PORT not used - 99999 is not within valid port range of 1-65535'),
+@pytest.mark.parametrize('test_args,expected_error', [
+    ('-e WEB_PORT="LXXX"', 'WARNING: Custom WEB_PORT not used - LXXX is not an integer'),
+    ('-e WEB_PORT="1,000"', 'WARNING: Custom WEB_PORT not used - 1,000 is not an integer'),
+    ('-e WEB_PORT="99999"', 'WARNING: Custom WEB_PORT not used - 99999 is not within valid port range of 1-65535'),
 ])
-def test_bad_input_to_WEB_PORT(Docker, args, expected_error):
+def test_bad_input_to_WEB_PORT(Docker, test_args, expected_error):
     function = Docker.run('. /bash_functions.sh ; eval `grep setup_web_port /start.sh`')
     assert expected_error in function.stdout
 
 
 # DNS Environment Variable behavior in combinations of modified pihole LTE settings
-@pytest.mark.parametrize('args, expected_stdout, dns1, dns2', [
+@pytest.mark.parametrize('args_env, expected_stdout, dns1, dns2', [
     ('-e ServerIP="1.2.3.4"',                                     'default DNS', '8.8.8.8', '8.8.4.4' ),
     ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4"',                   'custom DNS',  '1.2.3.4', '8.8.4.4' ),
     ('-e ServerIP="1.2.3.4" -e DNS2="1.2.3.4"',                   'custom DNS',  '8.8.8.8', '1.2.3.4' ),
     ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4" -e DNS2="2.2.3.4"', 'custom DNS',  '1.2.3.4', '2.2.3.4' ),
-    ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4" -e DNS2="no"', 'custom DNS',  '1.2.3.4', None ),
-    ('-e ServerIP="1.2.3.4" -e DNS2="no"', 'custom DNS',  '8.8.8.8', None ),
+    ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4" -e DNS2="no"',      'custom DNS',  '1.2.3.4', None ),
+    ('-e ServerIP="1.2.3.4" -e DNS2="no"',                        'custom DNS',  '8.8.8.8', None ),
 ])
-def test_override_default_servers_with_DNS_EnvVars(Docker, args, expected_stdout, dns1, dns2):
+def test_override_default_servers_with_DNS_EnvVars(Docker, args_env, expected_stdout, dns1, dns2):
     ''' on first boot when DNS vars are NOT set explain default google DNS settings are used
                    or when DNS vars are set override the pihole DNS settings '''
     assert Docker.run('test -f /.piholeFirstBoot').rc == 0
@@ -78,7 +75,7 @@ def test_override_default_servers_with_DNS_EnvVars(Docker, args, expected_stdout
     assert expected_servers == docker_dns_servers
 
 
-@pytest.mark.parametrize('args, dns1, dns2, expected_stdout', [
+@pytest.mark.parametrize('args_env, dns1, dns2, expected_stdout', [
     ('-e ServerIP="1.2.3.4"', '9.9.9.1', '9.9.9.2',
      'Existing DNS servers used'),
     ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4"', '9.9.9.1', '9.9.9.2',
@@ -88,7 +85,7 @@ def test_override_default_servers_with_DNS_EnvVars(Docker, args, expected_stdout
     ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4" -e DNS2="2.2.3.4"', '1.2.3.4', '2.2.3.4',
      'Docker DNS variables not used\nExisting DNS servers used'),
 ])
-def test_DNS_Envs_are_secondary_to_setupvars(Docker, args, expected_stdout, dns1, dns2):
+def test_DNS_Envs_are_secondary_to_setupvars(Docker, args_env, expected_stdout, dns1, dns2):
     ''' on second boot when DNS vars are set just use pihole DNS settings
                     or when DNS vars and FORCE_DNS var are set override the pihole DNS settings '''
     # Given we are not booting for the first time
@@ -117,12 +114,12 @@ def test_DNS_Envs_are_secondary_to_setupvars(Docker, args, expected_stdout, dns1
     assert 'server={}'.format(dns2) == searchDns2
 
 
-@pytest.mark.parametrize('args, expected_stdout, expected_config_line', [
+@pytest.mark.parametrize('args_env, expected_stdout, expected_config_line', [
     ('-e ServerIP="1.2.3.4"', 'binding to default interface: eth0', 'interface=eth0' ),
     ('-e ServerIP="1.2.3.4" -e INTERFACE="eth0"', 'binding to default interface: eth0', 'interface=eth0' ),
     ('-e ServerIP="1.2.3.4" -e INTERFACE="br0"', 'binding to custom interface: br0', 'interface=br0'),
 ])
-def test_DNS_interface_override_defaults(Docker, args, expected_stdout, expected_config_line):
+def test_DNS_interface_override_defaults(Docker, args_env, expected_stdout, expected_config_line):
     ''' When INTERFACE environment var is passed in, overwrite dnsmasq interface '''
     function = Docker.run('. /bash_functions.sh ; eval `grep setup_dnsmasq /start.sh`')
     assert expected_stdout in function.stdout
@@ -157,19 +154,19 @@ def test_debian_setup_php_env(Docker, expected_lines, repeat_function):
 
 # Overwrite entrypoint / cmd with noop, just run our method for this unit
 @pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
-@pytest.mark.parametrize('args', [('-e ServerIP=1.2.3.4')])
-def test_webPassword_random_generation(Docker, args):
+@pytest.mark.parametrize('args_env', [('-e ServerIP=1.2.3.4')])
+def test_webPassword_random_generation(Docker, args_env):
     ''' When a user sets webPassword env the admin password gets set to that '''
     function = Docker.run('. /bash_functions.sh ; eval `grep generate_password /start.sh`')
     assert 'assigning random password' in function.stdout.lower()
 
 
 @pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
-@pytest.mark.parametrize('args,secure,setupVarsHash', [
+@pytest.mark.parametrize('args_env,secure,setupVarsHash', [
     ('-e ServerIP=1.2.3.4 -e WEBPASSWORD=login', True, 'WEBPASSWORD=6060d59351e8c2f48140f01b2c3f3b61652f396c53a5300ae239ebfbe7d5ff08'),
     ('-e ServerIP=1.2.3.4 -e WEBPASSWORD=""', False, ''),
 ])
-def test_webPassword_env_assigns_password_to_file_or_removes_if_empty(Docker, args, secure, setupVarsHash):
+def test_webPassword_env_assigns_password_to_file_or_removes_if_empty(Docker, args_env, secure, setupVarsHash):
     ''' When a user sets webPassword env the admin password gets set or removed if empty '''
     function = Docker.run('. /bash_functions.sh ; eval `grep setup_web_password /start.sh`')
 
@@ -179,3 +176,20 @@ def test_webPassword_env_assigns_password_to_file_or_removes_if_empty(Docker, ar
     else:
         assert 'password removed' in function.stdout.lower()
         assert Docker.run('grep -q \'^WEBPASSWORD=$\' /etc/pihole/setupVars.conf').rc == 0
+
+
+
+@pytest.mark.parametrize('args_dns, expected_stdout', [
+    # No DNS passed will vary by the host this is ran on, bad idea for a test
+    #('', 'WARNING Misconfigured DNS in /etc/resolv.conf: Primary DNS should be 127.0.0.1'),
+    ('--dns 1.1.1.1',                 'WARNING Misconfigured DNS in /etc/resolv.conf: Two DNS servers are recommended, 127.0.0.1 and any backup server\n'
+                                      'WARNING Misconfigured DNS in /etc/resolv.conf: Primary DNS should be 127.0.0.1 (found 1.1.1.1)'),
+    ('--dns 127.0.0.1',               'WARNING Misconfigured DNS in /etc/resolv.conf: Two DNS servers are recommended, 127.0.0.1 and any backup server'),
+    ('--dns 1.1.1.1 --dns 127.0.0.1', 'WARNING Misconfigured DNS in /etc/resolv.conf: Primary DNS should be 127.0.0.1 (found 1.1.1.1)'),
+    ('--dns 127.0.0.1 --dns 1.1.1.1', 'OK: Checks passed for /etc/resolv.conf DNS servers'),
+])
+def test_docker_checks_for_resolvconf_misconfiguration(Docker, args_dns, expected_stdout):
+    ''' The container checks for misconfigured resolv.conf '''
+    function = Docker.run('. /bash_functions.sh ; eval `grep docker_checks /start.sh`')
+    print function.stdout
+    assert expected_stdout in function.stdout
