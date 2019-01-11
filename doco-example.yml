@@ -8,9 +8,12 @@ services:
     ports:
       - "53:53/tcp"
       - "53:53/udp"
-      - "67:67/udp"
       - "80:80/tcp"
       - "443:443/tcp"
+    # The 3 lines below are required if Pi-hole is to provide DHCP
+    # cap_add:
+    #  - NET_ADMIN
+    # network_mode: "host"
     environment:
       # enter your docker host IP here
       ServerIP:
