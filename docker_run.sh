@@ -31,9 +31,18 @@ docker run -d \
 
 
 printf 'Starting up pihole container'
-while [ "$(docker inspect -f "{{.State.Health.Status}}" pihole)" != "healthy" ]; do
-    sleep 1
-    printf '.'
+for i in $(seq 1 20); do
+    if [ "$(docker inspect -f "{{.State.Health.Status}}" pihole)" == "healthy" ] ; then
+        printf ' OK'
+        break
+    else
+        sleep 1
+        printf '.'
+    fi
+
+    if [ $i -eq 20 ] ; then
+        echo -e "\nTimed out waiting for Pi-hole start start, consult check your container logs for more info (\`docker logs pihole\`)"
+    fi
 done;
 
 echo -e "\n$(docker logs pihole 2> /dev/null | grep 'password:') for your pi-hole: https://${IP}/admin/"
