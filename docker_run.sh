@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # Lookups may not work for VPN / tun0
 IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"
 IPv6_LOOKUP="$(ip -6 route get 2001:4860:4860::8888 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"
@@ -10,7 +10,7 @@ IPv6="${IPv6:-$IPv6_LOOKUP}"  # use $IPv6, if set, otherwise IP_LOOKUP
 # Default of directory you run this from, update to where ever.
 DOCKER_CONFIGS="$(pwd)"
 
-echo "### Make sure your IPs are correct, hard code ServerIP ENV VARs if necessary\nIP: ${IP}\nIPv6: ${IPv6}"
+echo -e "### Make sure your IPs are correct, hard code ServerIP ENV VARs if necessary\nIP: ${IP}\nIPv6: ${IPv6}"
 
 # Default ports + daemonized docker container
 docker run -d \
@@ -29,5 +29,11 @@ docker run -d \
     --dns=127.0.0.1 --dns=1.1.1.1 \
     pihole/pihole:latest
 
-echo -n "Your password for https://${IP}/admin/ is "
-docker logs pihole 2> /dev/null | grep 'password:'
+
+printf 'Starting up pihole container'
+while [ "$(docker inspect -f "{{.State.Health.Status}}" pihole)" != "healthy" ]; do
+    sleep 1
+    printf '.'
+done;
+
+echo -e "\n$(docker logs pihole 2> /dev/null | grep 'password:') for your pi-hole: https://${IP}/admin/"
