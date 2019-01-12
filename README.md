@@ -53,9 +53,7 @@ docker run -d \
     -p 53:53/tcp -p 53:53/udp \
     -p 80:80 \
     -p 443:443 \
-    `# The 2 arguments below are required if Pi-hole is to provide DHCP:` \
-    `# --net=host` \
-    `# --cap-add=NET_ADMIN` \
+    --cap-add=NET_ADMIN` \
     -v "${DOCKER_CONFIGS}/pihole/:/etc/pihole/" \
     -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/" \
     -e ServerIP="${IP}" \
