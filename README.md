@@ -116,7 +116,6 @@ Here is a rundown of the other arguments passed into the example `docker run`:
 
 | Docker Arguments | Description |
 | ---------------- | ----------- |
-| `--env-file .env` <br/> *Optional* | File to store environment variables for docker. Here for convenience
 | `-p 80:80`<br/>`-p 53:53/tcp -p 53:53/udp`<br/> **Recommended** | Ports to expose, the bare minimum ports required for Pi-holes HTTP and DNS services
 | `--restart=unless-stopped`<br/> **Recommended** | Automatically (re)start your Pi-hole on boot or in the event of a crash
 | `-v /dir/for/pihole:/etc/pihole`<br/> **Recommended** | Volumes for your Pi-hole configs help persist changes across docker image updates
@@ -125,7 +124,7 @@ Here is a rundown of the other arguments passed into the example `docker run`:
 | `--cap-add=NET_ADMIN`<br/> *Required* | FTL DNS will fail to start without this setting
 | `--dns=127.0.0.1`<br/> *Recommended* | Sets your container's resolve settings to localhost so it can resolve DHCP hostnames from Pi-hole's DNSMasq <!-- also fixes common resolution errors on container restart -->
 | `--dns=1.1.1.1`<br/> *Optional* | Sets a backup server of your choosing in case DNSMasq has problems starting
-
+| `--env-file .env` <br/> *Optional* | File to store environment variables for docker. Here for convenience
 If you're a fan of [docker-compose](https://docs.docker.com/compose/install/) I have [example docker-compose.yml files](https://github.com/pi-hole/docker-pi-hole/blob/master/doco-example.yml) in github which I think are a nicer way to represent such long run commands.
 
 ## Tips and Tricks
