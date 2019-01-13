@@ -13,8 +13,10 @@ DOCKER_CONFIGS="$(pwd)"
 echo -e "### Make sure your IPs are correct, hard code ServerIP ENV VARs if necessary\nIP: ${IP}\nIPv6: ${IPv6}"
 
 # Default ports + daemonized docker container
+# Environment variables for docker can be defined in --env-file (.env)
 docker run -d \
     --name pihole \
+    --env-file .env \
     -p 53:53/tcp -p 53:53/udp \
     -p 80:80 \
     -p 443:443 \
@@ -28,19 +30,19 @@ docker run -d \
     pihole/pihole:latest
 
 
-printf 'Starting up pihole container'
+printf 'Starting up pihole container '
 for i in $(seq 1 20); do
     if [ "$(docker inspect -f "{{.State.Health.Status}}" pihole)" == "healthy" ] ; then
         printf ' OK'
-        break
+        echo -e "\n$(docker logs pihole 2> /dev/null | grep 'password:') for your pi-hole: https://${IP}/admin/"
+        exit 0
     else
-        sleep 1
+        sleep 3
         printf '.'
     fi
 
     if [ $i -eq 20 ] ; then
         echo -e "\nTimed out waiting for Pi-hole start start, consult check your container logs for more info (\`docker logs pihole\`)"
+        exit 1
     fi
 done;
-
-echo -e "\n$(docker logs pihole 2> /dev/null | grep 'password:') for your pi-hole: https://${IP}/admin/"
