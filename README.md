@@ -10,9 +10,9 @@
 Starting with the v4.1.1 release your Pi-hole container may encounter issues starting the DNS service unless ran with the following settings:
 
 - `--cap-add=NET_ADMIN` This previously optional argument is now required or strongly encouraged
-  - Starting in a future version FTLDNS is going to check this setting automatically
+    - Starting in a future version FTLDNS is going to check this setting automatically
 - `--dns=127.0.0.1 --dns=1.1.1.1` The second server can be any DNS IP of your choosing, but the **first dns must be 127.0.0.1**
-  - A WARNING stating "Misconfigured DNS in /etc/resolv.conf" may show in docker logs without this.
+    - A WARNING stating "Misconfigured DNS in /etc/resolv.conf" may show in docker logs without this.
 
 These are the raw [docker run cli](https://docs.docker.com/engine/reference/commandline/cli/) versions of the commands.  We provide no official support for docker GUIs but the community forums may be able to help if you do not see a place for these settings.  Remember, always consult your manual too!
  
@@ -53,7 +53,7 @@ docker run -d \
     -p 53:53/tcp -p 53:53/udp \
     -p 80:80 \
     -p 443:443 \
-    --cap-add=NET_ADMIN` \
+    --cap-add=NET_ADMIN \
     -v "${DOCKER_CONFIGS}/pihole/:/etc/pihole/" \
     -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/" \
     -e ServerIP="${IP}" \
@@ -150,12 +150,12 @@ The standard Pi-hole customization abilities apply to this docker, but with dock
 Do not attempt to upgrade (`pihole -up`) or reconfigure (`pihole -r`).  New images will be released for upgrades, upgrading by replacing your old container with a fresh upgraded image is the 'docker way'.  Long-living docker containers are not the docker way since they aim to be portable and reproducible, why not re-create them often!  Just to prove you can.
 
 0. Read the release notes for both this Docker release and the Pi-hole release
-  * This will help you avoid common problems due to any known issues with upgrading or newly required arguments or variables
-  * We will try to put common break/fixes at the top of this readme too
+    * This will help you avoid common problems due to any known issues with upgrading or newly required arguments or variables
+    * We will try to put common break/fixes at the top of this readme too
 1. Download the latest version of the image: `docker pull pihole/pihole`
 2. Throw away your container: `docker rm -f pihole`
-  * **Warning** When removing your pihole container you may be stuck without DNS until step 3; **docker pull** before **docker rm -f** to avoid DNS inturruption **OR** always have a fallback DNS server configured in DHCP to avoid this problem altogether.
-  * If you care about your data (logs/customizations), make sure you have it volume-mapped or it will be deleted in this step.
+    * **Warning** When removing your pihole container you may be stuck without DNS until step 3; **docker pull** before **docker rm -f** to avoid DNS inturruption **OR** always have a fallback DNS server configured in DHCP to avoid this problem altogether.
+    * If you care about your data (logs/customizations), make sure you have it volume-mapped or it will be deleted in this step.
 3. Start your container with the newer base image: `docker run <args> pihole/pihole` (`<args>` being your preferred run volumes and env vars)
 
 Why is this style of upgrading good?  A couple reasons: Everyone is starting from the same base image which has been tested to known it works.  No worrying about upgrading from A to B, B to C, or A to C is required when rolling out updates, it reducing complexity, and simply allows a 'fresh start' every time while preserving customizations with volumes.  Basically I'm encouraging [phoenix server](https://www.google.com/?q=phoenix+servers) principles for your containers.
