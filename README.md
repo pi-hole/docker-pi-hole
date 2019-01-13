@@ -15,7 +15,7 @@ Starting with the v4.1.1 release your Pi-hole container may encounter issues sta
     - A WARNING stating "Misconfigured DNS in /etc/resolv.conf" may show in docker logs without this.
 
 These are the raw [docker run cli](https://docs.docker.com/engine/reference/commandline/cli/) versions of the commands.  We provide no official support for docker GUIs but the community forums may be able to help if you do not see a place for these settings.  Remember, always consult your manual too!
- 
+
 ## Overview
 
 #### Renamed from `diginc/pi-hole` to `pihole/pihole`
@@ -30,43 +30,10 @@ A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86
 
 ## Running Pi-hole Docker
 
-This container uses 2 popular ports, port 53 and port 80, so **may conflict with existing applications ports**.  If you have no other services or docker containers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh) or summarized here:
+This container uses 2 popular ports, port 53 and port 80, so **may conflict with existing applications ports**.  If you have no other services or docker containers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh)
 
-```bash
-#!/bin/bash
-# Lookups may not work for VPN / tun0
-IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"
-IPv6_LOOKUP="$(ip -6 route get 2001:4860:4860::8888 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"
+If you're using a RHEL based distrubution with an SELinux Enforcing policy add `:z` to line with volumes like so:
 
-# Just hard code these to your docker server's LAN IP if lookups aren't working
-IP="${IP:-$IP_LOOKUP}"  # use $IP, if set, otherwise IP_LOOKUP
-IPv6="${IPv6:-$IPv6_LOOKUP}"  # use $IPv6, if set, otherwise IP_LOOKUP
-
-# Default of directory you run this from, update to where ever.
-DOCKER_CONFIGS="$(pwd)"
-
-echo "### Make sure your IPs are correct, hard code ServerIP ENV VARs if necessary\nIP: ${IP}\nIPv6: ${IPv6}"
-
-# Default ports + daemonized docker container
-docker run -d \
-    --name pihole \
-    -p 53:53/tcp -p 53:53/udp \
-    -p 80:80 \
-    -p 443:443 \
-    --cap-add=NET_ADMIN \
-    -v "${DOCKER_CONFIGS}/pihole/:/etc/pihole/" \
-    -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/" \
-    -e ServerIP="${IP}" \
-    -e ServerIPv6="${IPv6}" \
-    --restart=unless-stopped \
-    --dns=127.0.0.1 --dns=1.1.1.1 \
-    pihole/pihole:latest
-
-echo -n "Your password for https://${IP}/admin/ is "
-docker logs pihole 2> /dev/null | grep 'password:'
-```
-
-If you used RHEL based distrubution with SELinux Enforcing policy add to line with volumes :z
 ``` -v "${DOCKER_CONFIGS}/pihole/:/etc/pihole/:z" \
     -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/:z" \
 ```
@@ -107,7 +74,7 @@ Here is a rundown of the other arguments passed into the example `docker run`:
 | `--cap-add=NET_ADMIN`<br/> *Required* | FTLDNS will fail to start without this setting
 | `--dns=127.0.0.1`<br/> *Recommended* | Sets your container's resolve settings to localhost so it can resolve DHCP hostnames from Pi-hole's DNSMasq <!-- also fixes common resolution errors on container restart -->
 | `--dns=1.1.1.1`<br/> *Optional* | Sets a backup server of your choosing in case DNSMasq has problems starting
-
+| `--env-file .env` <br/> *Optional* | File to store environment variables for docker. Here for convenience
 If you're a fan of [docker-compose](https://docs.docker.com/compose/install/) I have [example docker-compose.yml files](https://github.com/pi-hole/docker-pi-hole/blob/master/doco-example.yml) in github which I think are a nicer way to represent such long run commands.
 
 ## Tips and Tricks

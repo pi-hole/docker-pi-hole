@@ -5,6 +5,7 @@ __pycache__
 .tox
 .eggs
 UNKNOWN.egg-info
+.env
 
 # WIP/test stuff
 doco.yml
