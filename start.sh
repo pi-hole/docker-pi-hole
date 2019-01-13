@@ -26,6 +26,7 @@ export adlistFile='/etc/pihole/adlists.list'
 PH_TEST=true . $PIHOLE_INSTALL
 
 echo " ::: Starting docker specific setup for docker pihole/pihole"
+docker_checks
 generate_password
 validate_env || exit 1
 prepare_configs
