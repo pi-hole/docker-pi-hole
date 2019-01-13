@@ -33,7 +33,7 @@ A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86
 This container uses 2 popular ports, port 53 and port 80, so **may conflict with existing applications ports**.  If you have no other services or docker containers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh) or summarized here:
 
 ```bash
-#!/bin/bash
+#!/bin/bash -e
 # Lookups may not work for VPN / tun0
 IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"
 IPv6_LOOKUP="$(ip -6 route get 2001:4860:4860::8888 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"
@@ -45,15 +45,17 @@ IPv6="${IPv6:-$IPv6_LOOKUP}"  # use $IPv6, if set, otherwise IP_LOOKUP
 # Default of directory you run this from, update to where ever.
 DOCKER_CONFIGS="$(pwd)"
 
-echo "### Make sure your IPs are correct, hard code ServerIP ENV VARs if necessary\nIP: ${IP}\nIPv6: ${IPv6}"
+echo -e "### Make sure your IPs are correct, hard code ServerIP ENV VARs if necessary\nIP: ${IP}\nIPv6: ${IPv6}"
 
 # Default ports + daemonized docker container
+# Environment variables for docker can be defined in --env-file (.env)
 docker run -d \
     --name pihole \
+    --env-file .env \
     -p 53:53/tcp -p 53:53/udp \
     -p 80:80 \
     -p 443:443 \
-    --cap-add=NET_ADMIN` \
+    --cap-add=NET_ADMIN \
     -v "${DOCKER_CONFIGS}/pihole/:/etc/pihole/" \
     -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/" \
     -e ServerIP="${IP}" \
@@ -62,8 +64,23 @@ docker run -d \
     --dns=127.0.0.1 --dns=1.1.1.1 \
     pihole/pihole:latest
 
-echo -n "Your password for https://${IP}/admin/ is "
-docker logs pihole 2> /dev/null | grep 'password:'
+
+printf 'Starting up pihole container '
+for i in $(seq 1 20); do
+    if [ "$(docker inspect -f "{{.State.Health.Status}}" pihole)" == "healthy" ] ; then
+        printf ' OK'
+        echo -e "\n$(docker logs pihole 2> /dev/null | grep 'password:') for your pi-hole: https://${IP}/admin/"
+        exit 0
+    else
+        sleep 3
+        printf '.'
+    fi
+
+    if [ $i -eq 20 ] ; then
+        echo -e "\nTimed out waiting for Pi-hole start start, consult check your container logs for more info (\`docker logs pihole\`)"
+        exit 1
+    fi
+done;
 ```
 
 If you used RHEL based distrubution with SELinux Enforcing policy add to line with volumes :z
@@ -99,6 +116,7 @@ Here is a rundown of the other arguments passed into the example `docker run`:
 
 | Docker Arguments | Description |
 | ---------------- | ----------- |
+| `--env-file .env` <br/> *Optional* | File to store environment variables for docker. Here for convenience
 | `-p 80:80`<br/>`-p 53:53/tcp -p 53:53/udp`<br/> **Recommended** | Ports to expose, the bare minimum ports required for Pi-holes HTTP and DNS services
 | `--restart=unless-stopped`<br/> **Recommended** | Automatically (re)start your Pi-hole on boot or in the event of a crash
 | `-v /dir/for/pihole:/etc/pihole`<br/> **Recommended** | Volumes for your Pi-hole configs help persist changes across docker image updates
