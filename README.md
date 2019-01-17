@@ -10,12 +10,12 @@
 Starting with the v4.1.1 release your Pi-hole container may encounter issues starting the DNS service unless ran with the following settings:
 
 - `--cap-add=NET_ADMIN` This previously optional argument is now required or strongly encouraged
-  - Starting in version 4.1.2 FTL, the DNS Service, is going to check this setting automatically
+    - Starting in a future version FTLDNS is going to check this setting automatically
 - `--dns=127.0.0.1 --dns=1.1.1.1` The second server can be any DNS IP of your choosing, but the **first dns must be 127.0.0.1**
-  - A WARNING stating "Misconfigured DNS in /etc/resolv.conf" may show in docker logs without this.
+    - A WARNING stating "Misconfigured DNS in /etc/resolv.conf" may show in docker logs without this.
 
 These are the raw [docker run cli](https://docs.docker.com/engine/reference/commandline/cli/) versions of the commands.  We provide no official support for docker GUIs but the community forums may be able to help if you do not see a place for these settings.  Remember, always consult your manual too!
- 
+
 ## Overview
 
 #### Renamed from `diginc/pi-hole` to `pihole/pihole`
@@ -30,43 +30,10 @@ A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86
 
 ## Running Pi-hole Docker
 
-This container uses 2 popular ports, port 53 and port 80, so **may conflict with existing applications ports**.  If you have no other services or docker containers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh) or summarized here:
+This container uses 2 popular ports, port 53 and port 80, so **may conflict with existing applications ports**.  If you have no other services or docker containers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh)
 
-```bash
-#!/bin/bash
-# Lookups may not work for VPN / tun0
-IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"
-IPv6_LOOKUP="$(ip -6 route get 2001:4860:4860::8888 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"
+If you're using a RHEL based distrubution with an SELinux Enforcing policy add `:z` to line with volumes like so:
 
-# Just hard code these to your docker server's LAN IP if lookups aren't working
-IP="${IP:-$IP_LOOKUP}"  # use $IP, if set, otherwise IP_LOOKUP
-IPv6="${IPv6:-$IPv6_LOOKUP}"  # use $IPv6, if set, otherwise IP_LOOKUP
-
-# Default of directory you run this from, update to where ever.
-DOCKER_CONFIGS="$(pwd)"
-
-echo "### Make sure your IPs are correct, hard code ServerIP ENV VARs if necessary\nIP: ${IP}\nIPv6: ${IPv6}"
-
-# Default ports + daemonized docker container
-docker run -d \
-    --name pihole \
-    -p 53:53/tcp -p 53:53/udp \
-    -p 80:80 \
-    -p 443:443 \
-    --cap-add=NET_ADMIN` \
-    -v "${DOCKER_CONFIGS}/pihole/:/etc/pihole/" \
-    -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/" \
-    -e ServerIP="${IP}" \
-    -e ServerIPv6="${IPv6}" \
-    --restart=unless-stopped \
-    --dns=127.0.0.1 --dns=1.1.1.1 \
-    pihole/pihole:latest
-
-echo -n "Your password for https://${IP}/admin/ is "
-docker logs pihole 2> /dev/null | grep 'password:'
-```
-
-If you used RHEL based distrubution with SELinux Enforcing policy add to line with volumes :z
 ``` -v "${DOCKER_CONFIGS}/pihole/:/etc/pihole/:z" \
     -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/:z" \
 ```
@@ -104,10 +71,10 @@ Here is a rundown of the other arguments passed into the example `docker run`:
 | `-v /dir/for/pihole:/etc/pihole`<br/> **Recommended** | Volumes for your Pi-hole configs help persist changes across docker image updates
 | `-v /dir/for/dnsmasq.d:/etc/dnsmasq.d`<br/> **Recommended** | Volumes for your dnsmasq configs help persist changes across docker image updates
 | `--net=host`<br/> *Optional* | Alternative to `-p <port>:<port>` arguments (Cannot be used at same time as -p) if you don't run any other web application. DHCP runs best with --net=host, otherwise your router must support dhcp-relay settings.
-| `--cap-add=NET_ADMIN`<br/> *Required* | You will need this for FTL to work.
+| `--cap-add=NET_ADMIN`<br/> *Required* | FTLDNS will fail to start without this setting
 | `--dns=127.0.0.1`<br/> *Recommended* | Sets your container's resolve settings to localhost so it can resolve DHCP hostnames from Pi-hole's DNSMasq <!-- also fixes common resolution errors on container restart -->
 | `--dns=1.1.1.1`<br/> *Optional* | Sets a backup server of your choosing in case DNSMasq has problems starting
-
+| `--env-file .env` <br/> *Optional* | File to store environment variables for docker. Here for convenience
 If you're a fan of [docker-compose](https://docs.docker.com/compose/install/) I have [example docker-compose.yml files](https://github.com/pi-hole/docker-pi-hole/blob/master/doco-example.yml) in github which I think are a nicer way to represent such long run commands.
 
 ## Tips and Tricks
@@ -150,12 +117,12 @@ The standard Pi-hole customization abilities apply to this docker, but with dock
 Do not attempt to upgrade (`pihole -up`) or reconfigure (`pihole -r`).  New images will be released for upgrades, upgrading by replacing your old container with a fresh upgraded image is the 'docker way'.  Long-living docker containers are not the docker way since they aim to be portable and reproducible, why not re-create them often!  Just to prove you can.
 
 0. Read the release notes for both this Docker release and the Pi-hole release
-  * This will help you avoid common problems due to any known issues with upgrading or newly required arguments or variables
-  * We will try to put common break/fixes at the top of this readme too
+    * This will help you avoid common problems due to any known issues with upgrading or newly required arguments or variables
+    * We will try to put common break/fixes at the top of this readme too
 1. Download the latest version of the image: `docker pull pihole/pihole`
 2. Throw away your container: `docker rm -f pihole`
-  * **Warning** When removing your pihole container you may be stuck without DNS until step 3; **docker pull** before **docker rm -f** to avoid DNS inturruption **OR** always have a fallback DNS server configured in DHCP to avoid this problem altogether.
-  * If you care about your data (logs/customizations), make sure you have it volume-mapped or it will be deleted in this step.
+    * **Warning** When removing your pihole container you may be stuck without DNS until step 3; **docker pull** before **docker rm -f** to avoid DNS inturruption **OR** always have a fallback DNS server configured in DHCP to avoid this problem altogether.
+    * If you care about your data (logs/customizations), make sure you have it volume-mapped or it will be deleted in this step.
 3. Start your container with the newer base image: `docker run <args> pihole/pihole` (`<args>` being your preferred run volumes and env vars)
 
 Why is this style of upgrading good?  A couple reasons: Everyone is starting from the same base image which has been tested to known it works.  No worrying about upgrading from A to B, B to C, or A to C is required when rolling out updates, it reducing complexity, and simply allows a 'fresh start' every time while preserving customizations with volumes.  Basically I'm encouraging [phoenix server](https://www.google.com/?q=phoenix+servers) principles for your containers.
