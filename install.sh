@@ -3,10 +3,10 @@
 mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
 # Production tags with valid web footers
-export CORE_TAG='v4.1.1'
-export WEB_TAG='v4.1.1'
+export CORE_TAG="$(cat /etc/docker-pi-hole-version)"
+export WEB_TAG="$(cat /etc/docker-pi-hole-version)"
 # Only use for pre-production / testing
-export USE_CUSTOM_BRANCHES=false
+export USE_CUSTOM_BRANCHES=true
 
 apt-get update
 apt-get install -y curl procps
@@ -14,7 +14,7 @@ curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
 mv /init /s6-init
 
 if [[ $USE_CUSTOM_BRANCHES == true ]] ; then
-    CORE_TAG='release/vx.y.z'
+    CORE_TAG="release/$(cat /etc/docker-pi-hole-version)"
 fi
 
 # debconf-apt-progress seems to hang so get rid of it too
@@ -68,9 +68,10 @@ mv "${tmpLog}" /
 if [[ $USE_CUSTOM_BRANCHES == true ]] ; then
     ln -s /bin/true /usr/local/bin/service
     ln -s /bin/true /usr/local/bin/update-rc.d
-    echo y | bash -x pihole checkout core $CORE_TAG
-    echo y | bash -x pihole checkout web $CORE_TAG
-    echo y | bash -x pihole checkout ftl ${CORE_TAG/v/}
+    echo y | bash -x pihole checkout core ${CORE_TAG}
+    echo y | bash -x pihole checkout web ${CORE_TAG}
+    echo y | bash -x pihole checkout ftl ${CORE_TAG}
+    # If the v is forgotten: ${CORE_TAG/v/}
     unlink /usr/local/bin/service
     unlink /usr/local/bin/update-rc.d
 else

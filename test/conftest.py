@@ -5,6 +5,11 @@ check_output = testinfra.get_backend(
     "local://"
 ).get_module("Command").check_output
 
+__version__ = None
+dotdot = os.path.abspath(os.path.join('.', os.pardir))
+with open('{}/VERSION'.format(dotdot), 'r') as v:
+    __version__ = v.read().strip()
+
 @pytest.fixture()
 def args_dns():
     return '--dns 127.0.0.1 --dns 1.1.1.1'
@@ -91,7 +96,7 @@ def arch(request):
 @pytest.fixture()
 def version(request):
     ''' TODO: include from external .py that can be shared with Dockerfile.py / Tests / deploy scripts '''
-    return 'v4.1.1'
+    return __version__
 
 @pytest.fixture()
 def tag(request, version, arch):
@@ -119,7 +124,7 @@ def persist_arch(request):
 @pytest.fixture(scope='module')
 def persist_version(request):
     ''' TODO: include from external .py that can be shared with Dockerfile.py / Tests / deploy scripts '''
-    return 'v4.1.1'
+    return __version__
 
 @pytest.fixture(scope='module')
 def persist_args(request):

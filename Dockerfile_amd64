@@ -2,6 +2,7 @@ FROM pihole/debian-base:latest
 
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.7.0/s6-overlay-amd64.tar.gz
 COPY install.sh /usr/local/bin/install.sh
+COPY VERSION /etc/docker-pi-hole-version
 ENV PIHOLE_INSTALL /root/ph_install.sh
 
 RUN bash -ex install.sh 2>&1 && \
@@ -31,11 +32,11 @@ ENV S6_KEEP_ENV 1
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
 ENV FTL_CMD no-daemon
 
-ENV VERSION v4.1.1
+ENV VERSION v4.2
 ENV ARCH amd64
 ENV PATH /opt/pihole:${PATH}
 
-LABEL image="pihole/pihole:v4.1.1_amd64"
+LABEL image="pihole/pihole:v4.2_amd64"
 LABEL maintainer="adam@diginc.us"
 LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
 
