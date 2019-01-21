@@ -35,13 +35,13 @@ os_base_vars = {
     'php_error_log': '/var/log/lighttpd/error.log'
 }
 
-__version = None
+__version__ = None
 dot = os.path.abspath('.')
 with open('{}/VERSION'.format(dot), 'r') as v:
-    __version = v.read().strip()
+    __version__ = v.read().strip()
 
 images = {
-    __version: [
+    __version__: [
         {
             'base': 'pihole/debian-base:latest',
             'arch': 'amd64'
@@ -108,7 +108,7 @@ def build(docker_repo, arch, args):
     ).get_module("Command").run
 
     dockerfile = 'Dockerfile_{}'.format(arch)
-    repo_tag = '{}:{}_{}'.format(docker_repo, __version, arch)
+    repo_tag = '{}:{}_{}'.format(docker_repo, __version__, arch)
     cached_image = '{}/{}'.format('pihole', repo_tag)
     time=''
     if args['-t']:
