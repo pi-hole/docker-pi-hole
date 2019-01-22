@@ -1,12 +1,13 @@
 import pytest
 import testinfra
+import os
 
 check_output = testinfra.get_backend(
     "local://"
 ).get_module("Command").check_output
 
 __version__ = None
-dotdot = os.path.abspath(os.path.join('.', os.pardir))
+dotdot = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir, os.pardir))
 with open('{}/VERSION'.format(dotdot), 'r') as v:
     __version__ = v.read().strip()
 
