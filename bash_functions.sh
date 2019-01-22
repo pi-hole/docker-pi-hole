@@ -334,28 +334,10 @@ setup_blocklists() {
         return
     fi
 
-    # 3. If we're running tests, use a small list of fake tests to speed everything up
-    if [ -n "$PYTEST" ]; then 
-        echo ":::::: Tests are being ran - stub out ad list fetching and add a fake ad block ${exit_string}"
-        sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)" 
-        echo '123.123.123.123 testblock.pi-hole.local' > "/var/www/html/fake.list"
-        echo 'file:///var/www/html/fake.list' > "${adlistFile}"
-        echo 'http://localhost/fake.list' >> "${adlistFile}"
-        return
-    fi
-
     echo "::: ${FUNCNAME[0]} now setting default blocklists up: "
     echo "::: TIP: Use a docker volume for ${adlistFile} if you want to customize for first boot"
     > "${adlistFile}"
-    # Just copied outa the choices for now
-    # https://github.com/pi-hole/pi-hole/blob/FTLDNS/automated%20install/basic-install.sh#L1014
-    echo "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" >> "${adlistFile}"
-    echo "https://mirror1.malwaredomains.com/files/justdomains" >> "${adlistFile}"
-    echo "http://sysctl.org/cameleon/hosts" >> "${adlistFile}"
-    echo "https://zeustracker.abuse.ch/blocklist.php?download=domainblocklist" >> "${adlistFile}"
-    echo "https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt" >> "${adlistFile}"
-    echo "https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt" >> "${adlistFile}"
-    echo "https://hosts-file.net/ad_servers.txt" >> "${adlistFile}"
+    installDefaultBlocklists
 
     echo "::: Blocklists (${adlistFile}) now set to:"
     cat "${adlistFile}"
