@@ -45,7 +45,7 @@ if [[ "$version" == 'unset' ]]; then
         echo "Version number var is unset and master branch needs a version...pass in \$version variable!"
         exit 1
     elif [[ "$branch" = "release/"* ]]; then
-        version="$(echo $branch | grep -Po 'v[\d\.-]*')"
+        version="$(echo $branch | grep -Po 'v[\d\w\.-]*')"
         echo "Version number is being taken from this release branch $version"
     else
         version="$branch"
