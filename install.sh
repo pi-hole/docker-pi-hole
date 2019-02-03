@@ -6,7 +6,7 @@ mkdir -p /var/run/pihole
 export CORE_TAG="$(cat /etc/docker-pi-hole-version)"
 export WEB_TAG="$(cat /etc/docker-pi-hole-version)"
 # Only use for pre-production / testing
-export USE_CUSTOM_BRANCHES=true
+export USE_CUSTOM_BRANCHES=false
 
 apt-get update
 apt-get install -y curl procps
