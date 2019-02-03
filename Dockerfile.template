@@ -2,6 +2,7 @@ FROM {{ pihole.base }}
 
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/{{ pihole.s6_version }}/s6-overlay-{{ pihole.s6arch }}.tar.gz
 COPY install.sh /usr/local/bin/install.sh
+COPY VERSION /etc/docker-pi-hole-version
 ENV PIHOLE_INSTALL /root/ph_install.sh
 
 RUN bash -ex install.sh 2>&1 && \

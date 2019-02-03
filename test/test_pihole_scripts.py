@@ -32,7 +32,7 @@ def RunningPiHole(DockerPersist, Slow, persist_webserver, persist_tag, start_cmd
 
 
 @pytest.mark.parametrize('start_cmd,hostname,expected_ip, expected_messages', [
-    ('enable',  'pi.hole', '127.0.0.1', ['Enabling blocking','Pi-hole Enabled']),
+    ('enable',  'pi.hole', '127.0.0.1', ['Blocking already enabled,','nothing to do']),
     ('disable', 'pi.hole', '127.0.0.1', ['Disabling blocking','Pi-hole Disabled']),
 ])
 def test_pihole_enable_disable_command(RunningPiHole, Dig, persist_tag, start_cmd, hostname, expected_ip, expected_messages):

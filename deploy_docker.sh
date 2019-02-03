@@ -28,6 +28,7 @@ namespace='pihole'
 localimg='pihole'
 remoteimg="$namespace/$localimg"
 branch="$(parse_git_branch)"
+local_version="$(cat VERSION)"
 version="${version:-unset}"
 dry="${dry}"
 latest="${latest:-false}" # true as shell env var to deploy latest
@@ -44,7 +45,7 @@ if [[ "$version" == 'unset' ]]; then
         echo "Version number var is unset and master branch needs a version...pass in \$version variable!"
         exit 1
     elif [[ "$branch" = "release/"* ]]; then
-        version="$(echo $branch | grep -Po 'v[\d\.-]*')"
+        version="$(echo $branch | grep -Po 'v[\d\w\.-]*')"
         echo "Version number is being taken from this release branch $version"
     else
         version="$branch"
@@ -70,7 +71,7 @@ $dry tox
 images=()
 for tag in ${!arch_map[@]}; do
     # Verison specific tags for ongoing history
-    $dry docker tag $localimg:v4.1.1_$tag $remoteimg:${version}_${tag}
+    $dry docker tag $localimg:${local_version}_$tag $remoteimg:${version}_${tag}
     $dry docker push pihole/pihole:${version}_${tag}
     images+=(pihole/pihole:${version}_${tag})
 done

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """ Dockerfile.py - generates and build dockerfiles
 
 Usage:
@@ -36,8 +35,13 @@ os_base_vars = {
     'php_error_log': '/var/log/lighttpd/error.log'
 }
 
+__version__ = None
+dot = os.path.abspath('.')
+with open('{}/VERSION'.format(dot), 'r') as v:
+    __version__ = v.read().strip()
+
 images = {
-    'v4.1.1': [
+    __version__: [
         {
             'base': 'pihole/debian-base:latest',
             'arch': 'amd64'
@@ -95,16 +99,16 @@ def build_dockerfiles(args):
         if arch == 'armel':
             print "Skipping armel, incompatible upstream binaries/broken"
             continue
-        build('pihole', 'v4.1.1', arch, args)
+        build('pihole', arch, args)
 
 
-def build(docker_repo, version, arch, args):
+def build(docker_repo, arch, args):
     run_local = testinfra.get_backend(
         "local://"
     ).get_module("Command").run
 
     dockerfile = 'Dockerfile_{}'.format(arch)
-    repo_tag = '{}:{}_{}'.format(docker_repo, version, arch)
+    repo_tag = '{}:{}_{}'.format(docker_repo, __version__, arch)
     cached_image = '{}/{}'.format('pihole', repo_tag)
     time=''
     if args['-t']:
