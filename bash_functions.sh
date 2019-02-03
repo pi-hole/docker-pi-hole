@@ -171,7 +171,14 @@ setup_dnsmasq() {
     setup_dnsmasq_dns "$dns1" "$dns2" 
     setup_dnsmasq_interface "$interface"
     setup_dnsmasq_listening_behaviour "$dnsmasq_listening_behaviour"
+    setup_dnsmasq_user "${FTL_USER:-root}"
     ProcessDNSSettings
+}
+
+setup_dnsmasq_user() {
+    # Run FTL as root user to avoid SHM issues
+    FTL_USER="${1}"
+    sed -i '/^\s*user=/ c\user=root' /etc/dnsmasq.d/01-pihole.conf
 }
 
 setup_dnsmasq_hostnames() {
