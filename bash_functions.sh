@@ -171,21 +171,21 @@ setup_dnsmasq() {
     setup_dnsmasq_dns "$dns1" "$dns2" 
     setup_dnsmasq_interface "$interface"
     setup_dnsmasq_listening_behaviour "$dnsmasq_listening_behaviour"
-    setup_dnsmasq_user "${FTL_USER:-root}"
+    setup_dnsmasq_user "${DNSMASQ_USER:-root}"
     ProcessDNSSettings
 }
 
 setup_dnsmasq_user() {
-    FTL_USER="${1}"
+    DNSMASQ_USER="${1}"
 
-    # Run FTL as root user to avoid SHM permission issues
+    # Run DNSMASQ as root user to avoid SHM permission issues
     if grep -r -q '^\s*user=' /etc/dnsmasq.* ; then
         # Change user that had been set previously to root
         for f in $(grep -L '^\s*user=' /etc/dnsmasq.*); do
-            sed -i '/^\s*user=/ c\user=root' "${f}"
+            sed -i "/^\s*user=/ c\user=${DNSMASQ_USER}" "${f}"
         done
     else
-      echo -e "\nuser=${FTL_USER}" >> /etc/dnsmasq.conf
+      echo -e "\nuser=${DNSMASQ_USER}" >> /etc/dnsmasq.conf
     fi
 }
 
