@@ -32,11 +32,11 @@ ENV S6_KEEP_ENV 1
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
 ENV FTL_CMD no-daemon
 
-ENV VERSION v4.2
+ENV VERSION v4.2.1
 ENV ARCH armel
 ENV PATH /opt/pihole:${PATH}
 
-LABEL image="pihole/pihole:v4.2_armel"
+LABEL image="pihole/pihole:v4.2.1_armel"
 LABEL maintainer="adam@diginc.us"
 LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
 

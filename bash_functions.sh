@@ -176,9 +176,17 @@ setup_dnsmasq() {
 }
 
 setup_dnsmasq_user() {
-    # Run FTL as root user to avoid SHM issues
     FTL_USER="${1}"
-    sed -i '/^\s*user=/ c\user=root' /etc/dnsmasq.d/01-pihole.conf
+
+    # Run FTL as root user to avoid SHM permission issues
+    if grep -r -q '^\s*user=' /etc/dnsmasq.* ; then
+        # Change user that had been set previously to root
+        for f in $(grep -L '^\s*user=' /etc/dnsmasq.*); do
+            sed -i '/^\s*user=/ c\user=root' "${f}"
+        done
+    else
+      echo -e "\nuser=${FTL_USER}" >> /etc/dnsmasq.conf
+    fi
 }
 
 setup_dnsmasq_hostnames() {
