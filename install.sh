@@ -4,7 +4,8 @@ mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
 # Production tags with valid web footers
 export CORE_TAG="$(cat /etc/docker-pi-hole-version)"
-export WEB_TAG="$(cat /etc/docker-pi-hole-version)"
+# 4.2.1 -> 4.2 since no patch release for web
+export WEB_TAG="${CORE_TAG/.1/}"
 # Only use for pre-production / testing
 export USE_CUSTOM_BRANCHES=false
 
@@ -89,6 +90,4 @@ sed -i $'s/)\s*updatePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 
 touch /.piholeFirstBoot
 
-# Fix dnsmasq in docker
-#grep -q '^user=root' || echo -e '\nuser=root' >> /etc/dnsmasq.conf 
 echo 'Docker install successful'
