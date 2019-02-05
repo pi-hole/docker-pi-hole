@@ -181,7 +181,7 @@ setup_dnsmasq_user() {
     # Run DNSMASQ as root user to avoid SHM permission issues
     if grep -r -q '^\s*user=' /etc/dnsmasq.* ; then
         # Change user that had been set previously to root
-        for f in $(grep -L '^\s*user=' /etc/dnsmasq.*); do
+        for f in $(grep -r -l '^\s*user=' /etc/dnsmasq.*); do
             sed -i "/^\s*user=/ c\user=${DNSMASQ_USER}" "${f}"
         done
     else
