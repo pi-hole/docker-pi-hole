@@ -25,6 +25,17 @@ docker_checks() {
     cat /etc/resolv.conf
 }
 
+fix_capabilities() {
+    [ ! -f /.piholeFirstBoot ] && return
+
+    setcap CAP_NET_BIND_SERVICE,CAP_NET_RAW,CAP_NET_ADMIN+ei $(which pihole-FTL) || ret=$?
+
+    if [[ $ret -ne 0 && "${DNSMASQ_USER:-root}" != "root" ]]; then
+        echo "ERROR: Failed to set capabilities for pihole-FTL. Cannot run as non-root."
+        exit 1
+    fi
+}
+
 prepare_configs() {
     # Done in /start.sh, don't do twice
     PH_TEST=true . $PIHOLE_INSTALL
@@ -323,7 +334,7 @@ setup_ipv4_ipv6() {
 test_configs() {
     set -e
     echo -n '::: Testing pihole-FTL DNS: '
-    pihole-FTL test || exit 1
+    sudo -u ${DNSMASQ_USER:-root} pihole-FTL test || exit 1
     echo -n '::: Testing lighttpd config: '
     lighttpd -t -f /etc/lighttpd/lighttpd.conf || exit 1
     set +e
