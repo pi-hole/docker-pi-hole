@@ -27,6 +27,7 @@ PH_TEST=true . $PIHOLE_INSTALL
 
 echo " ::: Starting docker specific setup for docker pihole/pihole"
 docker_checks
+fix_capabilities
 generate_password
 validate_env || exit 1
 prepare_configs
