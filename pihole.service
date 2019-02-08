@@ -5,9 +5,16 @@ After=docker.service network-online.target dhcpd.service
 
 [Service]
 Restart=always
-ExecStart=/usr/bin/docker start -a pihole
-ExecStop=/usr/bin/docker stop -t 2 pihole
+# Change enp1s0 to your external network interface
+ExecStartPre=-/bin/bash -c "/bin/systemctl set-environment ip=$(/sbin/ip -o -4 addr list enp1s0 | awk '{print $4}' | cut -d/ -f1)"
+ExecStartPre=-/bin/bash -c "/bin/systemctl set-environment ip6=$(/sbin/ip -o -6 addr list enp1s0 | grep mngtmpaddr |awk '{print $4}' | cut -d/ -f1)"
+# Make sure to add volumes for both /etc/pihole and /etc/dnsmasq.d
+ExecStart=/usr/bin/docker run --rm --name %N \
+		-e ServerIP=${ip} -e ServerIPv6-${ip6} \
+		--net host --cap-add=NET_ADMIN \
+		--dns 127.0.0.1 --dns 8.8.8.8 \
+		pihole/pihole:latest
+ExecStop=/usr/bin/docker stop -t 2 %N
 
 [Install]
 WantedBy=multi-user.target
-
