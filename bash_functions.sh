@@ -86,12 +86,7 @@ prepare_configs() {
 }
 
 validate_env() {
-    if [ -z "$ServerIP" ] ; then
-      echo "ERROR: To function correctly you must pass an environment variables of 'ServerIP' into the docker container with the IP of your docker host from which you are passing web (80) and dns (53) ports from"
-      exit 1
-    fi;
-
-    # Required ServerIP is a valid IP
+    # Optional ServerIP is a valid IP
     # nc won't throw any text based errors when it times out connecting to a valid IP, otherwise it complains about the DNS name being garbage
     # if nc doesn't behave as we expect on a valid IP the routing table should be able to look it up and return a 0 retcode
     if [[ "$(nc -4 -w1 -z "$ServerIP" 53 2>&1)" != "" ]] || ! ip route get "$ServerIP" > /dev/null ; then
@@ -182,12 +177,12 @@ setup_dnsmasq() {
     setup_dnsmasq_dns "$dns1" "$dns2" 
     setup_dnsmasq_interface "$interface"
     setup_dnsmasq_listening_behaviour "$dnsmasq_listening_behaviour"
-    setup_dnsmasq_user "${DNSMASQ_USER:-root}"
+    setup_dnsmasq_user "${DNSMASQ_USER}"
     ProcessDNSSettings
 }
 
 setup_dnsmasq_user() {
-    DNSMASQ_USER="${1}"
+    local DNSMASQ_USER="${1}"
 
     # Run DNSMASQ as root user to avoid SHM permission issues
     if grep -r -q '^\s*user=' /etc/dnsmasq.* ; then

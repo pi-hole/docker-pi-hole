@@ -16,10 +16,6 @@ def args_dns():
     return '--dns 127.0.0.1 --dns 1.1.1.1'
 
 @pytest.fixture()
-def args_caps():
-    return '--cap-add=NET_ADMIN'
-
-@pytest.fixture()
 def args_volumes():
     return '-v /dev/null:/etc/pihole/adlists.default'
 
@@ -28,21 +24,21 @@ def args_env():
     return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
 
 @pytest.fixture()
-def args(args_dns, args_caps, args_volumes, args_env):
-    return "{} {} {} {}".format(args_dns, args_caps, args_volumes, args_env)
+def args(args_dns, args_volumes, args_env):
+    return "{} {} {}".format(args_dns, args_volumes, args_env)
 
 @pytest.fixture()
-def test_args(request):
-    ''' arguments provided by tests '''
+def test_args():
+    ''' test override fixture to provide arguments seperate from our core args '''
     return ''
 
-def DockerGeneric(request, args, test_args, image, cmd, entrypoint):
+def DockerGeneric(request, _test_args, _args, _image, _cmd, _entrypoint):
     assert 'docker' in check_output('id'), "Are you in the docker group?"
     # Always appended PYTEST arg to tell pihole we're testing
-    if 'pihole' in image:
-       args = '{} -e PYTEST=1'.format(args)
+    if 'pihole' in _image and 'PYTEST=1' not in _args:
+       _args = '{} -e PYTEST=1'.format(_args)
     docker_run = 'docker run -d -t {args} {test_args} {entry} {image} {cmd}'\
-        .format(args=args, test_args=test_args, entry=entrypoint, image=image, cmd=cmd)
+        .format(args=_args, test_args=_test_args, entry=_entrypoint, image=_image, cmd=_cmd)
     print docker_run
     docker_id = check_output(docker_run)
 
@@ -67,6 +63,7 @@ def DockerGeneric(request, args, test_args, image, cmd, entrypoint):
         return out
 
     funcType = type(docker_container.run)
+    # override run function to use bash not sh
     docker_container.run = funcType(run_bash, docker_container, testinfra.backend.docker.DockerBackend)
     return docker_container
 
@@ -77,11 +74,10 @@ def Docker(request, test_args, args, image, cmd, entrypoint):
     return DockerGeneric(request, test_args, args, image, cmd, entrypoint)
 
 @pytest.fixture(scope='module')
-def DockerPersist(request, persist_args, persist_image, persist_cmd, Dig):
+def DockerPersist(request, persist_test_args, persist_args, persist_image, persist_cmd, persist_entrypoint, Dig):
     ''' Persistent Docker container for multiple tests, instead of stopping container after one test '''
     ''' Uses DUP'd module scoped fixtures because smaller scoped fixtures won't mix with module scope '''
-    default_args = '--dns 127.0.0.1 --dns 1.1.1.1 -v /dev/null:/etc/pihole/adlists.default -e PYTEST=1 --cap-add=NET_ADMIN'
-    persistent_container = DockerGeneric(request, default_args, persist_args, persist_image, persist_cmd, '')
+    persistent_container = DockerGeneric(request, persist_test_args, persist_args, persist_image, persist_cmd, persist_entrypoint)
     ''' attach a dig conatiner for lookups '''
     persistent_container.dig = Dig(persistent_container.id)
     return persistent_container
@@ -95,57 +91,78 @@ def arch(request):
     return request.param
 
 @pytest.fixture()
-def version(request):
+def version():
     return __version__
 
 @pytest.fixture()
-def tag(request, version, arch):
+def tag(version, arch):
     return '{}_{}'.format(version, arch)
 
 @pytest.fixture
-def webserver(request, tag):
+def webserver(tag):
     ''' TODO: this is obvious without alpine+nginx as the alternative, remove fixture, hard code lighttpd in tests? '''
     return 'lighttpd'
 
 @pytest.fixture()
-def image(request, tag):
+def image(tag):
     image = 'pihole'
     return '{}:{}'.format(image, tag)
 
 @pytest.fixture()
-def cmd(request):
+def cmd():
     return 'tail -f /dev/null'
 
-@pytest.fixture(scope='module', params=['amd64'])
-def persist_arch(request):
+@pytest.fixture(scope='module')
+def persist_arch():
     '''amd64 only, dnsmasq/pihole-FTL(?untested?) will not start under qemu-user-static :('''
-    return request.param
+    return 'amd64'
 
 @pytest.fixture(scope='module')
-def persist_version(request):
+def persist_version():
     return __version__
 
 @pytest.fixture(scope='module')
-def persist_args(request):
+def persist_args_dns():
+    return '--dns 127.0.0.1 --dns 1.1.1.1'
+
+@pytest.fixture(scope='module')
+def persist_args_volumes():
+    return '-v /dev/null:/etc/pihole/adlists.default'
+
+@pytest.fixture(scope='module')
+def persist_args_env():
     return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
 
 @pytest.fixture(scope='module')
-def persist_tag(request, persist_version, persist_arch):
+def persist_args(persist_args_dns, persist_args_volumes, persist_args_env):
+    return "{} {} {}".format(args_dns, args_volumes, args_env)
+
+@pytest.fixture(scope='module')
+def persist_test_args():
+    ''' test override fixture to provide arguments seperate from our core args '''
+    return ''
+
+@pytest.fixture(scope='module')
+def persist_tag(persist_version, persist_arch):
     return '{}_{}'.format(persist_version, persist_arch)
 
 @pytest.fixture(scope='module')
-def persist_webserver(request, persist_tag):
+def persist_webserver(persist_tag):
     ''' TODO: this is obvious without alpine+nginx as the alternative, remove fixture, hard code lighttpd in tests? '''
     return 'lighttpd'
 
 @pytest.fixture(scope='module')
-def persist_image(request, persist_tag):
+def persist_image(persist_tag):
     image = 'pihole'
     return '{}:{}'.format(image, persist_tag)
 
 @pytest.fixture(scope='module')
-def persist_cmd(request):
+def persist_cmd():
     return 'tail -f /dev/null'
+
+@pytest.fixture(scope='module')
+def persist_entrypoint():
+    return ''
 
 @pytest.fixture
 def Slow():
@@ -168,7 +185,7 @@ def Slow():
     return slow
 
 @pytest.fixture(scope='module')
-def Dig(request):
+def Dig():
     ''' separate container to link to pi-hole and perform lookups '''
     ''' a docker pull is faster than running an install of dnsutils '''
     def dig(docker_id):
