@@ -187,9 +187,9 @@ Similarly for the webserver you can customize configs in /etc/lighttpd
 
 ### Systemd init script
 
-As long as your docker system service auto starts on boot and you run your container with `--restart=unless-stopped` your container should always start on boot and restart on crashes.  If you prefer to have your docker container run as a systemd service instead, add the file [pihole.service](https://raw.githubusercontent.com/pi-hole/docker-pi-hole/master/pihole.service) to "/etc/systemd/system"; customize whatever your container name is and remove `--restart=unless-stopped` from your docker run.  Then after you have initially created the docker container using the docker run command above, you can control it with "systemctl start pihole" or "systemctl stop pihole" (instead of `docker start`/`docker stop`).  You can also enable it to auto-start on boot with "systemctl enable pihole" (as opposed to `--restart=unless-stopped` and making sure docker service auto-starts on boot).
+As long as your docker system service auto starts on boot and you run your container with `--restart=unless-stopped` your container should always start on boot and restart on crashes.  If you prefer to have your docker container run as a systemd service instead, add the file [pihole.service](https://raw.githubusercontent.com/pi-hole/docker-pi-hole/master/pihole.service) to "/etc/systemd/system"; customize with volumes for /etc/pihole and /etc/dnsmasq.d as well as any other advanced options noted above. You can now control pihole with "systemctl start pihole" or "systemctl stop pihole".  To enable auto-starting on boot use "systemctl enable pihole".
 
-NOTE:  After initial run you may need to manually stop the docker container with "docker stop pihole" before the systemctl can start controlling the container.
+NOTE:  If you had been using "docker run" manually before you may need to manually stop the docker container with "docker stop pihole" before the systemctl can start controlling the container.
 
 ## Note on Capabilities
 

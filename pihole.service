@@ -5,9 +5,12 @@ After=docker.service network-online.target dhcpd.service
 
 [Service]
 Restart=always
-ExecStart=/usr/bin/docker start -a pihole
-ExecStop=/usr/bin/docker stop -t 2 pihole
+# Make sure to add volumes for both /etc/pihole and /etc/dnsmasq.d
+ExecStart=/usr/bin/docker run --rm --name %N \
+		--net host --cap-add=NET_ADMIN \
+		--dns 127.0.0.1 --dns 8.8.8.8 \
+		pihole/pihole:latest
+ExecStop=/usr/bin/docker stop -t 2 %N
 
 [Install]
 WantedBy=multi-user.target
-
