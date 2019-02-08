@@ -5,9 +5,8 @@ import time
         docker containers (esp. musl based OSs) stripped down nature '''
 
 # If the test runs /start.sh, do not let s6 run it too!  Kill entrypoint to avoid race condition/duplicated execution
-@pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
-@pytest.mark.parametrize('args', [ '' ])
-def test_ServerIP_missing_triggers_start_error(Docker):
+@pytest.mark.parametrize('persist_entrypoint,persist_cmd,persist_args_env', [('--entrypoint=tail','-f /dev/null','')])
+def test_ServerIP_missing_is_not_required_anymore(RunningPiHole):
     ''' When args to docker are empty start.sh exits saying ServerIP is required '''
     start = Docker.run('/start.sh')
     error_msg = "ERROR: To function correctly you must pass an environment variables of 'ServerIP' into the docker container"

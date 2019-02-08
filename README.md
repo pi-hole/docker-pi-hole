@@ -5,14 +5,53 @@
 </p>
 <!-- Delete above HTML and insert markdown for dockerhub : ![Pi-hole](https://pi-hole.github.io/graphics/Vortex/Vortex_with_text.png) -->
 
+## Quick Start
+
+[Docker-compose](https://docs.docker.com/compose/install/) example:
+
+```yaml
+version: "3"
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "80:80/tcp"
+      - "443:443/tcp"
+    environment: 
+      TZ: 'America/Chicago'
+      # WEBPASSWORD: 'set a secure password here or it will be random'
+    # Volumes store your data between container upgrades
+    volumes:
+       - './etc-pihole/:/etc/pihole/'
+       - './etc-dnsmasq.d/:/etc/dnsmasq.d/'
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
+    # Recommended but not required (DHCP needs NET_ADMIN)
+    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+```
+
+[Here is an equivilent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
+
+
+## Docker Pi-Hole v4.2.1
+
+ServerIP no longer a required enviroment variable!  Feel free to remove it unless you need it to customize lighttpd
+
 ## Docker Pi-Hole v4.1.1+ IMPORTANT upgrade notes
 
-Starting with the v4.1.1 release your Pi-hole container may encounter issues starting the DNS service unless ran with the following settings:
+Starting with the v4.1.1 release your Pi-hole container may encounter issues starting the DNS service unless ran with the following setting:
 
-- `--cap-add=NET_ADMIN` This previously optional argument is now required or strongly encouraged
-    - Starting in a future version FTLDNS is going to check this setting automatically
 - `--dns=127.0.0.1 --dns=1.1.1.1` The second server can be any DNS IP of your choosing, but the **first dns must be 127.0.0.1**
     - A WARNING stating "Misconfigured DNS in /etc/resolv.conf" may show in docker logs without this.
+- 4.1 required --net-admin 
 
 These are the raw [docker run cli](https://docs.docker.com/engine/reference/commandline/cli/) versions of the commands.  We provide no official support for docker GUIs but the community forums may be able to help if you do not see a place for these settings.  Remember, always consult your manual too!
 
