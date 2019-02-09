@@ -1,5 +1,4 @@
 import pytest
-import time
 import re
 
 
@@ -9,7 +8,7 @@ import re
     ('-e "IPv6=False"', False, 'IPv4'),
     ('-e "IPv6=foobar"', False, 'IPv4'),
 ])
-def test_IPv6_not_True_removes_ipv6(Docker, test_args, expected_ipv6, expected_stdout):
+def test_IPv6_not_True_removes_ipv6(Docker, Slow, test_args, expected_ipv6, expected_stdout):
     ''' When a user overrides IPv6=True they only get IPv4 listening webservers '''
     IPV6_LINE = 'use-ipv6.pl'
     WEB_CONFIG = '/etc/lighttpd/lighttpd.conf'
@@ -18,14 +17,15 @@ def test_IPv6_not_True_removes_ipv6(Docker, test_args, expected_ipv6, expected_s
     assert "Using {}".format(expected_stdout) in function.stdout
     if expected_stdout == 'IPv4':
         assert 'IPv6' not in function.stdout
-    # weird slow write/sync problem; no sleep == old state of file, sleep == updated/setup state of file
-    time.sleep(1)
-    config = Docker.run('grep \'use-ipv6.pl\' {}'.format(WEB_CONFIG)).stdout
-    assert (IPV6_LINE in config) == expected_ipv6
+    # On overlay2(?) docker sometimes writes to disk are slow enough to break some tests...
+    expected_ipv6_check = lambda: (\
+        IPV6_LINE in Docker.run('grep \'use-ipv6.pl\' {}'.format(WEB_CONFIG)).stdout
+    ) == expected_ipv6
+    Slow(expected_ipv6_check)
 
 
 @pytest.mark.parametrize('test_args', ['-e "WEB_PORT=999"'])
-def test_overrides_default_WEB_PORT(Docker, test_args):
+def test_overrides_default_WEB_PORT(Docker, Slow, test_args):
     ''' When a --net=host user sets WEB_PORT to avoid synology's 80 default IPv4 and or IPv6 ports are updated'''
     CONFIG_LINE = 'server.port\s*=\s*999'
     WEB_CONFIG = '/etc/lighttpd/lighttpd.conf'
@@ -33,8 +33,7 @@ def test_overrides_default_WEB_PORT(Docker, test_args):
     function = Docker.run('. /bash_functions.sh ; eval `grep setup_web_port /start.sh`')
     assert "Custom WEB_PORT set to 999" in function.stdout
     assert "INFO: Without proper router DNAT forwarding to 127.0.0.1:999, you may not get any blocked websites on ads" in function.stdout
-    config = Docker.run('cat {}'.format(WEB_CONFIG)).stdout
-    assert re.search(CONFIG_LINE, config) != None
+    Slow(lambda: re.search(CONFIG_LINE, Docker.run('cat {}'.format(WEB_CONFIG)).stdout) != None)
     # grep fails to find any of the old address w/o port
     assert Docker.run('grep -rq "://127.0.0.1/" /var/www/html/').rc == 1
     assert Docker.run('grep -rq "://pi.hole/" /var/www/html/').rc == 1
@@ -63,16 +62,14 @@ def test_bad_input_to_WEB_PORT(Docker, test_args, expected_error):
     ('-e DNS1="1.2.3.4" -e DNS2="no"',      'custom DNS',  '1.2.3.4', None ),
     ('-e DNS2="no"',                        'custom DNS',  '8.8.8.8', None ),
 ])
-def test_override_default_servers_with_DNS_EnvVars(Docker, args_env, expected_stdout, dns1, dns2):
+def test_override_default_servers_with_DNS_EnvVars(Docker, Slow, args_env, expected_stdout, dns1, dns2):
     ''' on first boot when DNS vars are NOT set explain default google DNS settings are used
                    or when DNS vars are set override the pihole DNS settings '''
     assert Docker.run('test -f /.piholeFirstBoot').rc == 0
     function = Docker.run('. /bash_functions.sh ; eval `grep "^setup_dnsmasq " /start.sh`')
     assert expected_stdout in function.stdout
-    time.sleep(1)
-    docker_dns_servers = Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout
     expected_servers = 'server={}\n'.format(dns1) if dns2 == None else 'server={}\nserver={}\n'.format(dns1, dns2)
-    assert expected_servers == docker_dns_servers
+    Slow(lambda: expected_servers == Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout)
 
 
 @pytest.mark.parametrize('args_env, dns1, dns2, expected_stdout', [
@@ -121,13 +118,11 @@ def test_DNS_Envs_are_secondary_to_setupvars(Docker, args_env, expected_stdout, 
     ('-e INTERFACE="eth0"', 'binding to default interface: eth0', 'interface=eth0' ),
     ('-e INTERFACE="br0"', 'binding to custom interface: br0', 'interface=br0'),
 ])
-def test_DNS_interface_override_defaults(Docker, args_env, expected_stdout, expected_config_line):
+def test_DNS_interface_override_defaults(Docker, Slow, args_env, expected_stdout, expected_config_line):
     ''' When INTERFACE environment var is passed in, overwrite dnsmasq interface '''
     function = Docker.run('. /bash_functions.sh ; eval `grep "^setup_dnsmasq " /start.sh`')
     assert expected_stdout in function.stdout
-    time.sleep(1)
-    docker_dns_interface = Docker.run('grep "^interface" /etc/dnsmasq.d/01-pihole.conf').stdout
-    assert expected_config_line + '\n' == docker_dns_interface
+    Slow(lambda: expected_config_line + '\n' == Docker.run('grep "^interface" /etc/dnsmasq.d/01-pihole.conf').stdout)
 
 
 expected_debian_lines = [
