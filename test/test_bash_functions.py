@@ -82,7 +82,7 @@ def test_override_default_servers_with_DNS_EnvVars(Docker, Slow, args_env, expec
     ('-e DNS1="1.2.3.4" -e DNS2="2.2.3.4"', '1.2.3.4', '2.2.3.4',
      'Docker DNS variables not used\nExisting DNS servers used'),
 ])
-def test_DNS_Envs_are_secondary_to_setupvars(Docker, args_env, expected_stdout, dns1, dns2):
+def test_DNS_Envs_are_secondary_to_setupvars(Docker, Slow, args_env, expected_stdout, dns1, dns2):
     ''' on second boot when DNS vars are set just use pihole DNS settings
                     or when DNS vars and FORCE_DNS var are set override the pihole DNS settings '''
     # Given we are not booting for the first time
@@ -99,18 +99,12 @@ def test_DNS_Envs_are_secondary_to_setupvars(Docker, args_env, expected_stdout, 
     function = Docker.run('. /bash_functions.sh ; eval `grep "^setup_dnsmasq " /start.sh`')
     assert expected_stdout in function.stdout
 
-    expected_servers = 'server={}\nserver={}\n'.format(dns1, dns2)
-    servers = Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf')
-    servers = servers.stdout.strip().split('\n')
-    expected_count = 2
-    if len(servers) != expected_count:
-        assert False, "{} is not {}".format(servers, expected_count)
-    searchDns1 = servers[0]
-    searchDns2 = servers[1]
-
     # Then the servers are still what the user had customized if forced dnsmasq is not set
-    assert 'server={}'.format(dns1) == searchDns1
-    assert 'server={}'.format(dns2) == searchDns2
+    expected_servers = ['server={}'.format(dns1), 'server={}'.format(dns2)]
+    Slow(lambda:
+        Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout.strip().split('\n') == \
+        expected_servers
+    )
 
 
 @pytest.mark.parametrize('args_env, expected_stdout, expected_config_line', [
