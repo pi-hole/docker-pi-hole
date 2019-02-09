@@ -56,33 +56,33 @@ def test_bad_input_to_WEB_PORT(Docker, test_args, expected_error):
 
 # DNS Environment Variable behavior in combinations of modified pihole LTE settings
 @pytest.mark.parametrize('args_env, expected_stdout, dns1, dns2', [
-    ('-e ServerIP="1.2.3.4"',                                     'default DNS', '8.8.8.8', '8.8.4.4' ),
-    ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4"',                   'custom DNS',  '1.2.3.4', '8.8.4.4' ),
-    ('-e ServerIP="1.2.3.4" -e DNS2="1.2.3.4"',                   'custom DNS',  '8.8.8.8', '1.2.3.4' ),
-    ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4" -e DNS2="2.2.3.4"', 'custom DNS',  '1.2.3.4', '2.2.3.4' ),
-    ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4" -e DNS2="no"',      'custom DNS',  '1.2.3.4', None ),
-    ('-e ServerIP="1.2.3.4" -e DNS2="no"',                        'custom DNS',  '8.8.8.8', None ),
+    ('',                                     'default DNS', '8.8.8.8', '8.8.4.4' ),
+    ('-e DNS1="1.2.3.4"',                   'custom DNS',  '1.2.3.4', '8.8.4.4' ),
+    ('-e DNS2="1.2.3.4"',                   'custom DNS',  '8.8.8.8', '1.2.3.4' ),
+    ('-e DNS1="1.2.3.4" -e DNS2="2.2.3.4"', 'custom DNS',  '1.2.3.4', '2.2.3.4' ),
+    ('-e DNS1="1.2.3.4" -e DNS2="no"',      'custom DNS',  '1.2.3.4', None ),
+    ('-e DNS2="no"',                        'custom DNS',  '8.8.8.8', None ),
 ])
 def test_override_default_servers_with_DNS_EnvVars(Docker, args_env, expected_stdout, dns1, dns2):
     ''' on first boot when DNS vars are NOT set explain default google DNS settings are used
                    or when DNS vars are set override the pihole DNS settings '''
     assert Docker.run('test -f /.piholeFirstBoot').rc == 0
-    function = Docker.run('. /bash_functions.sh ; eval `grep setup_dnsmasq /start.sh`')
+    function = Docker.run('. /bash_functions.sh ; eval `grep "^setup_dnsmasq " /start.sh`')
     assert expected_stdout in function.stdout
-
+    time.sleep(1)
     docker_dns_servers = Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout
     expected_servers = 'server={}\n'.format(dns1) if dns2 == None else 'server={}\nserver={}\n'.format(dns1, dns2)
     assert expected_servers == docker_dns_servers
 
 
 @pytest.mark.parametrize('args_env, dns1, dns2, expected_stdout', [
-    ('-e ServerIP="1.2.3.4"', '9.9.9.1', '9.9.9.2',
+    ('', '9.9.9.1', '9.9.9.2',
      'Existing DNS servers used'),
-    ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4"', '9.9.9.1', '9.9.9.2',
+    ('-e DNS1="1.2.3.4"', '9.9.9.1', '9.9.9.2',
      'Docker DNS variables not used\nExisting DNS servers used'),
-    ('-e ServerIP="1.2.3.4" -e DNS2="1.2.3.4"', '8.8.8.8', '1.2.3.4',
+    ('-e DNS2="1.2.3.4"', '8.8.8.8', '1.2.3.4',
      'Docker DNS variables not used\nExisting DNS servers used'),
-    ('-e ServerIP="1.2.3.4" -e DNS1="1.2.3.4" -e DNS2="2.2.3.4"', '1.2.3.4', '2.2.3.4',
+    ('-e DNS1="1.2.3.4" -e DNS2="2.2.3.4"', '1.2.3.4', '2.2.3.4',
      'Docker DNS variables not used\nExisting DNS servers used'),
 ])
 def test_DNS_Envs_are_secondary_to_setupvars(Docker, args_env, expected_stdout, dns1, dns2):
@@ -93,11 +93,13 @@ def test_DNS_Envs_are_secondary_to_setupvars(Docker, args_env, expected_stdout, 
 
     # and a user already has custom pihole dns variables in setup vars
     setupVars = '/etc/pihole/setupVars.conf'
-    Docker.run('sed -i "/^PIHOLE_DNS_1/ c\PIHOLE_DNS_1={}" {}'.format(dns1, setupVars))
-    Docker.run('sed -i "/^PIHOLE_DNS_2/ c\PIHOLE_DNS_2={}" {}'.format(dns2, setupVars))
+    Docker.run('sed -i "/^PIHOLE_DNS_1/ d" {}'.format(dns1, setupVars))
+    Docker.run('sed -i "/^PIHOLE_DNS_2/ d" {}'.format(dns2, setupVars))
+    Docker.run('echo "PIHOLE_DNS_1={}" >> {}'.format(dns1, setupVars))
+    Docker.run('echo "PIHOLE_DNS_2={}" >> {}'.format(dns2, setupVars))
 
     # When we run setup dnsmasq during startup of the container
-    function = Docker.run('. /bash_functions.sh ; eval `grep setup_dnsmasq /start.sh`')
+    function = Docker.run('. /bash_functions.sh ; eval `grep "^setup_dnsmasq " /start.sh`')
     assert expected_stdout in function.stdout
 
     expected_servers = 'server={}\nserver={}\n'.format(dns1, dns2)
@@ -115,15 +117,15 @@ def test_DNS_Envs_are_secondary_to_setupvars(Docker, args_env, expected_stdout, 
 
 
 @pytest.mark.parametrize('args_env, expected_stdout, expected_config_line', [
-    ('-e ServerIP="1.2.3.4"', 'binding to default interface: eth0', 'interface=eth0' ),
-    ('-e ServerIP="1.2.3.4" -e INTERFACE="eth0"', 'binding to default interface: eth0', 'interface=eth0' ),
-    ('-e ServerIP="1.2.3.4" -e INTERFACE="br0"', 'binding to custom interface: br0', 'interface=br0'),
+    ('', 'binding to default interface: eth0', 'interface=eth0' ),
+    ('-e INTERFACE="eth0"', 'binding to default interface: eth0', 'interface=eth0' ),
+    ('-e INTERFACE="br0"', 'binding to custom interface: br0', 'interface=br0'),
 ])
 def test_DNS_interface_override_defaults(Docker, args_env, expected_stdout, expected_config_line):
     ''' When INTERFACE environment var is passed in, overwrite dnsmasq interface '''
-    function = Docker.run('. /bash_functions.sh ; eval `grep setup_dnsmasq /start.sh`')
+    function = Docker.run('. /bash_functions.sh ; eval `grep "^setup_dnsmasq " /start.sh`')
     assert expected_stdout in function.stdout
-
+    time.sleep(1)
     docker_dns_interface = Docker.run('grep "^interface" /etc/dnsmasq.d/01-pihole.conf').stdout
     assert expected_config_line + '\n' == docker_dns_interface
 
@@ -152,10 +154,7 @@ def test_debian_setup_php_env(Docker, expected_lines, repeat_function):
             assert False, "Found line {} times (more than once): {}".format(expected_line)
 
 
-# Overwrite entrypoint / cmd with noop, just run our method for this unit
-@pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
-@pytest.mark.parametrize('args_env', [('-e ServerIP=1.2.3.4')])
-def test_webPassword_random_generation(Docker, args_env):
+def test_webPassword_random_generation(Docker):
     ''' When a user sets webPassword env the admin password gets set to that '''
     function = Docker.run('. /bash_functions.sh ; eval `grep generate_password /start.sh`')
     assert 'assigning random password' in function.stdout.lower()

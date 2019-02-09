@@ -39,7 +39,8 @@ def DockerGeneric(request, _test_args, _args, _image, _cmd, _entrypoint):
        _args = '{} -e PYTEST=1'.format(_args)
     docker_run = 'docker run -d -t {args} {test_args} {entry} {image} {cmd}'\
         .format(args=_args, test_args=_test_args, entry=_entrypoint, image=_image, cmd=_cmd)
-    print docker_run
+    # Print a human runable version of the container run command for faster debugging
+    print docker_run.replace('-d -t', '--rm -it').replace('tail -f /dev/null', 'bash')
     docker_id = check_output(docker_run)
 
     def teardown():
