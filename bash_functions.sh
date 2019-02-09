@@ -72,12 +72,11 @@ prepare_configs() {
         sed -i.update.bak '/PIHOLE_INTERFACE/d;/IPV4_ADDRESS/d;/IPV6_ADDRESS/d;/PIHOLE_DNS_1/d;/PIHOLE_DNS_2/d;/QUERY_LOGGING/d;/INSTALL_WEB_SERVER/d;/INSTALL_WEB_INTERFACE/d;/LIGHTTPD_ENABLED/d;' "${setupVars}"
     fi
     # echo the information to the user
+    # P
     {
     echo "PIHOLE_INTERFACE=${PIHOLE_INTERFACE}"
     echo "IPV4_ADDRESS=${IPV4_ADDRESS}"
     echo "IPV6_ADDRESS=${IPV6_ADDRESS}"
-    echo "PIHOLE_DNS_1=${PIHOLE_DNS_1}"
-    echo "PIHOLE_DNS_2=${PIHOLE_DNS_2}"
     echo "QUERY_LOGGING=${QUERY_LOGGING}"
     echo "INSTALL_WEB_SERVER=${INSTALL_WEB_SERVER}"
     echo "INSTALL_WEB_INTERFACE=${INSTALL_WEB_INTERFACE}"
@@ -134,8 +133,9 @@ setup_dnsmasq_dns() {
         change_setting "PIHOLE_DNS_1" "${DNS1}"
     fi
     if [[ -n "$DNS2" && -z "$setupDNS2" ]] ; then
-        if [ "$DNS2" = "no" ] ; then
+        if [[ "$DNS2" == "no" ]] ; then
             delete_setting "PIHOLE_DNS_2"
+            unset PIHOLE_DNS_2
         else
             change_setting "PIHOLE_DNS_2" "${DNS2}"
         fi
