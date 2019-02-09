@@ -19,6 +19,7 @@ services:
     ports:
       - "53:53/tcp"
       - "53:53/udp"
+      - "67:67/udp"
       - "80:80/tcp"
       - "443:443/tcp"
     environment:
@@ -40,18 +41,20 @@ services:
 
 [Here is an equivilent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
 
+## Upgrade Notices:
 
-## Docker Pi-Hole v4.2.1
+### Docker Pi-Hole v4.2.1-1+
 
-ServerIP no longer a required enviroment variable!  Feel free to remove it unless you need it to customize lighttpd
+- ServerIP no longer a required enviroment variable!  Feel free to remove it unless you need it to customize lighttpd
+- --cap-add NET_ADMIN no longer required unless using DHCP, leaving in examples for consistency
 
-## Docker Pi-Hole v4.1.1+ IMPORTANT upgrade notes
+### Docker Pi-Hole v4.1.1+
 
 Starting with the v4.1.1 release your Pi-hole container may encounter issues starting the DNS service unless ran with the following setting:
 
 - `--dns=127.0.0.1 --dns=1.1.1.1` The second server can be any DNS IP of your choosing, but the **first dns must be 127.0.0.1**
     - A WARNING stating "Misconfigured DNS in /etc/resolv.conf" may show in docker logs without this.
-- 4.1 required --net-admin
+- 4.1 required --cap-add NET_ADMIN until 4.2.1-1
 
 These are the raw [docker run cli](https://docs.docker.com/engine/reference/commandline/cli/) versions of the commands.  We provide no official support for docker GUIs but the community forums may be able to help if you do not see a place for these settings.  Remember, always consult your manual too!
 
@@ -61,8 +64,8 @@ These are the raw [docker run cli](https://docs.docker.com/engine/reference/comm
 
 A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86 and ARM container with [Pi-hole](https://pi-hole.net) functionality.
 
-1) Install docker for your [x86-64 system](https://www.docker.com/community-edition) or [ARMv7 system](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/) using those links.
-2) Use the below `docker run` command, customize if desired.
+1) Install docker and docker-compose for your [x86-64 system](https://www.docker.com/community-edition) or [ARMv7 system](https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/) using those links.
+2) Use the above quick start example, customize if desired.
 3) Enjoy!
 
 [![Build Status](https://api.travis-ci.org/pi-hole/docker-pi-hole.svg?branch=master)](https://travis-ci.org/pi-hole/docker-pi-hole) [![Docker Stars](https://img.shields.io/docker/stars/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole) [![Docker Pulls](https://img.shields.io/docker/pulls/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole)
@@ -71,13 +74,14 @@ A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86
 
 This container uses 2 popular ports, port 53 and port 80, so **may conflict with existing applications ports**.  If you have no other services or docker containers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh)
 
-If you're using a RHEL based distrubution with an SELinux Enforcing policy add `:z` to line with volumes like so:
+If you're using a Red Hat based distrubution with an SELinux Enforcing policy add `:z` to line with volumes like so:
 
-``` -v "${DOCKER_CONFIGS}/pihole/:/etc/pihole/:z" \
-    -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/:z" \
+```
+    -v "$(pwd)/etc-pihole/:/etc/pihole/:z" \
+    -v "$(pwd)/etc-dnsmasq.d/:/etc/dnsmasq.d/:z" \
 ```
 
-**This is just an example and might need changing.**  Volumes are stored in the directory `$DOCKER_CONFIGS` and are recommended for persisting data across docker re-creations for updating images.  The IP lookup variables may not work for everyone, please review their values and hard code IP and IPv6 if necessary.
+Volumes are recommended for persisting data across container re-creations for updating images.  The IP lookup variables may not work for everyone, please review their values and hard code IP and IPv6 if necessary.
 
 Port 443 is to provide a sinkhole for ads that use SSL.  If only port 80 is used, then blocked HTTPS queries will fail to connect to port 443 and may cause long loading times.  Rejecting 443 on your firewall can also serve this same purpose.  Ubuntu firewall example: `sudo ufw reject https`
 
@@ -89,33 +93,34 @@ There are other environment variables if you want to customize various things in
 
 | Docker Environment Var. | Description |
 | ----------------------- | ----------- |
-| `-e ServerIP=<Host's IP>`<br/> **Required** | Set to your server's external IP to block ads fully
-| `-e ServerIPv6=<Host's IPv6>`<br/> *Required if using IPv6* | **If you have a v6 network** set to your server's external IPv6 to block IPv6 ads fully
-| `-e TZ=<Timezone>`<br/> **Recommended** *Default: UTC* | Set your [timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) to make sure logs rotate at local midnight instead of at UTC midnight.
-| `-e WEBPASSWORD=<Admin password>`<br/> **Recommended** *Default: random* | http://pi.hole/admin password. Run `docker logs pihole \| grep random` to find your random pass.
-| `-e DNS1=<IP>`<br/> *Optional* *Default: 8.8.8.8* | Primary upstream DNS provider, default is google DNS
-| `-e DNS2=<IP>`<br/> *Optional* *Default: 8.8.4.4* | Secondary upstream DNS provider, default is google DNS, `no` if only one DNS should used
-| `-e VIRTUAL_HOST=<Custom Hostname>`<br/> *Optional* *Default: $ServerIP*   | What your web server 'virtual host' is, accessing admin through this Hostname/IP allows you to make changes to the whitelist / blacklists in addition to the default 'http://pi.hole/admin/' address
-| `-e IPv6=<True\|False>`<br/> *Optional* *Default: True* | For unraid compatibility, strips out all the IPv6 configuration from DNS/Web services when false.
-| `-e INTERFACE=<NIC>`<br/> *Advanced/Optional* | The default works fine with our basic example docker run commands.  If you're trying to use DHCP with `--net host` mode then you may have to customize this or DNSMASQ_LISTENING.
-| `-e DNSMASQ_LISTENING=<local\|all\|NIC>`<br/> *Advanced/Optional* | `local` listens on all local subnets, `all` permits listening on internet origin subnets in addition to local.
-| `-e WEB_PORT=<PORT>`<br/> *Advanced/Optional* | **This will break the 'webpage blocked' functionality of Pi-hole** however it may help advanced setups like those running synology or `--net=host` docker argument.  This guide explains how to restore webpage blocked functionality using a linux router DNAT rule: [Alternative Synology installation method](https://discourse.pi-hole.net/t/alternative-synology-installation-method/5454?u=diginc)
-| `-e DNSMASQ_USER=<pihole\|root>`<br/> *Experimental Default: root* | Allows running FTLDNS as non-root.
+| `TZ: <Timezone>`<br/> **Recommended** *Default: UTC* | Set your [timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) to make sure logs rotate at local midnight instead of at UTC midnight.
+| `WEBPASSWORD: <Admin password>`<br/> **Recommended** *Default: random* | http://pi.hole/admin password. Run `docker logs pihole \| grep random` to find your random pass.
+| `DNS1: <IP>`<br/> *Optional* *Default: 8.8.8.8* | Primary upstream DNS provider, default is google DNS
+| `DNS2: <IP>`<br/> *Optional* *Default: 8.8.4.4* | Secondary upstream DNS provider, default is google DNS, `no` if only one DNS should used
+| `ServerIP: <Host's IP>`<br/> **Recommended** | Set to your server's LAN IP, used by web block modes and lighttpd bind address
+| `ServerIPv6: <Host's IPv6>`<br/> *Required if using IPv6* | **If you have a v6 network** set to your server's LAN IPv6 to block IPv6 ads fully
+| `VIRTUAL_HOST: <Custom Hostname>`<br/> *Optional* *Default: $ServerIP*   | What your web server 'virtual host' is, accessing admin through this Hostname/IP allows you to make changes to the whitelist / blacklists in addition to the default 'http://pi.hole/admin/' address
+| `IPv6: <True\|False>`<br/> *Optional* *Default: True* | For unraid compatibility, strips out all the IPv6 configuration from DNS/Web services when false.
+| `INTERFACE: <NIC>`<br/> *Advanced/Optional* | The default works fine with our basic example docker run commands.  If you're trying to use DHCP with `--net host` mode then you may have to customize this or DNSMASQ_LISTENING.
+| `DNSMASQ_LISTENING: <local\|all\|NIC>`<br/> *Advanced/Optional* | `local` listens on all local subnets, `all` permits listening on internet origin subnets in addition to local.
+| `WEB_PORT: <PORT>`<br/> *Advanced/Optional* | **This will break the 'webpage blocked' functionality of Pi-hole** however it may help advanced setups like those running synology or `--net=host` docker argument.  This guide explains how to restore webpage blocked functionality using a linux router DNAT rule: [Alternative Synology installation method](https://discourse.pi-hole.net/t/alternative-synology-installation-method/5454?u=diginc)
+| `DNSMASQ_USER: <pihole\|root>`<br/> *Experimental Default: root* | Allows running FTLDNS as non-root.
 
-Here is a rundown of the other arguments passed into the example `docker run`:
+To use these env vars in docker run format style them like: `-e DNS1=1.1.1.1`
+
+Here is a rundown of other arguments for your docker-compose / docker run.
 
 | Docker Arguments | Description |
 | ---------------- | ----------- |
-| `-p 80:80`<br/>`-p 53:53/tcp -p 53:53/udp`<br/> **Recommended** | Ports to expose, the bare minimum ports required for Pi-holes HTTP and DNS services
+| `-p <port>:<port>` **Recommended** | Ports to expose (54, 80, 67, 443), the bare minimum ports required for Pi-holes HTTP and DNS services
 | `--restart=unless-stopped`<br/> **Recommended** | Automatically (re)start your Pi-hole on boot or in the event of a crash
-| `-v /dir/for/pihole:/etc/pihole`<br/> **Recommended** | Volumes for your Pi-hole configs help persist changes across docker image updates
-| `-v /dir/for/dnsmasq.d:/etc/dnsmasq.d`<br/> **Recommended** | Volumes for your dnsmasq configs help persist changes across docker image updates
+| `-v $(pwd)/etc-pihole:/etc/pihole`<br/> **Recommended** | Volumes for your Pi-hole configs help persist changes across docker image updates
+| `-v $(pwd)/etc-dnsmasq.d:/etc/dnsmasq.d`<br/> **Recommended** | Volumes for your dnsmasq configs help persist changes across docker image updates
 | `--net=host`<br/> *Optional* | Alternative to `-p <port>:<port>` arguments (Cannot be used at same time as -p) if you don't run any other web application. DHCP runs best with --net=host, otherwise your router must support dhcp-relay settings.
-| `--cap-add=NET_ADMIN`<br/> *Recommended* | FTLDNS may not work properly without this setting. See [Note on Capabilities](#note-on-capabilities) below.
-| `--dns=127.0.0.1`<br/> *Recommended* | Sets your container's resolve settings to localhost so it can resolve DHCP hostnames from Pi-hole's DNSMasq <!-- also fixes common resolution errors on container restart -->
+| `--cap-add=NET_ADMIN`<br/> *Recommended* | Commonly added capability for DHCP, see [Note on Capabilities](#note-on-capabilities) below for other capabilities.
+| `--dns=127.0.0.1`<br/> *Recommended* | Sets your container's resolve settings to localhost so it can resolve DHCP hostnames from Pi-hole's DNSMasq, also fixes common resolution errors on container restart.
 | `--dns=1.1.1.1`<br/> *Optional* | Sets a backup server of your choosing in case DNSMasq has problems starting
-| `--env-file .env` <br/> *Optional* | File to store environment variables for docker. Here for convenience
-If you're a fan of [docker-compose](https://docs.docker.com/compose/install/) I have [example docker-compose.yml files](https://github.com/pi-hole/docker-pi-hole/blob/master/doco-example.yml) in github which I think are a nicer way to represent such long run commands.
+| `--env-file .env` <br/> *Optional* | File to store environment variables for docker replacing `-e key=value` settings. Here for convenience
 
 ## Tips and Tricks
 

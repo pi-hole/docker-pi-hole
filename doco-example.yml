@@ -1,13 +1,17 @@
 version: "3"
+
+# https://github.com/pi-hole/docker-pi-hole/blob/master/README.md
+
+version: "3"
 services:
   pihole:
     container_name: pihole
     image: pihole/pihole:latest
-    restart: unless-stopped
-    # If using DHCP it is recommended to comment ports and add: network_mode: "host"
+    # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
     ports:
       - "53:53/tcp"
       - "53:53/udp"
+      - "67:67/udp"
       - "80:80/tcp"
       - "443:443/tcp"
     environment:
@@ -24,3 +28,4 @@ services:
     #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
     cap_add:
       - NET_ADMIN
+    restart: unless-stopped
