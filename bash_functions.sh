@@ -357,7 +357,6 @@ setup_blocklists() {
 
     echo "::: ${FUNCNAME[0]} now setting default blocklists up: "
     echo "::: TIP: Use a docker volume for ${adlistFile} if you want to customize for first boot"
-    > "${adlistFile}"
     installDefaultBlocklists
 
     echo "::: Blocklists (${adlistFile}) now set to:"
