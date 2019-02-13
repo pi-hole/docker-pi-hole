@@ -17,7 +17,7 @@ def args_dns():
 
 @pytest.fixture()
 def args_volumes():
-    return '-v /dev/null:/etc/pihole/adlists.default'
+    return '-v /dev/null:/etc/pihole/adlists.list'
 
 @pytest.fixture()
 def args_env():
@@ -128,7 +128,7 @@ def persist_args_dns():
 
 @pytest.fixture(scope='module')
 def persist_args_volumes():
-    return '-v /dev/null:/etc/pihole/adlists.default'
+    return '-v /dev/null:/etc/pihole/adlists.list'
 
 @pytest.fixture(scope='module')
 def persist_args_env():
