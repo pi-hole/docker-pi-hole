@@ -76,11 +76,11 @@ def test_override_default_servers_with_DNS_EnvVars(Docker, Slow, args_env, expec
     ('', '9.9.9.1', '9.9.9.2',
      'Existing DNS servers used'),
     ('-e DNS1="1.2.3.4"', '9.9.9.1', '9.9.9.2',
-     'Docker DNS variables not used\nExisting DNS servers used'),
-    ('-e DNS2="1.2.3.4"', '8.8.8.8', '1.2.3.4',
-     'Docker DNS variables not used\nExisting DNS servers used'),
+     'Docker DNS variables not used\nExisting DNS servers used (9.9.9.1 & 9.9.9.2)'),
+    ('-e DNS2="1.2.3.4"', '8.8.8.8', None,
+     'Docker DNS variables not used\nExisting DNS servers used (8.8.8.8 & unset)'),
     ('-e DNS1="1.2.3.4" -e DNS2="2.2.3.4"', '1.2.3.4', '2.2.3.4',
-     'Docker DNS variables not used\nExisting DNS servers used'),
+     'Docker DNS variables not used\nExisting DNS servers used (1.2.3.4 & 2.2.3.4'),
 ])
 def test_DNS_Envs_are_secondary_to_setupvars(Docker, Slow, args_env, expected_stdout, dns1, dns2):
     ''' on second boot when DNS vars are set just use pihole DNS settings
@@ -93,18 +93,19 @@ def test_DNS_Envs_are_secondary_to_setupvars(Docker, Slow, args_env, expected_st
     Docker.run('sed -i "/^PIHOLE_DNS_1/ d" {}'.format(dns1, setupVars))
     Docker.run('sed -i "/^PIHOLE_DNS_2/ d" {}'.format(dns2, setupVars))
     Docker.run('echo "PIHOLE_DNS_1={}" >> {}'.format(dns1, setupVars))
-    Docker.run('echo "PIHOLE_DNS_2={}" >> {}'.format(dns2, setupVars))
+    if dns2:
+        Docker.run('echo "PIHOLE_DNS_2={}" >> {}'.format(dns2, setupVars))
 
     # When we run setup dnsmasq during startup of the container
     function = Docker.run('. /bash_functions.sh ; eval `grep "^setup_dnsmasq " /start.sh`')
     assert expected_stdout in function.stdout
 
     # Then the servers are still what the user had customized if forced dnsmasq is not set
-    expected_servers = ['server={}'.format(dns1), 'server={}'.format(dns2)]
-    Slow(lambda:
-        Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout.strip().split('\n') == \
-        expected_servers
-    )
+    expected_servers = ['server={}'.format(dns1)]
+    if dns2:
+        expected_servers.append('server={}'.format(dns2))
+    Slow(lambda: Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout.strip().split('\n') == \
+         expected_servers)
 
 
 @pytest.mark.parametrize('args_env, expected_stdout, expected_config_line', [

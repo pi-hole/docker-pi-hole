@@ -120,11 +120,13 @@ setup_dnsmasq_dns() {
     if [ ! -f /.piholeFirstBoot ] ; then
         local setupDNS1="$(grep 'PIHOLE_DNS_1' ${setupVars})"
         local setupDNS2="$(grep 'PIHOLE_DNS_2' ${setupVars})"
+        setupDNS1="${setupDNS1/PIHOLE_DNS_1=/}"
+        setupDNS2="${setupDNS2/PIHOLE_DNS_2=/}"
         if [[ -n "$DNS1" && -n "$setupDNS1"  ]] || \
            [[ -n "$DNS2" && -n "$setupDNS2"  ]] ; then 
                 echo "Docker DNS variables not used"
         fi
-        echo "Existing DNS servers used"
+        echo "Existing DNS servers used (${setupDNS1:-unset} & ${setupDNS2:-unset})"
         return
     fi
 
