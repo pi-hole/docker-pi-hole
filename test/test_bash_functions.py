@@ -91,13 +91,13 @@ def test_DNS_Envs_are_secondary_to_setupvars(Docker, Slow, args_env, expected_st
     # and a user already has custom pihole dns variables in setup vars
     dns_count = 1
     setupVars = '/etc/pihole/setupVars.conf'
-    Docker.run('sed -i "/^PIHOLE_DNS/ d" {}'.format(setupVars))
-    Docker.run('echo "PIHOLE_DNS_1={}" >> {}'.format(dns1, setupVars))
-    if dns2:
+    Docker.run('sed -i "/^PIHOLE_DNS_1/ c\PIHOLE_DNS_1={}" {}'.format(dns1, setupVars))
+    Docker.run('sed -i "/^PIHOLE_DNS_2/ c\PIHOLE_DNS_2={}" {}'.format(dns2, setupVars))
+    if not dns2:
         dns_count = dns_count + 1
-        Docker.run('echo "PIHOLE_DNS_2={}" >> {}'.format(dns2, setupVars))
-    confirm_setup = 'grep -c "^PIHOLE_DNS_" {}'.format(setupVars)
-    Slow(lambda: int(Docker.run(confirm_setup).stdout) == dns_count)
+        Docker.run('sed -i "/^PIHOLE_DNS_2/d {}'.format(setupVars))
+    # confirm_setup = 'grep -c "^PIHOLE_DNS_" {}'.format(setupVars)
+    # Slow(lambda: int(Docker.run(confirm_setup).stdout) == dns_count)
 
     # When we run setup dnsmasq during startup of the container
     function = Docker.run('. /bash_functions.sh ; eval `grep "^setup_dnsmasq " /start.sh`')
