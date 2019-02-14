@@ -77,7 +77,7 @@ def test_override_default_servers_with_DNS_EnvVars(Docker, Slow, args_env, expec
      'Existing DNS servers used'),
     ('-e DNS1="1.2.3.4"', '9.9.9.1', '9.9.9.2',
      'Docker DNS variables not used\nExisting DNS servers used (9.9.9.1 & 9.9.9.2)'),
-    ('-e DNS2="1.2.3.4"', '8.8.8.8', None,
+    ('-e DNS2="1.2.3.4"', '8.8.8.8', '8.8.4.4',
      'Docker DNS variables not used\nExisting DNS servers used (8.8.8.8 & unset)'),
     ('-e DNS1="1.2.3.4" -e DNS2="2.2.3.4"', '1.2.3.4', '2.2.3.4',
      'Docker DNS variables not used\nExisting DNS servers used (1.2.3.4 & 2.2.3.4'),
@@ -93,9 +93,6 @@ def test_DNS_Envs_are_secondary_to_setupvars(Docker, Slow, args_env, expected_st
     setupVars = '/etc/pihole/setupVars.conf'
     Docker.run('sed -i "/^PIHOLE_DNS_1/ c\PIHOLE_DNS_1={}" {}'.format(dns1, setupVars))
     Docker.run('sed -i "/^PIHOLE_DNS_2/ c\PIHOLE_DNS_2={}" {}'.format(dns2, setupVars))
-    if not dns2:
-        dns_count = dns_count + 1
-        Docker.run('sed -i "/^PIHOLE_DNS_2/d {}'.format(setupVars))
     # confirm_setup = 'grep -c "^PIHOLE_DNS_" {}'.format(setupVars)
     # Slow(lambda: int(Docker.run(confirm_setup).stdout) == dns_count)
 
