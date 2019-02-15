@@ -1,14 +1,14 @@
-Please note the following about this [traefik](https://traefik.io/) example for pihole.
+Please note the following about this [traefik](https://traefik.io/) example for Docker Pi-hole
 
-- Still requires standard pi-hole setup steps, make sure you've gone through the [README](https://github.com/pihole/docker-pi-hole/blob/master/README.md) and understand how to setup pihole without traefik first
+- Still requires standard Pi-hole setup steps, make sure you've gone through the [README](https://github.com/pihole/docker-pi-hole/blob/master/README.md) and understand how to setup Pi-hole without traefik first
 - Update these things before using:
     - set instances of `homedomain.lan` below to your home domain (typically set in your router)
-    - set your pihole ENV WEBPASSWORD if you don't want a random admin pass
+    - set your Pi-hole ENV WEBPASSWORD if you don't want a random admin pass
 - This works for me, Your mileage may vary!
 - For support, do your best to figure out traefik issues on your own:
     - by looking at logs and traefik web interface on port 8080
     - also by searching the web and searching their forums/docker issues for similar question/problems
-- Port 8053 is mapped directly to pihole to serve as a back door without going through traefik
+- Port 8053 is mapped directly to Pi-hole to serve as a back door without going through traefik
 - There is some delay after starting your container before traefik forwards the HTTP traffic correctly, give it a minute
 
 ```
@@ -53,10 +53,10 @@ services:
       - '0.0.0.0:67:67/udp'
       - '0.0.0.0:8053:80/tcp'
     volumes:
-    # run `touch ./pihole.log` first unless you like errors
-    #  - ./pihole.log:/var/log/pihole.log
       - ./etc-pihole/:/etc/pihole/
       - ./etc-dnsmasqd/:/etc/dnsmasq.d/
+      # run `touch ./pihole.log` first unless you like errors
+      # - ./pihole.log:/var/log/pihole.log
     environment:
       ServerIP: 192.168.1.50
       PROXY_LOCATION: pihole
