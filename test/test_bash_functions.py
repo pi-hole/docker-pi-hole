@@ -95,6 +95,7 @@ def test_DNS_Envs_are_secondary_to_setupvars(Docker, Slow, args_env, expected_st
     Docker.run('echo "PIHOLE_DNS_1={}" | tee -a {}'.format(dns1, setupVars))
     if dns2:
         Docker.run('echo "PIHOLE_DNS_2={}" | tee -a {}'.format(dns2, setupVars))
+    Docker.run('sync {}'.format(setupVars))
     Slow(lambda: 'PIHOLE_DNS' in Docker.run('cat {}'.format(setupVars)).stdout)
 
     # When we run setup dnsmasq during startup of the container
