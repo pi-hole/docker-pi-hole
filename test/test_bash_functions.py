@@ -173,6 +173,17 @@ def test_webPassword_env_assigns_password_to_file_or_removes_if_empty(Docker, ar
         assert Docker.run('grep -q \'^WEBPASSWORD=$\' /etc/pihole/setupVars.conf').rc == 0
 
 
+@pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
+@pytest.mark.parametrize('test_args', ['-e WEBPASSWORD=login', '-e WEBPASSWORD=""'])
+def test_webPassword_pre_existing_trumps_all_envs(Docker, args_env, test_args):
+    '''When a user setup webPassword in the volume prior to first container boot,
+        during prior container boot, the prior volume password is left intact / setup skipped'''
+    Docker.run('. /opt/pihole/webpage.sh ; add_setting WEBPASSWORD volumepass')
+    function = Docker.run('. /bash_functions.sh ; eval `grep setup_web_password /start.sh`')
+
+    assert '::: Pre existing WEBPASSWORD found' in function.stdout
+    assert Docker.run('grep -q \'{}\' {}'.format('WEBPASSWORD=volumepass', '/etc/pihole/setupVars.conf')).rc == 0
+
 
 @pytest.mark.parametrize('args_dns, expected_stdout', [
     # No DNS passed will vary by the host this is ran on, bad idea for a test
