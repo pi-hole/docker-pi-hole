@@ -1,4 +1,6 @@
 #!/bin/bash
+# Some of the bash_functions use variables these core pi-hole/web scripts
+. /opt/pihole/webpage.sh
 
 docker_checks() {
     warn_msg='WARNING Misconfigured DNS in /etc/resolv.conf'
@@ -26,8 +28,6 @@ docker_checks() {
 }
 
 fix_capabilities() {
-    [ ! -f /.piholeFirstBoot ] && return
-
     setcap CAP_NET_BIND_SERVICE,CAP_NET_RAW,CAP_NET_ADMIN+ei $(which pihole-FTL) || ret=$?
 
     if [[ $ret -ne 0 && "${DNSMASQ_USER:-root}" != "root" ]]; then
@@ -69,15 +69,13 @@ prepare_configs() {
         # Stash and pop the user password to avoid setting the password to the hashed setupVar variable
         WEBPASSWORD="${USERWEBPASSWORD}"
         # Clean up old before re-writing the required setupVars
-        sed -i.update.bak '/PIHOLE_INTERFACE/d;/IPV4_ADDRESS/d;/IPV6_ADDRESS/d;/PIHOLE_DNS_1/d;/PIHOLE_DNS_2/d;/QUERY_LOGGING/d;/INSTALL_WEB_SERVER/d;/INSTALL_WEB_INTERFACE/d;/LIGHTTPD_ENABLED/d;' "${setupVars}"
+        sed -i.update.bak '/PIHOLE_INTERFACE/d;/IPV4_ADDRESS/d;/IPV6_ADDRESS/d;/QUERY_LOGGING/d;/INSTALL_WEB_SERVER/d;/INSTALL_WEB_INTERFACE/d;/LIGHTTPD_ENABLED/d;' "${setupVars}"
     fi
     # echo the information to the user
     {
     echo "PIHOLE_INTERFACE=${PIHOLE_INTERFACE}"
     echo "IPV4_ADDRESS=${IPV4_ADDRESS}"
     echo "IPV6_ADDRESS=${IPV6_ADDRESS}"
-    echo "PIHOLE_DNS_1=${PIHOLE_DNS_1}"
-    echo "PIHOLE_DNS_2=${PIHOLE_DNS_2}"
     echo "QUERY_LOGGING=${QUERY_LOGGING}"
     echo "INSTALL_WEB_SERVER=${INSTALL_WEB_SERVER}"
     echo "INSTALL_WEB_INTERFACE=${INSTALL_WEB_INTERFACE}"
@@ -86,12 +84,7 @@ prepare_configs() {
 }
 
 validate_env() {
-    if [ -z "$ServerIP" ] ; then
-      echo "ERROR: To function correctly you must pass an environment variables of 'ServerIP' into the docker container with the IP of your docker host from which you are passing web (80) and dns (53) ports from"
-      exit 1
-    fi;
-
-    # Required ServerIP is a valid IP
+    # Optional ServerIP is a valid IP
     # nc won't throw any text based errors when it times out connecting to a valid IP, otherwise it complains about the DNS name being garbage
     # if nc doesn't behave as we expect on a valid IP the routing table should be able to look it up and return a 0 retcode
     if [[ "$(nc -4 -w1 -z "$ServerIP" 53 2>&1)" != "" ]] || ! ip route get "$ServerIP" > /dev/null ; then
@@ -123,14 +116,17 @@ setup_dnsmasq_dns() {
         dnsType='custom'
     fi;
 
+    # TODO With the addition of this to /start.sh this needs a refactor
     if [ ! -f /.piholeFirstBoot ] ; then
         local setupDNS1="$(grep 'PIHOLE_DNS_1' ${setupVars})"
         local setupDNS2="$(grep 'PIHOLE_DNS_2' ${setupVars})"
+        setupDNS1="${setupDNS1/PIHOLE_DNS_1=/}"
+        setupDNS2="${setupDNS2/PIHOLE_DNS_2=/}"
         if [[ -n "$DNS1" && -n "$setupDNS1"  ]] || \
            [[ -n "$DNS2" && -n "$setupDNS2"  ]] ; then 
                 echo "Docker DNS variables not used"
         fi
-        echo "Existing DNS servers used"
+        echo "Existing DNS servers used (${setupDNS1:-unset} & ${setupDNS2:-unset})"
         return
     fi
 
@@ -139,8 +135,9 @@ setup_dnsmasq_dns() {
         change_setting "PIHOLE_DNS_1" "${DNS1}"
     fi
     if [[ -n "$DNS2" && -z "$setupDNS2" ]] ; then
-        if [ "$DNS2" = "no" ] ; then
+        if [[ "$DNS2" == "no" ]] ; then
             delete_setting "PIHOLE_DNS_2"
+            unset PIHOLE_DNS_2
         else
             change_setting "PIHOLE_DNS_2" "${DNS2}"
         fi
@@ -182,12 +179,12 @@ setup_dnsmasq() {
     setup_dnsmasq_dns "$dns1" "$dns2" 
     setup_dnsmasq_interface "$interface"
     setup_dnsmasq_listening_behaviour "$dnsmasq_listening_behaviour"
-    setup_dnsmasq_user "${DNSMASQ_USER:-root}"
+    setup_dnsmasq_user "${DNSMASQ_USER}"
     ProcessDNSSettings
 }
 
 setup_dnsmasq_user() {
-    DNSMASQ_USER="${1}"
+    local DNSMASQ_USER="${1}"
 
     # Run DNSMASQ as root user to avoid SHM permission issues
     if grep -r -q '^\s*user=' /etc/dnsmasq.* ; then
@@ -302,6 +299,8 @@ generate_password() {
 }
 
 setup_web_password() {
+    setup_var_exists "WEBPASSWORD" && return
+
     PASS="$1"
     # Turn bash debug on while setting up password (to print it)
     if [[ "$PASS" == "" ]] ; then
@@ -345,11 +344,11 @@ test_configs() {
 setup_blocklists() {
     local blocklists="$1"   
     # Exit/return early without setting up adlists with defaults for any of the following conditions:
-    # 1. NO_SETUP env is set
+    # 1. skip_setup_blocklists env is set
     exit_string="(exiting ${FUNCNAME[0]} early)"
 
-    if [ -n "${NO_SETUP}" ]; then
-        echo "::: NO_SETUP requested ($exit_string)"
+    if [ -n "${skip_setup_blocklists}" ]; then
+        echo "::: skip_setup_blocklists requested ($exit_string)"
         return
     fi
 
@@ -362,9 +361,22 @@ setup_blocklists() {
 
     echo "::: ${FUNCNAME[0]} now setting default blocklists up: "
     echo "::: TIP: Use a docker volume for ${adlistFile} if you want to customize for first boot"
-    > "${adlistFile}"
     installDefaultBlocklists
 
     echo "::: Blocklists (${adlistFile}) now set to:"
     cat "${adlistFile}"
 }
+
+setup_var_exists() {
+    local KEY="$1"
+    if [ -n "$2" ]; then
+        local REQUIRED_VALUE="[^\n]+"
+    fi
+    if grep -Pq "^${KEY}=${REQUIRED_VALUE}" "$setupVars"; then
+        echo "::: Pre existing ${KEY} found"
+        true
+    else
+        false
+    fi
+}
+

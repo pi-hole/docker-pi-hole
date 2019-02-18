@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def start_cmd():
     ''' broken by default, required override '''
     return None
