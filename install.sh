@@ -3,9 +3,9 @@
 mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
 # Production tags with valid web footers
-export CORE_TAG="$(cat /etc/docker-pi-hole-version)"
-# 4.2.1 -> 4.2 since no patch release for web
-export WEB_TAG="${CORE_TAG/.1/}"
+export CORE_VERSION="$(cat /etc/docker-pi-hole-version)"
+# Major.Minor for web tag until patches are released for it
+export WEB_VERSION="$(echo ${CORE_VERSION} | grep -Po "v\d+\.\d+")"
 # Only use for pre-production / testing
 export USE_CUSTOM_BRANCHES=false
 
@@ -15,7 +15,8 @@ curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
 mv /init /s6-init
 
 if [[ $USE_CUSTOM_BRANCHES == true ]] ; then
-    CORE_TAG="release/$(cat /etc/docker-pi-hole-version)"
+    CORE_VERSION="hotfix/${CORE_VERSION}"
+    WEB_VERSION="release/v4.2"
 fi
 
 # debconf-apt-progress seems to hang so get rid of it too
@@ -23,7 +24,7 @@ which debconf-apt-progress
 mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
 
 # Get the install functions
-curl https://raw.githubusercontent.com/pi-hole/pi-hole/${CORE_TAG}/automated%20install/basic-install.sh > "$PIHOLE_INSTALL" 
+curl https://raw.githubusercontent.com/pi-hole/pi-hole/${CORE_VERSION}/automated%20install/basic-install.sh > "$PIHOLE_INSTALL" 
 PH_TEST=true . "${PIHOLE_INSTALL}"
 
 # Preseed variables to assist with using --unattended install
@@ -70,19 +71,20 @@ mv "${tmpLog}" /
 if [[ $USE_CUSTOM_BRANCHES == true ]] ; then
     ln -s /bin/true /usr/local/bin/service
     ln -s /bin/true /usr/local/bin/update-rc.d
-    echo y | bash -x pihole checkout core ${CORE_TAG}
-    echo y | bash -x pihole checkout web ${CORE_TAG}
-    echo y | bash -x pihole checkout ftl ${CORE_TAG}
-    # If the v is forgotten: ${CORE_TAG/v/}
+    echo y | bash -x pihole checkout core ${CORE_VERSION}
+    echo y | bash -x pihole checkout web ${WEB_VERSION}
+    echo y | bash -x pihole checkout ftl tweak/overhaul_overTime
+    # If the v is forgotten: ${CORE_VERSION/v/}
     unlink /usr/local/bin/service
     unlink /usr/local/bin/update-rc.d
 else
     # Reset to our tags so version numbers get detected correctly
-    pushd "${PI_HOLE_LOCAL_REPO}"; git reset --hard "${CORE_TAG}"; popd;
-    pushd "${webInterfaceDir}"; git reset --hard "${WEB_TAG}"; popd;
+    pushd "${PI_HOLE_LOCAL_REPO}"; git reset --hard "${CORE_VERSION}"; popd;
+    pushd "${webInterfaceDir}"; git reset --hard "${WEB_VERSION}"; popd;
 fi
 
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
+sed -i '/^WEBPASSWORD/d' /etc/pihole/setupVars.conf
 
 # Replace the call to `updatePiholeFunc` in arg parse with new `unsupportedFunc`
 sed -i $'s/helpFunc() {/unsupportedFunc() {\\\n  echo "Function not supported in Docker images"\\\n  exit 0\\\n}\\\n\\\nhelpFunc() {/g' /usr/local/bin/pihole
