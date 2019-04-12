@@ -35,11 +35,11 @@ ENV ServerIP 0.0.0.0
 ENV FTL_CMD no-daemon
 ENV DNSMASQ_USER root
 
-ENV VERSION v4.2.2
+ENV VERSION release-v4.3
 ENV ARCH amd64
 ENV PATH /opt/pihole:${PATH}
 
-LABEL image="pihole/pihole:v4.2.2_amd64"
+LABEL image="pihole/pihole:release-v4.3_amd64"
 LABEL maintainer="adam@diginc.us"
 LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
 

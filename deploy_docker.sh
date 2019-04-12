@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Script for manually pushing the docker arm images for diginc only
+# Script for manually pushing the docker arm images for pi-hole org members only
 # (no one else has docker repo permissions)
 if [ ! -f ~/.docker/config.json ] ; then
     echo "Error: You should setup your docker push authorization first"
@@ -7,7 +7,9 @@ if [ ! -f ~/.docker/config.json ] ; then
 fi
 
 parse_git_branch() {
-  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'
+    var="$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')"
+    # convert release/ to release-
+    echo "${var/release\//release-}"
 }
 
 annotate() {
