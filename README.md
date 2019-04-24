@@ -46,7 +46,7 @@ services:
 
 ### Docker Pi-Hole v4.2.2
 
-- ServerIP no longer a required enviroment variable!  Feel free to remove it unless you need it to customize lighttpd
+- ServerIP no longer a required enviroment variable **unless you run network 'host' mode**!  Feel free to remove it unless you need it to customize lighttpd
 - --cap-add NET_ADMIN no longer required unless using DHCP, leaving in examples for consistency
 
 ### Docker Pi-Hole v4.1.1+
