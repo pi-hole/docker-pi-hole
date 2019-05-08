@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-mkdir -p /etc/pihole/
+mkdir -p $CONFIG_DIR/
 mkdir -p /var/run/pihole
 # Production tags with valid web footers
 export CORE_VERSION="$(cat /etc/docker-pi-hole-version)"
@@ -84,12 +84,12 @@ else
 fi
 
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
-sed -i '/^WEBPASSWORD/d' /etc/pihole/setupVars.conf
+sed -i '/^WEBPASSWORD/d' $CONFIG_DIR/setupVars.conf
 
 # Replace the call to `updatePiholeFunc` in arg parse with new `unsupportedFunc`
 sed -i $'s/helpFunc() {/unsupportedFunc() {\\\n  echo "Function not supported in Docker images"\\\n  exit 0\\\n}\\\n\\\nhelpFunc() {/g' /usr/local/bin/pihole
 sed -i $'s/)\s*updatePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 
-touch /.piholeFirstBoot
+touch $CONFIG_DIR/.piholeFirstBoot
 
 echo 'Docker install successful'
