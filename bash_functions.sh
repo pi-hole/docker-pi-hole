@@ -116,7 +116,6 @@ setup_dnsmasq_dns() {
         dnsType='custom'
     fi;
 
-    # TODO With the addition of this to /start.sh this needs a refactor
     if [ ! -f $CONFIG_DIR/.piholeFirstBoot ] ; then
         local setupDNS1="$(grep 'PIHOLE_DNS_1' ${setupVars})"
         local setupDNS2="$(grep 'PIHOLE_DNS_2' ${setupVars})"
