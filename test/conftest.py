@@ -9,7 +9,8 @@ check_output = testinfra.get_backend(
 __version__ = None
 dotdot = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir, os.pardir))
 with open('{}/VERSION'.format(dotdot), 'r') as v:
-    __version__ = v.read().strip()
+    raw_version = v.read().strip()
+    __version__ = raw_version.replace('release/', 'release-')
 
 @pytest.fixture()
 def args_dns():

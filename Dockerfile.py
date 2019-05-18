@@ -38,7 +38,8 @@ os_base_vars = {
 __version__ = None
 dot = os.path.abspath('.')
 with open('{}/VERSION'.format(dot), 'r') as v:
-    __version__ = v.read().strip()
+    raw_version = v.read().strip()
+    __version__ = raw_version.replace('release/', 'release-')
 
 images = {
     __version__: [
