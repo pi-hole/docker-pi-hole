@@ -4,20 +4,19 @@ mkdir -p $CONFIG_DIR/
 mkdir -p /var/run/pihole
 # Production tags with valid web footers
 export CORE_VERSION="$(cat /etc/docker-pi-hole-version)"
-# Major.Minor for web tag until patches are released for it
-export WEB_VERSION="$(echo ${CORE_VERSION} | grep -Po "v\d+\.\d+")"
+export WEB_VERSION="${CORE_VERSION}"
+
 # Only use for pre-production / testing
-export USE_CUSTOM_BRANCHES=false
+export CHECKOUT_BRANCHES=false
+# Search for release/* branch naming convention for custom checkouts
+if [[ "$CORE_VERSION" == *"release/"* ]] ; then
+    CHECKOUT_BRANCHES=true
+fi
 
 apt-get update
 apt-get install -y curl procps
 curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
 mv /init /s6-init
-
-if [[ $USE_CUSTOM_BRANCHES == true ]] ; then
-    CORE_VERSION="hotfix/${CORE_VERSION}"
-    WEB_VERSION="release/v4.2"
-fi
 
 # debconf-apt-progress seems to hang so get rid of it too
 which debconf-apt-progress
@@ -68,7 +67,7 @@ FTLdetect 2>&1 | tee "${tmpLog}"
 installPihole 2>&1 | tee "${tmpLog}"
 mv "${tmpLog}" /
 
-if [[ $USE_CUSTOM_BRANCHES == true ]] ; then
+if [[ $CHECKOUT_BRANCHES == true ]] ; then
     ln -s /bin/true /usr/local/bin/service
     ln -s /bin/true /usr/local/bin/update-rc.d
     echo y | bash -x pihole checkout core ${CORE_VERSION}
