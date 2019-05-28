@@ -21,7 +21,7 @@ def test_IPv6_not_True_removes_ipv6(Docker, Slow, test_args, expected_ipv6, expe
     # On overlay2(?) docker sometimes writes to disk are slow enough to break some tests...
     expected_ipv6_check = lambda: (\
         IPV6_LINE in Docker.run('grep \'use-ipv6.pl\' {}'.format(WEB_CONFIG)).stdout
-    ) == expected_ipv6 
+    ) == expected_ipv6
     Slow(expected_ipv6_check)
 
 

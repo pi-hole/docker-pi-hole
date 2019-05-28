@@ -24,7 +24,7 @@ which debconf-apt-progress
 mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
 
 # Get the install functions
-curl https://raw.githubusercontent.com/pi-hole/pi-hole/${CORE_VERSION}/automated%20install/basic-install.sh > "$PIHOLE_INSTALL" 
+curl https://raw.githubusercontent.com/pi-hole/pi-hole/${CORE_VERSION}/automated%20install/basic-install.sh > "$PIHOLE_INSTALL"
 PH_TEST=true . "${PIHOLE_INSTALL}"
 
 # Preseed variables to assist with using --unattended install
