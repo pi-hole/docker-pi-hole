@@ -44,9 +44,9 @@ services:
 
 ## Upgrade Notices:
 
-### Docker Pi-Hole v4.2.1-1+
+### Docker Pi-Hole v4.2.2
 
-- ServerIP no longer a required enviroment variable!  Feel free to remove it unless you need it to customize lighttpd
+- ServerIP no longer a required enviroment variable **unless you run network 'host' mode**!  Feel free to remove it unless you need it to customize lighttpd
 - --cap-add NET_ADMIN no longer required unless using DHCP, leaving in examples for consistency
 
 ### Docker Pi-Hole v4.1.1+
@@ -102,7 +102,7 @@ There are other environment variables if you want to customize various things in
 | `WEBPASSWORD: <Admin password>`<br/> **Recommended** *Default: random* | http://pi.hole/admin password. Run `docker logs pihole \| grep random` to find your random pass.
 | `DNS1: <IP>`<br/> *Optional* *Default: 8.8.8.8* | Primary upstream DNS provider, default is google DNS
 | `DNS2: <IP>`<br/> *Optional* *Default: 8.8.4.4* | Secondary upstream DNS provider, default is google DNS, `no` if only one DNS should used
-| `ServerIP: <Host's IP>`<br/> **Recommended** | Set to your server's LAN IP, used by web block modes and lighttpd bind address
+| `ServerIP: <Host's IP>`<br/> **Recommended** | **--net=host mode requires** Set to your server's LAN IP, used by web block modes and lighttpd bind address
 | `ServerIPv6: <Host's IPv6>`<br/> *Required if using IPv6* | **If you have a v6 network** set to your server's LAN IPv6 to block IPv6 ads fully
 | `VIRTUAL_HOST: <Custom Hostname>`<br/> *Optional* *Default: $ServerIP*   | What your web server 'virtual host' is, accessing admin through this Hostname/IP allows you to make changes to the whitelist / blacklists in addition to the default 'http://pi.hole/admin/' address
 | `IPv6: <True\|False>`<br/> *Optional* *Default: True* | For unraid compatibility, strips out all the IPv6 configuration from DNS/Web services when false.
@@ -117,7 +117,7 @@ Here is a rundown of other arguments for your docker-compose / docker run.
 
 | Docker Arguments | Description |
 | ---------------- | ----------- |
-| `-p <port>:<port>` **Recommended** | Ports to expose (54, 80, 67, 443), the bare minimum ports required for Pi-holes HTTP and DNS services
+| `-p <port>:<port>` **Recommended** | Ports to expose (53, 80, 67, 443), the bare minimum ports required for Pi-holes HTTP and DNS services
 | `--restart=unless-stopped`<br/> **Recommended** | Automatically (re)start your Pi-hole on boot or in the event of a crash
 | `-v $(pwd)/etc-pihole:/etc/pihole`<br/> **Recommended** | Volumes for your Pi-hole configs help persist changes across docker image updates
 | `-v $(pwd)/etc-dnsmasq.d:/etc/dnsmasq.d`<br/> **Recommended** | Volumes for your dnsmasq configs help persist changes across docker image updates

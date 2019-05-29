@@ -15,7 +15,7 @@ export DNSMASQ_LISTENING_BEHAVIOUR="$DNSMASQ_LISTENING"
 export IPv6
 export WEB_PORT
 
-export adlistFile='/etc/pihole/adlists.list'
+export adlistFile='$CONFIG_DIR/adlists.list'
 
 # The below functions are all contained in bash_functions.sh
 . /bash_functions.sh
@@ -27,16 +27,12 @@ echo " ::: Starting docker specific checks & setup for docker pihole/pihole"
 
 docker_checks
 
-# TODO:
-#if [ ! -f /.piholeFirstBoot ] ; then
-#    echo " ::: Not first container startup so not running docker's setup, re-create container to run setup again"
-#else
-#    regular_setup_functions
-#fi
-
 fix_capabilities
-generate_password
 validate_env || exit 1
+
+if [ -f $CONFIG_DIR/.piholeFirstBoot ] || [ -z "$(ls -A $CONFIG_DIR)" ] ; then
+
+generate_password
 prepare_configs
 change_setting "IPV4_ADDRESS" "$ServerIP"
 change_setting "IPV6_ADDRESS" "$ServerIPv6"
@@ -48,8 +44,9 @@ setup_dnsmasq_hostnames "$ServerIP" "$ServerIPv6" "$HOSTNAME"
 setup_ipv4_ipv6
 setup_lighttpd_bind "$ServerIP"
 setup_blocklists
+fi
 test_configs
 
-[ -f /.piholeFirstBoot ] && rm /.piholeFirstBoot
+[ -f $CONFIG_DIR/.piholeFirstBoot ] && rm $CONFIG_DIR/.piholeFirstBoot
 
 echo " ::: Docker start setup complete"
