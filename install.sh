@@ -14,7 +14,7 @@ if [[ "$CORE_VERSION" == *"release/"* ]] ; then
 fi
 
 apt-get update
-apt-get install -y curl procps
+apt-get install --no-install-recommends -y curl procps ca-certificates
 curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
 mv /init /s6-init
 
@@ -58,8 +58,8 @@ apt-get install -y --force-yes netcat-openbsd
 piholeGitUrl="${piholeGitUrl}"
 webInterfaceGitUrl="${webInterfaceGitUrl}"
 webInterfaceDir="${webInterfaceDir}"
-git clone "${piholeGitUrl}" "${PI_HOLE_LOCAL_REPO}"
-git clone "${webInterfaceGitUrl}" "${webInterfaceDir}"
+git clone --branch "${CORE_VERSION}" --depth 1 "${piholeGitUrl}" "${PI_HOLE_LOCAL_REPO}"
+git clone --branch "${WEB_VERSION}" --depth 1 "${webInterfaceGitUrl}" "${webInterfaceDir}"
 
 tmpLog="/tmp/pihole-install.log"
 installLogLoc="${installLogLoc}"
