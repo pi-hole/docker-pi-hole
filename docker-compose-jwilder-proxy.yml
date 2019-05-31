@@ -2,61 +2,62 @@ version: "3"
 
 # https://github.com/pi-hole/docker-pi-hole/blob/master/README.md
 
-applist:
-  image: jwilder/nginx-proxy
-  ports:
-    - '80:80'
-  environment:
-    DEFAULT_HOST: pihole.yourDomain.lan
-  volumes:
-    - '/var/run/docker.sock:/tmp/docker.sock'
-  restart: always
+services:
+  jwilder-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - '80:80'
+    environment:
+      DEFAULT_HOST: pihole.yourDomain.lan
+    volumes:
+      - '/var/run/docker.sock:/tmp/docker.sock'
+    restart: always
 
-pihole:
-  image: pihole/pihole:latest
-  dns:
-    - 127.0.0.1
-    - 1.1.1.1
-  ports:
-    - '53:53/tcp'
-    - '53:53/udp'
-    - "67:67/udp"
-    - '8053:80/tcp'
-    - "443:443/tcp"
-  volumes:
-    - './etc-pihole/:/etc/pihole/'
-    - './etc-dnsmasq.d/:/etc/dnsmasq.d/'
-    # run `touch ./var-log/pihole.log` first unless you like errors
-    # - './var-log/pihole.log:/var/log/pihole.log'
-  # Recommended but not required (DHCP needs NET_ADMIN)
-  #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
-  cap_add:
-   - NET_ADMIN
-  environment:
-    ServerIP: 192.168.41.55
-    PROXY_LOCATION: pihole
-    VIRTUAL_HOST: pihole.yourDomain.lan
-    VIRTUAL_PORT: 80
-  extra_hosts:
-    # Resolve to nothing domains (terminate connection)
-    - 'nw2master.bioware.com nwn2.master.gamespy.com:0.0.0.0'
-    # LAN hostnames for other docker containers using jwilder
-    - 'yourDomain.lan:192.168.41.55'
-    - 'pihole pihole.yourDomain.lan:192.168.41.55'
-    - 'ghost ghost.yourDomain.lan:192.168.41.55'
-    - 'wordpress wordpress.yourDomain.lan:192.168.41.55'
-  restart: always
+  pihole:
+    image: pihole/pihole:latest
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
+    ports:
+      - '53:53/tcp'
+      - '53:53/udp'
+      - "67:67/udp"
+      - '8053:80/tcp'
+      - "443:443/tcp"
+    volumes:
+      - './etc-pihole/:/etc/pihole/'
+      - './etc-dnsmasq.d/:/etc/dnsmasq.d/'
+      # run `touch ./var-log/pihole.log` first unless you like errors
+      # - './var-log/pihole.log:/var/log/pihole.log'
+    # Recommended but not required (DHCP needs NET_ADMIN)
+    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    cap_add:
+      - NET_ADMIN
+    environment:
+      ServerIP: 192.168.41.55
+      PROXY_LOCATION: pihole
+      VIRTUAL_HOST: pihole.yourDomain.lan
+      VIRTUAL_PORT: 80
+    extra_hosts:
+      # Resolve to nothing domains (terminate connection)
+      - 'nw2master.bioware.com nwn2.master.gamespy.com:0.0.0.0'
+      # LAN hostnames for other docker containers using jwilder
+      - 'yourDomain.lan:192.168.41.55'
+      - 'pihole pihole.yourDomain.lan:192.168.41.55'
+      - 'ghost ghost.yourDomain.lan:192.168.41.55'
+      - 'wordpress wordpress.yourDomain.lan:192.168.41.55'
+    restart: always
 
-# Another container you might want to have running through the proxy
-# Note it also have ENV Vars like pihole and a host under pihole's extra_hosts
-#ghost:
-#  image: fractalf/ghost
-#  ports:
-#    - '2368:2368/tcp'
-#  volumes:
-#    - '/etc/ghost/:/ghost-override'
-#  environment:
-#    PROXY_LOCATION: ghost
-#    VIRTUAL_HOST: ghost.yourDomain.lan
-#    VIRTUAL_PORT: 2368
-#  restart: always
+#   Another container you might want to have running through the proxy
+#   Note it also have ENV Vars like pihole and a host under pihole's extra_hosts
+#  ghost:
+#    image: fractalf/ghost
+#    ports:
+#      - '2368:2368/tcp'
+#    volumes:
+#      - '/etc/ghost/:/ghost-override'
+#    environment:
+#      PROXY_LOCATION: ghost
+#      VIRTUAL_HOST: ghost.yourDomain.lan
+#      VIRTUAL_PORT: 2368
+#    restart: always
