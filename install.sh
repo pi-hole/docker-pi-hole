@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-mkdir -p /etc/pihole/
+mkdir -p $CONFIG_DIR/
 mkdir -p /var/run/pihole
 # Production tags with valid web footers
 export CORE_VERSION="$(cat /etc/docker-pi-hole-version)"
@@ -14,7 +14,7 @@ if [[ "$CORE_VERSION" == *"release/"* ]] ; then
 fi
 
 apt-get update
-apt-get install -y curl procps
+apt-get install --no-install-recommends -y curl procps ca-certificates
 curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
 mv /init /s6-init
 
@@ -23,7 +23,7 @@ which debconf-apt-progress
 mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
 
 # Get the install functions
-curl https://raw.githubusercontent.com/pi-hole/pi-hole/${CORE_VERSION}/automated%20install/basic-install.sh > "$PIHOLE_INSTALL" 
+curl https://raw.githubusercontent.com/pi-hole/pi-hole/${CORE_VERSION}/automated%20install/basic-install.sh > "$PIHOLE_INSTALL"
 PH_TEST=true . "${PIHOLE_INSTALL}"
 
 # Preseed variables to assist with using --unattended install
@@ -58,8 +58,8 @@ apt-get install -y --force-yes netcat-openbsd
 piholeGitUrl="${piholeGitUrl}"
 webInterfaceGitUrl="${webInterfaceGitUrl}"
 webInterfaceDir="${webInterfaceDir}"
-git clone "${piholeGitUrl}" "${PI_HOLE_LOCAL_REPO}"
-git clone "${webInterfaceGitUrl}" "${webInterfaceDir}"
+git clone --branch "${CORE_VERSION}" --depth 1 "${piholeGitUrl}" "${PI_HOLE_LOCAL_REPO}"
+git clone --branch "${WEB_VERSION}" --depth 1 "${webInterfaceGitUrl}" "${webInterfaceDir}"
 
 tmpLog="/tmp/pihole-install.log"
 installLogLoc="${installLogLoc}"
@@ -83,12 +83,12 @@ else
 fi
 
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
-sed -i '/^WEBPASSWORD/d' /etc/pihole/setupVars.conf
+sed -i '/^WEBPASSWORD/d' $CONFIG_DIR/setupVars.conf
 
 # Replace the call to `updatePiholeFunc` in arg parse with new `unsupportedFunc`
 sed -i $'s/helpFunc() {/unsupportedFunc() {\\\n  echo "Function not supported in Docker images"\\\n  exit 0\\\n}\\\n\\\nhelpFunc() {/g' /usr/local/bin/pihole
 sed -i $'s/)\s*updatePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 
-touch /.piholeFirstBoot
+touch $CONFIG_DIR/.piholeFirstBoot
 
 echo 'Docker install successful'

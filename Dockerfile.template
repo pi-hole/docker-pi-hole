@@ -1,5 +1,6 @@
 FROM {{ pihole.base }}
 
+ENV CONFIG_DIR /etc/pihole
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/{{ pihole.s6_version }}/s6-overlay-{{ pihole.s6arch }}.tar.gz
 COPY install.sh /usr/local/bin/install.sh
 COPY VERSION /etc/docker-pi-hole-version
@@ -44,5 +45,6 @@ LABEL maintainer="{{ pihole.maintainer }}"
 LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
 
 HEALTHCHECK CMD dig @127.0.0.1 pi.hole || exit 1
+VOLUME $CONFIG_DIR
 
 SHELL ["/bin/bash", "-c"]

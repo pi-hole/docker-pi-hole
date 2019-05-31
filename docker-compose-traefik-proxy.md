@@ -15,11 +15,11 @@ Please note the following about this [traefik](https://traefik.io/) example for 
 version: '3'
 
 services:
-  # 
+  #
   traefik:
     container_name: traefik
     domainname: homedomain.lan
-    
+
     image: traefik
     restart: unless-stopped
     # Note I opt to whitelist certain apps for exposure to traefik instead of auto discovery
@@ -42,7 +42,7 @@ services:
   pihole:
     container_name: pihole
     domainname: homedomain.lan
-    
+
     image: pihole/pihole:latest
     dns:
       - 127.0.0.1
@@ -106,4 +106,3 @@ traefik    | time="2018-03-07T18:57:42Z" level=info msg="Server configuration re
 ```
 
 Also your port 8080 should list the Route/Rule for pihole and backend-pihole container.
-

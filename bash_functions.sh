@@ -54,7 +54,7 @@ prepare_configs() {
     touch /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
     chown pihole:pihole /var/run/pihole /var/log/pihole
     test -f /var/run/pihole/FTL.sock && rm /var/run/pihole/FTL.sock
-    chown pihole:pihole /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /etc/pihole /etc/pihole/dhcp.leases /var/log/pihole.log
+    chown pihole:pihole /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port $CONFIG_DIR $CONFIG_DIR/dhcp.leases /var/log/pihole.log
     chmod 0644 /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
     set -e
     # Update version numbers
@@ -116,8 +116,7 @@ setup_dnsmasq_dns() {
         dnsType='custom'
     fi;
 
-    # TODO With the addition of this to /start.sh this needs a refactor
-    if [ ! -f /.piholeFirstBoot ] ; then
+    if [ ! -f $CONFIG_DIR/.piholeFirstBoot ] ; then
         local setupDNS1="$(grep 'PIHOLE_DNS_1' ${setupVars})"
         local setupDNS2="$(grep 'PIHOLE_DNS_2' ${setupVars})"
         setupDNS1="${setupDNS1/PIHOLE_DNS_1=/}"
