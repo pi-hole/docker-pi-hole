@@ -67,6 +67,18 @@ FTLdetect 2>&1 | tee "${tmpLog}"
 installPihole 2>&1 | tee "${tmpLog}"
 mv "${tmpLog}" /
 
+fetch_release_metadata() {
+    local directory="$1"
+    local version="$2"
+    pushd "$directory"
+    git fetch -t
+    git remote set-branches origin '*'
+    git fetch --depth 10
+    git checkout master
+    git reset --hard "$version"
+    popd
+}
+
 if [[ $CHECKOUT_BRANCHES == true ]] ; then
     ln -s /bin/true /usr/local/bin/service
     ln -s /bin/true /usr/local/bin/update-rc.d
@@ -78,8 +90,8 @@ if [[ $CHECKOUT_BRANCHES == true ]] ; then
     unlink /usr/local/bin/update-rc.d
 else
     # Reset to our tags so version numbers get detected correctly
-    pushd "${PI_HOLE_LOCAL_REPO}"; git reset --hard "${CORE_VERSION}"; popd;
-    pushd "${webInterfaceDir}"; git reset --hard "${WEB_VERSION}"; popd;
+    fetch_release_metadata "${PI_HOLE_LOCAL_REPO}" "${CORE_VERSION}"
+    fetch_release_metadata "${webInterfaceDir}" "${WEB_VERSION}"
 fi
 
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
