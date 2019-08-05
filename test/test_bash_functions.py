@@ -56,12 +56,12 @@ def test_bad_input_to_WEB_PORT(Docker, test_args, expected_error):
 
 # DNS Environment Variable behavior in combinations of modified pihole LTE settings
 @pytest.mark.parametrize('args_env, expected_stdout, dns1, dns2', [
-    ('',                                     'default DNS', '8.8.8.8', '8.8.4.4' ),
-    ('-e DNS1="1.2.3.4"',                   'custom DNS',  '1.2.3.4', '8.8.4.4' ),
-    ('-e DNS2="1.2.3.4"',                   'custom DNS',  '8.8.8.8', '1.2.3.4' ),
+    ('',                                     'default DNS', '1.1.1.1', '1.0.0.1' ),
+    ('-e DNS1="1.2.3.4"',                   'custom DNS',  '1.2.3.4', '1.0.0.1' ),
+    ('-e DNS2="1.2.3.4"',                   'custom DNS',  '1.1.1.1', '1.2.3.4' ),
     ('-e DNS1="1.2.3.4" -e DNS2="2.2.3.4"', 'custom DNS',  '1.2.3.4', '2.2.3.4' ),
     ('-e DNS1="1.2.3.4" -e DNS2="no"',      'custom DNS',  '1.2.3.4', None ),
-    ('-e DNS2="no"',                        'custom DNS',  '8.8.8.8', None ),
+    ('-e DNS2="no"',                        'custom DNS',  '1.1.1.1', None ),
 ])
 def test_override_default_servers_with_DNS_EnvVars(Docker, Slow, args_env, expected_stdout, dns1, dns2):
     ''' on first boot when DNS vars are NOT set explain default google DNS settings are used
@@ -81,8 +81,8 @@ def test_override_default_servers_with_DNS_EnvVars(Docker, Slow, args_env, expec
      'Existing DNS servers used'),
     ('-e DNS1="1.2.3.4"', '9.9.9.1', '9.9.9.2',
      'Docker DNS variables not used\nExisting DNS servers used (9.9.9.1 & 9.9.9.2)'),
-    ('-e DNS2="1.2.3.4"', '8.8.8.8', None,
-     'Docker DNS variables not used\nExisting DNS servers used (8.8.8.8 & unset)'),
+    ('-e DNS2="1.2.3.4"', '1.1.1.1', None,
+     'Docker DNS variables not used\nExisting DNS servers used (1.1.1.1 & unset)'),
     ('-e DNS1="1.2.3.4" -e DNS2="2.2.3.4"', '1.2.3.4', '2.2.3.4',
      'Docker DNS variables not used\nExisting DNS servers used (1.2.3.4 & 2.2.3.4'),
 ])
