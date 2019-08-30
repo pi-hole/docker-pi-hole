@@ -24,8 +24,8 @@ services:
       - "80:80/tcp"
       - "443:443/tcp"
     environment:
-      TZ: 'America/Chicago'
-      # WEBPASSWORD: 'set a secure password here or it will be random'
+      - TZ: 'America/Chicago'
+      # - WEBPASSWORD: 'set a secure password here or it will be random'
     # Volumes store your data between container upgrades
     volumes:
        - './etc-pihole/:/etc/pihole/'
