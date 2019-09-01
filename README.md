@@ -40,7 +40,7 @@ services:
     restart: unless-stopped
 ```
 
-[Here is an equivilent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
+[Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
 
 ## Upgrade Notices:
 
@@ -102,6 +102,12 @@ There are other environment variables if you want to customize various things in
 | `WEBPASSWORD: <Admin password>`<br/> **Recommended** *Default: random* | http://pi.hole/admin password. Run `docker logs pihole \| grep random` to find your random pass.
 | `DNS1: <IP>`<br/> *Optional* *Default: 8.8.8.8* | Primary upstream DNS provider, default is google DNS
 | `DNS2: <IP>`<br/> *Optional* *Default: 8.8.4.4* | Secondary upstream DNS provider, default is google DNS, `no` if only one DNS should used
+| `DNSSEC: <True\|False>`<br/> *Optional* *Default: false* | Enable DNSSEC support
+| `DNS_BOGUS_PRIV: <True\|False>`<br/> *Optional* *Default: true* | Enable forwarding of reverse lookups for private ranges
+| `CONDITIONAL_FORWARDING: <True\|False>`<br/> *Optional* *Default: False* | Enable DNS conditional forwarding for device name resolution
+| `CONDITIONAL_FORWARDING_IP: <Router's IP>`<br/> *Optional* | If conditional forwarding is enabled, set the IP of the local network router
+| `CONDITIONAL_FORWARDING_DOMAIN: <Network Domain>`<br/> *Optional* | If conditional forwarding is enabled, set the domain of the local network router
+| `CONDITIONAL_FORWARDING_REVERSE: <Reverse DNS>`<br/> *Optional* | If conditional forwarding is enabled, set the reverse DNS of the local network router (e.g. `0.168.192.in-addr.arpa`)
 | `ServerIP: <Host's IP>`<br/> **Recommended** | **--net=host mode requires** Set to your server's LAN IP, used by web block modes and lighttpd bind address
 | `ServerIPv6: <Host's IPv6>`<br/> *Required if using IPv6* | **If you have a v6 network** set to your server's LAN IPv6 to block IPv6 ads fully
 | `VIRTUAL_HOST: <Custom Hostname>`<br/> *Optional* *Default: $ServerIP*   | What your web server 'virtual host' is, accessing admin through this Hostname/IP allows you to make changes to the whitelist / blacklists in addition to the default 'http://pi.hole/admin/' address

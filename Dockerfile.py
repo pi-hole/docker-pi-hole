@@ -15,6 +15,7 @@ Options:
 
 Examples:
 """
+from __future__ import print_function
 
 from docopt import docopt
 from jinja2 import Environment, FileSystemLoader
@@ -64,7 +65,7 @@ images = {
 
 def generate_dockerfiles(args):
     if args['--no-generate']:
-        print " ::: Skipping Dockerfile generation"
+        print(" ::: Skipping Dockerfile generation")
         return
 
     for version, archs in images.iteritems():
@@ -92,13 +93,13 @@ def generate_dockerfiles(args):
 
 def build_dockerfiles(args):
     if args['--no-build']:
-        print " ::: Skipping Dockerfile building"
+        print(" ::: Skipping Dockerfile building")
         return
 
     for arch in args['--arch']:
         # TODO: include from external .py that can be shared with Dockerfile.py / Tests / deploy scripts '''
         if arch == 'armel':
-            print "Skipping armel, incompatible upstream binaries/broken"
+            print("Skipping armel, incompatible upstream binaries/broken")
             continue
         build('pihole', arch, args)
 
@@ -119,16 +120,16 @@ def build(docker_repo, arch, args):
         no_cache = '--no-cache'
     build_command = '{time}docker build {no_cache} --pull --cache-from="{cache},{create_tag}" -f {dockerfile} -t {create_tag} .'\
         .format(time=time, no_cache=no_cache, cache=cached_image, dockerfile=dockerfile, create_tag=repo_tag)
-    print " ::: Building {} into {}".format(dockerfile, repo_tag)
+    print(" ::: Building {} into {}".format(dockerfile, repo_tag))
     if args['-v']:
-        print build_command, '\n'
+        print(build_command, '\n')
     build_result = run_local(build_command) 
     if args['-v']:
-        print build_result.stdout
-        print build_result.stderr
+        print(build_result.stdout)
+        print(build_result.stderr)
     if build_result.rc != 0:
-        print "     ::: Building {} encountered an error".format(dockerfile)
-        print build_result.stderr
+        print("     ::: Building {} encountered an error".format(dockerfile))
+        print(build_result.stderr)
     assert build_result.rc == 0
 
 
