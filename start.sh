@@ -10,10 +10,16 @@ export HOSTNAME
 export WEBLOGDIR
 export DNS1
 export DNS2
+export DNSSEC
+export DNS_BOGUS_PRIV
 export INTERFACE
 export DNSMASQ_LISTENING_BEHAVIOUR="$DNSMASQ_LISTENING"
 export IPv6
 export WEB_PORT
+export CONDITIONAL_FORWARDING
+export CONDITIONAL_FORWARDING_IP
+export CONDITIONAL_FORWARDING_DOMAIN
+export CONDITIONAL_FORWARDING_REVERSE
 
 export adlistFile='/etc/pihole/adlists.list'
 
@@ -40,6 +46,12 @@ validate_env || exit 1
 prepare_configs
 change_setting "IPV4_ADDRESS" "$ServerIP"
 change_setting "IPV6_ADDRESS" "$ServerIPv6"
+change_setting "DNS_BOGUS_PRIV" "$DNS_BOGUS_PRIV"
+change_setting "DNSSEC" "$DNSSEC"
+change_setting "CONDITIONAL_FORWARDING" "$CONDITIONAL_FORWARDING"
+change_setting "CONDITIONAL_FORWARDING_IP" "$CONDITIONAL_FORWARDING_IP"
+change_setting "CONDITIONAL_FORWARDING_DOMAIN" "$CONDITIONAL_FORWARDING_DOMAIN"
+change_setting "CONDITIONAL_FORWARDING_REVERSE" "$CONDITIONAL_FORWARDING_REVERSE"
 setup_web_port "$WEB_PORT"
 setup_web_password "$WEBPASSWORD"
 setup_dnsmasq "$DNS1" "$DNS2" "$INTERFACE" "$DNSMASQ_LISTENING_BEHAVIOUR"

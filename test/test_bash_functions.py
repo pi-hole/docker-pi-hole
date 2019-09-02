@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import pytest
 import re
@@ -197,5 +198,5 @@ def test_webPassword_pre_existing_trumps_all_envs(Docker, args_env, test_args):
 def test_docker_checks_for_resolvconf_misconfiguration(Docker, args_dns, expected_stdout):
     ''' The container checks for misconfigured resolv.conf '''
     function = Docker.run('. /bash_functions.sh ; eval `grep docker_checks /start.sh`')
-    print function.stdout
+    print(function.stdout)
     assert expected_stdout in function.stdout
