@@ -139,13 +139,36 @@ Here is a rundown of other arguments for your docker-compose / docker run.
 * [How do I set or reset the Web interface Password?](https://discourse.pi-hole.net/t/how-do-i-set-or-reset-the-web-interface-password/1328)
   * `docker exec -it pihole_container_name pihole -a -p` - then enter your password into the prompt
 * Port conflicts?  Stop your server's existing DNS / Web services.
-  * Ubuntu users especially may need to shut off dns on your docker server so it can run in the container on port 53
-    * 17.04 and later should disable dnsmasq.
-    * 17.10 should disable systemd-resolved service.  See this page: [How to disable systemd-resolved in Ubuntu](https://askubuntu.com/questions/907246/how-to-disable-systemd-resolved-in-ubuntu)
   * Don't forget to stop your services from auto-starting again after you reboot
+  * Ubuntu users see below for more detailed information
 * Port 80 is highly recommended because if you have another site/service using port 80 by default then the ads may not transform into blank ads correctly.  To make sure docker-pi-hole plays nicely with an existing webserver you run you'll probably need a reverse proxy webserver config if you don't have one already.  Pi-hole must be the default web app on the proxy e.g. if you go to your host by IP instead of domain then Pi-hole is served out instead of any other sites hosted by the proxy. This is the '[default_server](http://nginx.org/en/docs/http/ngx_http_core_module.html#listen)' in nginx or ['_default_' virtual host](https://httpd.apache.org/docs/2.4/vhosts/examples.html#default) in Apache and is taken advantage of so any undefined ad domain can be directed to your webserver and get a 'blocked' response instead of ads.
   * You can still map other ports to Pi-hole port 80 using docker's port forwarding like this `-p 8080:80`, but again the ads won't render properly.  Changing the inner port 80 shouldn't be required unless you run docker host networking mode.
   * [Here is an example of running with jwilder/proxy](https://github.com/pi-hole/docker-pi-hole/blob/master/docker-compose-jwilder-proxy.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with Pi-hole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in jwilder/proxy and you need to set the matching `VIRTUAL_HOST` for the Pi-hole's container.  Please read jwilder/proxy readme for more info if you have trouble.
+
+### Installing on Ubuntu
+Modern releases of Ubuntu (17.10+) include [`systemd-resolved`](http://manpages.ubuntu.com/manpages/bionic/man8/systemd-resolved.service.8.html) which is configured by default to implement a caching DNS stub resolver. This will prevent pi-hole from listening on port 53.
+The stub resolver should be disabled with: `sudo sed -r -i.orig 's/#?DNSStubListener=yes/DNSStubListener=no/g' /etc/systemd/resolved.conf`
+
+This will not change the nameserver settings, which point to the stub resolver thus preventing DNS resolution. Change the `/etc/resolv.conf` symlink to point to `/run/systemd/resolve/resolv.conf`, which is automatically updated to follow the system's [`netplan`](https://netplan.io/):
+`sudo sh -c 'rm /etc/resolv.conf && ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf'`
+
+Once pi-hole is installed, you'll want to configure your clients to use it ([see here](https://discourse.pi-hole.net/t/how-do-i-configure-my-devices-to-use-pi-hole-as-their-dns-server/245)). If you used the symlink above, your docker host will either use whatever is served by DHCP, or whatever static setting you've configured. If you want to explicitly set your docker host's nameservers you can edit the netplan(s) found at `/etc/netplan`, then run `sudo netplan apply`.
+Example netplan:
+```yaml
+network:
+    ethernets:
+        ens160:
+            dhcp4: true
+            dhcp4-overrides:
+                use-dns: false
+            nameservers:
+                addresses: [127.0.0.1]
+    version: 2
+```
+
+Note that it is also possible to disable `systemd-resolved` entirely. However, this can cause problems with name resolution in vpns ([see bug report](https://bugs.launchpad.net/network-manager/+bug/1624317)). It also disables the functionality of netplan since systemd-resolved is used as the default renderer ([see `man netplan`](http://manpages.ubuntu.com/manpages/bionic/man5/netplan.5.html#description)). If you choose to disable the service, you will need to manually set the nameservers, for example by creating a new `/etc/resolv.conf`.
+
+Users of older Ubuntu releases (circa 17.04) will need to disable dnsmasq.
 
 ## Docker tags and versioning
 
