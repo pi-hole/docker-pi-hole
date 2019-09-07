@@ -1,3 +1,14 @@
+FROM multiarch/debian-debootstrap:armel-stretch-slim as build
+WORKDIR /tmp
+
+RUN apt-get update && apt-get install --no-install-recommends -y build-essential libgmp-dev m4 ca-certificates
+RUN wget https://ftp.gnu.org/gnu/nettle/nettle-3.4.tar.gz && tar -xzf nettle-3.4.tar.gz && cd nettle-3.4 && ./configure && \
+    make && make install
+
+RUN wget https://github.com/pi-hole/FTL/archive/v4.3.1.tar.gz && mkdir -p v4.3.1 && \
+    tar -xzf v4.3.1.tar.gz -C v4.3.1 --strip-components 1 && cd v4.3.1 && \
+    make
+
 FROM multiarch/debian-debootstrap:armel-stretch-slim
 
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.7.0/s6-overlay-arm.tar.gz
@@ -18,6 +29,7 @@ ENV PHP_ENV_CONFIG '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf'
 ENV PHP_ERROR_LOG '/var/log/lighttpd/error.log'
 COPY ./start.sh /
 COPY ./bash_functions.sh /
+COPY --from=build /tmp/v4.3.1/pihole-FTL /tmp/v4.3.1/dnsmasq /usr/bin/ 
 
 # IPv6 disable flag for networks/devices that do not support it
 ENV IPv6 True

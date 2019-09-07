@@ -49,7 +49,8 @@ images = {
         },
         {
             'base': 'multiarch/debian-debootstrap:armel-stretch-slim',
-            'arch': 'armel'
+            'arch': 'armel',
+            'build': True # incompatible upstream binaries
         },
         {
             'base': 'multiarch/debian-debootstrap:armhf-stretch-slim',
@@ -97,9 +98,6 @@ def build_dockerfiles(args):
 
     for arch in args['--arch']:
         # TODO: include from external .py that can be shared with Dockerfile.py / Tests / deploy scripts '''
-        if arch == 'armel':
-            print "Skipping armel, incompatible upstream binaries/broken"
-            continue
         build('pihole', arch, args)
 
 
@@ -111,14 +109,15 @@ def build(docker_repo, arch, args):
     dockerfile = 'Dockerfile_{}'.format(arch)
     repo_tag = '{}:{}_{}'.format(docker_repo, __version__, arch)
     cached_image = '{}/{}'.format('pihole', repo_tag)
+    build_tag = '{}:{}_{}'.format('pihole', 'build', arch)
     time=''
     if args['-t']:
         time='time '
     no_cache = ''
     if args['--no-cache']:
         no_cache = '--no-cache'
-    build_command = '{time}docker build {no_cache} --pull --cache-from="{cache},{create_tag}" -f {dockerfile} -t {create_tag} .'\
-        .format(time=time, no_cache=no_cache, cache=cached_image, dockerfile=dockerfile, create_tag=repo_tag)
+    build_command = '{time}docker build {no_cache} --pull --cache-from="{cache},{create_tag},{build_tag}" -f {dockerfile} -t {create_tag} .'\
+        .format(time=time, no_cache=no_cache, cache=cached_image, dockerfile=dockerfile, create_tag=repo_tag, build_tag=build_tag)
     print " ::: Building {} into {}".format(dockerfile, repo_tag)
     if args['-v']:
         print build_command, '\n'

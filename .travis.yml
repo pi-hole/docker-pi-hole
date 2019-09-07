@@ -7,6 +7,7 @@ env:
         - QEMU_VER=v2.9.1
     matrix:
         - ARCH=amd64
+        - ARCH=armel
         - ARCH=armhf
         - ARCH=aarch64
 python:
@@ -16,8 +17,11 @@ install:
 script:
   # prepare qemu
   - docker run --rm --privileged multiarch/qemu-user-static:register --reset
-  # generate and build dockerfile
-  - ./Dockerfile.py --arch=${ARCH} -v
+  # generate dockerfile
+  - ./Dockerfile.py --arch=${ARCH} -v --no-build
+  # run docker build for first stage to prevent Travis timeout
+  - docker build -f Dockerfile_${ARCH} --target build -t pihole:build_${ARCH} .
+  - ./Dockerfile.py --arch=${ARCH} -v --no-generate
   - docker images
   # run docker build & tests
   # 2 parallel max b/c race condition with docker fixture (I think?)

@@ -1,3 +1,6 @@
+FROM multiarch/debian-debootstrap:armel-stretch-slim as build
+WORKDIR /tmp
+
 FROM multiarch/debian-debootstrap:arm64-stretch-slim
 
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.7.0/s6-overlay-aarch64.tar.gz
