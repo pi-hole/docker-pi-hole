@@ -122,7 +122,7 @@ def build(docker_repo, arch, args):
         print(build_command, '\n')
     build_result = subprocess.Popen(build_command.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if args['-v']:
-        for c in iter(lambda: build_result.stdout.read(1), b''):  # replace '' with b'' for Python 3
+        for c in iter(lambda: build_result.stdout.read(1), b''):
             sys.stdout.write(c)
     if build_result.returncode != 0:
         print("     ::: Building {} encountered an error".format(dockerfile))
