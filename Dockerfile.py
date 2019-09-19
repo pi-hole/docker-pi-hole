@@ -124,6 +124,7 @@ def build(docker_repo, arch, args):
     if args['-v']:
         for c in iter(lambda: build_result.stdout.read(1), b''):
             sys.stdout.write(c)
+    build_result.wait()
     if build_result.returncode != 0:
         print("     ::: Building {} encountered an error".format(dockerfile))
         print(build_result.stderr)
