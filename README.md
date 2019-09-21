@@ -100,7 +100,7 @@ There are other environment variables if you want to customize various things in
 | ----------------------- | ----------- |
 | `TZ: <Timezone>`<br/> **Recommended** *Default: UTC* | Set your [timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) to make sure logs rotate at local midnight instead of at UTC midnight.
 | `WEBPASSWORD: <Admin password>`<br/> **Recommended** *Default: random* | http://pi.hole/admin password. Run `docker logs pihole \| grep random` to find your random pass.
-| `WEBPASSWORD_FILE: <File containing admin password>`<br/> **Recommended** *Default: none* | Specifies a file containing the desired admin password. Takes precedence over the `WEBPASSWORD` variable |
+| `WEBPASSWORD_FILE: <File containing admin password>`<br/> **Recommended** *Default: none* | Specifies a file *in the container* containing the desired admin password. Takes precedence over the `WEBPASSWORD` variable |
 | `DNS1: <IP>`<br/> *Optional* *Default: 8.8.8.8* | Primary upstream DNS provider, default is google DNS
 | `DNS2: <IP>`<br/> *Optional* *Default: 8.8.4.4* | Secondary upstream DNS provider, default is google DNS, `no` if only one DNS should used
 | `DNSSEC: <True\|False>`<br/> *Optional* *Default: false* | Enable DNSSEC support
