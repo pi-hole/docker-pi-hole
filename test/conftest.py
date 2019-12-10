@@ -178,7 +178,7 @@ def Slow():
         while True:
             try:
                 assert check()
-            except AssertionError, e:
+            except AssertionError as e:
                 if time.time() < timeout_at:
                     time.sleep(1)
                 else:
