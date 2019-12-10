@@ -236,10 +236,15 @@ setup_dnsmasq_hostnames() {
 
 setup_lighttpd_bind() {
     local serverip="$1"
-    # if using '--net=host' only bind lighttpd on $ServerIP and localhost
+    local serveripv6="$2"
+    # if using '--net=host' only bind lighttpd on $ServerIP, $ServerIPv6 and localhost
     if grep -q "docker" /proc/net/dev ; then #docker (docker0 by default) should only be present on the host system
         if ! grep -q "server.bind" /etc/lighttpd/lighttpd.conf ; then # if the declaration is already there, don't add it again
-            sed -i -E "s/server\.port\s+\=\s+([0-9]+)/server.bind\t\t = \"${serverip}\"\nserver.port\t\t = \1\n"\$SERVER"\[\"socket\"\] == \"127\.0\.0\.1:\1\" \{\}/" /etc/lighttpd/lighttpd.conf
+            if [ -n "$serveripv6" ] ; then
+                sed -i -E "s/server\.port\s+\=\s+([0-9]+)/server.bind\t\t = \"${serverip}\"\nserver.port\t\t = \1\n"\$SERVER"\[\"socket\"\] == \"127\.0\.0\.1:\1\" \{\}\n"\$SERVER"\[\"socket\"\] == \"\[${serveripv6}\]:\1\" \{\}/" /etc/lighttpd/lighttpd.conf
+	    else
+                sed -i -E "s/server\.port\s+\=\s+([0-9]+)/server.bind\t\t = \"${serverip}\"\nserver.port\t\t = \1\n"\$SERVER"\[\"socket\"\] == \"127\.0\.0\.1:\1\" \{\}/" /etc/lighttpd/lighttpd.conf
+	    fi
         fi
     fi
 }
@@ -327,6 +332,9 @@ setup_ipv4_ipv6() {
         ip_versions="IPv4"
         sed -i '/use-ipv6.pl/ d' /etc/lighttpd/lighttpd.conf
     fi;
+    if [ -n "$ServerIPv6" ] ; then
+        sed -i '/use-ipv6.pl/ d' /etc/lighttpd/lighttpd.conf
+    fi
     echo "Using $ip_versions"
 }
 

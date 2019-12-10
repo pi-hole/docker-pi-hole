@@ -58,7 +58,7 @@ setup_dnsmasq "$DNS1" "$DNS2" "$INTERFACE" "$DNSMASQ_LISTENING_BEHAVIOUR"
 setup_php_env
 setup_dnsmasq_hostnames "$ServerIP" "$ServerIPv6" "$HOSTNAME"
 setup_ipv4_ipv6
-setup_lighttpd_bind "$ServerIP"
+setup_lighttpd_bind "$ServerIP" "$ServerIPv6"
 setup_blocklists
 test_configs
 
