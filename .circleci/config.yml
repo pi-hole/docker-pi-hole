@@ -24,6 +24,7 @@ version: 2
           fi
 
           # generate and build dockerfile
+          pip install -r requirements.txt
           ./Dockerfile.py --arch=${CIRCLE_JOB} -v
           docker images
           # run docker build & tests
