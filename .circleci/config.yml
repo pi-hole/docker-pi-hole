@@ -8,7 +8,7 @@ version: 2
     - run:
         command: |
           # setup qemu/variables
-          - docker run --rm --privileged multiarch/qemu-user-static:register --reset
+          docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
           HUB_NAMESPACE=$CIRCLE_PROJECT_USERNAME
           [[ $CIRCLE_PROJECT_USERNAME == "pi-hole" ]] && HUB_NAMESPACE="pihole"
