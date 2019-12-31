@@ -24,11 +24,11 @@ version: 2
           fi
 
           # generate and build dockerfile
-          - ./Dockerfile.py --arch=${CIRCLE_JOB} -v
-          - docker images
+          ./Dockerfile.py --arch=${CIRCLE_JOB} -v
+          docker images
           # run docker build & tests
           # 2 parallel max b/c race condition with docker fixture (I think?)
-          - py.test -vv -n 2 -k "${CIRCLE_JOB}" ./test/
+          py.test -vv -n 2 -k "${CIRCLE_JOB}" ./test/
 
           # push image
           # [[ "$CIRCLE_PR_NUMBER" == "" ]] && sudo docker push $IMAGE
