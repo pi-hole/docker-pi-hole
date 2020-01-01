@@ -99,9 +99,9 @@ def build_dockerfiles(args):
 
     for arch in args['--arch']:
         # TODO: include from external .py that can be shared with Dockerfile.py / Tests / deploy scripts '''
-        if arch == 'armel':
-            print("Skipping armel, incompatible upstream binaries/broken")
-            continue
+        #if arch == 'armel':
+        #    print("Skipping armel, incompatible upstream binaries/broken")
+        #    continue
         build('pihole', arch, args)
 
 
