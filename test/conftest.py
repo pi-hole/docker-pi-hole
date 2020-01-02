@@ -3,9 +3,8 @@ import pytest
 import testinfra
 import os
 
-check_output = testinfra.get_backend(
-    "local://"
-).get_module("Command").check_output
+local_host = testinfra.get_host('local://')
+check_output = local_host.check_output
 
 __version__ = None
 dotdot = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir, os.pardir))
@@ -50,7 +49,7 @@ def DockerGeneric(request, _test_args, _args, _image, _cmd, _entrypoint):
         check_output("docker rm -f {}".format(docker_id))
     request.addfinalizer(teardown)
 
-    docker_container = testinfra.get_backend("docker://" + docker_id)
+    docker_container = testinfra.backend.get_backend("docker://" + docker_id)
     docker_container.id = docker_id
 
     def run_bash(self, command, *args, **kwargs):
