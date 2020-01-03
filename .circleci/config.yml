@@ -1,15 +1,5 @@
 version: 2
 
-.filter_template: &filters
-  branches:
-    only:
-      - dev
-      - master
-      - release
-      - prerelease
-  tags:
-    only: /^v.*/
-
 .job_template: &job_template
   machine:
     enabled: true
@@ -70,13 +60,41 @@ workflows:
     jobs:
       - amd64:
         filters:
-          <<: *filters
+          tags:
+            only: /^v.*/
+          branches:
+            only:
+              - dev
+              - master
+              - release
+              - prerelease
       - aarch64:
         filters:
-          <<: *filters
+          tags:
+            only: /^v.*/
+          branches:
+            only:
+              - dev
+              - master
+              - release
+              - prerelease
       - armhf:
         filters:
-          <<: *filters
+          tags:
+            only: /^v.*/
+          branches:
+            only:
+              - dev
+              - master
+              - release
+              - prerelease
       - armel:
         filters:
-          <<: *filters
+          tags:
+            only: /^v.*/
+          branches:
+            only:
+              - dev
+              - master
+              - release
+              - prerelease
