@@ -1,14 +1,15 @@
 version: 2
 
 .filter_template: &filters
-  branches:
-    only:
-      - dev
-      - master
-      - release
-      - prerelease
-  tags:
-    only: /^v.*/
+  filters:
+    branches:
+      only:
+        - dev
+        - master
+        - release
+        - prerelease
+    tags:
+      only: /^v.*/
 
 .job_template: &job_template
   machine:
