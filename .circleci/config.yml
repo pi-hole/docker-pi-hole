@@ -1,5 +1,15 @@
 version: 2
 
+.filter_template: &filters
+  branches:
+    only:
+      - dev
+      - master
+      - release
+      - prerelease
+  tags:
+    only: /^v.*/
+
 .job_template: &job_template
   machine:
     enabled: true
@@ -33,7 +43,13 @@ version: 2
           py.test -vv -n 2 -k "${CIRCLE_JOB}" ./test/
 
           # push image
-          # [[ "$CIRCLE_PR_NUMBER" == "" ]] && sudo docker push $IMAGE
+          if [[ "$CIRCLE_PR_NUMBER" == "" ]]; then
+              if [[ "$CIRCLE_BRANCH" == "master" ]] && [[ -n "$CIRCLE_TAG" ]] ; then
+                  version="$CIRCLE_TAG"
+              fi
+              sudo docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
+              dry=1 ./deploy_docker.sh
+          fi
 
 
 jobs:
@@ -53,18 +69,10 @@ workflows:
   build:
     jobs:
       - amd64:
-          filters:
-            tags:
-              only: /^v.*/
+        <<: *filters
       - aarch64:
-          filters:
-            tags:
-              only: /^v.*/
+        <<: *filters
       - armhf:
-          filters:
-            tags:
-              only: /^v.*/
+        <<: *filters
       - armel:
-          filters:
-            tags:
-              only: /^v.*/
+        <<: *filters
