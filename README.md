@@ -104,6 +104,7 @@ There are other environment variables if you want to customize various things in
 | `DNS2: <IP>`<br/> *Optional* *Default: 8.8.4.4* | Secondary upstream DNS provider, default is google DNS, `no` if only one DNS should used
 | `DNSSEC: <True\|False>`<br/> *Optional* *Default: false* | Enable DNSSEC support
 | `DNS_BOGUS_PRIV: <True\|False>`<br/> *Optional* *Default: true* | Enable forwarding of reverse lookups for private ranges
+| `DNS_FQDN_REQUIRED: <True\|False>`<br/> *Optional* *Default: true* | Never forward non-FQDNs
 | `CONDITIONAL_FORWARDING: <True\|False>`<br/> *Optional* *Default: False* | Enable DNS conditional forwarding for device name resolution
 | `CONDITIONAL_FORWARDING_IP: <Router's IP>`<br/> *Optional* | If conditional forwarding is enabled, set the IP of the local network router
 | `CONDITIONAL_FORWARDING_DOMAIN: <Network Domain>`<br/> *Optional* | If conditional forwarding is enabled, set the domain of the local network router

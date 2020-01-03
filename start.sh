@@ -12,6 +12,7 @@ export DNS1
 export DNS2
 export DNSSEC
 export DNS_BOGUS_PRIV
+export DNS_FQDN_REQUIRED
 export INTERFACE
 export DNSMASQ_LISTENING_BEHAVIOUR="$DNSMASQ_LISTENING"
 export IPv6
@@ -47,6 +48,7 @@ prepare_configs
 change_setting "IPV4_ADDRESS" "$ServerIP"
 change_setting "IPV6_ADDRESS" "$ServerIPv6"
 change_setting "DNS_BOGUS_PRIV" "$DNS_BOGUS_PRIV"
+change_setting "DNS_FQDN_REQUIRED" "$DNS_FQDN_REQUIRED"
 change_setting "DNSSEC" "$DNSSEC"
 change_setting "CONDITIONAL_FORWARDING" "$CONDITIONAL_FORWARDING"
 change_setting "CONDITIONAL_FORWARDING_IP" "$CONDITIONAL_FORWARDING_IP"
