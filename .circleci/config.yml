@@ -62,39 +62,21 @@ workflows:
           filters:
             tags:
               only: /^v.*/
-            branches:
-              only:
-                - dev
-                - master
-                - release
-                - prerelease
       - aarch64:
           filters:
             tags:
               only: /^v.*/
-            branches:
-              only:
-                - dev
-                - master
-                - release
-                - prerelease
       - armhf:
           filters:
             tags:
               only: /^v.*/
-            branches:
-              only:
-                - dev
-                - master
-                - release
-                - prerelease
       - armel:
           filters:
             tags:
               only: /^v.*/
-            branches:
-              only:
-                - dev
-                - master
-                - release
-                - prerelease
+            #branches:
+            #  only:
+            #    - dev
+            #    - master
+            #    - release
+            #    - prerelease
