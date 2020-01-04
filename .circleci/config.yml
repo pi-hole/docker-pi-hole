@@ -37,7 +37,7 @@ version: 2
               if [[ "$CIRCLE_BRANCH" == "master" ]] && [[ -n "$CIRCLE_TAG" ]] ; then
                   version="$CIRCLE_TAG"
               fi
-              sudo docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
+              echo $DOCKERHUB_PASS | docker login --username=$DOCKERHUB_USER --password-stdin
               dry=1 ./deploy_docker.sh
           fi
 
