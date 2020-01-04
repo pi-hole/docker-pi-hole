@@ -1,6 +1,8 @@
 FROM {{ pihole.base }}
 
+ENV ARCH {{ pihole.arch }}
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/{{ pihole.s6_version }}/s6-overlay-{{ pihole.s6arch }}.tar.gz
+
 COPY install.sh /usr/local/bin/install.sh
 COPY VERSION /etc/docker-pi-hole-version
 ENV PIHOLE_INSTALL /root/ph_install.sh
@@ -36,7 +38,6 @@ ENV FTL_CMD no-daemon
 ENV DNSMASQ_USER root
 
 ENV VERSION {{ pihole.version }}
-ENV ARCH {{ pihole.arch }}
 ENV PATH /opt/pihole:${PATH}
 
 LABEL image="{{ pihole.name }}:{{ pihole.version }}_{{ pihole.arch }}"
