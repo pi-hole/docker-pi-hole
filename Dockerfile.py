@@ -50,15 +50,15 @@ images = {
             'arch': 'amd64'
         },
         {
-            'base': 'multiarch/debian-debootstrap:armel-stretch-slim',
+            'base': 'multiarch/debian-debootstrap:armel-buster-slim',
             'arch': 'armel'
         },
         {
-            'base': 'multiarch/debian-debootstrap:armhf-stretch-slim',
+            'base': 'multiarch/debian-debootstrap:armhf-buster-slim',
             'arch': 'armhf'
         },
         {
-            'base': 'multiarch/debian-debootstrap:arm64-stretch-slim',
+            'base': 'multiarch/debian-debootstrap:arm64-buster-slim',
             'arch': 'aarch64'
         }
     ]

@@ -1,4 +1,4 @@
-FROM multiarch/debian-debootstrap:armhf-stretch-slim
+FROM multiarch/debian-debootstrap:armhf-buster-slim
 
 ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.7.0/s6-overlay-armhf.tar.gz
 COPY install.sh /usr/local/bin/install.sh
