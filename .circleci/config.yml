@@ -8,7 +8,7 @@ version: 2
     - run:
         command: |
           # setup qemu/variables
-          docker run --rm --privileged multiarch/qemu-user-static:register --reset
+          docker run --rm --privileged multiarch/qemu-user-static:register --reset > /dev/null
 
           IMAGE="${IMAGE:-$CIRCLE_PROJECT_REPONAME}"
           HUB_NAMESPACE="${HUB_NAMESPACE:-$CIRCLE_PROJECT_USERNAME}"
@@ -25,8 +25,8 @@ version: 2
           fi
 
           # generate and build dockerfile
-          pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -q --upgrade pip
+          pip install -q -r requirements.txt
           ./Dockerfile.py --arch=${CIRCLE_JOB}
           docker images
           # run docker build & tests
