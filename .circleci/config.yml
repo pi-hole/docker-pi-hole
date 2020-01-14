@@ -10,7 +10,8 @@ version: 2
           # setup qemu/variables
           docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
-          HUB_NAMESPACE=$CIRCLE_PROJECT_USERNAME
+          IMAGE="${IMAGE:-$CIRCLE_PROJECT_REPONAME}"
+          HUB_NAMESPACE="${HUB_NAMESPACE:-$CIRCLE_PROJECT_USERNAME}"
           [[ $CIRCLE_PROJECT_USERNAME == "pi-hole" ]] && HUB_NAMESPACE="pihole"
           [[ $IMAGE != *"/"* ]] && IMAGE="${HUB_NAMESPACE}/${IMAGE}"
           [[ $IMAGE != *":"* ]] && IMAGE="${IMAGE}:$CIRCLE_JOB"
