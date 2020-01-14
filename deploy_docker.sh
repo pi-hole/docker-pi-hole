@@ -68,8 +68,6 @@ if [[ -z "$dry" ]] ; then
     rm -rf ~/.docker/manifests/*
 fi
 
-$dry tox
-
 images=()
 for tag in ${!arch_map[@]}; do
     # Verison specific tags for ongoing history
