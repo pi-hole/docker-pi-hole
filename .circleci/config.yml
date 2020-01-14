@@ -38,7 +38,7 @@ version: 2
               if [[ -n "$CIRCLE_TAG" ]] ; then
                   echo "Building a tag: $CIRCLE_TAG"
                   version="$CIRCLE_TAG"
-                  # TODO: write script to get all releases, see if our tag is newest and tell deploy script to update the latest tagZ
+                  # TODO: write script to get all releases, see if our tag is newest and tell deploy script to update the latest tag (for manfiest push stage only)
                   # python3 latest_version_check.py && latest="true"
               fi
               echo $DOCKERHUB_PASS | docker login --username=$DOCKERHUB_USER --password-stdin
