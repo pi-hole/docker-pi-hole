@@ -43,10 +43,7 @@ declare -A arch_map=( ["amd64"]="amd64" ["armhf"]="arm" ["aarch64"]="arm64")
 if [[ -n "$dry" ]]; then dry='echo '; fi
 
 if [[ "$version" == 'unset' ]]; then
-    if [[ "$branch" == "master" ]]; then
-        echo "Version number var is unset and master branch needs a version...pass in \$version variable!"
-        exit 1
-    elif [[ "$branch" == "release-"* ]]; then
+    if [[ "$branch" == "release-"* ]]; then
         version="$(echo $branch | grep -Po 'v[\d\w\.-]*')"
         echo "Version number is being taken from this release branch $version"
     else
@@ -85,7 +82,7 @@ done
 $dry docker manifest push pihole/pihole:${version}
 
 # Floating latest tag alias
-if [[ "$latest" == 'true' && "$branch" == "master" ]] ; then
+if [[ "$latest" == 'true' ]] ; then
     latestimg="$remoteimg:latest"
     $dry docker manifest create --amend "$latestimg" ${images[*]}
     for image in "${images[@]}"; do
