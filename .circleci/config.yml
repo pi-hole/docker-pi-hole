@@ -27,7 +27,7 @@ version: 2
           # generate and build dockerfile
           pip install --upgrade pip
           pip install -r requirements.txt
-          ./Dockerfile.py --arch=${CIRCLE_JOB} -v
+          ./Dockerfile.py --arch=${CIRCLE_JOB}
           docker images
           # run docker build & tests
           # 2 parallel max b/c race condition with docker fixture (I think?)

@@ -26,7 +26,7 @@ annotate() {
     fi
 }
 
-namespace='pihole'
+namespace="${HUB_NAMESPACE}"
 localimg='pihole'
 remoteimg="$namespace/$localimg"
 branch="$(parse_git_branch)"
@@ -73,20 +73,23 @@ for tag in ${!arch_map[@]}; do
     images+=(pihole/pihole:${version}_${tag})
 done
 
-$dry docker manifest create --amend pihole/pihole:${version} ${images[*]}
+# TODO: Move below code to a post-arch build workflow stage that pulls all 4 archs & assembles
+# TODO: Enable experimental mode on CI node too
 
-for image in "${images[@]}"; do
-    annotate pihole/pihole:${version} ${image}
-done
-
-$dry docker manifest push pihole/pihole:${version}
-
-# Floating latest tag alias
-if [[ "$latest" == 'true' ]] ; then
-    latestimg="$remoteimg:latest"
-    $dry docker manifest create --amend "$latestimg" ${images[*]}
-    for image in "${images[@]}"; do
-        annotate "$latestimg" "${image}"
-    done
-    $dry docker manifest push "$latestimg"
-fi
+#$dry docker manifest create --amend pihole/pihole:${version} ${images[*]}
+#
+#for image in "${images[@]}"; do
+#    annotate pihole/pihole:${version} ${image}
+#done
+#
+#$dry docker manifest push pihole/pihole:${version}
+#
+## Floating latest tag alias
+#if [[ "$latest" == 'true' ]] ; then
+#    latestimg="$remoteimg:latest"
+#    $dry docker manifest create --amend "$latestimg" ${images[*]}
+#    for image in "${images[@]}"; do
+#        annotate "$latestimg" "${image}"
+#    done
+#    $dry docker manifest push "$latestimg"
+#fi
