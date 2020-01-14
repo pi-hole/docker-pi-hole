@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+# OLD SCRIPT FOR REFERENCE
+set -eux
 # Script for manually pushing the docker arm images for pi-hole org members only
 # (no one else has docker repo permissions)
 if [ ! -f ~/.docker/config.json ] ; then
@@ -37,7 +39,7 @@ latest="${latest:-false}" # true as shell env var to deploy latest
 
 # arch aliases
 # ARMv6/armel doesn't have a FTL binary for v4.0 pi-hole
-declare -A arch_map=( ["amd64"]="amd64" ["armhf"]="arm" ["aarch64"]="arm64")
+declare -A arch_map=( ["amd64"]="amd64" ["armhf"]="arm" ["arm64"]="arm64")
 
 # Set anything to dry prior to running this in order to print what would run instead of actually run it.
 if [[ -n "$dry" ]]; then dry='echo '; fi
@@ -76,20 +78,20 @@ done
 # TODO: Move below code to a post-arch build workflow stage that pulls all 4 archs & assembles
 # TODO: Enable experimental mode on CI node too
 
-#$dry docker manifest create --amend pihole/pihole:${version} ${images[*]}
-#
-#for image in "${images[@]}"; do
-#    annotate pihole/pihole:${version} ${image}
-#done
-#
-#$dry docker manifest push pihole/pihole:${version}
-#
-## Floating latest tag alias
-#if [[ "$latest" == 'true' ]] ; then
-#    latestimg="$remoteimg:latest"
-#    $dry docker manifest create --amend "$latestimg" ${images[*]}
-#    for image in "${images[@]}"; do
-#        annotate "$latestimg" "${image}"
-#    done
-#    $dry docker manifest push "$latestimg"
-#fi
+$dry docker manifest create --amend pihole/pihole:${version} ${images[*]}
+
+for image in "${images[@]}"; do
+    annotate pihole/pihole:${version} ${image}
+done
+
+$dry docker manifest push pihole/pihole:${version}
+
+# Floating latest tag alias
+if [[ "$latest" == 'true' ]] ; then
+    latestimg="$remoteimg:latest"
+    $dry docker manifest create --amend "$latestimg" ${images[*]}
+    for image in "${images[@]}"; do
+        annotate "$latestimg" "${image}"
+    done
+    $dry docker manifest push "$latestimg"
+fi

@@ -1,7 +1,7 @@
 FROM multiarch/debian-debootstrap:armel-stretch-slim
 
 ENV ARCH armel
-ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.7.0/s6-overlay-arm.tar.gz
+ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-arm.tar.gz
 
 COPY install.sh /usr/local/bin/install.sh
 COPY VERSION /etc/docker-pi-hole-version

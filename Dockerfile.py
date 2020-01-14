@@ -1,21 +1,21 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ Dockerfile.py - generates and build dockerfiles
 
 Usage:
-  Dockerfile.py [--arch=<arch> ...] [--skip=<arch> ...] [-v] [-t] [--no-build | --no-generate] [--no-cache]
+  Dockerfile.py [--hub_tag=<tag>] [--arch=<arch> ...] [-v] [-t] [--no-build | --no-generate] [--no-cache]
 
 Options:
     --no-build      Skip building the docker images
     --no-cache      Build without using any cache data
     --no-generate   Skip generating Dockerfiles from template
-    --arch=<arch>   What Architecture(s) to build   [default: amd64 armel armhf aarch64]
-    --skip=<arch>   What Architectures(s) to skip   [default: None]
+    --hub_tag=<tag> What the Docker Hub Image should be tagged as [default: None]
+    --arch=<arch>   What Architecture(s) to build   [default: amd64 armel armhf arm64]
     -v              Print docker's command output   [default: False]
     -t              Print docker's build time       [default: False]
 
 Examples:
 """
-from __future__ import print_function
+
 
 from docopt import docopt
 from jinja2 import Environment, FileSystemLoader
@@ -29,7 +29,7 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 base_vars = {
     'name': 'pihole/pihole',
     'maintainer' : 'adam@diginc.us',
-    's6_version' : 'v1.21.7.0',
+    's6_version' : 'v1.22.1.0',
 }
 
 os_base_vars = {
@@ -47,19 +47,23 @@ images = {
     __version__: [
         {
             'base': 'pihole/debian-base:latest',
-            'arch': 'amd64'
+            'arch': 'amd64',
+            's6arch': 'amd64',
         },
         {
             'base': 'multiarch/debian-debootstrap:armel-stretch-slim',
-            'arch': 'armel'
+            'arch': 'armel',
+            's6arch': 'arm',
         },
         {
             'base': 'multiarch/debian-debootstrap:armhf-stretch-slim',
-            'arch': 'armhf'
+            'arch': 'arm',
+            's6arch' : 'arm',
         },
         {
             'base': 'multiarch/debian-debootstrap:arm64-stretch-slim',
-            'arch': 'aarch64'
+            'arch': 'arm64',
+            's6arch' : 'aarch64',
         }
     ]
 }
@@ -69,19 +73,17 @@ def generate_dockerfiles(args):
         print(" ::: Skipping Dockerfile generation")
         return
 
-    for version, archs in images.iteritems():
+    for version, archs in images.items():
         for image in archs:
-            if image['arch'] not in args['--arch'] or image['arch'] in args['--skip']:
-                    return
-            s6arch = image['arch']
-            if image['arch'] == 'armel':
-                s6arch = 'arm'
+            if image['arch'] not in args['--arch']:
+                continue
+            s6arch = image['s6arch'] if image['s6arch'] else image['arch']
             merged_data = dict(
-                { 'version': version }.items() +
-                base_vars.items() +
-                os_base_vars.items() +
-                image.items() +
-                { 's6arch': s6arch }.items()
+                list({ 'version': version }.items()) +
+                list(base_vars.items()) +
+                list(os_base_vars.items()) +
+                list(image.items()) +
+                list({ 's6arch': s6arch }.items())
             )
             j2_env = Environment(loader=FileSystemLoader(THIS_DIR),
                                  trim_blocks=True)
@@ -98,17 +100,28 @@ def build_dockerfiles(args):
         return
 
     for arch in args['--arch']:
-        # TODO: include from external .py that can be shared with Dockerfile.py / Tests / deploy scripts '''
-        #if arch == 'armel':
-        #    print("Skipping armel, incompatible upstream binaries/broken")
-        #    continue
         build('pihole', arch, args)
+
+
+def run_and_stream_command_output(command, args):
+    print("Running", command)
+    build_result = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    bufsize=1, universal_newlines=True)
+    if args['-v']:
+        while build_result.poll() is None:
+            for line in build_result.stdout:
+                print(line, end='')
+    build_result.wait()
+    if build_result.returncode != 0:
+        print("     ::: Error running".format(command))
+        print(build_result.stderr)
 
 
 def build(docker_repo, arch, args):
     dockerfile = 'Dockerfile_{}'.format(arch)
     repo_tag = '{}:{}_{}'.format(docker_repo, __version__, arch)
     cached_image = '{}/{}'.format('pihole', repo_tag)
+    print(" ::: Building {}".format(repo_tag))
     time=''
     if args['-t']:
         time='time '
@@ -118,22 +131,20 @@ def build(docker_repo, arch, args):
     build_command = '{time}docker build {no_cache} --pull --cache-from="{cache},{create_tag}" -f {dockerfile} -t {create_tag} .'\
         .format(time=time, no_cache=no_cache, cache=cached_image, dockerfile=dockerfile, create_tag=repo_tag)
     print(" ::: Building {} into {}".format(dockerfile, repo_tag))
+    run_and_stream_command_output(build_command, args)
     if args['-v']:
         print(build_command, '\n')
-    build_result = subprocess.Popen(build_command.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    if args['-v']:
-        for c in iter(lambda: build_result.stdout.read(1), b''):
-            sys.stdout.write(c)
-    build_result.wait()
-    if build_result.returncode != 0:
-        print("     ::: Building {} encountered an error".format(dockerfile))
-        print(build_result.stderr)
-    assert build_result.returncode == 0
+    if args['--hub_tag']:
+        hub_tag_command = "{time}docker tag {create_tag} {hub_tag}"\
+            .format(time=time, create_tag=repo_tag, hub_tag=args['--hub_tag'])
+        print(" ::: Tagging {} into {}".format(repo_tag, args['--hub_tag']))
+        run_and_stream_command_output(hub_tag_command, args)
 
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='Dockerfile 1.0')
-    # print args
+    args = docopt(__doc__, version='Dockerfile 1.1')
+    if args['-v']:
+        print(args)
 
     generate_dockerfiles(args)
     build_dockerfiles(args)

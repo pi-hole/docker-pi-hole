@@ -5,56 +5,34 @@ version: 2
     enabled: true
   steps:
     - checkout
+    #- attach_workspace:
+    #    at: ./ci-workspace/
     - run:
-        command: |
-          # setup qemu/variables
-          docker run --rm --privileged multiarch/qemu-user-static:register --reset > /dev/null
-
-          IMAGE="${IMAGE:-$CIRCLE_PROJECT_REPONAME}"
-          HUB_NAMESPACE="${HUB_NAMESPACE:-$CIRCLE_PROJECT_USERNAME}"
-          [[ $CIRCLE_PROJECT_USERNAME == "pi-hole" ]] && HUB_NAMESPACE="pihole"
-          [[ $IMAGE != *"/"* ]] && IMAGE="${HUB_NAMESPACE}/${IMAGE}"
-          [[ $IMAGE != *":"* ]] && IMAGE="${IMAGE}:$CIRCLE_JOB"
-          if [[ -n "$CIRCLE_TAG" ]]; then
-              # remove latest tag if used
-              IMAGE="${IMAGE/:latest/:}"
-              # and tack the github tag (version) on the front of the tag. image:arch = image:v1.0-arch
-              IMAGE="${IMAGE/:/:${CIRCLE_TAG}-}"
-              # latest gets a trailing slash, remove it
-              IMAGE="${IMAGE/%-/}"
-          fi
-
-          # generate and build dockerfile
-          pip install -q --upgrade pip
-          pip install -q -r requirements.txt
-          ./Dockerfile.py --arch=${CIRCLE_JOB}
-          docker images
-          # run docker build & tests
-          # 2 parallel max b/c race condition with docker fixture (I think?)
-          py.test -vv -n 2 -k "${CIRCLE_JOB}" ./test/
-
-          # push image
-          if [[ "$CIRCLE_PR_NUMBER" == "" ]]; then
-              if [[ -n "$CIRCLE_TAG" ]] ; then
-                  echo "Building a tag: $CIRCLE_TAG"
-                  version="$CIRCLE_TAG"
-                  # TODO: write script to get all releases, see if our tag is newest and tell deploy script to update the latest tag (for manfiest push stage only)
-                  # python3 latest_version_check.py && latest="true"
-              fi
-              echo $DOCKERHUB_PASS | docker login --username=$DOCKERHUB_USER --password-stdin
-              ./deploy_docker.sh
-          fi
-
+        command: ./circle-test.sh
+    - persist_to_workspace:
+        root: .
+        paths: [ 'ci-workspace' ]
 
 jobs:
   amd64:
     <<: *job_template
-  aarch64:
+  arm64:
     <<: *job_template
   armhf:
     <<: *job_template
   armel:
     <<: *job_template
+  deploy:
+    docker:
+      - image: circleci/python:latest
+    steps:
+      - setup_remote_docker:
+          version: 18.06.0-ce
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          command: ./circle-deploy.sh
 
 
 
@@ -66,7 +44,7 @@ workflows:
           filters:
             tags:
               only: /^v.*/
-      - aarch64:
+      - arm64:
           filters:
             tags:
               only: /^v.*/
@@ -78,9 +56,12 @@ workflows:
           filters:
             tags:
               only: /^v.*/
-            #branches:
-            #  only:
-            #    - dev
-            #    - master
-            #    - release
-            #    - prerelease
+      - deploy:
+          requires:
+            - amd64
+            - arm64
+            - armhf
+            - armel
+          filters:
+            tags:
+              only: /^v.*/

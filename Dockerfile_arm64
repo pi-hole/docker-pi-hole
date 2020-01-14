@@ -1,7 +1,7 @@
 FROM multiarch/debian-debootstrap:arm64-stretch-slim
 
-ENV ARCH aarch64
-ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.7.0/s6-overlay-aarch64.tar.gz
+ENV ARCH arm64
+ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-aarch64.tar.gz
 
 COPY install.sh /usr/local/bin/install.sh
 COPY VERSION /etc/docker-pi-hole-version
@@ -40,7 +40,7 @@ ENV DNSMASQ_USER root
 ENV VERSION v4.3.2
 ENV PATH /opt/pihole:${PATH}
 
-LABEL image="pihole/pihole:v4.3.2_aarch64"
+LABEL image="pihole/pihole:v4.3.2_arm64"
 LABEL maintainer="adam@diginc.us"
 LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
 
