@@ -44,6 +44,6 @@ if [[ "$CIRCLE_PR_NUMBER" == "" ]]; then
         annotate "$MULTIARCH_IMAGE" "$arch_image" "$arch"
     done
 
-    docker push "$MULTIARCH_IMAGE"
     docker manifest inspect "$MULTIARCH_IMAGE"
+    docker manifest push "$MULTIARCH_IMAGE"
 fi
