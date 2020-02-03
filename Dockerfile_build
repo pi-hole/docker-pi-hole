@@ -1,0 +1,23 @@
+FROM docker:latest
+
+# Based on https://github.com/Ilhicas/alpine-pipenv
+ARG packages
+RUN apk --update add python3 python3-dev curl gcc make \
+        musl-dev libffi-dev openssl-dev ${packages} \
+    && rm -rf /var/cache/apk/* \
+    && pip3 install -U pip pipenv
+
+
+# -v "$(pwd):/$(pwd)" -w "$(pwd)" to prevent nested docker path confusion
+COPY ./Dockerfile.sh /usr/local/bin/
+COPY Pipfile* /root/
+WORKDIR /root
+
+RUN pipenv install --system \
+    && sed -i 's|/bin/sh|/bin/bash|g' /usr/lib/python3.8/site-packages/testinfra/backend/docker.py
+
+
+RUN echo "set -ex && Dockerfile.sh && \$@" > /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+ENTRYPOINT entrypoint.sh
+CMD Dockerfile.sh

@@ -1,1 +1,5 @@
 **/*.sw*
+.tox
+.git
+**/__pycache__
+.pipenv

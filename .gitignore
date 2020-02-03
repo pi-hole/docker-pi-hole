@@ -3,9 +3,11 @@
 .cache
 __pycache__
 .tox
+.pipenv
 .eggs
 UNKNOWN.egg-info
 .env
+ci-workspace
 
 # WIP/test stuff
 doco.yml
