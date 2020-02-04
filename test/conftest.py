@@ -1,11 +1,12 @@
-from __future__ import print_function
+
+import functools
+import os
 import pytest
 import testinfra
-import os
+import types
 
-check_output = testinfra.get_backend(
-    "local://"
-).get_module("Command").check_output
+local_host = testinfra.get_host('local://')
+check_output = local_host.check_output
 
 __version__ = None
 dotdot = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir, os.pardir))
@@ -35,7 +36,7 @@ def test_args():
     return ''
 
 def DockerGeneric(request, _test_args, _args, _image, _cmd, _entrypoint):
-    assert 'docker' in check_output('id'), "Are you in the docker group?"
+    #assert 'docker' in check_output('id'), "Are you in the docker group?"
     # Always appended PYTEST arg to tell pihole we're testing
     if 'pihole' in _image and 'PYTEST=1' not in _args:
        _args = '{} -e PYTEST=1'.format(_args)
@@ -50,24 +51,9 @@ def DockerGeneric(request, _test_args, _args, _image, _cmd, _entrypoint):
         check_output("docker rm -f {}".format(docker_id))
     request.addfinalizer(teardown)
 
-    docker_container = testinfra.get_backend("docker://" + docker_id)
+    docker_container = testinfra.backend.get_backend("docker://" + docker_id, sudo=False)
     docker_container.id = docker_id
 
-    def run_bash(self, command, *args, **kwargs):
-        cmd = self.get_command(command, *args)
-        if self.user is not None:
-            out = self.run_local(
-                "docker exec -u %s %s /bin/bash -c %s",
-                self.user, self.name, cmd)
-        else:
-            out = self.run_local(
-                "docker exec %s /bin/bash -c %s", self.name, cmd)
-        out.command = self.encode(cmd)
-        return out
-
-    funcType = type(docker_container.run)
-    # override run function to use bash not sh
-    docker_container.run = funcType(run_bash, docker_container, testinfra.backend.docker.DockerBackend)
     return docker_container
 
 
@@ -89,7 +75,7 @@ def DockerPersist(request, persist_test_args, persist_args, persist_image, persi
 def entrypoint():
     return ''
 
-@pytest.fixture(params=['amd64', 'armhf', 'aarch64'])
+@pytest.fixture(params=['amd64', 'armhf', 'arm64', 'armel'])
 def arch(request):
     return request.param
 
@@ -178,7 +164,7 @@ def Slow():
         while True:
             try:
                 assert check()
-            except AssertionError, e:
+            except AssertionError as e:
                 if time.time() < timeout_at:
                     time.sleep(1)
                 else:

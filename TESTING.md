@@ -14,7 +14,7 @@ To run the Dockerfile templating, image build, and tests all in one command just
 
 Docker images built by `tox` or `python Dockerfile.py` are named the same but stripped of the `pihole/` docker repository namespace.
 
-e.g. `pi-hole:debian_amd64` or `pi-hole-multiarch:debian_aarch64`
+e.g. `pi-hole:debian_amd64` or `pi-hole-multiarch:debian_arm64`
 
 You can run the multiarch images on an amd64 development system if you [enable binfmt-support as described in the multiarch image docs](https://hub.docker.com/r/multiarch/multiarch/debian-debootstrap/)
 
