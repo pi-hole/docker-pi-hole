@@ -50,16 +50,16 @@ workflows:
           filters:
             tags:
               only: /^v.*/
-      - armel:
-          filters:
-            tags:
-              only: /^v.*/
+      #- armel:
+      #    filters:
+      #      tags:
+      #        only: /^v.*/
       - deploy:
           requires:
             - amd64
             - arm64
             - armhf
-            - armel
+            #- armel
           filters:
             tags:
               only: /^v.*/
