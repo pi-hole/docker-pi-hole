@@ -75,7 +75,7 @@ A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86
 
 This container uses 2 popular ports, port 53 and port 80, so **may conflict with existing applications ports**.  If you have no other services or docker containers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh)
 
-If you're using a Red Hat based distrubution with an SELinux Enforcing policy add `:z` to line with volumes like so:
+If you're using a Red Hat based distribution with an SELinux Enforcing policy add `:z` to line with volumes like so:
 
 ```
     -v "$(pwd)/etc-pihole/:/etc/pihole/:z" \
