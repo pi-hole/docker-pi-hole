@@ -37,6 +37,12 @@ jobs:
 workflows:
   version: 2
   build:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filter:
+            branches:
+              only: 'beta-v5.0'
     jobs:
       - amd64:
           filters:
