@@ -50,24 +50,9 @@ echo resolvconf resolvconf/linkify-resolvconf boolean false | debconf-set-select
 ln -s /bin/true /usr/local/bin/service
 bash -ex "./${PIHOLE_INSTALL}" --unattended
 rm /usr/local/bin/service
-# Old way of setting up
-#install_dependent_packages INSTALLER_DEPS[@]
-#install_dependent_packages PIHOLE_DEPS[@]
-#install_dependent_packages PIHOLE_WEB_DEPS[@]
+
 # IPv6 support for nc openbsd better than traditional
 apt-get install -y --force-yes netcat-openbsd
-
-piholeGitUrl="${piholeGitUrl}"
-webInterfaceGitUrl="${webInterfaceGitUrl}"
-webInterfaceDir="${webInterfaceDir}"
-#git clone --branch "${CORE_VERSION}" --depth 1 "${piholeGitUrl}" "${PI_HOLE_LOCAL_REPO}"
-#git clone --branch "${WEB_VERSION}" --depth 1 "${webInterfaceGitUrl}" "${webInterfaceDir}"
-
-# tmpLog="/tmp/pihole-install.log"
-# installLogLoc="${installLogLoc}"
-# FTLdetect 2>&1 | tee "${tmpLog}"
-# installPihole 2>&1 | tee "${tmpLog}"
-# mv "${tmpLog}" /
 
 fetch_release_metadata() {
     local directory="$1"
