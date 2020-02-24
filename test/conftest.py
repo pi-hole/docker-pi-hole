@@ -24,7 +24,7 @@ def args_volumes():
 
 @pytest.fixture()
 def args_env():
-    return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
+    return '-e ServerIP="127.0.0.1"'
 
 @pytest.fixture()
 def args(args_dns, args_volumes, args_env):
@@ -120,7 +120,7 @@ def persist_args_volumes():
 
 @pytest.fixture(scope='module')
 def persist_args_env():
-    return '-e ServerIP="127.0.0.1" -e ServerIPv6="::1"'
+    return '-e ServerIP="127.0.0.1"'
 
 @pytest.fixture(scope='module')
 def persist_args(persist_args_dns, persist_args_volumes, persist_args_env):
