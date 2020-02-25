@@ -40,7 +40,7 @@ def test_overrides_default_WEB_PORT(Docker, Slow, test_args):
     # grep fails to find any of the old address w/o port
     #assert Docker.run('grep -r "://127.0.0.1/" /var/www/html/').stdout == ''
     #assert Docker.run('grep -r "://pi.hole/" /var/www/html/').stdout == ''
-    ## Find at least one instance of our changes 
+    ## Find at least one instance of our changes
     ## upstream repos determines how many and I don't want to keep updating this test
     #assert int(Docker.run('grep -rl "://127.0.0.1:999/" /var/www/html/ | wc -l').stdout) >= 1
     #assert int(Docker.run('grep -rl "://pi.hole:999/" /var/www/html/ | wc -l').stdout) >= 1
@@ -72,7 +72,7 @@ def test_override_default_servers_with_DNS_EnvVars(Docker, Slow, args_env, expec
     function = Docker.run('. /bash_functions.sh ; eval `grep "^setup_dnsmasq " /start.sh`')
     assert expected_stdout in function.stdout
     expected_servers = 'server={}\n'.format(dns1) if dns2 == None else 'server={}\nserver={}\n'.format(dns1, dns2)
-    Slow(lambda: expected_servers == Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout)
+    Slow(lambda: expected_servers == Docker.run('grep "^server=[^/]" /etc/dnsmasq.d/01-pihole.conf').stdout)
 
 
 @pytest.mark.skipif(os.environ.get('TRAVIS') == 'true',
@@ -112,7 +112,7 @@ def test_DNS_Envs_are_secondary_to_setupvars(Docker, Slow, args_env, expected_st
     expected_servers = ['server={}'.format(dns1)]
     if dns2:
         expected_servers.append('server={}'.format(dns2))
-    Slow(lambda: Docker.run('grep "^server=" /etc/dnsmasq.d/01-pihole.conf').stdout.strip().split('\n') == \
+    Slow(lambda: Docker.run('grep "^server=[^/]" /etc/dnsmasq.d/01-pihole.conf').stdout.strip().split('\n') == \
          expected_servers)
 
 
