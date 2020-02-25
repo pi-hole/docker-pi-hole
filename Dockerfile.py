@@ -17,7 +17,6 @@ Examples:
 """
 
 
-from docopt import docopt
 from jinja2 import Environment, FileSystemLoader
 from docopt import docopt
 import os
