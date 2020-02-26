@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 import pytest
 import time
 ''' conftest.py provides the defaults through fixtures '''

@@ -4,7 +4,7 @@ mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
 # Production tags with valid web footers
 export CORE_VERSION="$(cat /etc/docker-pi-hole-version)"
-export WEB_VERSION="$(cat /etc/docker-pi-hole-version)"
+export WEB_VERSION="v4.3.3"
 
 # Only use for pre-production / testing
 export CHECKOUT_BRANCHES=false
@@ -94,6 +94,11 @@ else
     # Reset to our tags so version numbers get detected correctly
     fetch_release_metadata "${PI_HOLE_LOCAL_REPO}" "${CORE_VERSION}"
     fetch_release_metadata "${webInterfaceDir}" "${WEB_VERSION}"
+fi
+# FTL Armel fix not in prod yet
+# Remove once https://github.com/pi-hole/pi-hole/commit/3fbb0ac8dde14b8edc1982ae3a2a021f3cf68477 is in master
+if [[ "$ARCH" == 'armel' ]]; then
+    curl -o /usr/bin/pihole-FTL https://ftl.pi-hole.net/development/pihole-FTL-armel-native
 fi
 
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
