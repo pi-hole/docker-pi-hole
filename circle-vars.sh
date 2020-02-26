@@ -33,12 +33,14 @@ if [[ -n "$DOCKER_TAG" ]]; then
     ARCH_IMAGE="${ARCH_IMAGE/%-/}"
 fi
 
+# To get latest released, cut a release on https://github.com/pi-hole/docker-pi-hole/releases (manually gated for quality control)
 latest_tag=''
 if ! latest_tag=$(curl -sI https://github.com/pi-hole/docker-pi-hole/releases/latest | grep --color=never -i Location | awk -F / '{print $NF}' | tr -d '[:cntrl:]'); then
     print "Failed to retrieve latest docker-pi-hole release metadata"
 else
     if [[ "$DOCKER_TAG" == "$latest_tag" ]] ; then
-        LATEST_IMAGE="$BASE_IMAGE:latest"
+        #LATEST_IMAGE="$BASE_IMAGE:latest"
+        LATEST_IMAGE="$BASE_IMAGE:testing_latest_deleteme"
     fi
 fi
 
