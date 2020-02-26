@@ -39,8 +39,7 @@ if ! latest_tag=$(curl -sI https://github.com/pi-hole/docker-pi-hole/releases/la
     print "Failed to retrieve latest docker-pi-hole release metadata"
 else
     if [[ "$DOCKER_TAG" == "$latest_tag" ]] ; then
-        #LATEST_IMAGE="$BASE_IMAGE:latest"
-        LATEST_IMAGE="$BASE_IMAGE:testing_latest_deleteme"
+        LATEST_IMAGE="$BASE_IMAGE:latest"
     fi
 fi
 
