@@ -37,13 +37,15 @@ if [[ "$CIRCLE_PR_NUMBER" == "" ]]; then
         images+=($arch_image)
     done
 
-    docker manifest create $MULTIARCH_IMAGE ${images[*]}
-    for arch in *; do
-        arch_image=$(cat $arch)
-        docker pull $arch_image
-        annotate "$MULTIARCH_IMAGE" "$arch_image" "$arch"
-    done
+    for docker_tag in $MULTIARCH_IMAGE $LATEST_IMAGE; do
+        docker manifest create $docker_tag ${images[*]}
+        for arch in *; do
+            arch_image=$(cat $arch)
+            docker pull $arch_image
+            annotate "$docker_tag" "$arch_image" "$arch"
+        done
 
-    docker manifest inspect "$MULTIARCH_IMAGE"
-    docker manifest push "$MULTIARCH_IMAGE"
+        docker manifest inspect "$docker_tag"
+        docker manifest push "$docker_tag"
+    done;
 fi
