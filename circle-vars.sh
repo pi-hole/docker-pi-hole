@@ -33,7 +33,7 @@ if [[ -n "$DOCKER_TAG" ]]; then
     ARCH_IMAGE="${ARCH_IMAGE/%-/}"
 fi
 
-local latest_tag
+latest_tag=''
 if ! latest_tag=$(curl -sI https://github.com/pi-hole/docker-pi-hole/releases/latest | grep --color=never -i Location | awk -F / '{print $NF}' | tr -d '[:cntrl:]'); then
     print "Failed to retrieve latest docker-pi-hole release metadata"
 else
