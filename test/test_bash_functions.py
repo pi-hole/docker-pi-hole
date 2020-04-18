@@ -29,21 +29,13 @@ def test_IPv6_not_True_removes_ipv6(Docker, Slow, test_args, expected_ipv6, expe
 @pytest.mark.parametrize('test_args', ['-e "WEB_PORT=999"'])
 def test_overrides_default_WEB_PORT(Docker, Slow, test_args):
     ''' When a --net=host user sets WEB_PORT to avoid synology's 80 default IPv4 and or IPv6 ports are updated'''
-    CONFIG_LINE = 'server.port\s*=\s*999'
+    CONFIG_LINE = r'server.port\s*=\s*999'
     WEB_CONFIG = '/etc/lighttpd/lighttpd.conf'
 
     function = Docker.run('. /bash_functions.sh ; eval `grep setup_web_port /start.sh`')
     assert "Custom WEB_PORT set to 999" in function.stdout
     assert "INFO: Without proper router DNAT forwarding to 127.0.0.1:999, you may not get any blocked websites on ads" in function.stdout
     Slow(lambda: re.search(CONFIG_LINE, Docker.run('cat {}'.format(WEB_CONFIG)).stdout) != None)
-    Slow(lambda: re.search('://127.0.0.1:999/', Docker.run('cat /var/www/html/pihole/index.php').stdout) != None)
-    # grep fails to find any of the old address w/o port
-    #assert Docker.run('grep -r "://127.0.0.1/" /var/www/html/').stdout == ''
-    #assert Docker.run('grep -r "://pi.hole/" /var/www/html/').stdout == ''
-    ## Find at least one instance of our changes 
-    ## upstream repos determines how many and I don't want to keep updating this test
-    #assert int(Docker.run('grep -rl "://127.0.0.1:999/" /var/www/html/ | wc -l').stdout) >= 1
-    #assert int(Docker.run('grep -rl "://pi.hole:999/" /var/www/html/ | wc -l').stdout) >= 1
 
 
 @pytest.mark.parametrize('test_args,expected_error', [
