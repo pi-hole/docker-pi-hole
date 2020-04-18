@@ -69,7 +69,7 @@ fetch_release_metadata() {
 if [[ $CHECKOUT_BRANCHES == true ]] ; then
     ln -s /bin/true /usr/local/bin/service
     ln -s /bin/true /usr/local/bin/update-rc.d
-    echo "${CORE_VERSION}" | sudo tee /etc/pihole/ftlbranch
+    echo "fix/docker_issues" | sudo tee /etc/pihole/ftlbranch
     echo y | bash -x pihole checkout core ${CORE_VERSION}
     echo y | bash -x pihole checkout web ${WEB_VERSION}
     # echo y | bash -x pihole checkout ftl ${CORE_VERSION}
