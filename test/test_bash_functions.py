@@ -29,7 +29,7 @@ def test_IPv6_not_True_removes_ipv6(Docker, Slow, test_args, expected_ipv6, expe
 @pytest.mark.parametrize('test_args', ['-e "WEB_PORT=999"'])
 def test_overrides_default_WEB_PORT(Docker, Slow, test_args):
     ''' When a --net=host user sets WEB_PORT to avoid synology's 80 default IPv4 and or IPv6 ports are updated'''
-    CONFIG_LINE = 'server.port\s*=\s*999'
+    CONFIG_LINE = r'server.port\s*=\s*999'
     WEB_CONFIG = '/etc/lighttpd/lighttpd.conf'
 
     function = Docker.run('. /bash_functions.sh ; eval `grep setup_web_port /start.sh`')
