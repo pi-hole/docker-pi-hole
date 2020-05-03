@@ -1,6 +1,6 @@
 Please note the following about this [traefik](https://traefik.io/) example for Docker Pi-hole
 
-- Still requires standard Pi-hole setup steps, make sure you've gone through the [README](https://github.com/pihole/docker-pi-hole/blob/master/README.md) and understand how to setup Pi-hole without traefik first
+- Still requires standard Pi-hole setup steps, make sure you've gone through the [README](https://github.com/pi-hole/docker-pi-hole/blob/master/README.md) and understand how to setup Pi-hole without traefik first
 - Update these things before using:
     - set instances of `homedomain.lan` below to your home domain (typically set in your router)
     - set your Pi-hole ENV WEBPASSWORD if you don't want a random admin pass
@@ -12,10 +12,9 @@ Please note the following about this [traefik](https://traefik.io/) example for 
 - There is some delay after starting your container before traefik forwards the HTTP traffic correctly, give it a minute
 
 ```
-version: '3'
+version: '3.8'
 
 services:
-  #
   traefik:
     container_name: traefik
     domainname: homedomain.lan
@@ -23,18 +22,25 @@ services:
     image: traefik
     restart: unless-stopped
     # Note I opt to whitelist certain apps for exposure to traefik instead of auto discovery
-    # use `--docker.exposedbydefault=true` if you don't want to have to do this
-    command: "--web --docker --docker.domain=homedomain.lan --docker.exposedbydefault=false --logLevel=DEBUG"
+    # use `--providers.docker.exposedbydefault=true` if you don't want to have to do this
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.network=web"
+      - "--providers.docker.exposedbydefault=false"
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--entrypoints.http.address=:80"
+      - "--log.level=DEBUG"
     ports:
       - "80:80"
       - "443:443"
       - "8080:8080"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - /dev/null:/traefik.toml
     networks:
       - default
-      - discovery
+      - web
     dns:
       - 192.168.1.50
       - 192.168.1.1
@@ -44,6 +50,8 @@ services:
     domainname: homedomain.lan
 
     image: pihole/pihole:latest
+    networks:
+      - web
     dns:
       - 127.0.0.1
       - 1.1.1.1
@@ -66,43 +74,41 @@ services:
       # WEBPASSWORD:
     restart: unless-stopped
     labels:
-       # required when using --docker.exposedbydefault=false
+       # required when using --providers.docker.exposedbydefault=false
        - "traefik.enable=true"
-       # https://www.techjunktrunk.com/docker/2017/11/03/traefik-default-server-catch-all/
-       - "traefik.frontend.rule=HostRegexp:pihole.homedomain.lan,{catchall:.*}"
-       - "traefik.frontend.priority=1"
-       - "traefik.backend=pihole"
-       - "traefik.port=80"
+       - "traefik.http.routers.pihole.rule=PathPrefix(`/`)"
+       - "traefik.http.routers.pihole.entrypoints=http"
+       - "traefik.docker.network=web"
+       - "traefik.http.services.pihole.loadbalancer.server.port=80"
 
 networks:
   # Discovery is manually created to avoid forcing any order of docker-compose stack creation (`docker network create discovery`)
   # allows other compose files to be seen by proxy
   # Not required if you aren't using multiple docker-compose files...
-  discovery:
+  web:
     external: true
 ```
 
 After running `docker-compose up -d` you should see this if you look at logs on traefik `docker-compose logs -f traefik`
 
 ```
-traefik    | time="2018-03-07T18:57:41Z" level=debug msg="Provider event received {Status:health_status: healthy ID:33567e94e02c5adba3d47fa44c391e94fdea359fb05eecb196c95de288ffb861 From:pihole/pihole:latest Type:container Action:health_status: healthy Actor:{ID:33567e94
-e02c5adba3d47fa44c391e94fdea359fb05eecb196c95de288ffb861 Attributes:map[com.docker.compose.project:traefik image:pihole/pihole:latest traefik.frontend.priority:1 com.docker.compose.container-number:1 com.docker.compose.service:pihole com.docker.compose.version:1.19.0 name:pihole traefik.enable:true url:https://www.github.com/pihole/docker-pi-hole com.docker.compose.oneoff:False maintainer:adam@diginc.us traefik.backend:pihole traefik.frontend.rule:HostRegexp:pihole.homedomain.lan,{catchall:.*} traefik.port:80 com.docker.compose.config-
-hash:7551c3f4bd11766292c7dad81473ef21da91cae8666d1b04a42d1daab53fba0f]} Scope:local Time:1520449061 TimeNano:1520449061934970670}"
-traefik    | time="2018-03-07T18:57:42Z" level=debug msg="Filtering disabled container /traefik"
-traefik    | time="2018-03-07T18:57:42Z" level=debug msg="Could not load traefik.frontend.whitelistSourceRange labels"
-traefik    | time="2018-03-07T18:57:42Z" level=debug msg="Could not load traefik.frontend.entryPoints labels"
-traefik    | time="2018-03-07T18:57:42Z" level=debug msg="Could not load traefik.frontend.auth.basic labels"
-traefik    | time="2018-03-07T18:57:42Z" level=debug msg="Validation of load balancer method for backend backend-pihole failed: invalid load-balancing method ''. Using default method wrr."
-traefik    | time="2018-03-07T18:57:42Z" level=debug msg="Configuration received from provider docker: {"backends":{"backend-pihole":{"servers":{"server-pihole":{"url":"http://172.18.0.2:80","weight":0}},"loadBalancer":{"method":"wrr"}}},"frontends":{"frontend-HostRegexp
--pihole-homedomain-lan-catchall-0":{"entryPoints":["http"],"backend":"backend-pihole","routes":{"route-frontend-HostRegexp-pihole-homedomain-lan-catchall-0":{"rule":"HostRegexp:pihole.homedomain.lan,{catchall:.*}"}},"passHostHeader":true,"priority":1,"basicAuth":[]}}}"
-traefik    | time="2018-03-07T18:57:42Z" level=debug msg="Creating frontend frontend-HostRegexp-pihole-homedomain-lan-catchall-0"
-traefik    | time="2018-03-07T18:57:42Z" level=debug msg="Wiring frontend frontend-HostRegexp-pihole-homedomain-lan-catchall-0 to entryPoint http"
-traefik    | time="2018-03-07T18:57:42Z" level=debug msg="Creating route route-frontend-HostRegexp-pihole-homedomain-lan-catchall-0 HostRegexp:pihole.homedomain.lan,{catchall:.*}"
-traefik    | time="2018-03-07T18:57:42Z" level=debug msg="Creating backend backend-pihole"
-traefik    | time="2018-03-07T18:57:42Z" level=debug msg="Creating load-balancer wrr"
-traefik    | time="2018-03-07T18:57:42Z" level=debug msg="Creating server server-pihole at http://172.18.0.2:80 with weight 0"
-traefik    | time="2018-03-07T18:57:42Z" level=info msg="Server configuration reloaded on :80"
-traefik    | time="2018-03-07T18:57:42Z" level=info msg="Server configuration reloaded on :8080"
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Provider event received {Status:health_status: healthy ID:daf190c70930ec8830213a4e3b710ae558048798dd7229885eedd92a05a25df8 From:pihole/pihole:latest Type:container Action:health_status: healthy Actor:{ID:daf190c70930ec8830213a4e3b710ae558048798dd7229885eedd92a05a25df8 Attributes:map[com.docker.compose.config-hash:6195e8f8f24f1eb3a4866cb02407813596401b91939149c71b5fb8ecfefbaab5 com.docker.compose.container-number:1 com.docker.compose.oneoff:False com.docker.compose.project:pi-hole com.docker.compose.project.config_files:docker-compose.yml com.docker.compose.project.working_dir:/opt/pi-hole com.docker.compose.service:pihole com.docker.compose.version:1.25.5 image:pihole/pihole:latest maintainer:adam@diginc.us name:pihole traefik.docker.network:web traefik.enable:true traefik.http.routers.pihole.entrypoints:http traefik.http.routers.pihole.rule:PathPrefix(`/`) traefik.http.services.pihole.loadbalancer.server.port:80 url:https://www.github.com/pi-hole/docker-pi-hole]} Scope:local Time:1588514476 TimeNano:1588514476657434084}" providerName=docker
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Filtering disabled container" providerName=docker container=traefik-pi-hole-67c8ac28f250dc960da708895724a9d5753b9797f8fa4af599898c364673eaab
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Configuration received from provider docker: {\"http\":{\"routers\":{\"pihole\":{\"entryPoints\":[\"http\"],\"service\":\"pihole\",\"rule\":\"PathPrefix(`/`)\"}},\"services\":{\"pihole\":{\"loadBalancer\":{\"servers\":[{\"url\":\"http://172.26.0.3:80\"}],\"passHostHeader\":true}}}},\"tcp\":{},\"udp\":{}}" providerName=docker
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Added outgoing tracing middleware api@internal" routerName=api@internal middlewareName=tracing middlewareType=TracingForwarder entryPointName=traefik
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Added outgoing tracing middleware dashboard@internal" middlewareType=TracingForwarder entryPointName=traefik routerName=dashboard@internal middlewareName=tracing
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Creating middleware" routerName=dashboard@internal middlewareName=dashboard_stripprefix@internal middlewareType=StripPrefix entryPointName=traefik
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Adding tracing to middleware" entryPointName=traefik routerName=dashboard@internal middlewareName=dashboard_stripprefix@internal
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Creating middleware" routerName=dashboard@internal middlewareName=dashboard_redirect@internal middlewareType=RedirectRegex entryPointName=traefik
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Setting up redirection from ^(http:\\/\\/[^:\\/]+(:\\d+)?)\\/$ to ${1}/dashboard/" entryPointName=traefik routerName=dashboard@internal middlewareName=dashboard_redirect@internal middlewareType=RedirectRegex
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Adding tracing to middleware" entryPointName=traefik routerName=dashboard@internal middlewareName=dashboard_redirect@internal
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Creating middleware" middlewareName=traefik-internal-recovery middlewareType=Recovery entryPointName=traefik
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Creating middleware" routerName=pihole@docker serviceName=pihole middlewareName=pipelining middlewareType=Pipelining entryPointName=http
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Creating load-balancer" entryPointName=http routerName=pihole@docker serviceName=pihole
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Creating server 0 http://172.26.0.3:80" serviceName=pihole serverName=0 entryPointName=http routerName=pihole@docker
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Added outgoing tracing middleware pihole" middlewareType=TracingForwarder entryPointName=http routerName=pihole@docker middlewareName=tracing
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="Creating middleware" entryPointName=http middlewareName=traefik-internal-recovery middlewareType=Recovery
+traefik    | time="2020-05-03T14:01:16Z" level=debug msg="No default certificate, generating one"
 ```
 
 Also your port 8080 should list the Route/Rule for pihole and backend-pihole container.
