@@ -1,18 +1,19 @@
 # Prerequisites 
 
-Make sure you have docker, python, and pip.  I won't cover how to install those here, please search the internet for that info if you need it.
+Make sure you have bash, docker.  Python and some test hacks are crammed into the `Dockerfile_build` file for now.  Revisions in the future may re-enable running python on your host (not just in docker).
 
 # Running tests locally
 
-Travis-ci auto runs tests during pull requests (PR) but it only has 2 cores and if you have more/faster cpus your PC's local tests will be faster and you'll have quicker feedback loops than continually pushing to have your PR run travis-ci
+`ARCH=amd64 ./circle-test.sh`
 
-After you have the prereqs, to get the required pip packages run: `pip install -r requirements.txt`
+Should result in :
 
-To run the Dockerfile templating, image build, and tests all in one command just run: `tox`
+- An image named `pihole:amd64` being build
+- Tests being ran to confirm the image doesnt have any regressions
 
 # Local image names
 
-Docker images built by `tox` or `python Dockerfile.py` are named the same but stripped of the `pihole/` docker repository namespace.
+Docker images built by `Dockerfile.py` are named the same but stripped of the `pihole/` docker repository namespace.
 
 e.g. `pi-hole:debian_amd64` or `pi-hole-multiarch:debian_arm64`
 

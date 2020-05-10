@@ -42,6 +42,7 @@ docker_checks
 #fi
 
 fix_capabilities
+load_web_password_secret
 generate_password
 validate_env || exit 1
 prepare_configs

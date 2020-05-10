@@ -46,6 +46,6 @@ if [[ "$CIRCLE_PR_NUMBER" == "" ]]; then
         done
 
         docker manifest inspect "$docker_tag"
-        docker manifest push "$docker_tag"
+        docker manifest push --purge "$docker_tag"
     done;
 fi
