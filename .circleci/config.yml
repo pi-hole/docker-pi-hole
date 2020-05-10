@@ -75,14 +75,14 @@ workflows:
           filters:
             tags:
               only: /^v.*/
-      - arm64:
-          filters:
-            tags:
-              only: /^v.*/
       - armhf:
           filters:
             tags:
               only: /^v.*/
+      #- arm64:
+      #    filters:
+      #      tags:
+      #        only: /^v.*/
       #- armel:
       #    filters:
       #      tags:
@@ -90,8 +90,8 @@ workflows:
       - deploy:
           requires:
             - amd64
-            - arm64
             - armhf
+            #- arm64
             #- armel
           filters:
             tags:
