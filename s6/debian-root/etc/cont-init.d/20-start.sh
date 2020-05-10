@@ -18,3 +18,5 @@ gravity.sh
 
 # Kill dnsmasq because s6 won't like it if it's running when s6 services start
 kill -9 $(pgrep pihole-FTL) || true
+
+pihole -v

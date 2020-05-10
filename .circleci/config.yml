@@ -50,16 +50,49 @@ workflows:
           filters:
             tags:
               only: /^v.*/
-      - armel:
-          filters:
-            tags:
-              only: /^v.*/
+      #- armel:
+      #    filters:
+      #      tags:
+      #        only: /^v.*/
       - deploy:
           requires:
             - amd64
             - arm64
             - armhf
-            - armel
+            #- armel
+          filters:
+            tags:
+              only: /^v.*/
+  nightly_build:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only: 'beta-v5.0'
+    jobs:
+      - amd64:
+          filters:
+            tags:
+              only: /^v.*/
+      - arm64:
+          filters:
+            tags:
+              only: /^v.*/
+      - armhf:
+          filters:
+            tags:
+              only: /^v.*/
+      #- armel:
+      #    filters:
+      #      tags:
+      #        only: /^v.*/
+      - deploy:
+          requires:
+            - amd64
+            - arm64
+            - armhf
+            #- armel
           filters:
             tags:
               only: /^v.*/

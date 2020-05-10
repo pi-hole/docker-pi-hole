@@ -56,7 +56,7 @@ images = {
         },
         {
             'base': 'multiarch/debian-debootstrap:armhf-stretch-slim',
-            'arch': 'arm',
+            'arch': 'armhf',
             's6arch' : 'arm',
         },
         {
