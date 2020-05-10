@@ -287,6 +287,14 @@ setup_web_port() {
 
 }
 
+load_web_password_secret() {
+   # If WEBPASSWORD is not set at all, attempt to read password from WEBPASSWORD_FILE,
+   # allowing secrets to be passed via docker secrets
+   if [ -z "${WEBPASSWORD+x}" ] && [ -n "${WEBPASSWORD_FILE}" ] && [ -r "${WEBPASSWORD_FILE}" ]; then
+     WEBPASSWORD=$(<"${WEBPASSWORD_FILE}")
+   fi;
+}
+
 generate_password() {
     if [ -z "${WEBPASSWORD+x}" ] ; then
         # Not set at all, give the user a random pass

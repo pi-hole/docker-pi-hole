@@ -44,6 +44,6 @@ LABEL image="pihole/pihole:release-v5.0_amd64"
 LABEL maintainer="adam@diginc.us"
 LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
 
-HEALTHCHECK CMD dig @127.0.0.1 pi.hole || exit 1
+HEALTHCHECK CMD dig +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
 
 SHELL ["/bin/bash", "-c"]
