@@ -2,7 +2,7 @@
 
 # https://github.com/pi-hole/docker-pi-hole/blob/master/README.md
 
-PIHOLE_BASE=${PIHOLE_BASE:-$(pwd)}
+PIHOLE_BASE="${PIHOLE_BASE:-$(pwd)}"
 [[ -d "$PIHOLE_BASE" ]] || mkdir -p "$PIHOLE_BASE" || { echo "Couldn't create storage directory: $PIHOLE_BASE"; exit 1; }
 
 docker run -d \
