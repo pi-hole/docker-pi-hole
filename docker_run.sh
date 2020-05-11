@@ -12,6 +12,10 @@ docker run -d \
     -v "$(pwd)/etc-dnsmasq.d/:/etc/dnsmasq.d/" \
     --dns=127.0.0.1 --dns=1.1.1.1 \
     --restart=unless-stopped \
+    --hostname pi.hole \
+    -e VIRTUAL_HOST="pi.hole" \
+    -e PROXY_LOCATION="pi.hole" \
+    -e ServerIP="127.0.0.1" \ # should be replaced with your external ip
     pihole/pihole:latest
 
 printf 'Starting up pihole container '

@@ -37,13 +37,13 @@ ENV ServerIP 0.0.0.0
 ENV FTL_CMD no-daemon
 ENV DNSMASQ_USER root
 
-ENV VERSION v4.4
+ENV VERSION v5.0
 ENV PATH /opt/pihole:${PATH}
 
-LABEL image="pihole/pihole:v4.4_arm64"
+LABEL image="pihole/pihole:v5.0_arm64"
 LABEL maintainer="adam@diginc.us"
 LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
 
-HEALTHCHECK CMD dig @127.0.0.1 pi.hole || exit 1
+HEALTHCHECK CMD dig +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
 
 SHELL ["/bin/bash", "-c"]

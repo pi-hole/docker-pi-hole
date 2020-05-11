@@ -21,9 +21,11 @@ docker run --rm \
     -e PIPENV_CACHE_DIR="$(pwd)/.pipenv" \
     --env-file /tmp/env \
     $enter image_pipenv
-# docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$(pwd):/$(pwd)" -w "$(pwd)" --env-file /tmp/env image_pipenv /ws/Dockerfile.sh
 
 docker images
+
+test -z "${CIRCLE_PROJECT_REPONAME}" && exit 0
+# The rest is circle-ci only
 echo $DOCKERHUB_PASS | docker login --username=$DOCKERHUB_USER --password-stdin
 docker push $ARCH_IMAGE
 mkdir -p ci-workspace
