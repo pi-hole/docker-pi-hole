@@ -37,7 +37,6 @@ services:
       - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /dev/null:/traefik.toml
     networks:
       - default
       - discovery
