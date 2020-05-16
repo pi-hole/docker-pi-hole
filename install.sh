@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
 mkdir -p /etc/pihole/
-mkdir -p /var/run/pihole
+mkdir -p /run/pihole
 # Production tags with valid web footers
 export CORE_VERSION="$(cat /etc/docker-pi-hole-version)"
 export WEB_VERSION="${CORE_VERSION}"

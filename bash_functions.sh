@@ -21,7 +21,7 @@ prepare_configs() {
     installConfigs
     touch "$setupVars"
     set +e
-    mkdir -p /var/run/pihole /var/log/pihole
+    mkdir -p /run/pihole /var/log/pihole
     # Re-apply perms from basic-install over any volume mounts that may be present (or not)
     # Also  similar to preflights for FTL https://github.com/pi-hole/pi-hole/blob/master/advanced/Templates/pihole-FTL.service
     chown pihole:root /etc/lighttpd
@@ -30,8 +30,8 @@ prepare_configs() {
     # not sure why pihole:pihole user/group write perms are not enough for web to write...dirty fix:
     chmod 777 "${regexFile}"
     touch /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
-    chown pihole:pihole /var/run/pihole /var/log/pihole
-    test -f /var/run/pihole/FTL.sock && rm /var/run/pihole/FTL.sock
+    chown pihole:pihole /run/pihole /var/log/pihole
+    test -f /run/pihole/FTL.sock && rm /run/pihole/FTL.sock
     chown pihole:pihole /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /etc/pihole /etc/pihole/dhcp.leases /var/log/pihole.log
     chmod 0644 /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
     set -e
