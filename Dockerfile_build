@@ -6,7 +6,8 @@ RUN apk --update add python3 python3-dev curl gcc make \
         musl-dev libffi-dev openssl-dev ${packages} \
     && rm -rf /var/cache/apk/* \
     && pip3 install -U pip pipenv
-
+RUN curl -L https://github.com/docker/compose/releases/download/1.25.5/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && \
+    chmod +x /usr/local/bin/docker-compose 
 
 # -v "$(pwd):/$(pwd)" -w "$(pwd)" to prevent nested docker path confusion
 COPY ./Dockerfile.sh /usr/local/bin/
