@@ -5,7 +5,7 @@ export ServerIP
 export ServerIPv6
 export PYTEST
 export PHP_ENV_CONFIG
-export PHP_ERROR_LOG 
+export PHP_ERROR_LOG
 export HOSTNAME
 export WEBLOGDIR
 export DNS1
@@ -21,11 +21,17 @@ export CONDITIONAL_FORWARDING
 export CONDITIONAL_FORWARDING_IP
 export CONDITIONAL_FORWARDING_DOMAIN
 export CONDITIONAL_FORWARDING_REVERSE
+export TEMPERATUREUNIT
+export ADMIN_EMAIL
+export WEBUIBOXEDLAYOUT
 
 export adlistFile='/etc/pihole/adlists.list'
 
 # The below functions are all contained in bash_functions.sh
 . /bash_functions.sh
+
+# Ensure we have all functions available to update our configurations
+. /opt/pihole/webpage.sh
 
 # PH_TEST prevents the install from actually running (someone should rename that)
 PH_TEST=true . $PIHOLE_INSTALL
@@ -46,6 +52,12 @@ load_web_password_secret
 generate_password
 validate_env || exit 1
 prepare_configs
+change_setting "PIHOLE_INTERFACE" "$PIHOLE_INTERFACE"
+change_setting "IPV4_ADDRESS" "$IPV4_ADDRESS"
+change_setting "QUERY_LOGGING" "$QUERY_LOGGING"
+change_setting "INSTALL_WEB_SERVER" "$INSTALL_WEB_SERVER"
+change_setting "INSTALL_WEB_INTERFACE" "$INSTALL_WEB_INTERFACE"
+change_setting "LIGHTTPD_ENABLED" "$LIGHTTPD_ENABLED"
 change_setting "IPV4_ADDRESS" "$ServerIP"
 change_setting "IPV6_ADDRESS" "$ServerIPv6"
 change_setting "DNS_BOGUS_PRIV" "$DNS_BOGUS_PRIV"
@@ -57,6 +69,9 @@ change_setting "CONDITIONAL_FORWARDING_DOMAIN" "$CONDITIONAL_FORWARDING_DOMAIN"
 change_setting "CONDITIONAL_FORWARDING_REVERSE" "$CONDITIONAL_FORWARDING_REVERSE"
 setup_web_port "$WEB_PORT"
 setup_web_password "$WEBPASSWORD"
+setup_temp_unit "$TEMPERATUREUNIT"
+setup_ui_layout "$WEBUIBOXEDLAYOUT"
+setup_admin_email "$ADMIN_EMAIL"
 setup_dnsmasq "$DNS1" "$DNS2" "$INTERFACE" "$DNSMASQ_LISTENING_BEHAVIOUR"
 setup_php_env
 setup_dnsmasq_hostnames "$ServerIP" "$ServerIPv6" "$HOSTNAME"
