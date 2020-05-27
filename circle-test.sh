@@ -2,6 +2,10 @@
 set -ex
 
 # Circle CI Job for single architecture
+if ! command -v docker-compose; then
+    curl -L https://github.com/docker/compose/releases/download/1.25.5/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+    chmod +x /usr/local/bin/docker-compose
+fi
 
 # setup qemu/variables
 docker run --rm --privileged multiarch/qemu-user-static:register --reset > /dev/null
