@@ -1,0 +1,26 @@
+name: Tests
+on:
+  pull_request:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ARCH:
+          - amd64
+          # https://github.com/pi-hole/docker-pi-hole/issues/587#issuecomment-617180631
+          #- armel
+          - armhf
+          - arm64
+    env:
+      ARCH: ${{matrix.ARCH}}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Run Circle Test
+        run: |
+          echo "Building ${ARCH}"
+          ./circle-test.sh
