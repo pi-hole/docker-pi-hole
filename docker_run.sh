@@ -5,6 +5,7 @@
 PIHOLE_BASE="${PIHOLE_BASE:-$(pwd)}"
 [[ -d "$PIHOLE_BASE" ]] || mkdir -p "$PIHOLE_BASE" || { echo "Couldn't create storage directory: $PIHOLE_BASE"; exit 1; }
 
+# Note: ServerIP should be replaced with your external ip.
 docker run -d \
     --name pihole \
     -p 53:53/tcp -p 53:53/udp \
@@ -18,7 +19,7 @@ docker run -d \
     --hostname pi.hole \
     -e VIRTUAL_HOST="pi.hole" \
     -e PROXY_LOCATION="pi.hole" \
-    -e ServerIP="127.0.0.1" \ # should be replaced with your external ip
+    -e ServerIP="127.0.0.1" \
     pihole/pihole:latest
 
 printf 'Starting up pihole container '
