@@ -2,12 +2,11 @@
 """ Dockerfile.py - generates and build dockerfiles
 
 Usage:
-  Dockerfile.py [--hub_tag=<tag>] [--arch=<arch> ...] [-v] [-t] [--no-build | --no-generate] [--no-cache]
+  Dockerfile.py [--hub_tag=<tag>] [--arch=<arch> ...] [-v] [-t] [--no-build] [--no-cache]
 
 Options:
     --no-build      Skip building the docker images
     --no-cache      Build without using any cache data
-    --no-generate   Skip generating Dockerfiles from template
     --hub_tag=<tag> What the Docker Hub Image should be tagged as [default: None]
     --arch=<arch>   What Architecture(s) to build   [default: amd64 armel armhf arm64]
     -v              Print docker's command output   [default: False]
@@ -17,80 +16,17 @@ Examples:
 """
 
 
-from jinja2 import Environment, FileSystemLoader
 from docopt import docopt
 import os
 import subprocess
-import sys
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-
-base_vars = {
-    'name': 'pihole/pihole',
-    'maintainer' : 'adam@diginc.us',
-    's6_version' : 'v1.22.1.0',
-}
-
-os_base_vars = {
-    'php_env_config': '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf',
-    'php_error_log': '/var/log/lighttpd/error.log'
-}
 
 __version__ = None
 dot = os.path.abspath('.')
 with open('{}/VERSION'.format(dot), 'r') as v:
     raw_version = v.read().strip()
     __version__ = raw_version.replace('release/', 'release-')
-
-images = {
-    __version__: [
-        {
-            'base': 'pihole/debian-base:latest',
-            'arch': 'amd64',
-            's6arch': 'amd64',
-        },
-        {
-            'base': 'multiarch/debian-debootstrap:armel-stretch-slim',
-            'arch': 'armel',
-            's6arch': 'arm',
-        },
-        {
-            'base': 'multiarch/debian-debootstrap:armhf-stretch-slim',
-            'arch': 'armhf',
-            's6arch' : 'arm',
-        },
-        {
-            'base': 'multiarch/debian-debootstrap:arm64-stretch-slim',
-            'arch': 'arm64',
-            's6arch' : 'aarch64',
-        }
-    ]
-}
-
-def generate_dockerfiles(args):
-    if args['--no-generate']:
-        print(" ::: Skipping Dockerfile generation")
-        return
-
-    for version, archs in images.items():
-        for image in archs:
-            if image['arch'] not in args['--arch']:
-                continue
-            s6arch = image['s6arch'] if image['s6arch'] else image['arch']
-            merged_data = dict(
-                list({ 'version': version }.items()) +
-                list(base_vars.items()) +
-                list(os_base_vars.items()) +
-                list(image.items()) +
-                list({ 's6arch': s6arch }.items())
-            )
-            j2_env = Environment(loader=FileSystemLoader(THIS_DIR),
-                                 trim_blocks=True)
-            template = j2_env.get_template('Dockerfile.template')
-
-            dockerfile = 'Dockerfile_{}'.format(image['arch'])
-            with open(dockerfile, 'w') as f:
-                f.write(template.render(pihole=merged_data))
 
 
 def build_dockerfiles(args):
@@ -104,7 +40,9 @@ def build_dockerfiles(args):
 
 def run_and_stream_command_output(command, args):
     print("Running", command)
-    build_result = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+    build_env = os.environ.copy()
+    build_env['PIHOLE_VERSION'] = __version__
+    build_result = subprocess.Popen(command.split(), env=build_env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                     bufsize=1, universal_newlines=True)
     if args['-v']:
         while build_result.poll() is None:
@@ -117,19 +55,17 @@ def run_and_stream_command_output(command, args):
 
 
 def build(docker_repo, arch, args):
-    dockerfile = 'Dockerfile_{}'.format(arch)
-    repo_tag = '{}:{}_{}'.format(docker_repo, __version__, arch)
-    cached_image = '{}/{}'.format('pihole', repo_tag)
+    repo_tag = '{}:{}-{}'.format(docker_repo, __version__, arch)
     print(" ::: Building {}".format(repo_tag))
-    time=''
+    time = ''
     if args['-t']:
-        time='time '
+        time = 'time '
     no_cache = ''
     if args['--no-cache']:
         no_cache = '--no-cache'
-    build_command = '{time}docker build {no_cache} --pull --cache-from="{cache},{create_tag}" -f {dockerfile} -t {create_tag} .'\
-        .format(time=time, no_cache=no_cache, cache=cached_image, dockerfile=dockerfile, create_tag=repo_tag)
-    print(" ::: Building {} into {}".format(dockerfile, repo_tag))
+    build_command = '{time}docker-compose -f build.yml build {no_cache} --pull {arch}'\
+        .format(time=time, no_cache=no_cache, arch=arch)
+    print(" ::: Building {} into {}".format(arch, repo_tag))
     run_and_stream_command_output(build_command, args)
     if args['-v']:
         print(build_command, '\n')
@@ -145,5 +81,4 @@ if __name__ == '__main__':
     if args['-v']:
         print(args)
 
-    generate_dockerfiles(args)
     build_dockerfiles(args)

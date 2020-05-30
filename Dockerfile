@@ -1,7 +1,11 @@
-FROM pihole/debian-base:latest
+ARG PIHOLE_BASE
+FROM $PIHOLE_BASE
 
-ENV ARCH amd64
-ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-amd64.tar.gz
+ARG PIHOLE_ARCH
+ENV PIHOLE_ARCH "${PIHOLE_ARCH}"
+ARG S6_ARCH
+ARG S6_VERSION
+ENV S6OVERLAY_RELEASE "https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-${S6_ARCH}.tar.gz"
 
 COPY install.sh /usr/local/bin/install.sh
 COPY VERSION /etc/docker-pi-hole-version
@@ -16,8 +20,10 @@ ADD s6/debian-root /
 COPY s6/service /usr/local/bin/service
 
 # php config start passes special ENVs into
-ENV PHP_ENV_CONFIG '/etc/lighttpd/conf-enabled/15-fastcgi-php.conf'
-ENV PHP_ERROR_LOG '/var/log/lighttpd/error.log'
+ARG PHP_ENV_CONFIG
+ENV PHP_ENV_CONFIG "${PHP_ENV_CONFIG}"
+ARG PHP_ERROR_LOG
+ENV PHP_ERROR_LOG "${PHP_ERROR_LOG}"
 COPY ./start.sh /
 COPY ./bash_functions.sh /
 
@@ -37,11 +43,14 @@ ENV ServerIP 0.0.0.0
 ENV FTL_CMD no-daemon
 ENV DNSMASQ_USER root
 
-ENV VERSION v5.0
+ARG PIHOLE_VERSION
+ENV VERSION "${PIHOLE_VERSION}"
 ENV PATH /opt/pihole:${PATH}
 
-LABEL image="pihole/pihole:v5.0_amd64"
-LABEL maintainer="adam@diginc.us"
+ARG NAME
+LABEL image="${NAME}:${PIHOLE_VERSION}_${PIHOLE_ARCH}"
+ARG MAINTAINER
+LABEL maintainer="${MAINTAINER}"
 LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
 
 HEALTHCHECK CMD dig +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1

@@ -48,7 +48,7 @@ prepare_configs() {
     # Also  similar to preflights for FTL https://github.com/pi-hole/pi-hole/blob/master/advanced/Templates/pihole-FTL.service
     chown pihole:root /etc/lighttpd
     chown pihole:pihole "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" "/var/log/pihole" "${regexFile}"
-    chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" 
+    chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf"
     # not sure why pihole:pihole user/group write perms are not enough for web to write...dirty fix:
     chmod 777 "${regexFile}"
     touch /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
@@ -60,27 +60,11 @@ prepare_configs() {
     # Update version numbers
     pihole updatechecker
     # Re-write all of the setupVars to ensure required ones are present (like QUERY_LOGGING)
-    
+
     # If the setup variable file exists,
     if [[ -e "${setupVars}" ]]; then
-        # update the variables in the file
-        local USERWEBPASSWORD="${WEBPASSWORD}"
-        . "${setupVars}"
-        # Stash and pop the user password to avoid setting the password to the hashed setupVar variable
-        WEBPASSWORD="${USERWEBPASSWORD}"
-        # Clean up old before re-writing the required setupVars
-        sed -i.update.bak '/PIHOLE_INTERFACE/d;/IPV4_ADDRESS/d;/IPV6_ADDRESS/d;/QUERY_LOGGING/d;/INSTALL_WEB_SERVER/d;/INSTALL_WEB_INTERFACE/d;/LIGHTTPD_ENABLED/d;' "${setupVars}"
+        cp -f "${setupVars}" "${setupVars}.update.bak"
     fi
-    # echo the information to the user
-    {
-    echo "PIHOLE_INTERFACE=${PIHOLE_INTERFACE}"
-    echo "IPV4_ADDRESS=${IPV4_ADDRESS}"
-    echo "IPV6_ADDRESS=${IPV6_ADDRESS}"
-    echo "QUERY_LOGGING=${QUERY_LOGGING}"
-    echo "INSTALL_WEB_SERVER=${INSTALL_WEB_SERVER}"
-    echo "INSTALL_WEB_INTERFACE=${INSTALL_WEB_INTERFACE}"
-    echo "LIGHTTPD_ENABLED=${LIGHTTPD_ENABLED}"
-    }>> "${setupVars}"
 }
 
 validate_env() {
@@ -123,7 +107,7 @@ setup_dnsmasq_dns() {
         setupDNS1="${setupDNS1/PIHOLE_DNS_1=/}"
         setupDNS2="${setupDNS2/PIHOLE_DNS_2=/}"
         if [[ -n "$DNS1" && -n "$setupDNS1"  ]] || \
-           [[ -n "$DNS2" && -n "$setupDNS2"  ]] ; then 
+           [[ -n "$DNS2" && -n "$setupDNS2"  ]] ; then
                 echo "Docker DNS variables not used"
         fi
         echo "Existing DNS servers used (${setupDNS1:-unset} & ${setupDNS2:-unset})"
@@ -174,9 +158,9 @@ setup_dnsmasq() {
     local dns2="$2"
     local interface="$3"
     local dnsmasq_listening_behaviour="$4"
-    # Coordinates 
+    # Coordinates
     setup_dnsmasq_config_if_missing
-    setup_dnsmasq_dns "$dns1" "$dns2" 
+    setup_dnsmasq_dns "$dns1" "$dns2"
     setup_dnsmasq_interface "$interface"
     setup_dnsmasq_listening_behaviour "$dnsmasq_listening_behaviour"
     setup_dnsmasq_user "${DNSMASQ_USER}"
@@ -269,7 +253,7 @@ setup_web_port() {
     # Quietly exit early for empty or default
     if [[ -z "${1}" || "${1}" == '80' ]] ; then return ; fi
 
-    if ! echo $1 | grep -q '^[0-9][0-9]*$' ; then 
+    if ! echo $1 | grep -q '^[0-9][0-9]*$' ; then
         echo "$warning - $1 is not an integer"
         return
     fi
@@ -345,9 +329,8 @@ test_configs() {
     echo "::: All config checks passed, cleared for startup ..."
 }
 
-
 setup_blocklists() {
-    local blocklists="$1"   
+    local blocklists="$1"
     # Exit/return early without setting up adlists with defaults for any of the following conditions:
     # 1. skip_setup_blocklists env is set
     exit_string="(exiting ${FUNCNAME[0]} early)"
@@ -385,3 +368,32 @@ setup_var_exists() {
     fi
 }
 
+setup_temp_unit() {
+  local UNIT="$1"
+  # check if var is empty
+  if [[ "$UNIT" != "" ]] ; then
+      # check if we have valid units
+      if [[ "$UNIT" == "c" || "$UNIT" == "k" || $UNIT == "f" ]] ; then
+          pihole -a -${UNIT}
+      fi
+  fi
+}
+
+setup_ui_layout() {
+  local LO=$1
+  # check if var is empty
+  if [[ "$LO" != "" ]] ; then
+      # check if we have valid types boxed | traditional
+      if [[ "$LO" == "traditional" || "$LO" == "boxed" ]] ; then
+          change_setting "WEBUIBOXEDLAYOUT" "$WEBUIBOXEDLAYOUT"
+      fi
+  fi
+}
+
+setup_admin_email() {
+  local EMAIL=$1
+  # check if var is empty
+  if [[ "$EMAIL" != "" ]] ; then
+      pihole -a -e "$EMAIL"
+  fi
+}
