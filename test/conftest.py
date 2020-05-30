@@ -15,10 +15,6 @@ with open('{}/VERSION'.format(dotdot), 'r') as v:
     __version__ = raw_version.replace('release/', 'release-')
 
 @pytest.fixture()
-def args_dns():
-    return '--dns 127.0.0.1 --dns 1.1.1.1'
-
-@pytest.fixture()
 def args_volumes():
     return '-v /dev/null:/etc/pihole/adlists.list'
 
@@ -27,8 +23,8 @@ def args_env():
     return '-e ServerIP="127.0.0.1"'
 
 @pytest.fixture()
-def args(args_dns, args_volumes, args_env):
-    return "{} {} {}".format(args_dns, args_volumes, args_env)
+def args(args_volumes, args_env):
+    return "{} {}".format(args_volumes, args_env)
 
 @pytest.fixture()
 def test_args():
@@ -123,8 +119,8 @@ def persist_args_env():
     return '-e ServerIP="127.0.0.1"'
 
 @pytest.fixture(scope='module')
-def persist_args(persist_args_dns, persist_args_volumes, persist_args_env):
-    return "{} {} {}".format(args_dns, args_volumes, args_env)
+def persist_args(persist_args_volumes, persist_args_env):
+    return "{} {}".format(persist_args_volumes, persist_args_env)
 
 @pytest.fixture(scope='module')
 def persist_test_args():
