@@ -81,7 +81,7 @@ def version():
 
 @pytest.fixture()
 def tag(version, arch):
-    return '{}_{}'.format(version, arch)
+    return '{}-{}'.format(version, arch)
 
 @pytest.fixture
 def webserver(tag):

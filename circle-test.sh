@@ -22,8 +22,6 @@ docker run --rm \
     --env-file /tmp/env \
     $enter image_pipenv
 
-docker images
-
 test -z "${CIRCLE_PROJECT_REPONAME}" && exit 0
 # The rest is circle-ci only
 echo $DOCKERHUB_PASS | docker login --username=$DOCKERHUB_USER --password-stdin

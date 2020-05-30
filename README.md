@@ -81,6 +81,8 @@ If you're using a Red Hat based distribution with an SELinux Enforcing policy ad
 
 Volumes are recommended for persisting data across container re-creations for updating images.  The IP lookup variables may not work for everyone, please review their values and hard code IP and IPv6 if necessary.
 
+You can customize where to store persistent data by setting the `PIHOLE_BASE` environment variable when invoking `docker_run.sh` (e.g. `PIHOLE_BASE=/opt/pihole-storage ./docker_run.sh`).  If `PIHOLE_BASE` is not set, files are stored in your current directory when you invoke the script.
+
 Port 443 is to provide a sinkhole for ads that use SSL.  If only port 80 is used, then blocked HTTPS queries will fail to connect to port 443 and may cause long loading times.  Rejecting 443 on your firewall can also serve this same purpose.  Ubuntu firewall example: `sudo ufw reject https`
 
 **Automatic Ad List Updates** - since the 3.0+ release, `cron` is baked into the container and will grab the newest versions of your lists and flush your logs.  **Set your TZ** environment variable to make sure the midnight log rotation syncs up with your timezone's midnight.
@@ -95,25 +97,28 @@ There are other environment variables if you want to customize various things in
 
 | Docker Environment Var. | Description |
 | ----------------------- | ----------- |
+| `ADMIN_EMAIL: <email address>`<br/> *Optional Default: ''* | Set an administrative contact address for the Block Page
 | `TZ: <Timezone>`<br/> **Recommended** *Default: UTC* | Set your [timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) to make sure logs rotate at local midnight instead of at UTC midnight.
 | `WEBPASSWORD: <Admin password>`<br/> **Recommended** *Default: random* | http://pi.hole/admin password. Run `docker logs pihole \| grep random` to find your random pass.
 | `DNS1: <IP>`<br/> *Optional* *Default: 8.8.8.8* | Primary upstream DNS provider, default is google DNS
 | `DNS2: <IP>`<br/> *Optional* *Default: 8.8.4.4* | Secondary upstream DNS provider, default is google DNS, `no` if only one DNS should used
-| `DNSSEC: <True\|False>`<br/> *Optional* *Default: false* | Enable DNSSEC support
-| `DNS_BOGUS_PRIV: <True\|False>`<br/> *Optional* *Default: true* | Enable forwarding of reverse lookups for private ranges
-| `DNS_FQDN_REQUIRED: <True\|False>`<br/> *Optional* *Default: true* | Never forward non-FQDNs
-| `CONDITIONAL_FORWARDING: <True\|False>`<br/> *Optional* *Default: False* | Enable DNS conditional forwarding for device name resolution
+| `DNSSEC: <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DNSSEC support
+| `DNS_BOGUS_PRIV: <"true"\|"false">`<br/> *Optional* *Default: "true"* | Enable forwarding of reverse lookups for private ranges
+| `DNS_FQDN_REQUIRED: <"true"\|"false">`<br/> *Optional* *Default: true* | Never forward non-FQDNs
+| `CONDITIONAL_FORWARDING: <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DNS conditional forwarding for device name resolution
 | `CONDITIONAL_FORWARDING_IP: <Router's IP>`<br/> *Optional* | If conditional forwarding is enabled, set the IP of the local network router
 | `CONDITIONAL_FORWARDING_DOMAIN: <Network Domain>`<br/> *Optional* | If conditional forwarding is enabled, set the domain of the local network router
 | `CONDITIONAL_FORWARDING_REVERSE: <Reverse DNS>`<br/> *Optional* | If conditional forwarding is enabled, set the reverse DNS of the local network router (e.g. `0.168.192.in-addr.arpa`)
 | `ServerIP: <Host's IP>`<br/> **Recommended** | **--net=host mode requires** Set to your server's LAN IP, used by web block modes and lighttpd bind address
 | `ServerIPv6: <Host's IPv6>`<br/> *Required if using IPv6* | **If you have a v6 network** set to your server's LAN IPv6 to block IPv6 ads fully
 | `VIRTUAL_HOST: <Custom Hostname>`<br/> *Optional* *Default: $ServerIP*   | What your web server 'virtual host' is, accessing admin through this Hostname/IP allows you to make changes to the whitelist / blacklists in addition to the default 'http://pi.hole/admin/' address
-| `IPv6: <True\|False>`<br/> *Optional* *Default: True* | For unraid compatibility, strips out all the IPv6 configuration from DNS/Web services when false.
+| `IPv6: <"true"\|"false">`<br/> *Optional* *Default: "true"* | For unraid compatibility, strips out all the IPv6 configuration from DNS/Web services when false.
 | `INTERFACE: <NIC>`<br/> *Advanced/Optional* | The default works fine with our basic example docker run commands.  If you're trying to use DHCP with `--net host` mode then you may have to customize this or DNSMASQ_LISTENING.
 | `DNSMASQ_LISTENING: <local\|all\|NIC>`<br/> *Advanced/Optional* | `local` listens on all local subnets, `all` permits listening on internet origin subnets in addition to local.
 | `WEB_PORT: <PORT>`<br/> *Advanced/Optional* | **This will break the 'webpage blocked' functionality of Pi-hole** however it may help advanced setups like those running synology or `--net=host` docker argument.  This guide explains how to restore webpage blocked functionality using a linux router DNAT rule: [Alternative Synology installation method](https://discourse.pi-hole.net/t/alternative-synology-installation-method/5454?u=diginc)
 | `DNSMASQ_USER: <pihole\|root>`<br/> *Experimental Default: root* | Allows running FTLDNS as non-root.
+| `TEMPERATUREUNIT`: <c\|k\|f><br/>*Optional Default: c* | Set preferred temperature unit to `c`: Celsius, `k`: Kelvin, or `f` Fahrenheit units.
+| `WEBUIBOXEDLAYOUT: <boxed\|traditional>`<br/>*Optional Default: boxed* | Use boxed layout (helpful when working on large screens)
 
 To use these env vars in docker run format style them like: `-e DNS1=1.1.1.1`
 
@@ -175,7 +180,7 @@ The primary docker tags / versions are explained in the following table.  [Click
 
 | tag                 | architecture | description                                                             | Dockerfile |
 | ---                 | ------------ | -----------                                                             | ---------- |
-| `latest`            | auto detect  | x86, arm, or arm64 container, docker auto detects your architecture.    | [Dockerfile](https://github.com/pi-hole/docker-pi-hole/blob/master/Dockerfile_amd64) |
+| `latest`            | auto detect  | x86, arm, or arm64 container, docker auto detects your architecture.    | [Dockerfile](https://github.com/pi-hole/docker-pi-hole/blob/master/Dockerfile) |
 | `v4.0.0-1`          | auto detect  | Versioned tags, if you want to pin against a specific version, use one of these |  |
 | `v4.0.0-1_<arch>`   | based on tag | Specific architectures tags | |
 | `dev`       | auto detect  | like latest tag, but for the development branch (pushed occasionally)   | |
