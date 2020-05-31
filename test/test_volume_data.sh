@@ -8,9 +8,12 @@ set -ex
 # Debug can be added anywhere to check current state mid-test
 RED='\033[0;31m'
 NC='\033[0m' # No Color
+if [ $(id -u) != 0 ] ; then
+    sudo=sudo # do not need if root (in docker)
+fi
 debug() {
-    sudo grep -r . "$VOL_PH"
-    sudo grep -r . "$VOL_DM"
+    $sudo grep -r . "$VOL_PH"
+    $sudo grep -r . "$VOL_DM"
 }
 # Cleanup at the end, print debug on fail
 cleanup() {
@@ -21,7 +24,7 @@ cleanup() {
         debug
     fi
     docker rm -f $CONTAINER
-    sudo rm -rf $VOLUMES
+    $sudo rm -rf $VOLUMES
     exit $retcode
 }
 trap "cleanup" INT TERM EXIT

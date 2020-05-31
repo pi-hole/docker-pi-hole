@@ -38,8 +38,6 @@ PH_TEST=true . $PIHOLE_INSTALL
 
 echo " ::: Starting docker specific checks & setup for docker pihole/pihole"
 
-docker_checks
-
 # TODO:
 #if [ ! -f /.piholeFirstBoot ] ; then
 #    echo " ::: Not first container startup so not running docker's setup, re-create container to run setup again"
