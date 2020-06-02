@@ -54,10 +54,11 @@ CONTAINER="$(
 )"  # container backgrounded for multipiple operations over time
 
 EXEC() { 
+    local container="$1"
     # Must quote for complex commands
-    docker exec $TTY $CONTAINER bash -c "$@" 
+    docker exec $TTY $container bash -c "$2" 
 }
-EXEC /start.sh
+EXEC $CONTAINER /start.sh  # run all the startup scripts
     
 # Then default are present
 grep "PIHOLE_DNS_1=8.8.8.8" "$VOL_PH/setupVars.conf"
@@ -66,9 +67,9 @@ grep "IPV4_ADDRESS=0.0.0.0" "$VOL_PH/setupVars.conf"
 grep -E "WEBPASSWORD=.+" "$VOL_PH/setupVars.conf"
 
 # Given the settings are manually changed (not good settings, just for testing changes)
-EXEC 'pihole -a setdns 127.1.1.1,127.2.2.2,127.3.3.3,127.4.4.4'
-EXEC '. /opt/pihole/webpage.sh ; change_setting IPV4_ADDRESS 10.0.0.0'
-EXEC 'pihole -a -p login'
+EXEC $CONTAINER 'pihole -a setdns 127.1.1.1,127.2.2.2,127.3.3.3,127.4.4.4'
+EXEC $CONTAINER '. /opt/pihole/webpage.sh ; change_setting IPV4_ADDRESS 10.0.0.0'
+EXEC $CONTAINER 'pihole -a -p login'
 assert_new_settings() {
     grep "PIHOLE_DNS_1=127.1.1.1" "$VOL_PH/setupVars.conf"
     grep "PIHOLE_DNS_2=127.2.2.2" "$VOL_PH/setupVars.conf"
@@ -83,6 +84,20 @@ assert_new_settings
 
 # When Restarting
 docker restart $CONTAINER
+# Then settings are still manual changed values
+assert_new_settings
+
+# When removing/re-creating the container
+docker rm -f $CONTAINER
+CONTAINER="$(
+    docker run -d \
+    -v "$VOL_PH:/etc/pihole/" \
+    -v "$VOL_DM:/etc/dnsmasq.d/" \
+    -v "/dev/null:/etc/pihole/adlists.list" \
+    --entrypoint='' \
+    $IMAGE \
+    tail -f /dev/null
+)"  # container backgrounded for multipiple operations over time
 
 # Then settings are still manual changed values
 assert_new_settings
