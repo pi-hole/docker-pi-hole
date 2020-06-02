@@ -2,6 +2,7 @@
 import functools
 import os
 import pytest
+import subprocess
 import testinfra
 import types
 
@@ -13,6 +14,24 @@ dotdot = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir, os.p
 with open('{}/VERSION'.format(dotdot), 'r') as v:
     raw_version = v.read().strip()
     __version__ = raw_version.replace('release/', 'release-')
+
+@pytest.fixture()
+def run_and_stream_command_output():
+    def run_and_stream_command_output_inner(command, verbose=False):
+        print("Running", command)
+        build_env = os.environ.copy()
+        build_env['PIHOLE_VERSION'] = __version__
+        build_result = subprocess.Popen(command.split(), env=build_env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                        bufsize=1, universal_newlines=True)
+        if verbose:
+            while build_result.poll() is None:
+                for line in build_result.stdout:
+                    print(line, end='')
+        build_result.wait()
+        if build_result.returncode != 0:
+            print("     ::: Error running".format(command))
+            print(build_result.stderr)
+    return run_and_stream_command_output_inner
 
 @pytest.fixture()
 def args_volumes():
