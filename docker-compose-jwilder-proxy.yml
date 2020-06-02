@@ -15,9 +15,6 @@ services:
 
   pihole:
     image: pihole/pihole:latest
-    dns:
-      - 127.0.0.1
-      - 1.1.1.1
     ports:
       - '53:53/tcp'
       - '53:53/udp'
