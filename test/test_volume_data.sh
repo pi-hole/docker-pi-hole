@@ -33,8 +33,8 @@ trap "cleanup" INT TERM EXIT
 # VOLUME TESTS
 
 # Given...
-IMAGE="pihole:v5.0-amd64"               # The latest build test image (generic, non release/branch tag)
-VOLUMES="$(mktemp -d)"                  # A fresh volume directory
+IMAGE="${1:-pihole:v5.0-amd64}"              # Default is latest build test image (generic, non release/branch tag)
+VOLUMES="$(mktemp -d)"                       # A fresh volume directory
 VOL_PH="$VOLUMES/pihole"
 VOL_DM="$VOLUMES/dnsmasq.d"
 tty -s && TTY='-t' || TTY=''
