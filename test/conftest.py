@@ -9,6 +9,7 @@ import types
 local_host = testinfra.get_host('local://')
 check_output = local_host.check_output
 
+DEBIAN_VERSION = os.environ.get('DEBIAN_VERSION', 'stretch')
 __version__ = None
 dotdot = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir, os.pardir))
 with open('{}/VERSION'.format(dotdot), 'r') as v:
@@ -99,8 +100,12 @@ def version():
     return __version__
 
 @pytest.fixture()
-def tag(version, arch):
-    return '{}-{}'.format(version, arch)
+def debian_version():
+    return DEBIAN_VERSION
+
+@pytest.fixture()
+def tag(version, arch, debian_version):
+    return '{}-{}-{}'.format(version, arch, debian_version)
 
 @pytest.fixture
 def webserver(tag):
@@ -126,6 +131,10 @@ def persist_version():
     return __version__
 
 @pytest.fixture(scope='module')
+def persist_debian_version():
+    return DEBIAN_VERSION
+
+@pytest.fixture(scope='module')
 def persist_args_dns():
     return '--dns 127.0.0.1 --dns 1.1.1.1'
 
@@ -147,8 +156,8 @@ def persist_test_args():
     return ''
 
 @pytest.fixture(scope='module')
-def persist_tag(persist_version, persist_arch):
-    return '{}_{}'.format(persist_version, persist_arch)
+def persist_tag(persist_version, persist_arch, persist_debian_version):
+    return '{}_{}_{}'.format(persist_version, persist_arch, persist_debian_version)
 
 @pytest.fixture(scope='module')
 def persist_webserver(persist_tag):

@@ -4,7 +4,7 @@ Make sure you have bash, docker.  Python and some test hacks are crammed into th
 
 # Running tests locally
 
-`ARCH=amd64 ./circle-test.sh`
+`ARCH=amd64 ./gh-actions-test.sh`
 
 Should result in :
 

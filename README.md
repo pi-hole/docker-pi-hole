@@ -66,7 +66,7 @@ A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86
 2) Use the above quick start example, customize if desired.
 3) Enjoy!
 
-[![Build Status](https://api.travis-ci.org/pi-hole/docker-pi-hole.svg?branch=master)](https://travis-ci.org/pi-hole/docker-pi-hole) [![Docker Stars](https://img.shields.io/docker/stars/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole) [![Docker Pulls](https://img.shields.io/docker/pulls/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole)
+[![Build Status](https://github.com/pi-hole/docker-pi-hole/workflows/Test%20&%20Build/badge.svg)](https://github.com/pi-hole/docker-pi-hole/actions?query=workflow%3A%22Test+%26+Build%22) [![Docker Stars](https://img.shields.io/docker/stars/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole) [![Docker Pulls](https://img.shields.io/docker/pulls/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole)
 
 ## Running Pi-hole Docker
 
@@ -176,14 +176,15 @@ Users of older Ubuntu releases (circa 17.04) will need to disable dnsmasq.
 
 ## Docker tags and versioning
 
-The primary docker tags / versions are explained in the following table.  [Click here to see the full list of tags](https://store.docker.com/community/images/pihole/pihole/tags) ([arm tags are here](https://store.docker.com/community/images/pihole/pihole/tags)), I also try to tag with the specific version of Pi-hole Core for version archival purposes, the web version that comes with the core releases should be in the [GitHub Release notes](https://github.com/pi-hole/docker-pi-hole/releases).
+The primary docker tags / versions are explained in the following table.  [Click here to see the full list of tags](https://store.docker.com/community/images/pihole/pihole/tags), I also try to tag with the specific version of Pi-hole Core for version archival purposes, the web version that comes with the core releases should be in the [GitHub Release notes](https://github.com/pi-hole/docker-pi-hole/releases).
 
-| tag                 | architecture | description                                                             | Dockerfile |
-| ---                 | ------------ | -----------                                                             | ---------- |
-| `latest`            | auto detect  | x86, arm, or arm64 container, docker auto detects your architecture.    | [Dockerfile](https://github.com/pi-hole/docker-pi-hole/blob/master/Dockerfile) |
-| `v4.0.0-1`          | auto detect  | Versioned tags, if you want to pin against a specific version, use one of these |  |
-| `v4.0.0-1_<arch>`   | based on tag | Specific architectures tags | |
-| `dev`       | auto detect  | like latest tag, but for the development branch (pushed occasionally)   | |
+| tag                     | architecture | description                                                             | Dockerfile |
+| ---                     | ------------ | -----------                                                             | ---------- |
+| `latest`                | auto detect  | x86, arm, or arm64 container, docker auto detects your architecture.    | [Dockerfile](https://github.com/pi-hole/docker-pi-hole/blob/master/Dockerfile) |
+| `v5.0`                  | auto detect  | Versioned tags, if you want to pin against a specific Pi-hole version, use one of these |  |
+| `v5.0-stretch`          | auto detect  | Versioned tags, if you want to pin against a specific Pi-hole and Debian version, use one of these |  |
+| `v5.0-<arch>-stretch`   | based on tag | Specific architectures and Debian version tags | |
+| `dev`                   | auto detect  | like latest tag, but for the development branch (pushed occasionally)   | |
 
 ### `pihole/pihole:latest` [![](https://images.microbadger.com/badges/image/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com")
 
