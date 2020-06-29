@@ -8,6 +8,7 @@ __pycache__
 UNKNOWN.egg-info
 .env
 ci-workspace
+.gh-workspace
 
 # WIP/test stuff
 doco.yml

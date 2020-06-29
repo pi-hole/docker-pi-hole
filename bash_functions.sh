@@ -46,7 +46,7 @@ validate_env() {
     # Optional ServerIP is a valid IP
     # nc won't throw any text based errors when it times out connecting to a valid IP, otherwise it complains about the DNS name being garbage
     # if nc doesn't behave as we expect on a valid IP the routing table should be able to look it up and return a 0 retcode
-    if [[ "$(nc -4 -w1 -z "$ServerIP" 53 2>&1)" != "" ]] || ! ip route get "$ServerIP" > /dev/null ; then
+    if [[ "$(nc -4 -w1 -z "$ServerIP" 53 2>&1)" != "" ]] && ! ip route get "$ServerIP" > /dev/null ; then
         echo "ERROR: ServerIP Environment variable ($ServerIP) doesn't appear to be a valid IPv4 address"
         exit 1
     fi
@@ -58,7 +58,7 @@ validate_env() {
             unset ServerIPv6
             exit 1
         fi
-        if [[ "$(nc -6 -w1 -z "$ServerIPv6" 53 2>&1)" != "" ]] || ! ip route get "$ServerIPv6" > /dev/null ; then
+        if [[ "$(nc -6 -w1 -z "$ServerIPv6" 53 2>&1)" != "" ]] && ! ip route get "$ServerIPv6" > /dev/null ; then
             echo "ERROR: ServerIPv6 Environment variable ($ServerIPv6) doesn't appear to be a valid IPv6 address"
             echo "  TIP: If your server is not IPv6 enabled just remove '-e ServerIPv6' from your docker container"
             exit 1
