@@ -23,7 +23,7 @@ clear_service_container() {
 }
 
 Normal_docker_start() {
-    echo "Pihole-docker - Starting service\n"
+    echo -e "Pihole-docker - Starting service\n"
     clear_service_container
     docker run \
         --privileged \
