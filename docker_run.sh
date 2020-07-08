@@ -1,6 +1,5 @@
 #!/usr/bin/env zsh
 [ -z ${Pihole_Version+x} ] && Pihole_Version='latest'
-Pihole_Update_Profile_VERSION="v5.0"
 SRC_Docker_image_base="pihole/pihole"
 SRC_Docker_Image="${SRC_Docker_image_base}:${Pihole_Version}"
 update_detected="no"
