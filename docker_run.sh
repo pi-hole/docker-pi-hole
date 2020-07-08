@@ -43,7 +43,7 @@ Normal_docker_start() {
         --restart=unless-stopped \
         -d \
         --name pihole \
-        ${SRC_Docker_Image} &> /dev/null
+        ${SRC_Docker_Image}
     exit_state "Start service container"
 }
 
@@ -59,9 +59,9 @@ update_container() {
 }
 
 ubuntu_disable_resolver() {
-    sudo sed -r -i.orig 's/#?DNSStubListener=yes/DNSStubListener=no/g' /etc/systemd/resolved.conf
-    sudo sh -c 'rm /etc/resolv.conf && ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf'
-    sudo systemctl restart systemd-resolved
+    sed -r -i.orig 's/#?DNSStubListener=yes/DNSStubListener=no/g' /etc/systemd/resolved.conf
+    sh -c 'rm /etc/resolv.conf && ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf'
+    systemctl restart systemd-resolved
 }
 if [[ -z "$(which docker)" ]] ;then
     echo "Pihole-docker - We can't seem to find docker on the system :\\"
