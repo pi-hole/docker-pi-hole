@@ -88,7 +88,7 @@ else
     [[ "${update_detected}" == "yes" ]] && Normal_docker_start
 fi
 docker ps -f name=pihole ; exit_state "Finding the service profile in docker ps"
-echo "Waiting to service to become healthey"
+echo "Waiting for service to become healthey"
 for i in $(seq 1 20); do
     if [ "$(docker inspect -f "{{.State.Health.Status}}" pihole)" == "healthy" ] ; then
         printf ' OK'
