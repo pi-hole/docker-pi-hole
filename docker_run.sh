@@ -6,7 +6,7 @@ SRC_Docker_Image="${SRC_Docker_image_base}:${Pihole_Version}"
 update_detected="no"
 TZ="America/Chicago"
 
-echo -e "Pihole-docker - Welcome to the startup/setup script."
+echo -e "\\nPihole-docker - Welcome to the startup/setup script."
 
 exit_state() {
     if [[ $? != 0 ]]; then
