@@ -12,7 +12,7 @@ Below are the instructions for getting started quickly with several methods.
 ### Single container service
 Run the below command to have the service start with default settings.
 
-`[ -z ${Pihole_branch+x} ] && Pihole_branch='master' ; curl -s https://raw.githubusercontent.com/aviadra/docker-pi-hole/${Pihole_branch}/docker_run.sh | sudo bash`
+`[ -z ${Pihole_branch+x} ] && Pihole_branch='master' ; curl -s https://raw.githubusercontent.com/pi-hole/docker-pi-hole/${Pihole_branch}/docker_run.sh | sudo bash`
 
 ### Docker compose
 
