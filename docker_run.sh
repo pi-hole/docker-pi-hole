@@ -58,10 +58,12 @@ update_container() {
 }
 
 ubuntu_disable_resolver() {
+    echo "Pihole-docker - Removing system resolver"
     sed -r -i.orig 's/#?DNSStubListener=yes/DNSStubListener=no/g' /etc/systemd/resolved.conf
     sh -c 'rm /etc/resolv.conf && ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf'
     systemctl restart systemd-resolved
 }
+echo "Cheking if there is docker on system"
 if [[ -z "$(which docker)" ]] ;then
     echo "Pihole-docker - We can't seem to find docker on the system :\\"
     echo "Pihole-docker - Make it so the \"which\" command can find it and run gain."
@@ -72,7 +74,7 @@ fi
 l53="$(ss -nlpt | grep 53)"
 if [[ $l53 == *"53"* && \
       $l53 != *"docker"* ]] ;then
-    echo "found open 53"
+    echo "Pihole-docker - Found open 53"
     if [[ "$(lsb_release -i | awk '{print $3}')" == "Ubuntu" ]]; then
         echo "This is an Ubuntu system"
         ubuntu_disable_resolver
