@@ -76,7 +76,7 @@ if [[ $l53 == *"53"* && \
       $l53 != *"docker"* ]] ;then
     echo "Pihole-docker - Found open 53"
     if [[ "$(lsb_release -i | awk '{print $3}')" == "Ubuntu" ]]; then
-        echo "This is an Ubuntu system"
+        echo "Pihole-docker - This is an Ubuntu system"
         ubuntu_disable_resolver
     fi
 fi
