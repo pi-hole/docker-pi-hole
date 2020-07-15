@@ -2,10 +2,10 @@ FROM docker:latest
 
 # Based on https://github.com/Ilhicas/alpine-pipenv
 ARG packages
-RUN apk --update add python3 python3-dev py3-pip curl gcc make \
+RUN apk --update add python3 python3-dev curl gcc make \
         musl-dev libffi-dev openssl-dev ${packages} \
     && rm -rf /var/cache/apk/* \
-    && python3 -m pip install -U pip pipenv
+    && pip3 install -U pip pipenv
 
 
 # -v "$(pwd):/$(pwd)" -w "$(pwd)" to prevent nested docker path confusion
