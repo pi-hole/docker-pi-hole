@@ -15,6 +15,7 @@ fi
 
 apt-get update
 apt-get install --no-install-recommends -y curl procps ca-certificates
+ln -s `which echo` /usr/local/bin/whiptail
 curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
 mv /init /s6-init
 
