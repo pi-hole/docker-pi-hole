@@ -5,7 +5,7 @@ ARG packages
 RUN apk --update add python3 python3-dev curl gcc make \
         musl-dev libffi-dev openssl-dev ${packages} \
     && rm -rf /var/cache/apk/* \
-    && pip3 install -U pip pipenv
+    && python3 -m pip install -U pip pipenv
 
 
 # -v "$(pwd):/$(pwd)" -w "$(pwd)" to prevent nested docker path confusion
