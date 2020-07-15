@@ -2,7 +2,7 @@ FROM docker:latest
 
 # Based on https://github.com/Ilhicas/alpine-pipenv
 ARG packages
-RUN apk --update add python3 python3-dev curl gcc make \
+RUN apk --update add python3 python3-dev py3-pip curl gcc make \
         musl-dev libffi-dev openssl-dev ${packages} \
     && rm -rf /var/cache/apk/* \
     && python3 -m pip install -U pip pipenv
