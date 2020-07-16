@@ -3,9 +3,10 @@ FROM python:buster
 # Only works for docker CLIENT (bind mounted socket)
 COPY --from=docker:18.09.3 /usr/local/bin/docker /usr/local/bin/
 
+ARG packages
 RUN apt-get update && \
     apt-get install -y python3-dev curl gcc make \
-        libffi-dev libssl-dev \
+        libffi-dev libssl-dev ${packages} \
     && pip3 install -U pip pipenv
 
 RUN curl -L https://github.com/docker/compose/releases/download/1.25.5/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && \
