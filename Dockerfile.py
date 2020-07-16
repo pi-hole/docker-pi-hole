@@ -50,8 +50,9 @@ def run_and_stream_command_output(command, environment_vars, verbose):
                 print(line, end='')
     build_result.wait()
     if build_result.returncode != 0:
-        print("     ::: Error running".format(command))
+        print("     ::: Error running {}".format(command))
         print(build_result.stderr)
+        sys.exit(build_resuilt.returncode)
 
 
 def build(docker_repo: str, arch: str, debian_version: str, hub_tag: str, show_time: bool, no_cache: bool, verbose: bool):

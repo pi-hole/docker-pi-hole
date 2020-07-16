@@ -12,6 +12,7 @@ if [[ "$1" == "enter" ]]; then
 fi
 
 # generate and build dockerfile
+docker pull python:buster
 docker build -t image_pipenv -f Dockerfile_build .
 env > /tmp/env
 docker run --rm \
