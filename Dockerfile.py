@@ -114,7 +114,7 @@ def run_and_stream_command_output(command, args):
     if build_result.returncode != 0:
         print("     ::: Error running {}".format(command))
         print(build_result.stderr)
-        sys.exit(build_resuilt.returncode)
+        sys.exit(build_result.returncode)
 
 
 def build(docker_repo, arch, args):
