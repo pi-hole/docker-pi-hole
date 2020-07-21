@@ -1,0 +1,49 @@
+# Docker Compose build file: docker-compose -f build.yml build
+version: "3.7"
+
+x-common-args: &common-args
+  PIHOLE_VERSION: ${PIHOLE_VERSION}
+  NAME: pihole/pihole
+  MAINTAINER: adam@diginc.us
+  S6_VERSION: v1.22.1.0
+  PHP_ENV_CONFIG: /etc/lighttpd/conf-enabled/15-fastcgi-php.conf
+  PHP_ERROR_LOG: /var/log/lighttpd/error.log
+
+
+services:
+  amd64:
+    image: pihole:${PIHOLE_VERSION}-amd64-${DEBIAN_VERSION:-stretch}
+    build:
+      context: .
+      args:
+        <<: *common-args
+        PIHOLE_BASE: pihole/debian-base:${DEBIAN_VERSION:-stretch}
+        PIHOLE_ARCH: amd64
+        S6_ARCH: amd64
+  armel:
+    image: pihole:${PIHOLE_VERSION}-armel-${DEBIAN_VERSION:-stretch}
+    build:
+      context: .
+      args:
+        <<: *common-args
+        PIHOLE_BASE: multiarch/debian-debootstrap:armel-${DEBIAN_VERSION:-stretch}-slim
+        PIHOLE_ARCH: armel
+        S6_ARCH: arm
+  armhf:
+    image: pihole:${PIHOLE_VERSION}-armhf-${DEBIAN_VERSION:-stretch}
+    build:
+      context: .
+      args:
+        <<: *common-args
+        PIHOLE_BASE: multiarch/debian-debootstrap:armhf-${DEBIAN_VERSION:-stretch}-slim
+        PIHOLE_ARCH: arm
+        S6_ARCH: arm
+  arm64:
+    image: pihole:${PIHOLE_VERSION}-arm64-${DEBIAN_VERSION:-stretch}
+    build:
+      context: .
+      args:
+        <<: *common-args
+        PIHOLE_BASE: multiarch/debian-debootstrap:arm64-${DEBIAN_VERSION:-stretch}-slim
+        PIHOLE_ARCH: arm64
+        S6_ARCH: aarch64
