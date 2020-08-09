@@ -2,12 +2,14 @@
 import functools
 import os
 import pytest
+import subprocess
 import testinfra
 import types
 
 local_host = testinfra.get_host('local://')
 check_output = local_host.check_output
 
+DEBIAN_VERSION = os.environ.get('DEBIAN_VERSION', 'stretch')
 __version__ = None
 dotdot = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir, os.pardir))
 with open('{}/VERSION'.format(dotdot), 'r') as v:
@@ -15,8 +17,22 @@ with open('{}/VERSION'.format(dotdot), 'r') as v:
     __version__ = raw_version.replace('release/', 'release-')
 
 @pytest.fixture()
-def args_dns():
-    return '--dns 127.0.0.1 --dns 1.1.1.1'
+def run_and_stream_command_output():
+    def run_and_stream_command_output_inner(command, verbose=False):
+        print("Running", command)
+        build_env = os.environ.copy()
+        build_env['PIHOLE_VERSION'] = __version__
+        build_result = subprocess.Popen(command.split(), env=build_env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                        bufsize=1, universal_newlines=True)
+        if verbose:
+            while build_result.poll() is None:
+                for line in build_result.stdout:
+                    print(line, end='')
+        build_result.wait()
+        if build_result.returncode != 0:
+            print("     ::: Error running".format(command))
+            print(build_result.stderr)
+    return run_and_stream_command_output_inner
 
 @pytest.fixture()
 def args_volumes():
@@ -27,8 +43,8 @@ def args_env():
     return '-e ServerIP="127.0.0.1"'
 
 @pytest.fixture()
-def args(args_dns, args_volumes, args_env):
-    return "{} {} {}".format(args_dns, args_volumes, args_env)
+def args(args_volumes, args_env):
+    return "{} {}".format(args_volumes, args_env)
 
 @pytest.fixture()
 def test_args():
@@ -84,8 +100,12 @@ def version():
     return __version__
 
 @pytest.fixture()
-def tag(version, arch):
-    return '{}_{}'.format(version, arch)
+def debian_version():
+    return DEBIAN_VERSION
+
+@pytest.fixture()
+def tag(version, arch, debian_version):
+    return '{}-{}-{}'.format(version, arch, debian_version)
 
 @pytest.fixture
 def webserver(tag):
@@ -111,6 +131,10 @@ def persist_version():
     return __version__
 
 @pytest.fixture(scope='module')
+def persist_debian_version():
+    return DEBIAN_VERSION
+
+@pytest.fixture(scope='module')
 def persist_args_dns():
     return '--dns 127.0.0.1 --dns 1.1.1.1'
 
@@ -123,8 +147,8 @@ def persist_args_env():
     return '-e ServerIP="127.0.0.1"'
 
 @pytest.fixture(scope='module')
-def persist_args(persist_args_dns, persist_args_volumes, persist_args_env):
-    return "{} {} {}".format(args_dns, args_volumes, args_env)
+def persist_args(persist_args_volumes, persist_args_env):
+    return "{} {}".format(persist_args_volumes, persist_args_env)
 
 @pytest.fixture(scope='module')
 def persist_test_args():
@@ -132,8 +156,8 @@ def persist_test_args():
     return ''
 
 @pytest.fixture(scope='module')
-def persist_tag(persist_version, persist_arch):
-    return '{}_{}'.format(persist_version, persist_arch)
+def persist_tag(persist_version, persist_arch, persist_debian_version):
+    return '{}_{}_{}'.format(persist_version, persist_arch, persist_debian_version)
 
 @pytest.fixture(scope='module')
 def persist_webserver(persist_tag):
