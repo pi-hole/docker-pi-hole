@@ -4,7 +4,7 @@ mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
 # Production tags with valid web footers
 export CORE_VERSION="$(cat /etc/docker-pi-hole-version)"
-export WEB_VERSION="v5.1"
+export WEB_VERSION="v5.1.1"
 
 # Only use for pre-production / testing
 export CHECKOUT_BRANCHES=false
