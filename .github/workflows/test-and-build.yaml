@@ -8,6 +8,7 @@ on:
       - beta-v*
       - release/*
     tags:
+      - v*
   pull_request:
 
 #env:
