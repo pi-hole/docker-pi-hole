@@ -14,7 +14,7 @@ $bashCmd /start.sh
 if [ -n "$PYTEST" ]; then 
     sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)" 
 fi
-if [ ! -n "$SKIPGRAVITYONBOOT" ]; then
+if [ -z "$SKIPGRAVITYONBOOT" ]; then
     gravity.sh
 fi
 
