@@ -16,6 +16,8 @@ if [ -n "$PYTEST" ]; then
 fi
 if [ -z "$SKIPGRAVITYONBOOT" ]; then
     gravity.sh
+else
+    echo "  Skipping Gravity Database Update."
 fi
 
 # Kill dnsmasq because s6 won't like it if it's running when s6 services start
