@@ -9,6 +9,10 @@ UNKNOWN.egg-info
 .env
 ci-workspace
 .gh-workspace
+docker-compose.yml
+etc-dnsmasq.d/
+etc-pihole/
+var-log/
 
 # WIP/test stuff
 doco.yml
