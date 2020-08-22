@@ -119,7 +119,7 @@ There are other environment variables if you want to customize various things in
 | `DNSMASQ_USER: <pihole\|root>`<br/> *Experimental Default: root* | Allows running FTLDNS as non-root.
 | `TEMPERATUREUNIT`: <c\|k\|f><br/>*Optional Default: c* | Set preferred temperature unit to `c`: Celsius, `k`: Kelvin, or `f` Fahrenheit units.
 | `WEBUIBOXEDLAYOUT: <boxed\|traditional>`<br/>*Optional Default: boxed* | Use boxed layout (helpful when working on large screens)
-| `SKIPGRAVITYONBOOT`: <Not Set\|1><br/> *Optional Default: Not Set | Use this option to skip updating the Gravity Database when booting up the container.  By default this environment variable is not set so the Gravity Database will be update by default.  Set this environmental variable to 1 (or anything) and updating the Gravity Database will be skipped at the container startup.
+| `SKIPGRAVITYONBOOT`: <Not Set\|1><br/> *Optional Default: Not Set* | Use this option to skip updating the Gravity Database when booting up the container.  By default this environment variable is not set so the Gravity Database will be update by default.  Set this environmental variable to 1 (or anything) and updating the Gravity Database will be skipped at the container startup.
 
 To use these env vars in docker run format style them like: `-e DNS1=1.1.1.1`
 
