@@ -14,7 +14,11 @@ $bashCmd /start.sh
 if [ -n "$PYTEST" ]; then 
     sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)" 
 fi
-gravity.sh
+if [ -z "$SKIPGRAVITYONBOOT" ]; then
+    gravity.sh
+else
+    echo "  Skipping Gravity Database Update."
+fi
 
 # Kill dnsmasq because s6 won't like it if it's running when s6 services start
 kill -9 $(pgrep pihole-FTL) || true
