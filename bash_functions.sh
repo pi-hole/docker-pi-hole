@@ -33,6 +33,9 @@ prepare_configs() {
     chown pihole:pihole /var/run/pihole /var/log/pihole
     test -f /var/run/pihole/FTL.sock && rm /var/run/pihole/FTL.sock
     chown pihole:pihole /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /etc/pihole /etc/pihole/dhcp.leases /var/log/pihole.log
+    if [[ -e /etc/pihole/dhcp.leases ]]; then 
+      chown pihole:pihole /etc/pihole/dhcp.leases 
+    fi 
     chmod 0644 /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
     set -e
     # Update version numbers
