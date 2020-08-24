@@ -7,6 +7,7 @@
 
 ## Quick Start
 
+1. Copy docker-compose-example.yml to docker-compose.yml and update as needed. See example below:
 [Docker-compose](https://docs.docker.com/compose/install/) example:
 
 ```yaml
@@ -36,6 +37,7 @@ services:
       - NET_ADMIN
     restart: unless-stopped
 ```
+2. Run `docker-compose up --detach` to build and start pi-hole
 
 [Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
 
