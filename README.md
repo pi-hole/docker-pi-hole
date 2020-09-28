@@ -185,8 +185,8 @@ The primary docker tags / versions are explained in the following table.  [Click
 | ---                     | ------------ | -----------                                                             | ---------- |
 | `latest`                | auto detect  | x86, arm, or arm64 container, docker auto detects your architecture.    | [Dockerfile](https://github.com/pi-hole/docker-pi-hole/blob/master/Dockerfile) |
 | `v5.0`                  | auto detect  | Versioned tags, if you want to pin against a specific Pi-hole version, use one of these |  |
-| `v5.0-stretch`          | auto detect  | Versioned tags, if you want to pin against a specific Pi-hole and Debian version, use one of these |  |
-| `v5.0-<arch>-stretch`   | based on tag | Specific architectures and Debian version tags | |
+| `v5.0-buster`           | auto detect  | Versioned tags, if you want to pin against a specific Pi-hole and Debian version, use one of these |  |
+| `v5.0-<arch>-buster `   | based on tag | Specific architectures and Debian version tags | |
 | `dev`                   | auto detect  | like latest tag, but for the development branch (pushed occasionally)   | |
 
 ### `pihole/pihole:latest` [![](https://images.microbadger.com/badges/image/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com")
