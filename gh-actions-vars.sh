@@ -2,14 +2,14 @@
 set -a
 
 # @environment ${ARCH}                    The architecture to build. Defaults to 'amd64'.
-# @environment ${DEBIAN_VERSION}          Debian version to build. Defaults to 'stretch'.
+# @environment ${DEBIAN_VERSION}          Debian version to build. Defaults to 'buster'.
 # @environment ${DOCKER_HUB_REPO}         The docker hub repo to tag images for. Defaults to 'pihole'.
 # @environment ${DOCKER_HUB_IMAGE_NAME}   The name of the resulting image. Defaults to 'pihole'.
 
 GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD | sed "s/\//-/g")
 GIT_TAG=$(git describe --tags --exact-match 2> /dev/null || true)
 
-DEFAULT_DEBIAN_VERSION="stretch"
+DEFAULT_DEBIAN_VERSION="buster"
 
 if [[ -z "${ARCH}" ]]; then
     ARCH="amd64"
