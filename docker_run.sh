@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 [ -z ${Pihole_Version+x} ] && Pihole_Version='latest'
 SRC_Docker_image_base="pihole/pihole"
 SRC_Docker_Image="${SRC_Docker_image_base}:${Pihole_Version}"
