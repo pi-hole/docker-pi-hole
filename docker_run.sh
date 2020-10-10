@@ -16,7 +16,7 @@ docker run -d \
     -v "${PIHOLE_BASE}/etc-dnsmasq.d/:/etc/dnsmasq.d/" \
     --dns=127.0.0.1 --dns=1.1.1.1 \
     --restart=unless-stopped \
-    --hostname pi.hole \
+    --hostname pihole \
     -e VIRTUAL_HOST="pi.hole" \
     -e PROXY_LOCATION="pi.hole" \
     -e ServerIP="127.0.0.1" \
@@ -34,7 +34,7 @@ for i in $(seq 1 20); do
     fi
 
     if [ $i -eq 20 ] ; then
-        echo -e "\nTimed out waiting for Pi-hole start, consult check your container logs for more info (\`docker logs pihole\`)"
+        echo -e "\nTimed out waiting for Pi-hole start, check your container logs for more info (\`docker logs pihole\`)"
         exit 1
     fi
 done;
