@@ -48,6 +48,39 @@ def test_bad_input_to_WEB_PORT(Docker, test_args, expected_error):
     assert expected_error in function.stdout
 
 
+@pytest.mark.parametrize('test_args,cache_size', [('-e CUSTOM_CACHE_SIZE="0"', '0'), ('-e CUSTOM_CACHE_SIZE="20000"', '20000')])
+def test_overrides_default_CUSTOM_CACHE_SIZE(Docker, Slow, test_args, cache_size):
+    ''' Changes the cache_size setting to increase or decrease the cache size for dnsmasq'''
+    CONFIG_LINE = r'cache-size\s*=\s*{}'.format(cache_size)
+    DNSMASQ_CONFIG = '/etc/dnsmasq.d/01-pihole.conf'
+
+    function = Docker.run('echo ${CUSTOM_CACHE_SIZE};. ./bash_functions.sh; echo ${CUSTOM_CACHE_SIZE}; eval `grep setup_dnsmasq /start.sh`')
+    assert "Custom CUSTOM_CACHE_SIZE set to {}".format(cache_size) in function.stdout
+    Slow(lambda: re.search(CONFIG_LINE, Docker.run('cat {}'.format(DNSMASQ_CONFIG)).stdout) != None)
+
+
+@pytest.mark.parametrize('test_args', [
+    '-e CUSTOM_CACHE_SIZE="-1"',
+    '-e CUSTOM_CACHE_SIZE="1,000"',
+])
+def test_bad_input_to_CUSTOM_CACHE_SIZE(Docker, Slow, test_args):
+    CONFIG_LINE = r'cache-size\s*=\s*10000'
+    DNSMASQ_CONFIG = '/etc/dnsmasq.d/01-pihole.conf'
+
+    Docker.run('. ./bash_functions.sh; eval `grep setup_dnsmasq /start.sh`')
+    Slow(lambda: re.search(CONFIG_LINE, Docker.run('cat {}'.format(DNSMASQ_CONFIG)).stdout) != None)
+
+@pytest.mark.parametrize('test_args', [
+    '-e DNSSEC="true" -e CUSTOM_CACHE_SIZE="0"',
+])
+def test_dnssec_enabled_with_CUSTOM_CACHE_SIZE(Docker, Slow, test_args):
+    CONFIG_LINE = r'cache-size\s*=\s*10000'
+    DNSMASQ_CONFIG = '/etc/dnsmasq.d/01-pihole.conf'
+
+    Docker.run('. ./bash_functions.sh; eval `grep setup_dnsmasq /start.sh`')
+    Slow(lambda: re.search(CONFIG_LINE, Docker.run('cat {}'.format(DNSMASQ_CONFIG)).stdout) != None)
+
+
 # DNS Environment Variable behavior in combinations of modified pihole LTE settings
 @pytest.mark.skip('broke, needs investigation in v5.0 beta')
 @pytest.mark.parametrize('args_env, expected_stdout, dns1, dns2', [
