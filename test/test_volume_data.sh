@@ -33,7 +33,7 @@ trap "cleanup" INT TERM EXIT
 # VOLUME TESTS
 
 # Given...
-DEBIAN_VERSION="$(DEBIAN_VERSION:-stretch)"
+DEBIAN_VERSION="$(DEBIAN_VERSION:-buster)"
 IMAGE="${1:-pihole:v5.0-amd64}-${DEBIAN_VERSION}"   # Default is latest build test image (generic, non release/branch tag)
 VOLUMES="$(mktemp -d)"                              # A fresh volume directory
 VOL_PH="$VOLUMES/pihole"

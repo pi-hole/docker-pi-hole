@@ -5,7 +5,7 @@ set -ex
 #
 # @environment ${ARCH}              The architecture to build. Example: amd64.
 # @environment ${DEBIAN_VERSION}    Debian version to build. ('buster' or 'stretch').
-# @environment ${ARCH_IMAGE}        What the Docker Hub Image should be tagged as. Example: pihole/pihole:master-amd64-stretch
+# @environment ${ARCH_IMAGE}        What the Docker Hub Image should be tagged as. Example: pihole/pihole:master-amd64-buster
 
 # setup qemu/variables
 docker run --rm --privileged multiarch/qemu-user-static:register --reset > /dev/null

@@ -1,4 +1,4 @@
-FROM python:buster
+FROM python:3.8-buster
 
 # Only works for docker CLIENT (bind mounted socket)
 COPY --from=docker:18.09.3 /usr/local/bin/docker /usr/local/bin/
