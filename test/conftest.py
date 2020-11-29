@@ -9,7 +9,7 @@ import types
 local_host = testinfra.get_host('local://')
 check_output = local_host.check_output
 
-DEBIAN_VERSION = os.environ.get('DEBIAN_VERSION', 'stretch')
+DEBIAN_VERSION = os.environ.get('DEBIAN_VERSION', 'buster')
 __version__ = None
 dotdot = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir, os.pardir))
 with open('{}/VERSION'.format(dotdot), 'r') as v:
