@@ -5,6 +5,7 @@ mkdir -p /var/run/pihole
 # Production tags with valid web footers
 export CORE_VERSION="$(cat /etc/docker-pi-hole-version)"
 export WEB_VERSION="${CORE_VERSION}"
+export PIHOLE_SKIP_OS_CHECK=true
 # Overwrite WEB_VERSION if core and web versions are different
 #export WEB_VERSION="v5.1.1"
 
