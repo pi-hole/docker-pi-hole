@@ -17,13 +17,19 @@ export INTERFACE
 export DNSMASQ_LISTENING_BEHAVIOUR="$DNSMASQ_LISTENING"
 export IPv6
 export WEB_PORT
+export REV_SERVER
+export REV_SERVER_CIDR
+export REV_SERVER_TARGET
+export REV_SERVER_DOMAIN
+export TEMPERATUREUNIT
+export ADMIN_EMAIL
+export WEBUIBOXEDLAYOUT
+#Legacy Variables:
 export CONDITIONAL_FORWARDING
 export CONDITIONAL_FORWARDING_IP
 export CONDITIONAL_FORWARDING_DOMAIN
 export CONDITIONAL_FORWARDING_REVERSE
-export TEMPERATUREUNIT
-export ADMIN_EMAIL
-export WEBUIBOXEDLAYOUT
+#End Legacy Variables
 
 export adlistFile='/etc/pihole/adlists.list'
 
@@ -61,10 +67,31 @@ change_setting "IPV6_ADDRESS" "$ServerIPv6"
 change_setting "DNS_BOGUS_PRIV" "$DNS_BOGUS_PRIV"
 change_setting "DNS_FQDN_REQUIRED" "$DNS_FQDN_REQUIRED"
 change_setting "DNSSEC" "$DNSSEC"
-change_setting "CONDITIONAL_FORWARDING" "$CONDITIONAL_FORWARDING"
-change_setting "CONDITIONAL_FORWARDING_IP" "$CONDITIONAL_FORWARDING_IP"
-change_setting "CONDITIONAL_FORWARDING_DOMAIN" "$CONDITIONAL_FORWARDING_DOMAIN"
-change_setting "CONDITIONAL_FORWARDING_REVERSE" "$CONDITIONAL_FORWARDING_REVERSE"
+change_setting "REV_SERVER" "$REV_SERVER"
+change_setting "REV_SERVER_CIDR" "$REV_SERVER_CIDR"
+change_setting "REV_SERVER_TARGET" "$REV_SERVER_TARGET"
+change_setting "REV_SERVER_DOMAIN" "$REV_SERVER_DOMAIN"
+#Legacy Settings:
+if [ -z "${REV_SERVER}" ]; then
+    change_setting "CONDITIONAL_FORWARDING" "$CONDITIONAL_FORWARDING"
+    change_setting "CONDITIONAL_FORWARDING_IP" "$CONDITIONAL_FORWARDING_IP"
+    change_setting "CONDITIONAL_FORWARDING_DOMAIN" "$CONDITIONAL_FORWARDING_DOMAIN"
+    # A change was made to the usage of CONDITIONAL_FORWARDING_REVERSE in the core repo, in which this variable was repurposed to house a CIDR notation.
+    # Do a conversion to ensure compatibility.
+    search="in-addr.arpa"
+    if [[ "$CONDITIONAL_FORWARDING_REVERSE" == *"$search" ]];then
+        arrRev=(${CONDITIONAL_FORWARDING_REVERSE//./ })        
+        case ${#arrRev[@]} in 
+            6   )   CONDITIONAL_FORWARDING_REVERSE="${arrRev[3]}.${arrRev[2]}.${arrRev[1]}.${arrRev[0]}/32";;
+            5   )   CONDITIONAL_FORWARDING_REVERSE="${arrRev[2]}.${arrRev[1]}.${arrRev[0]}.0/24";;
+            4   )   CONDITIONAL_FORWARDING_REVERSE="${arrRev[1]}.${arrRev[0]}.0.0/16";;
+            3   )   CONDITIONAL_FORWARDING_REVERSE="${arrRev[0]}.0.0.0/8";;   
+        esac
+    fi
+    change_setting "CONDITIONAL_FORWARDING_REVERSE" "$CONDITIONAL_FORWARDING_REVERSE"
+fi
+#End Legacy Settings
+
 setup_web_port "$WEB_PORT"
 setup_web_password "$WEBPASSWORD"
 setup_temp_unit "$TEMPERATUREUNIT"
