@@ -65,10 +65,10 @@ change_setting "IPV6_ADDRESS" "$ServerIPv6"
 change_setting "DNS_BOGUS_PRIV" "$DNS_BOGUS_PRIV"
 change_setting "DNS_FQDN_REQUIRED" "$DNS_FQDN_REQUIRED"
 change_setting "DNSSEC" "$DNSSEC"
-change_setting "REV_SERVER"="$REV_SERVER"
-change_setting "REV_SERVER_DOMAIN"="$REV_SERVER_DOMAIN"
-change_setting "REV_SERVER_TARGET"="$REV_SERVER_TARGET"
-change_setting "REV_SERVER_CIDR"="$REV_SERVER_CIDR"
+change_setting "REV_SERVER" "$REV_SERVER"
+change_setting "REV_SERVER_DOMAIN" "$REV_SERVER_DOMAIN"
+change_setting "REV_SERVER_TARGET" "$REV_SERVER_TARGET"
+change_setting "REV_SERVER_CIDR" "$REV_SERVER_CIDR"
 if [ -z "$REV_SERVER" ];then
     # If the REV_SERVER* variables are set, then there is no need to add these.
     # If it is not set, then adding these variables is fine, and they will be converted by the Pi-hole install script
