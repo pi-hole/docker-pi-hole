@@ -17,6 +17,10 @@ export INTERFACE
 export DNSMASQ_LISTENING_BEHAVIOUR="$DNSMASQ_LISTENING"
 export IPv6
 export WEB_PORT
+export REV_SERVER
+export REV_SERVER_DOMAIN
+export REV_SERVER_TARGET
+export REV_SERVER_CIDR
 export CONDITIONAL_FORWARDING
 export CONDITIONAL_FORWARDING_IP
 export CONDITIONAL_FORWARDING_DOMAIN
@@ -61,10 +65,18 @@ change_setting "IPV6_ADDRESS" "$ServerIPv6"
 change_setting "DNS_BOGUS_PRIV" "$DNS_BOGUS_PRIV"
 change_setting "DNS_FQDN_REQUIRED" "$DNS_FQDN_REQUIRED"
 change_setting "DNSSEC" "$DNSSEC"
-change_setting "CONDITIONAL_FORWARDING" "$CONDITIONAL_FORWARDING"
-change_setting "CONDITIONAL_FORWARDING_IP" "$CONDITIONAL_FORWARDING_IP"
-change_setting "CONDITIONAL_FORWARDING_DOMAIN" "$CONDITIONAL_FORWARDING_DOMAIN"
-change_setting "CONDITIONAL_FORWARDING_REVERSE" "$CONDITIONAL_FORWARDING_REVERSE"
+change_setting "REV_SERVER" "$REV_SERVER"
+change_setting "REV_SERVER_DOMAIN" "$REV_SERVER_DOMAIN"
+change_setting "REV_SERVER_TARGET" "$REV_SERVER_TARGET"
+change_setting "REV_SERVER_CIDR" "$REV_SERVER_CIDR"
+if [ -z "$REV_SERVER" ];then
+    # If the REV_SERVER* variables are set, then there is no need to add these.
+    # If it is not set, then adding these variables is fine, and they will be converted by the Pi-hole install script
+    change_setting "CONDITIONAL_FORWARDING" "$CONDITIONAL_FORWARDING"
+    change_setting "CONDITIONAL_FORWARDING_IP" "$CONDITIONAL_FORWARDING_IP"
+    change_setting "CONDITIONAL_FORWARDING_DOMAIN" "$CONDITIONAL_FORWARDING_DOMAIN"
+    change_setting "CONDITIONAL_FORWARDING_REVERSE" "$CONDITIONAL_FORWARDING_REVERSE"
+fi
 setup_web_port "$WEB_PORT"
 setup_web_password "$WEBPASSWORD"
 setup_temp_unit "$TEMPERATUREUNIT"
