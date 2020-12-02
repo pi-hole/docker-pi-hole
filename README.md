@@ -7,7 +7,7 @@
 
 ## Quick Start
 
-1. Copy docker-compose-example.yml to docker-compose.yml and update as needed. See example below:
+1. Copy docker-compose.yml.example to docker-compose.yml and update as needed. See example below:
 [Docker-compose](https://docs.docker.com/compose/install/) example:
 
 ```yaml
