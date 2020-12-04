@@ -55,29 +55,32 @@ load_web_password_secret
 generate_password
 validate_env || exit 1
 prepare_configs
-change_setting "PIHOLE_INTERFACE" "$PIHOLE_INTERFACE"
-change_setting "IPV4_ADDRESS" "$IPV4_ADDRESS"
-change_setting "QUERY_LOGGING" "$QUERY_LOGGING"
-change_setting "INSTALL_WEB_SERVER" "$INSTALL_WEB_SERVER"
-change_setting "INSTALL_WEB_INTERFACE" "$INSTALL_WEB_INTERFACE"
-change_setting "LIGHTTPD_ENABLED" "$LIGHTTPD_ENABLED"
-change_setting "IPV4_ADDRESS" "$ServerIP"
-change_setting "IPV6_ADDRESS" "$ServerIPv6"
-change_setting "DNS_BOGUS_PRIV" "$DNS_BOGUS_PRIV"
-change_setting "DNS_FQDN_REQUIRED" "$DNS_FQDN_REQUIRED"
-change_setting "DNSSEC" "$DNSSEC"
-change_setting "REV_SERVER" "$REV_SERVER"
-change_setting "REV_SERVER_DOMAIN" "$REV_SERVER_DOMAIN"
-change_setting "REV_SERVER_TARGET" "$REV_SERVER_TARGET"
-change_setting "REV_SERVER_CIDR" "$REV_SERVER_CIDR"
+
+[ -n "${PIHOLE_INTERFACE}" ] && change_setting "PIHOLE_INTERFACE" "$PIHOLE_INTERFACE"
+[ -n "${IPV4_ADDRESS}" ] && change_setting "IPV4_ADDRESS" "$IPV4_ADDRESS"
+[ -n "${QUERY_LOGGING}" ] && change_setting "QUERY_LOGGING" "$QUERY_LOGGING"
+[ -n "${INSTALL_WEB_SERVER}" ] && change_setting "INSTALL_WEB_SERVER" "$INSTALL_WEB_SERVER"
+[ -n "${INSTALL_WEB_INTERFACE}" ] && change_setting "INSTALL_WEB_INTERFACE" "$INSTALL_WEB_INTERFACE"
+[ -n "${LIGHTTPD_ENABLED}" ] && change_setting "LIGHTTPD_ENABLED" "$LIGHTTPD_ENABLED"
+[ -n "${ServerIP}" ] && change_setting "IPV4_ADDRESS" "$ServerIP"
+[ -n "${ServerIPv6}" ] && change_setting "IPV6_ADDRESS" "$ServerIPv6"
+[ -n "${DNS_BOGUS_PRIV}" ] && change_setting "DNS_BOGUS_PRIV" "$DNS_BOGUS_PRIV"
+[ -n "${DNS_FQDN_REQUIRED}" ] && change_setting "DNS_FQDN_REQUIRED" "$DNS_FQDN_REQUIRED"
+[ -n "${DNSSEC}" ] && change_setting "DNSSEC" "$DNSSEC"
+[ -n "${REV_SERVER}" ] && change_setting "REV_SERVER" "$REV_SERVER"
+[ -n "${REV_SERVER_DOMAIN}" ] && change_setting "REV_SERVER_DOMAIN" "$REV_SERVER_DOMAIN"
+[ -n "${REV_SERVER_TARGET}" ] && change_setting "REV_SERVER_TARGET" "$REV_SERVER_TARGET"
+[ -n "${REV_SERVER_CIDR}" ] && change_setting "REV_SERVER_CIDR" "$REV_SERVER_CIDR"
+
 if [ -z "$REV_SERVER" ];then
     # If the REV_SERVER* variables are set, then there is no need to add these.
     # If it is not set, then adding these variables is fine, and they will be converted by the Pi-hole install script
-    change_setting "CONDITIONAL_FORWARDING" "$CONDITIONAL_FORWARDING"
-    change_setting "CONDITIONAL_FORWARDING_IP" "$CONDITIONAL_FORWARDING_IP"
-    change_setting "CONDITIONAL_FORWARDING_DOMAIN" "$CONDITIONAL_FORWARDING_DOMAIN"
-    change_setting "CONDITIONAL_FORWARDING_REVERSE" "$CONDITIONAL_FORWARDING_REVERSE"
+    [ -n "${CONDITIONAL_FORWARDING}" ] && change_setting "CONDITIONAL_FORWARDING" "$CONDITIONAL_FORWARDING"
+    [ -n "${CONDITIONAL_FORWARDING_IP}" ] && change_setting "CONDITIONAL_FORWARDING_IP" "$CONDITIONAL_FORWARDING_IP"
+    [ -n "${CONDITIONAL_FORWARDING_DOMAIN}" ] && change_setting "CONDITIONAL_FORWARDING_DOMAIN" "$CONDITIONAL_FORWARDING_DOMAIN"
+    [ -n "${CONDITIONAL_FORWARDING_REVERSE}" ] && change_setting "CONDITIONAL_FORWARDING_REVERSE" "$CONDITIONAL_FORWARDING_REVERSE"
 fi
+
 setup_web_port "$WEB_PORT"
 setup_web_password "$WEBPASSWORD"
 setup_temp_unit "$TEMPERATUREUNIT"
