@@ -68,39 +68,12 @@ validate_env() {
 
 setup_dnsmasq_dns() {
     . /opt/pihole/webpage.sh
-    local DNS1="${1:-8.8.8.8}"
-    local DNS2="${2:-8.8.4.4}"
-    local dnsType='default'
-    if [ "$DNS1" != '8.8.8.8' ] || [ "$DNS2" != '8.8.4.4' ] ; then
-        dnsType='custom'
-    fi;
+    local DNS1="8.8.8.8"
+    local DNS2="8.8.4.4"
 
-    # TODO With the addition of this to /start.sh this needs a refactor
-    if [ ! -f /.piholeFirstBoot ] ; then
-        local setupDNS1="$(grep 'PIHOLE_DNS_1' ${setupVars})"
-        local setupDNS2="$(grep 'PIHOLE_DNS_2' ${setupVars})"
-        setupDNS1="${setupDNS1/PIHOLE_DNS_1=/}"
-        setupDNS2="${setupDNS2/PIHOLE_DNS_2=/}"
-        if [[ -n "$DNS1" && -n "$setupDNS1"  ]] || \
-           [[ -n "$DNS2" && -n "$setupDNS2"  ]] ; then
-                echo "Docker DNS variables not used"
-        fi
-        echo "Existing DNS servers used (${setupDNS1:-unset} & ${setupDNS2:-unset})"
-        return
-    fi
-
-    echo "Using $dnsType DNS servers: $DNS1 & $DNS2"
-    if [[ -n "$DNS1" && -z "$setupDNS1" ]] ; then
-        change_setting "PIHOLE_DNS_1" "${DNS1}"
-    fi
-    if [[ -n "$DNS2" && -z "$setupDNS2" ]] ; then
-        if [[ "$DNS2" == "no" ]] ; then
-            delete_setting "PIHOLE_DNS_2"
-            unset PIHOLE_DNS_2
-        else
-            change_setting "PIHOLE_DNS_2" "${DNS2}"
-        fi
-    fi
+    echo "Configuring default DNS servers: $DNS1 & $DNS2"
+    change_setting "PIHOLE_DNS_1" "${DNS1}"
+    change_setting "PIHOLE_DNS_2" "${DNS2}"
 }
 
 setup_dnsmasq_interface() {
@@ -129,13 +102,12 @@ setup_dnsmasq_config_if_missing() {
 }
 
 setup_dnsmasq() {
-    local dns1="$1"
-    local dns2="$2"
-    local interface="$3"
-    local dnsmasq_listening_behaviour="$4"
+    local USE_DEFAULT_DNS_SERVERS="$1"
+    local interface="$2"
+    local dnsmasq_listening_behaviour="$3"
     # Coordinates
     setup_dnsmasq_config_if_missing
-    setup_dnsmasq_dns "$dns1" "$dns2"
+    [ $USE_DEFAULT_DNS_SERVERS -eq 1 ] && setup_dnsmasq_dns
     setup_dnsmasq_interface "$interface"
     setup_dnsmasq_listening_behaviour "$dnsmasq_listening_behaviour"
     setup_dnsmasq_user "${DNSMASQ_USER}"
