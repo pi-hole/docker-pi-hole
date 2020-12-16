@@ -82,17 +82,17 @@ if [ -z "$REV_SERVER" ];then
     [ -n "${CONDITIONAL_FORWARDING_REVERSE}" ] && change_setting "CONDITIONAL_FORWARDING_REVERSE" "$CONDITIONAL_FORWARDING_REVERSE"
 fi
 
-if [ -z "${PIHOLE_DNS_}"]; then
+if [ -z "${PIHOLE_DNS_}" ]; then
     # For backward compatibility, if DNS1 and/or DNS2 are set, but PIHOLE_DNS_ is not, convert them to
     # a semi-colon delimited string and store in PIHOLE_DNS_
     # They are not used anywhere if PIHOLE_DNS_ is set already
-    [ -n "${DNS1}" ] && PIHOLE_DNS_="$DNS1"
-    [[ -n "${DNS2}" && "${DNS2}" != "no" ]] && PIHOLE_DNS_="$PIHOLE_DNS_;$DNS2"
+    [ -n "${DNS1}" ] && echo "Converting DNS1 to PIHOLE_DNS_" && PIHOLE_DNS_="$DNS1"
+    [[ -n "${DNS2}" && "${DNS2}" != "no" ]] && echo "Converting DNS2 to PIHOLE_DNS_" && PIHOLE_DNS_="$PIHOLE_DNS_;$DNS2"
 fi
 
 # Parse the PIHOLE_DNS variable, if it exists, and apply upstream servers to Pi-hole config
-USE_DEFAULT_DNS_SERVERS=1
 if [ -n "${PIHOLE_DNS_}" ]; then
+    echo "Setting DNS servers based on PIHOLE_DNS_ variable"
     # Split into an array (delimited by ;)
     PIHOLE_DNS_ARR=(${PIHOLE_DNS_//;/ })
     count=1
@@ -100,14 +100,19 @@ if [ -n "${PIHOLE_DNS_}" ]; then
         change_setting "PIHOLE_DNS_$count" "$i"
         ((count=count+1))
     done
-    # DNS Servers have been set up in this side of the script, so don't set the defaults of 8.8.8.8 and 8.8.4.4
-    USE_DEFAULT_DNS_SERVERS=0
 else
     # Environment variable has not been set, but there may be existing values in an existing setupVars.conf
     # if this is the case, we do not want to overwrite these with the defaults of 8.8.8.8 and 8.8.4.4
     # Pi-hole can run with only one upstream configured, so we will just check for one.
-    setupVarsDNS="$(grep 'PIHOLE_DNS_1' /etc/pihole/setupVars.conf || true)"
-    [ -n "${setupVarsDNS}" ] && USE_DEFAULT_DNS_SERVERS=0 # A configured upstream DNS has been detected in an existing setupvars.conf.
+    setupVarsDNS="$(grep 'PIHOLE_DNS_' /etc/pihole/setupVars.conf || true)"
+
+    if [ -z "${setupVarsDNS}" ]; then
+      echo "Configuring default DNS servers: 8.8.8.8, 8.8.4.4"
+      change_setting "PIHOLE_DNS_1" "8.8.8.8"
+      change_setting "PIHOLE_DNS_2" "8.8.4.4"
+    else
+      echo "Existing DNS servers detected in setupVars.conf. Leaving them alone"
+    fi
 fi
 
 setup_web_port "$WEB_PORT"
@@ -115,7 +120,7 @@ setup_web_password "$WEBPASSWORD"
 setup_temp_unit "$TEMPERATUREUNIT"
 setup_ui_layout "$WEBUIBOXEDLAYOUT"
 setup_admin_email "$ADMIN_EMAIL"
-setup_dnsmasq "$USE_DEFAULT_DNS_SERVERS" "$INTERFACE" "$DNSMASQ_LISTENING_BEHAVIOUR"
+setup_dnsmasq "$INTERFACE" "$DNSMASQ_LISTENING_BEHAVIOUR"
 setup_php_env
 setup_dnsmasq_hostnames "$ServerIP" "$ServerIPv6" "$HOSTNAME"
 setup_ipv4_ipv6

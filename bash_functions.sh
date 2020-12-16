@@ -66,16 +66,6 @@ validate_env() {
     fi;
 }
 
-setup_dnsmasq_dns() {
-    . /opt/pihole/webpage.sh
-    local DNS1="8.8.8.8"
-    local DNS2="8.8.4.4"
-
-    echo "Configuring default DNS servers: $DNS1 & $DNS2"
-    change_setting "PIHOLE_DNS_1" "${DNS1}"
-    change_setting "PIHOLE_DNS_2" "${DNS2}"
-}
-
 setup_dnsmasq_interface() {
     local interface="${1:-eth0}"
     local interfaceType='default'
@@ -102,12 +92,10 @@ setup_dnsmasq_config_if_missing() {
 }
 
 setup_dnsmasq() {
-    local USE_DEFAULT_DNS_SERVERS="$1"
-    local interface="$2"
-    local dnsmasq_listening_behaviour="$3"
+    local interface="$1"
+    local dnsmasq_listening_behaviour="$2"
     # Coordinates
     setup_dnsmasq_config_if_missing
-    [ $USE_DEFAULT_DNS_SERVERS -eq 1 ] && setup_dnsmasq_dns
     setup_dnsmasq_interface "$interface"
     setup_dnsmasq_listening_behaviour "$dnsmasq_listening_behaviour"
     setup_dnsmasq_user "${DNSMASQ_USER}"
