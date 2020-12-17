@@ -68,8 +68,12 @@ validate_env() {
 
 setup_dnsmasq_dns() {
     . /opt/pihole/webpage.sh
-    local DNS1="${1:-8.8.8.8}"
-    local DNS2="${2:-8.8.4.4}"
+
+
+    local DNS1X="${1:-8.8.8.8}"
+    local DNS1=$(dig +short ${DNS1X} || ${DNS1X})
+    local DNS2X="${2:-8.8.4.4}"
+    local DNS2=$(dig +short ${DNS2X} || ${DNS2X})
     local dnsType='default'
     if [ "$DNS1" != '8.8.8.8' ] || [ "$DNS2" != '8.8.4.4' ] ; then
         dnsType='custom'
