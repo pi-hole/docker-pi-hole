@@ -102,8 +102,7 @@ There are other environment variables if you want to customize various things in
 | `ADMIN_EMAIL: <email address>`<br/> *Optional Default: ''* | Set an administrative contact address for the Block Page
 | `TZ: <Timezone>`<br/> **Recommended** *Default: UTC* | Set your [timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) to make sure logs rotate at local midnight instead of at UTC midnight.
 | `WEBPASSWORD: <Admin password>`<br/> **Recommended** *Default: random* | http://pi.hole/admin password. Run `docker logs pihole \| grep random` to find your random pass.
-| `DNS1: <IP>`<br/> *Optional* *Default: 8.8.8.8* | Primary upstream DNS provider, default is google DNS
-| `DNS2: <IP>`<br/> *Optional* *Default: 8.8.4.4* | Secondary upstream DNS provider, default is google DNS, `no` if only one DNS should used
+| `PIHOLE_DNS_: <IPs delimited by ;>`<br/> *Optional* *Default: 8.8.8.8;8.8.4.4* | Upstream DNS server(s) for Pi-hole to forward queries to, seperated by a semicolon <br/> (supports non-standard ports with `#[port number]`) e.g `127.0.0.1#5053;8.8.8.8;8.8.4.4`
 | `DNSSEC: <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DNSSEC support
 | `DNS_BOGUS_PRIV: <"true"\|"false">`<br/> *Optional* *Default: "true"* | Enable forwarding of reverse lookups for private ranges
 | `DNS_FQDN_REQUIRED: <"true"\|"false">`<br/> *Optional* *Default: true* | Never forward non-FQDNs
@@ -131,8 +130,10 @@ While these may still work, they are likely to be removed in a future version. W
 | ----------------------- | ----------- | ----------- |
 | `CONDITIONAL_FORWARDING: <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DNS conditional forwarding for device name resolution | `REV_SERVER`|
 | `CONDITIONAL_FORWARDING_IP: <Router's IP>`<br/> *Optional* | If conditional forwarding is enabled, set the IP of the local network router | `REV_SERVER_TARGET` |
-| `CONDITIONAL_FORWARDING_DOMAIN: <Network Domain>`<br/> *Optional* | If conditional forwarding is enabled, set the domain of the local network router | `REV_SERVER_DOMAIN` | 
+| `CONDITIONAL_FORWARDING_DOMAIN: <Network Domain>`<br/> *Optional* | If conditional forwarding is enabled, set the domain of the local network router | `REV_SERVER_DOMAIN` |
 | `CONDITIONAL_FORWARDING_REVERSE: <Reverse DNS>`<br/> *Optional* | If conditional forwarding is enabled, set the reverse DNS of the local network router (e.g. `0.168.192.in-addr.arpa`) | `REV_SERVER_CIDR` |
+| `DNS1: <IP>`<br/> *Optional* *Default: 8.8.8.8* | Primary upstream DNS provider, default is google DNS | `PIHOLE_DNS_` |
+| `DNS2: <IP>`<br/> *Optional* *Default: 8.8.4.4* | Secondary upstream DNS provider, default is google DNS, `no` if only one DNS should used | `PIHOLE_DNS_` |
 
 To use these env vars in docker run format style them like: `-e DNS1=1.1.1.1`
 
