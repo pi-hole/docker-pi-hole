@@ -89,12 +89,6 @@ else
     fetch_release_metadata "${webInterfaceDir}" "${WEB_VERSION}"
 fi
 
-# FTL Armel fix not in prod yet
-# Remove once https://github.com/pi-hole/pi-hole/commit/3fbb0ac8dde14b8edc1982ae3a2a021f3cf68477 is in master
-if [[ "$ARCH" == 'armel' ]]; then
-    curl -o /usr/bin/pihole-FTL https://ftl.pi-hole.net/development/pihole-FTL-armel-native
-fi
-
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
 sed -i '/^WEBPASSWORD/d' /etc/pihole/setupVars.conf
 
