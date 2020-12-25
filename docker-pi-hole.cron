@@ -22,7 +22,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 #          Download any updates from the adlists
 59 1    * * 7   root    PATH="$PATH:/usr/local/bin/" docker exec $DOCKER_NAME pihole updateGravity > /dev/null
 
-# Update docker-pi-hole by pulling the latest docker image ane re-creating your container.
+# Update docker-pi-hole by pulling the latest docker image and re-creating your container.
 # pihole software update commands are unsupported in docker!
 #30 2    * * 7   root    PATH="$PATH:/usr/local/bin/" docker exec $DOCKER_NAME pihole updatePihole > /dev/null
 
