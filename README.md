@@ -18,7 +18,7 @@ services:
   pihole:
     container_name: pihole
     image: pihole/pihole:latest
-    hostname: pihole
+    hostname: pi.hole
     ports:
       - "53:53/tcp"
       - "53:53/udp"
