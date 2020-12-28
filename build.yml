@@ -7,6 +7,7 @@ x-common-args: &common-args
   MAINTAINER: adam@diginc.us
   S6_VERSION: v2.1.0.2
   PHP_ENV_CONFIG: /etc/lighttpd/conf-enabled/15-fastcgi-php.conf
+  PHP_INI_CGI_CONFIG: /etc/php/7.3/cgi/php.ini
   PHP_ERROR_LOG: /var/log/lighttpd/error.log
 
 

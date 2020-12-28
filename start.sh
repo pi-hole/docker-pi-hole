@@ -5,6 +5,8 @@ export ServerIP
 export ServerIPv6
 export PYTEST
 export PHP_ENV_CONFIG
+export PHP_INI_CGI_CONFIG
+export PHP_ENV_CGI_MEMORY_LIMIT
 export PHP_ERROR_LOG
 export HOSTNAME
 export WEBLOGDIR

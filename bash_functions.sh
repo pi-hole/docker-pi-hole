@@ -181,6 +181,12 @@ setup_php_env() {
 
     echo "Added ENV to php:"
     grep -E '(VIRTUAL_HOST|ServerIP|PHP_ERROR_LOG)' "$PHP_ENV_CONFIG"
+
+    if [[ -n ${PHP_ENV_CGI_MEMORY_LIMIT} ]]; then 
+        grep -qP 'memory_limit = 128M' || \
+            sed -i "s|memory_limit = .*|memory_limit = ${PHP_ENV_CGI_MEMORY_LIMIT}|" ${PHP_INI_CGI_CONFIG}
+        echo "Set CGI php memory limit to ${PHP_ENV_CGI_MEMORY_LIMIT}\n"
+    fi
 }
 
 setup_web_port() {
