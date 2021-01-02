@@ -24,6 +24,9 @@ services:
       - "67:67/udp"
       - "80:80/tcp"
       - "443:443/tcp"
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
     environment:
       TZ: 'America/Chicago'
       # WEBPASSWORD: 'set a secure password here or it will be random'
