@@ -33,6 +33,10 @@ export PIHOLE_DNS_
 
 export adlistFile='/etc/pihole/adlists.list'
 
+# If user has set QUERY_LOGGING Env Var, copy it out to _OVERRIDE, else it will get reset when we source the next two files
+# Come back to it at the end of the file
+[ -n "${QUERY_LOGGING}" ] && QUERY_LOGGING_OVERRIDE="${QUERY_LOGGING}"
+
 # The below functions are all contained in bash_functions.sh
 . /bash_functions.sh
 
@@ -59,7 +63,6 @@ prepare_configs
 
 [ -n "${PIHOLE_INTERFACE}" ] && change_setting "PIHOLE_INTERFACE" "$PIHOLE_INTERFACE"
 [ -n "${IPV4_ADDRESS}" ] && change_setting "IPV4_ADDRESS" "$IPV4_ADDRESS"
-[ -n "${QUERY_LOGGING}" ] && change_setting "QUERY_LOGGING" "$QUERY_LOGGING"
 [ -n "${INSTALL_WEB_SERVER}" ] && change_setting "INSTALL_WEB_SERVER" "$INSTALL_WEB_SERVER"
 [ -n "${INSTALL_WEB_INTERFACE}" ] && change_setting "INSTALL_WEB_INTERFACE" "$INSTALL_WEB_INTERFACE"
 [ -n "${LIGHTTPD_ENABLED}" ] && change_setting "LIGHTTPD_ENABLED" "$LIGHTTPD_ENABLED"
@@ -129,5 +132,22 @@ setup_blocklists
 test_configs
 
 [ -f /.piholeFirstBoot ] && rm /.piholeFirstBoot
+
+# Set QUERY_LOGGING value in setupVars to be that which the user has passed in as an ENV var (if they have)
+[ -n "${QUERY_LOGGING_OVERRIDE}" ] && change_setting "QUERY_LOGGING" "$QUERY_LOGGING_OVERRIDE"
+
+# Source setupVars.conf to get the true value of QUERY_LOGGING
+. ${setupVars}
+
+if [ ${QUERY_LOGGING} == "false" ]; then
+  echo "::: Disabling Query Logging"
+  pihole logging off
+else
+  # If it is anything other than false, set it to true
+  change_setting "QUERY_LOGGING" "true"
+  # Set pihole logging on for good measure
+  echo "::: Enabling Query Logging"
+  pihole logging on
+fi
 
 echo " ::: Docker start setup complete"
