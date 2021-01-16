@@ -41,7 +41,7 @@ MULTIARCH_IMAGE="${BASE_IMAGE}:${GIT_TAG}"
 
 # To get latest released, cut a release on https://github.com/pi-hole/docker-pi-hole/releases (manually gated for quality control)
 latest_tag='UNKNOWN'
-if ! latest_tag=$(curl -sI https://github.com/pi-hole/docker-pi-hole/releases/latest | grep --color=never -i Location | awk -F / '{print $NF}' | tr -d '[:cntrl:]'); then
+if ! latest_tag=$(curl -sI https://github.com/pi-hole/docker-pi-hole/releases/latest | grep --color=never -i Location: | awk -F / '{print $NF}' | tr -d '[:cntrl:]'); then
     print "Failed to retrieve latest docker-pi-hole release metadata"
 else
     if [[ "${GIT_TAG}" == "${latest_tag}" ]] ; then
