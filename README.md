@@ -35,6 +35,7 @@ services:
     #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
     cap_add:
       - NET_ADMIN
+      - SYS_NICE
     restart: unless-stopped
 ```
 2. Run `docker-compose up --detach` to build and start pi-hole
@@ -43,10 +44,14 @@ services:
 
 ## Upgrade Notices:
 
+### Docker Pi-Hole v5.1
+
+- `--cap-add SYS_NICE` required to set elevated CPU priority and avoid warning message
+
 ### Docker Pi-Hole v4.2.2
 
 - ServerIP no longer a required enviroment variable **unless you run network 'host' mode**!  Feel free to remove it unless you need it to customize lighttpd
-- --cap-add NET_ADMIN no longer required unless using DHCP, leaving in examples for consistency
+- `--cap-add NET_ADMIN` no longer required unless using DHCP, leaving in examples for consistency
 
 ### Docker Pi-Hole v4.1.1+
 
@@ -54,7 +59,7 @@ Starting with the v4.1.1 release your Pi-hole container may encounter issues sta
 
 - `--dns=127.0.0.1 --dns=1.1.1.1` The second server can be any DNS IP of your choosing, but the **first dns must be 127.0.0.1**
     - A WARNING stating "Misconfigured DNS in /etc/resolv.conf" may show in docker logs without this.
-- 4.1 required --cap-add NET_ADMIN until 4.2.1-1
+- 4.1 required `--cap-add NET_ADMIN` until 4.2.1-1
 
 These are the raw [docker run cli](https://docs.docker.com/engine/reference/commandline/cli/) versions of the commands.  We provide no official support for docker GUIs but the community forums may be able to help if you do not see a place for these settings.  Remember, always consult your manual too!
 
@@ -147,6 +152,7 @@ Here is a rundown of other arguments for your docker-compose / docker run.
 | `-v $(pwd)/etc-dnsmasq.d:/etc/dnsmasq.d`<br/> **Recommended** | Volumes for your dnsmasq configs help persist changes across docker image updates
 | `--net=host`<br/> *Optional* | Alternative to `-p <port>:<port>` arguments (Cannot be used at same time as -p) if you don't run any other web application. DHCP runs best with --net=host, otherwise your router must support dhcp-relay settings.
 | `--cap-add=NET_ADMIN`<br/> *Recommended* | Commonly added capability for DHCP, see [Note on Capabilities](#note-on-capabilities) below for other capabilities.
+| `--cap-add=SYS_NICE`<br/> *Recommended* | Used to set elevated CPU priority and avoid warning message
 | `--dns=127.0.0.1`<br/> *Recommended* | Sets your container's resolve settings to localhost so it can resolve DHCP hostnames from Pi-hole's DNSMasq, also fixes common resolution errors on container restart.
 | `--dns=1.1.1.1`<br/> *Optional* | Sets a backup server of your choosing in case DNSMasq has problems starting
 | `--env-file .env` <br/> *Optional* | File to store environment variables for docker replacing `-e key=value` settings. Here for convenience
@@ -256,6 +262,7 @@ DNSMasq / [FTLDNS](https://docs.pi-hole.net/ftldns/in-depth/#linux-capabilities)
 - `CAP_NET_BIND_SERVICE`: Allows FTLDNS binding to TCP/UDP sockets below 1024 (specifically DNS service on port 53)
 - `CAP_NET_RAW`: use raw and packet sockets (needed for handling DHCPv6 requests, and verifying that an IP is not in use before leasing it)
 - `CAP_NET_ADMIN`: modify routing tables and other network-related operations (in particular inserting an entry in the neighbor table to answer DHCP requests using unicast packets)
+- `CAP_SYS_NICE`: Allows FTLDNS to elevate its CPU priority, increasing performance for DNS clients
 
 This image automatically grants those capabilities, if available, to the FTLDNS process, even when run as non-root.\
 By default, docker does not include the `NET_ADMIN` capability for non-privileged containers, and it is recommended to explicitly add it to the container using `--cap-add=NET_ADMIN`.\

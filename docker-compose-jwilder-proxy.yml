@@ -30,6 +30,7 @@ services:
     #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
     cap_add:
       - NET_ADMIN
+      - SYS_NICE
     environment:
       ServerIP: 192.168.41.55
       PROXY_LOCATION: pihole

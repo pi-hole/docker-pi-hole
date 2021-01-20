@@ -26,4 +26,5 @@ services:
     #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
     cap_add:
       - NET_ADMIN
+      - SYS_NICE
     restart: unless-stopped
