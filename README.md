@@ -122,6 +122,14 @@ There are other environment variables if you want to customize various things in
 | `WEBUIBOXEDLAYOUT: <boxed\|traditional>`<br/>*Optional Default: boxed* | Use boxed layout (helpful when working on large screens)
 | `SKIPGRAVITYONBOOT`: <Not Set\|1><br/> *Optional Default: Not Set* | Use this option to skip updating the Gravity Database when booting up the container.  By default this environment variable is not set so the Gravity Database will be updated when the container starts up.  Setting this environment variable to 1 (or anything) will cause the Gravity Database to not be updated when container starts up.
 | `QUERY_LOGGING: <"true"\|"false">`<br/> *Optional* *Default: "true"* | Enable query logging or not.
+| `DHCP_ACTIVE: <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DHCP server. Static DHCP leases can be configured with a custom `/etc/dnsmasq.d/04-pihole-static-dhcp.conf`
+| `DHCP_START: <Start IP>`<br/> *Optional* *Default: Not Set* | Start of the range of IP addresses to hand out by the DHCP server (mandatory if DHCP server is enabled).
+| `DHCP_END: <End IP>`<br/> *Optional* *Default: Not Set* | End of the range of IP addresses to hand out by the DHCP server (mandatory if DHCP server is enabled).
+| `DHCP_ROUTER: <Router's IP>`<br/> *Optional* *Default: Not Set* | Router (gateway) IP address sent by the DHCP server (mandatory if DHCP server is enabled).
+| `DHCP_LEASETIME: <hours>`<br/> *Optional* *Default: 24* | DHCP lease time in hours.
+| `PIHOLE_DOMAIN: <domain>`<br/> *Optional* *Default: lan* | Domain name sent by the DHCP server.
+| `DHCP_IPv6: <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DHCP server IPv6 support (SLAAC + RA).
+| `DHCP_rapid_commit <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DHCPv4 rapid commit (fast address assignment).
 
 ## Deprecated environment variables:
 While these may still work, they are likely to be removed in a future version. Where applicible, alternative variable names are indicated. Please review the table above for usage of the alternative variables
