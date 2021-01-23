@@ -30,6 +30,14 @@ export ADMIN_EMAIL
 export WEBUIBOXEDLAYOUT
 export QUERY_LOGGING
 export PIHOLE_DNS_
+export DHCP_ACTIVE
+export DHCP_START
+export DHCP_END
+export DHCP_ROUTER
+export DHCP_LEASETIME
+export PIHOLE_DOMAIN
+export DHCP_IPv6
+export DHCP_rapid_commit
 
 export adlistFile='/etc/pihole/adlists.list'
 
@@ -117,6 +125,8 @@ else
       echo "Existing DNS servers detected in setupVars.conf. Leaving them alone"
     fi
 fi
+
+[[ -n "${DHCP_ACTIVE}" && ${DHCP_ACTIVE} == "true" ]] && echo "Setting DHCP server" && setup_dhcp
 
 setup_web_port "$WEB_PORT"
 setup_web_password "$WEBPASSWORD"

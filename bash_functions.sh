@@ -332,3 +332,19 @@ setup_admin_email() {
       pihole -a -e "$EMAIL"
   fi
 }
+
+setup_dhcp() {
+  if [ -z "${DHCP_START}" ] || [ -z "${DHCP_END}" ] || [ -z "${DHCP_ROUTER}" ]; then
+    echo "ERROR: Won't enable DHCP server because mandatory Environment variables are missing: DHCP_START, DHCP_END and/or DHCP_ROUTER"
+    change_setting "DHCP_ACTIVE" "false"
+  else
+    change_setting "DHCP_ACTIVE" "${DHCP_ACTIVE}"
+    change_setting "DHCP_START" "${DHCP_START}"
+    change_setting "DHCP_END" "${DHCP_END}"
+    change_setting "DHCP_ROUTER" "${DHCP_ROUTER}"
+    change_setting "DHCP_LEASETIME" "${DHCP_LEASETIME}"
+    change_setting "PIHOLE_DOMAIN" "${PIHOLE_DOMAIN}"
+    change_setting "DHCP_IPv6" "${DHCP_IPv6}"
+    change_setting "DHCP_rapid_commit" "${DHCP_rapid_commit}"
+  fi
+}
