@@ -14,7 +14,10 @@ fix_capabilities() {
 prepare_configs() {
     # Done in /start.sh, don't do twice
     PH_TEST=true . $PIHOLE_INSTALL
-    distro_check
+    # Set Debian webserver variables for installConfigs
+    LIGHTTPD_USER="www-data"
+    LIGHTTPD_GROUP="www-data"
+    LIGHTTPD_CFG="lighttpd.conf.debian"
     installConfigs
     touch "$setupVars"
     set +e
