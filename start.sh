@@ -90,17 +90,23 @@ if [ -z "${PIHOLE_DNS_}" ]; then
     # a semi-colon delimited string and store in PIHOLE_DNS_
     # They are not used anywhere if PIHOLE_DNS_ is set already
     [ -n "${DNS1}" ] && echo "Converting DNS1 to PIHOLE_DNS_" && PIHOLE_DNS_="$DNS1"
-    [[ -n "${DNS2}" && "${DNS2}" != "no" ]] && echo "Converting DNS2 to PIHOLE_DNS_" && PIHOLE_DNS_="$PIHOLE_DNS_;$DNS2"
+    [ -n "${DNS2}" ] && echo "Converting DNS2 to PIHOLE_DNS_" && PIHOLE_DNS_="$PIHOLE_DNS_;$DNS2"
 fi
 
-# Parse the PIHOLE_DNS variable, if it exists, and apply upstream servers to Pi-hole config
+# Parse the PIHOLE_DNS variable, if it exists, and apply upstream servers to Pi-
+hole config
 if [ -n "${PIHOLE_DNS_}" ]; then
     echo "Setting DNS servers based on PIHOLE_DNS_ variable"
     # Split into an array (delimited by ;)
     PIHOLE_DNS_ARR=(${PIHOLE_DNS_//;/ })
     count=1
     for i in "${PIHOLE_DNS_ARR[@]}"; do
-        change_setting "PIHOLE_DNS_$count" "$i"
+        if [[ "$i" == "no" ]] ; then
+            delete_setting "PIHOLE_DNS_$count"
+            unset "PIHOLE_DNS_$count"
+        else
+            change_setting "PIHOLE_DNS_$count" "$i"
+        fi
         ((count=count+1))
     done
 else
