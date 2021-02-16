@@ -1,6 +1,9 @@
 #!/usr/bin/with-contenv bash
 
 s6-echo "Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
+# Remove possible leftovers from previous pihole-FTL processes
+rm -f /dev/shm/FTL-* 2> /dev/null
+rm /run/pihole/FTL.sock 2> /dev/null
 s6-setuidgid ${DNSMASQ_USER} pihole-FTL $FTL_CMD >/dev/null 2>&1
 
 # Notes on above:
