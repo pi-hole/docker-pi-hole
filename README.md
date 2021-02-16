@@ -45,7 +45,7 @@ services:
 
 ### Docker Pi-Hole v4.2.2
 
-- ServerIP no longer a required enviroment variable **unless you run network 'host' mode**!  Feel free to remove it unless you need it to customize lighttpd
+- ServerIP no longer a required environment variable **unless you run network 'host' mode**!  Feel free to remove it unless you need it to customize lighttpd
 - --cap-add NET_ADMIN no longer required unless using DHCP, leaving in examples for consistency
 
 ### Docker Pi-Hole v4.1.1+
@@ -115,7 +115,7 @@ There are other environment variables if you want to customize various things in
 | `VIRTUAL_HOST: <Custom Hostname>`<br/> *Optional* *Default: $ServerIP*   | What your web server 'virtual host' is, accessing admin through this Hostname/IP allows you to make changes to the whitelist / blacklists in addition to the default 'http://pi.hole/admin/' address
 | `IPv6: <"true"\|"false">`<br/> *Optional* *Default: "true"* | For unraid compatibility, strips out all the IPv6 configuration from DNS/Web services when false.
 | `INTERFACE: <NIC>`<br/> *Advanced/Optional* | The default works fine with our basic example docker run commands.  If you're trying to use DHCP with `--net host` mode then you may have to customize this or DNSMASQ_LISTENING.
-| `DNSMASQ_LISTENING: <local\|all\|NIC>`<br/> *Advanced/Optional* | `local` listens on all local subnets, `all` permits listening on internet origin subnets in addition to local.
+| `DNSMASQ_LISTENING: <local\|all\|single>`<br/> *Advanced/Optional* | `local` listens on all local subnets, `all` permits listening on internet origin subnets in addition to local, `single` listens only on the interface specified.
 | `WEB_PORT: <PORT>`<br/> *Advanced/Optional* | **This will break the 'webpage blocked' functionality of Pi-hole** however it may help advanced setups like those running synology or `--net=host` docker argument.  This guide explains how to restore webpage blocked functionality using a linux router DNAT rule: [Alternative Synology installation method](https://discourse.pi-hole.net/t/alternative-synology-installation-method/5454?u=diginc)
 | `DNSMASQ_USER: <pihole\|root>`<br/> *Experimental Default: root* | Allows running FTLDNS as non-root.
 | `TEMPERATUREUNIT`: <c\|k\|f><br/>*Optional Default: c* | Set preferred temperature unit to `c`: Celsius, `k`: Kelvin, or `f` Fahrenheit units.
@@ -220,11 +220,11 @@ Do not attempt to upgrade (`pihole -up`) or reconfigure (`pihole -r`).  New imag
     * We will try to put common break/fixes at the top of this readme too
 1. Download the latest version of the image: `docker pull pihole/pihole`
 2. Throw away your container: `docker rm -f pihole`
-    * **Warning** When removing your pihole container you may be stuck without DNS until step 3; **docker pull** before **docker rm -f** to avoid DNS inturruption **OR** always have a fallback DNS server configured in DHCP to avoid this problem altogether.
+    * **Warning** When removing your pihole container you may be stuck without DNS until step 3; **docker pull** before **docker rm -f** to avoid DNS interruption **OR** always have a fallback DNS server configured in DHCP to avoid this problem altogether.
     * If you care about your data (logs/customizations), make sure you have it volume-mapped or it will be deleted in this step.
 3. Start your container with the newer base image: `docker run <args> pihole/pihole` (`<args>` being your preferred run volumes and env vars)
 
-Why is this style of upgrading good?  A couple reasons: Everyone is starting from the same base image which has been tested to known it works.  No worrying about upgrading from A to B, B to C, or A to C is required when rolling out updates, it reducing complexity, and simply allows a 'fresh start' every time while preserving customizations with volumes.  Basically I'm encouraging [phoenix server](https://www.google.com/?q=phoenix+servers) principles for your containers.
+Why is this style of upgrading good?  A couple reasons: Everyone is starting from the same base image which has been tested to known it works.  No worrying about upgrading from A to B, B to C, or A to C is required when rolling out updates, it reduces complexity, and simply allows a 'fresh start' every time while preserving customizations with volumes.  Basically I'm encouraging [phoenix server](https://www.google.com/?q=phoenix+servers) principles for your containers.
 
 To reconfigure Pi-hole you'll either need to use an existing container environment variables or if there is no a variable for what you need, use the web UI or CLI commands.
 

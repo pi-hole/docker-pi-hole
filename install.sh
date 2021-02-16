@@ -7,7 +7,7 @@ export CORE_VERSION="$(cat /etc/docker-pi-hole-version)"
 export WEB_VERSION="${CORE_VERSION}"
 export PIHOLE_SKIP_OS_CHECK=true
 # Overwrite WEB_VERSION if core and web versions are different
-export WEB_VERSION="v5.3.2"
+export WEB_VERSION="v5.4"
 
 # Only use for pre-production / testing
 export CHECKOUT_BRANCHES=false
