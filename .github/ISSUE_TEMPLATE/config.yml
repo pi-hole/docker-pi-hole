@@ -1,0 +1,12 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and Configurations
+    url: https://discourse.pi-hole.net
+    about: Ask a question or get help with configurations.
+  - name: Feature Requests
+    url: https://discourse.pi-hole.net/c/feature-requests/8
+    about: See existing Feature Requests and suggest new ones.
+  - name: Documentation
+    url: https://docs.pi-hole.net
+    about: Documentation and guides.
+    
