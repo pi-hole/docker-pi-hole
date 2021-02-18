@@ -1,3 +1,12 @@
+---
+name: Bug report
+about: Create a report to help us improve
+title: ''
+labels: ''
+assignees: ''
+
+---
+
 <!-- Provide a general summary of the issue in the Title above -->
 <!-- Note: these are comments that don't show up in the actual issue, no need to delete them as you fill out the template -->
 
