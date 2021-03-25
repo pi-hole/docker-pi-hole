@@ -111,12 +111,23 @@ if [ -n "${PIHOLE_DNS_}" ]; then
     count=1
     valid_entries=0
     for i in "${PIHOLE_DNS_ARR[@]}"; do
-        if valid_ip "$i" || valid_ip6 "$i" ; then
-          change_setting "PIHOLE_DNS_$count" "$i"
-          ((count=count+1))
-          ((valid_entries=valid_entries+1))
+        # Split upstream address by #
+        split=(${i//#/ })
+
+        # Resolve hostname if any, otherwise use ip
+        resolved="$(ping -q -c 1 -t 1 "$split" | grep PING | sed -e "s/).*//" | sed -e "s/.*(//")"
+
+        # Reappend optional port
+        for part in "${split[@]:1}"; do
+            resolved+="#$part"
+        done
+
+        if valid_ip "$resolved" || valid_ip6 "$resolved" ; then
+            change_setting "PIHOLE_DNS_$count" "$resolved"
+            ((count=count+1))
+            ((valid_entries=valid_entries+1))
         else
-          echo "Invalid IP detected in PIHOLE_DNS_: ${i}"
+            echo "Invalid IP detected in PIHOLE_DNS_: ${resolved}"
         fi
     done
 
