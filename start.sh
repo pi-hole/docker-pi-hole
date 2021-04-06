@@ -110,9 +110,9 @@ else
     setupVarsDNS="$(grep 'PIHOLE_DNS_' /etc/pihole/setupVars.conf || true)"
 
     if [ -z "${setupVarsDNS}" ]; then
-      echo "Configuring default DNS servers: 8.8.8.8, 8.8.4.4"
+      echo "Configuring default DNS servers: 8.8.8.8,1.1.1.1"
       change_setting "PIHOLE_DNS_1" "8.8.8.8"
-      change_setting "PIHOLE_DNS_2" "8.8.4.4"
+      change_setting "PIHOLE_DNS_2" "1.1.1.1"
     else
       echo "Existing DNS servers detected in setupVars.conf. Leaving them alone"
     fi
