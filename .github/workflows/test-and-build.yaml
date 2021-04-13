@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         ARCH: [amd64, armhf, arm64]
-        DEBIAN_VERSION: [stretch, buster]
+        DEBIAN_VERSION: [stretch, buster, bullseye]
     env:
       ARCH: ${{matrix.ARCH}}
       DEBIAN_VERSION: ${{matrix.DEBIAN_VERSION}}
