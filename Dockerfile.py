@@ -10,7 +10,7 @@ Options:
     --fail-fast          Exit on first build error
     --hub_tag=<tag>      What the Docker Hub Image should be tagged as [default: None]
     --arch=<arch>        What Architecture(s) to build     [default: amd64 armel armhf arm64]
-    --debian=<version>   What debian version(s) to build   [default: stretch buster]
+    --debian=<version>   What debian version(s) to build   [default: stretch buster bullseye]
     -v                   Print docker's command output     [default: False]
     -t                   Print docker's build time         [default: False]
 
