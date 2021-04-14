@@ -7,7 +7,7 @@ export CORE_VERSION="$(cat /etc/docker-pi-hole-version)"
 export WEB_VERSION="${CORE_VERSION}"
 export PIHOLE_SKIP_OS_CHECK=true
 # Overwrite WEB_VERSION if core and web versions are different
-export WEB_VERSION="v5.4"
+export WEB_VERSION="v5.5"
 
 # Only use for pre-production / testing
 export CHECKOUT_BRANCHES=false
@@ -39,7 +39,6 @@ PH_TEST=true . "${PIHOLE_INSTALL}"
   echo "IPV4_ADDRESS=0.0.0.0"
   echo "IPV6_ADDRESS=0:0:0:0:0:0"
   echo "PIHOLE_DNS_1=8.8.8.8"
-  echo "PIHOLE_DNS_2=8.8.4.4"
   echo "QUERY_LOGGING=true"
   echo "INSTALL_WEB_SERVER=true"
   echo "INSTALL_WEB_INTERFACE=true"
@@ -87,12 +86,6 @@ else
     # Reset to our tags so version numbers get detected correctly
     fetch_release_metadata "${PI_HOLE_LOCAL_REPO}" "${CORE_VERSION}"
     fetch_release_metadata "${webInterfaceDir}" "${WEB_VERSION}"
-fi
-
-# FTL Armel fix not in prod yet
-# Remove once https://github.com/pi-hole/pi-hole/commit/3fbb0ac8dde14b8edc1982ae3a2a021f3cf68477 is in master
-if [[ "$ARCH" == 'armel' ]]; then
-    curl -o /usr/bin/pihole-FTL https://ftl.pi-hole.net/development/pihole-FTL-armel-native
 fi
 
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
