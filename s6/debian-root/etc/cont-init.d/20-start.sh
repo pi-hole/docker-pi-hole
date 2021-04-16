@@ -15,9 +15,10 @@ if [ -n "$PYTEST" ]; then
     sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)"
 fi
 if [ -z "$SKIPGRAVITYONBOOT" ]; then
-    gravity.sh
+    echo '@reboot root PATH="$PATH:/usr/sbin:/usr/local/bin/" pihole updateGravity >/var/log/pihole_updateGravity.log || cat /var/log/pihole_updateGravity.log' > /etc/cron.d/gravity-on-boot
 else
     echo "  Skipping Gravity Database Update."
+    [ ! -e /etc/cron.d/gravity-on-boot ] || rm /etc/cron.d/gravity-on-boot &>/dev/null
 fi
 
 # Kill dnsmasq because s6 won't like it if it's running when s6 services start
