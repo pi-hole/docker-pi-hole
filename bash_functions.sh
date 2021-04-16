@@ -248,7 +248,7 @@ setup_web_password() {
 
 setup_ipv4_ipv6() {
     local ip_versions="IPv4 and IPv6"
-    if [ "$IPv6" != "True" ] ; then
+    if [ "${IPv6,,}" != "true" ] ; then
         ip_versions="IPv4"
         sed -i '/use-ipv6.pl/ d' /etc/lighttpd/lighttpd.conf
     fi;
