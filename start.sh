@@ -100,8 +100,12 @@ if [ -n "${PIHOLE_DNS_}" ]; then
     PIHOLE_DNS_ARR=(${PIHOLE_DNS_//;/ })
     count=1
     for i in "${PIHOLE_DNS_ARR[@]}"; do
-        change_setting "PIHOLE_DNS_$count" "$i"
-        ((count=count+1))
+        if valid_ip "$i" || valid_ip6 "$i" ; then
+          change_setting "PIHOLE_DNS_$count" "$i"
+          ((count=count+1))
+        else
+          echo "Invalid IP detected in PIHOLE_DNS_: ${i}"
+        fi
     done
 else
     # Environment variable has not been set, but there may be existing values in an existing setupVars.conf
