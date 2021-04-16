@@ -40,23 +40,6 @@ services:
 
 [Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
 
-## Upgrade Notices:
-
-### Docker Pi-Hole v4.2.2
-
-- ServerIP no longer a required environment variable **unless you run network 'host' mode**!  Feel free to remove it unless you need it to customize lighttpd
-- --cap-add NET_ADMIN no longer required unless using DHCP, leaving in examples for consistency
-
-### Docker Pi-Hole v4.1.1+
-
-Starting with the v4.1.1 release your Pi-hole container may encounter issues starting the DNS service unless ran with the following setting:
-
-- `--dns=127.0.0.1 --dns=1.1.1.1` The second server can be any DNS IP of your choosing, but the **first dns must be 127.0.0.1**
-    - A WARNING stating "Misconfigured DNS in /etc/resolv.conf" may show in docker logs without this.
-- 4.1 required --cap-add NET_ADMIN until 4.2.1-1
-
-These are the raw [docker run cli](https://docs.docker.com/engine/reference/commandline/cli/) versions of the commands.  We provide no official support for docker GUIs but the community forums may be able to help if you do not see a place for these settings.  Remember, always consult your manual too!
-
 ## Overview
 
 #### Renamed from `diginc/pi-hole` to `pihole/pihole`
