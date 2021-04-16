@@ -67,8 +67,6 @@ Volumes are recommended for persisting data across container re-creations for up
 
 You can customize where to store persistent data by setting the `PIHOLE_BASE` environment variable when invoking `docker_run.sh` (e.g. `PIHOLE_BASE=/opt/pihole-storage ./docker_run.sh`).  If `PIHOLE_BASE` is not set, files are stored in your current directory when you invoke the script.
 
-Port 443 is to provide a sinkhole for ads that use SSL.  If only port 80 is used, then blocked HTTPS queries will fail to connect to port 443 and may cause long loading times.  Rejecting 443 on your firewall can also serve this same purpose.  Ubuntu firewall example: `sudo ufw reject https`
-
 **Automatic Ad List Updates** - since the 3.0+ release, `cron` is baked into the container and will grab the newest versions of your lists and flush your logs.  **Set your TZ** environment variable to make sure the midnight log rotation syncs up with your timezone's midnight.
 
 ## Running DHCP from Docker Pi-Hole
