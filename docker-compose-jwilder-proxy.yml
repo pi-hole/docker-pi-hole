@@ -5,6 +5,7 @@ version: "3"
 services:
   jwilder-proxy:
     image: jwilder/nginx-proxy
+    hostname: pihole.yourDomain.lan
     ports:
       - '80:80'
     environment:
