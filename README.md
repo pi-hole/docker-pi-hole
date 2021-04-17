@@ -40,23 +40,6 @@ services:
 
 [Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
 
-## Upgrade Notices:
-
-### Docker Pi-Hole v4.2.2
-
-- ServerIP no longer a required environment variable **unless you run network 'host' mode**!  Feel free to remove it unless you need it to customize lighttpd
-- --cap-add NET_ADMIN no longer required unless using DHCP, leaving in examples for consistency
-
-### Docker Pi-Hole v4.1.1+
-
-Starting with the v4.1.1 release your Pi-hole container may encounter issues starting the DNS service unless ran with the following setting:
-
-- `--dns=127.0.0.1 --dns=1.1.1.1` The second server can be any DNS IP of your choosing, but the **first dns must be 127.0.0.1**
-    - A WARNING stating "Misconfigured DNS in /etc/resolv.conf" may show in docker logs without this.
-- 4.1 required --cap-add NET_ADMIN until 4.2.1-1
-
-These are the raw [docker run cli](https://docs.docker.com/engine/reference/commandline/cli/) versions of the commands.  We provide no official support for docker GUIs but the community forums may be able to help if you do not see a place for these settings.  Remember, always consult your manual too!
-
 ## Overview
 
 #### Renamed from `diginc/pi-hole` to `pihole/pihole`
@@ -83,8 +66,6 @@ If you're using a Red Hat based distribution with an SELinux Enforcing policy ad
 Volumes are recommended for persisting data across container re-creations for updating images.  The IP lookup variables may not work for everyone, please review their values and hard code IP and IPv6 if necessary.
 
 You can customize where to store persistent data by setting the `PIHOLE_BASE` environment variable when invoking `docker_run.sh` (e.g. `PIHOLE_BASE=/opt/pihole-storage ./docker_run.sh`).  If `PIHOLE_BASE` is not set, files are stored in your current directory when you invoke the script.
-
-Port 443 is to provide a sinkhole for ads that use SSL.  If only port 80 is used, then blocked HTTPS queries will fail to connect to port 443 and may cause long loading times.  Rejecting 443 on your firewall can also serve this same purpose.  Ubuntu firewall example: `sudo ufw reject https`
 
 **Automatic Ad List Updates** - since the 3.0+ release, `cron` is baked into the container and will grab the newest versions of your lists and flush your logs.  **Set your TZ** environment variable to make sure the midnight log rotation syncs up with your timezone's midnight.
 
@@ -121,6 +102,14 @@ There are other environment variables if you want to customize various things in
 | `WEBUIBOXEDLAYOUT: <boxed\|traditional>`<br/>*Optional Default: boxed* | Use boxed layout (helpful when working on large screens)
 | `SKIPGRAVITYONBOOT`: <Not Set\|1><br/> *Optional Default: Not Set* | Use this option to skip updating the Gravity Database when booting up the container.  By default this environment variable is not set so the Gravity Database will be updated when the container starts up.  Setting this environment variable to 1 (or anything) will cause the Gravity Database to not be updated when container starts up.
 | `QUERY_LOGGING: <"true"\|"false">`<br/> *Optional* *Default: "true"* | Enable query logging or not.
+| `DHCP_ACTIVE: <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DHCP server. Static DHCP leases can be configured with a custom `/etc/dnsmasq.d/04-pihole-static-dhcp.conf`
+| `DHCP_START: <Start IP>`<br/> *Optional* *Default: Not Set* | Start of the range of IP addresses to hand out by the DHCP server (mandatory if DHCP server is enabled).
+| `DHCP_END: <End IP>`<br/> *Optional* *Default: Not Set* | End of the range of IP addresses to hand out by the DHCP server (mandatory if DHCP server is enabled).
+| `DHCP_ROUTER: <Router's IP>`<br/> *Optional* *Default: Not Set* | Router (gateway) IP address sent by the DHCP server (mandatory if DHCP server is enabled).
+| `DHCP_LEASETIME: <hours>`<br/> *Optional* *Default: 24* | DHCP lease time in hours.
+| `PIHOLE_DOMAIN: <domain>`<br/> *Optional* *Default: lan* | Domain name sent by the DHCP server.
+| `DHCP_IPv6: <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DHCP server IPv6 support (SLAAC + RA).
+| `DHCP_rapid_commit <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DHCPv4 rapid commit (fast address assignment).
 
 ## Deprecated environment variables:
 While these may still work, they are likely to be removed in a future version. Where applicible, alternative variable names are indicated. Please review the table above for usage of the alternative variables
@@ -146,7 +135,7 @@ Here is a rundown of other arguments for your docker-compose / docker run.
 | `-v $(pwd)/etc-dnsmasq.d:/etc/dnsmasq.d`<br/> **Recommended** | Volumes for your dnsmasq configs help persist changes across docker image updates
 | `--net=host`<br/> *Optional* | Alternative to `-p <port>:<port>` arguments (Cannot be used at same time as -p) if you don't run any other web application. DHCP runs best with --net=host, otherwise your router must support dhcp-relay settings.
 | `--cap-add=NET_ADMIN`<br/> *Recommended* | Commonly added capability for DHCP, see [Note on Capabilities](#note-on-capabilities) below for other capabilities.
-| `--dns=127.0.0.1`<br/> *Recommended* | Sets your container's resolve settings to localhost so it can resolve DHCP hostnames from Pi-hole's DNSMasq, also fixes common resolution errors on container restart.
+| `--dns=127.0.0.1`<br/> *Optional* | Sets your container's resolve settings to localhost so it can resolve DHCP hostnames from Pi-hole's DNSMasq, may fix resolution errors on container restart.
 | `--dns=1.1.1.1`<br/> *Optional* | Sets a backup server of your choosing in case DNSMasq has problems starting
 | `--env-file .env` <br/> *Optional* | File to store environment variables for docker replacing `-e key=value` settings. Here for convenience
 
@@ -158,8 +147,7 @@ Here is a rundown of other arguments for your docker-compose / docker run.
 * Port conflicts?  Stop your server's existing DNS / Web services.
   * Don't forget to stop your services from auto-starting again after you reboot
   * Ubuntu users see below for more detailed information
-* Port 80 is highly recommended because if you have another site/service using port 80 by default then the ads may not transform into blank ads correctly.  To make sure docker-pi-hole plays nicely with an existing webserver you run you'll probably need a reverse proxy webserver config if you don't have one already.  Pi-hole must be the default web app on the proxy e.g. if you go to your host by IP instead of domain then Pi-hole is served out instead of any other sites hosted by the proxy. This is the '[default_server](http://nginx.org/en/docs/http/ngx_http_core_module.html#listen)' in nginx or ['_default_' virtual host](https://httpd.apache.org/docs/2.4/vhosts/examples.html#default) in Apache and is taken advantage of so any undefined ad domain can be directed to your webserver and get a 'blocked' response instead of ads.
-  * You can still map other ports to Pi-hole port 80 using docker's port forwarding like this `-p 8080:80`, but again the ads won't render properly.  Changing the inner port 80 shouldn't be required unless you run docker host networking mode.
+* You can map other ports to Pi-hole port 80 using docker's port forwarding like this `-p 8080:80` if you are using the default blocking mode. If you are using the legacy IP blocking mode, you should not remap this port.
   * [Here is an example of running with jwilder/proxy](https://github.com/pi-hole/docker-pi-hole/blob/master/docker-compose-jwilder-proxy.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with Pi-hole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in jwilder/proxy and you need to set the matching `VIRTUAL_HOST` for the Pi-hole's container.  Please read jwilder/proxy readme for more info if you have trouble.
 
 ### Installing on Ubuntu

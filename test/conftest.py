@@ -91,7 +91,7 @@ def DockerPersist(request, persist_test_args, persist_args, persist_image, persi
 def entrypoint():
     return ''
 
-@pytest.fixture(params=['amd64', 'armhf', 'arm64', 'armel'])
+@pytest.fixture(params=['amd64', 'armhf', 'arm64', 'armel', 'i386'])
 def arch(request):
     return request.param
 
