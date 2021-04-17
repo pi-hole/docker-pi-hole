@@ -107,10 +107,21 @@ if [ -n "${PIHOLE_DNS_}" ]; then
     # Split into an array (delimited by ;)
     PIHOLE_DNS_ARR=(${PIHOLE_DNS_//;/ })
     count=1
+    valid_entries=0
     for i in "${PIHOLE_DNS_ARR[@]}"; do
-        change_setting "PIHOLE_DNS_$count" "$i"
-        ((count=count+1))
+        if valid_ip "$i" || valid_ip6 "$i" ; then
+          change_setting "PIHOLE_DNS_$count" "$i"
+          ((count=count+1))
+          ((valid_entries=valid_entries+1))
+        else
+          echo "Invalid IP detected in PIHOLE_DNS_: ${i}"
+        fi
     done
+
+    if [ $valid_entries -eq 0 ]; then
+      echo "No Valid IPs dectected in PIHOLE_DNS_. Aborting"
+      exit 1
+    fi
 else
     # Environment variable has not been set, but there may be existing values in an existing setupVars.conf
     # if this is the case, we do not want to overwrite these with the defaults of 8.8.8.8 and 8.8.4.4
