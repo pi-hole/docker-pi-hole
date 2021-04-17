@@ -47,3 +47,12 @@ services:
         PIHOLE_BASE: multiarch/debian-debootstrap:arm64-${DEBIAN_VERSION:-buster}-slim
         PIHOLE_ARCH: arm64
         S6_ARCH: aarch64
+  i386:
+    image: pihole:${PIHOLE_VERSION}-i386-${DEBIAN_VERSION:-buster}
+    build:
+      context: .
+      args:
+        <<: *common-args
+        PIHOLE_BASE: multiarch/debian-debootstrap:i386-${DEBIAN_VERSION:-buster}-slim
+        PIHOLE_ARCH: i386
+        S6_ARCH: x86

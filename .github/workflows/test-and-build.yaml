@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ARCH: [amd64, armhf, arm64]
+        ARCH: [amd64, armhf, arm64, i386]
         DEBIAN_VERSION: [stretch, buster, bullseye]
     env:
       ARCH: ${{matrix.ARCH}}

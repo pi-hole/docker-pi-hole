@@ -53,6 +53,7 @@ declare -A annotate_map=(
     ["armel"]="--arch arm --variant v6" 
     ["armhf"]="--arch arm --variant v7" 
     ["arm64"]="--arch arm64 --variant v8"
+    ["i386"]="--arch 386" 
 )
 
 mkdir -p ~/.docker
