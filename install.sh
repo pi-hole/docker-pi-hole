@@ -2,22 +2,35 @@
 
 mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
-# Production tags with valid web footers
-export CORE_VERSION="$(cat /etc/docker-pi-hole-version)"
-export WEB_VERSION="${CORE_VERSION}"
-export PIHOLE_SKIP_OS_CHECK=true
-# Overwrite WEB_VERSION if core and web versions are different
-export WEB_VERSION="v5.5"
 
-# Only use for pre-production / testing
-export CHECKOUT_BRANCHES=false
-# Search for release/* branch naming convention for custom checkouts
-if [[ "$CORE_VERSION" == *"release/"* ]] ; then
-    CHECKOUT_BRANCHES=true
-fi
+# Source versions file
+source /etc/pi-hole-versions
+
+CORE_REMOTE_REPO=https://github.com/pi-hole/pi-hole
+CORE_LOCAL_REPO=/etc/.pihole
+WEB_REMOTE_REPO=https://github.com/pi-hole/adminLTE
+WEB_LOCAL_REPO=/var/www/html/admin
+setupVars=/etc/pihole/setupVars.conf
+
+fetch_release_metadata() {
+    local directory="$1"
+    local version="$2"
+    pushd "$directory"
+    git fetch -t
+    git remote set-branches origin '*'
+    git fetch --depth 10
+    #if version number begins with a v, it's a version number
+    if [[ $version == "v*" ]]; then
+        git checkout master
+        git reset --hard "$version"
+    else # else treat it as a branch
+        git checkout "$version"
+    fi
+    popd
+}
 
 apt-get update
-apt-get install --no-install-recommends -y curl procps ca-certificates
+apt-get install --no-install-recommends -y curl procps ca-certificates git
 # curl in armhf-buster's image has SSL issues. Running c_rehash fixes it.
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=923479
 c_rehash
@@ -29,9 +42,15 @@ mv /init /s6-init
 which debconf-apt-progress
 mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
 
-# Get the install functions
-curl https://raw.githubusercontent.com/pi-hole/pi-hole/${CORE_VERSION}/automated%20install/basic-install.sh > "$PIHOLE_INSTALL"
-PH_TEST=true . "${PIHOLE_INSTALL}"
+# clone the remote repos to their local destinations
+git clone "${CORE_REMOTE_REPO}" "${CORE_LOCAL_REPO}"
+fetch_release_metadata "${CORE_LOCAL_REPO}" "${CORE_VERSION}"
+
+git clone "${WEB_REMOTE_REPO}" "${WEB_LOCAL_REPO}"
+fetch_release_metadata "${WEB_LOCAL_REPO}" "${WEB_VERSION}"
+
+# FTL uses a local version file for the installer to determine which version we want
+echo "${FTL_VERSION}" > /etc/pihole/ftlbranch
 
 # Preseed variables to assist with using --unattended install
 {
@@ -47,46 +66,20 @@ PH_TEST=true . "${PIHOLE_INSTALL}"
 source $setupVars
 
 export USER=pihole
-distro_check
 
 # fix permission denied to resolvconf post-inst /etc/resolv.conf moby/moby issue #1297
 apt-get -y install debconf-utils
 echo resolvconf resolvconf/linkify-resolvconf boolean false | debconf-set-selections
 
+export PIHOLE_SKIP_OS_CHECK=true
+
 ln -s /bin/true /usr/local/bin/service
-bash -ex "./${PIHOLE_INSTALL}" --unattended
+# Run the installer in unattended mode using the preseeded variables above and --reconfigure so that local repos are not updated
+bash -ex "./${PIHOLE_INSTALL}" --unattended --reconfigure
 rm /usr/local/bin/service
 
 # IPv6 support for nc openbsd better than traditional
 apt-get install -y --force-yes netcat-openbsd
-
-fetch_release_metadata() {
-    local directory="$1"
-    local version="$2"
-    pushd "$directory"
-    git fetch -t
-    git remote set-branches origin '*'
-    git fetch --depth 10
-    git checkout master
-    git reset --hard "$version"
-    popd
-}
-
-if [[ $CHECKOUT_BRANCHES == true ]] ; then
-    ln -s /bin/true /usr/local/bin/service
-    ln -s /bin/true /usr/local/bin/update-rc.d
-    echo "${CORE_VERSION}" | sudo tee /etc/pihole/ftlbranch
-    echo y | bash -x pihole checkout core ${CORE_VERSION}
-    echo y | bash -x pihole checkout web ${WEB_VERSION}
-    # echo y | bash -x pihole checkout ftl ${CORE_VERSION}
-    # If the v is forgotten: ${CORE_VERSION/v/}
-    unlink /usr/local/bin/service
-    unlink /usr/local/bin/update-rc.d
-else
-    # Reset to our tags so version numbers get detected correctly
-    fetch_release_metadata "${PI_HOLE_LOCAL_REPO}" "${CORE_VERSION}"
-    fetch_release_metadata "${webInterfaceDir}" "${WEB_VERSION}"
-fi
 
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
 sed -i '/^WEBPASSWORD/d' /etc/pihole/setupVars.conf
@@ -94,6 +87,8 @@ sed -i '/^WEBPASSWORD/d' /etc/pihole/setupVars.conf
 # Replace the call to `updatePiholeFunc` in arg parse with new `unsupportedFunc`
 sed -i $'s/helpFunc() {/unsupportedFunc() {\\\n  echo "Function not supported in Docker images"\\\n  exit 0\\\n}\\\n\\\nhelpFunc() {/g' /usr/local/bin/pihole
 sed -i $'s/)\s*updatePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
+sed -i $'s/)\s*piholeCheckoutFunc/) unsupportedFunc/g' /usr/local/bin/pihole
+sed -i $'s/)\s*piholeCheckoutFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 
 touch /.piholeFirstBoot
 

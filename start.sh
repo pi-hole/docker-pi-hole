@@ -52,7 +52,7 @@ export adlistFile='/etc/pihole/adlists.list'
 . /opt/pihole/webpage.sh
 
 # PH_TEST prevents the install from actually running (someone should rename that)
-PH_TEST=true . $PIHOLE_INSTALL
+PH_TEST=true . "${PIHOLE_INSTALL}"
 
 echo " ::: Starting docker specific checks & setup for docker pihole/pihole"
 
