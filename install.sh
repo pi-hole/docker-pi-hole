@@ -20,7 +20,7 @@ fetch_release_metadata() {
     git remote set-branches origin '*'
     git fetch --depth 10
     #if version number begins with a v, it's a version number
-    if [[ $version == "v*" ]]; then
+    if [[ $version == v* ]]; then
         git checkout master
         git reset --hard "$version"
     else # else treat it as a branch
