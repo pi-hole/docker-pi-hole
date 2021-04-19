@@ -40,6 +40,17 @@ services:
 
 [Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
 
+## Upgrade Notes
+
+### v5.8+
+A check has been added in v5.8 to ensure that the `PIHOLE_DNS_` value is correct, a common error is that quotes are passed through to the script, usually because the environment variable has been defined as, e.g. `- PIHOLE_DNS_='10.0.0.2#5053;1.1.1.1'`. The following declarations are valid:
+ - `PIHOLE_DNS_: 10.0.0.2#5053;1.1.1.1`
+ - `PIHOLE_DNS_: '10.0.0.2#5053;1.1.1.1'`
+ - `- PIHOLE_DNS_=10.0.0.2#5053;1.1.1.1`
+
+
+See [Docker documentation](https://docs.docker.com/compose/compose-file/compose-file-v3/#environment) for more detail, and discussion in [this issue thread](https://github.com/pi-hole/docker-pi-hole/issues/838)
+
 ## Overview
 
 #### Renamed from `diginc/pi-hole` to `pihole/pihole`
