@@ -37,6 +37,7 @@ services:
     restart: unless-stopped
 ```
 2. Run `docker-compose up --detach` to build and start pi-hole
+3. Use the Pi-hole web UI to change the DNS settings *Interface listening behavior* to "Listen on all interfaces, permit all origins", if using Docker's default `bridge` network setting
 
 [Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
 
@@ -160,6 +161,7 @@ Here is a rundown of other arguments for your docker-compose / docker run.
   * Ubuntu users see below for more detailed information
 * You can map other ports to Pi-hole port 80 using docker's port forwarding like this `-p 8080:80` if you are using the default blocking mode. If you are using the legacy IP blocking mode, you should not remap this port.
   * [Here is an example of running with jwilder/proxy](https://github.com/pi-hole/docker-pi-hole/blob/master/docker-compose-jwilder-proxy.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with Pi-hole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in jwilder/proxy and you need to set the matching `VIRTUAL_HOST` for the Pi-hole's container.  Please read jwilder/proxy readme for more info if you have trouble.
+* Docker's default network mode `bridge` isolates the container from the host's network. This is a more secure setting, but requires setting the Pi-hole DNS option for *Interface listening behavior* to "Listen on all interfaces, permit all origins".
 
 ### Installing on Ubuntu
 Modern releases of Ubuntu (17.10+) include [`systemd-resolved`](http://manpages.ubuntu.com/manpages/bionic/man8/systemd-resolved.service.8.html) which is configured by default to implement a caching DNS stub resolver. This will prevent pi-hole from listening on port 53.
