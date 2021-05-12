@@ -38,6 +38,7 @@ export DHCP_LEASETIME
 export PIHOLE_DOMAIN
 export DHCP_IPv6
 export DHCP_rapid_commit
+export CUSTOM_CACHE_SIZE
 
 export adlistFile='/etc/pihole/adlists.list'
 
