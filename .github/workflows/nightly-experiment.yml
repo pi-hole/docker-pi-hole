@@ -1,7 +1,7 @@
 name: Build & Deploy Nightly images
 on:
   schedule:
-    - cron: '5 * * * *' #yolo
+    - cron: '0 2 * * *' #yolo
 
 #env:
 #  DOCKER_HUB_REPO: pihole
