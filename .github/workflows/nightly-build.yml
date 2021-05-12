@@ -46,12 +46,19 @@ jobs:
           path: .gh-workspace
 
   publish:
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     needs: test-and-build
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
+        with:
+          ref: dev
+      - name: Patching Versions File
+        run: |
+          git checkout -b nightly
+          echo "CORE_VERSION=development" > VERSIONS
+          echo "WEB_VERSION=devel" >> VERSIONS
+          echo "FTL_VERSION=development" >> VERSIONS
       - name: Download workspace files
         uses: actions/download-artifact@v1
         with:
