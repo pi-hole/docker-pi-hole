@@ -1,0 +1,65 @@
+name: Build & Deploy Nightly images
+on:
+  schedule:
+    - cron: '40 17 * * *' # run at 18:40 UTC
+
+#env:
+#  DOCKER_HUB_REPO: pihole
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ARCH: [amd64, armhf, arm64, i386]
+        DEBIAN_VERSION: [stretch, buster, bullseye]
+    env:
+      ARCH: ${{matrix.ARCH}}
+      DEBIAN_VERSION: ${{matrix.DEBIAN_VERSION}}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+        with:
+          ref: dev
+      - name: Patching Versions File
+        run: |
+          git checkout -b nightly
+          echo "CORE_VERSION=development" > VERSIONS
+          echo "WEB_VERSION=devel" >> VERSIONS
+          echo "FTL_VERSION=development" >> VERSIONS
+      - name: Run Tests
+        run: |
+          echo "Building ${ARCH}-${DEBIAN_VERSION}"
+          ./gh-actions-test.sh
+      - name: Push the ARCH image
+        if: github.event_name != 'pull_request'
+        run: |
+          . gh-actions-vars.sh
+          echo "${{ secrets.DOCKERHUB_PASS }}" | docker login --username="${{ secrets.DOCKERHUB_USER }}" --password-stdin
+          docker push "${ARCH_IMAGE}"
+      - name: Upload gh-workspace
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v1
+        with:
+          name: gh-workspace
+          path: .gh-workspace
+
+  publish:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    needs: test-and-build
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Download workspace files
+        uses: actions/download-artifact@v1
+        with:
+          name: gh-workspace
+          path: .gh-workspace
+      - name: Tag and Publish multi-arch images
+        env:
+          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+        run: |
+          ./gh-actions-deploy.sh
