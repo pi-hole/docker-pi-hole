@@ -147,8 +147,8 @@ if [ -n "${WEBTHEME}" ]; then
         change_setting "WEBTHEME" "${WEBTHEME}"
         ;;
       *)
-        echo "Invalid theme name supplied: ${WEBTHEME}, defaulting to default-dark."
-        change_setting "WEBTHEME" "default-dark"
+        echo "Invalid theme name supplied: ${WEBTHEME}, falling back to default-light."
+        change_setting "WEBTHEME" "default-light"
         ;;
     esac
 fi
