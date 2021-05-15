@@ -139,7 +139,7 @@ else
 fi
 
 # Parse the WEBTHEME variable, if it exists, and set the selected theme if it is one of the supported values.
-# If an invalid theme name was supplied, setup WEBTHEME to use the default-dark theme.
+# If an invalid theme name was supplied, setup WEBTHEME to use the default-light theme.
 if [ -n "${WEBTHEME}" ]; then
     case "${WEBTHEME}" in
       "default-dark" | "default-darker" | "default-light")
