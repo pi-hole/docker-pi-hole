@@ -93,6 +93,7 @@ There are other environment variables if you want to customize various things in
 | `ADMIN_EMAIL: <email address>`<br/> *Optional Default: ''* | Set an administrative contact address for the Block Page
 | `TZ: <Timezone>`<br/> **Recommended** *Default: UTC* | Set your [timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) to make sure logs rotate at local midnight instead of at UTC midnight.
 | `WEBPASSWORD: <Admin password>`<br/> **Recommended** *Default: random* | http://pi.hole/admin password. Run `docker logs pihole \| grep random` to find your random pass.
+| `WEBPASSWORD_FILE: <Docker secret path>` *Optional* | Set an Admin password using [Docker secrets](https://docs.docker.com/engine/swarm/secrets/). If `WEBPASSWORD` is set, `WEBPASSWORD_FILE` is ignored. If `WEBPASSWORD` is empty, and `WEBPASSWORD_FILE` is set to a valid readable file path, then `WEBPASSWORD` will be set to the contents of `WEBPASSWORD_FILE`.
 | `PIHOLE_DNS_: <IPs delimited by ;>`<br/> *Optional* *Default: 8.8.8.8;8.8.4.4* | Upstream DNS server(s) for Pi-hole to forward queries to, seperated by a semicolon <br/> (supports non-standard ports with `#[port number]`) e.g `127.0.0.1#5053;8.8.8.8;8.8.4.4`
 | `DNSSEC: <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DNSSEC support
 | `DNS_BOGUS_PRIV: <"true"\|"false">`<br/> *Optional* *Default: "true"* | Enable forwarding of reverse lookups for private ranges
