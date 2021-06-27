@@ -1,0 +1,4 @@
+#!/usr/bin/with-contenv bash
+
+s6-echo "Starting cloudflared dns proxy"
+/sbin/cloudflared proxy-dns --port 5533

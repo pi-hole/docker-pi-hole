@@ -30,13 +30,25 @@ fetch_release_metadata() {
 }
 
 apt-get update
-apt-get install --no-install-recommends -y curl procps ca-certificates git
+apt-get install --no-install-recommends -y curl procps ca-certificates git gnupg2
+
 # curl in armhf-buster's image has SSL issues. Running c_rehash fixes it.
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=923479
 c_rehash
 ln -s `which echo` /usr/local/bin/whiptail
 curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
 mv /init /s6-init
+
+# Download cloudflared
+export ARCH_TYPE="$(uname -m)"
+if [[ "$ARCH_TYPE" == *"arm64"* ]] ; then
+curl -L -o /sbin/cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64
+elif [[ "$ARCH_TYPE" == *"arm"* ]] ; then
+curl -L -o /sbin/cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-armv6
+else
+curl -L -o /sbin/cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+fi
+chmod u+x /sbin/cloudflared
 
 # debconf-apt-progress seems to hang so get rid of it too
 which debconf-apt-progress
