@@ -199,19 +199,22 @@ setup_php_env() {
       VIRTUAL_HOST="$ServerIP"
     fi;
     local vhost_line="\t\t\t\"VIRTUAL_HOST\" => \"${VIRTUAL_HOST}\","
+    local corshosts_line="\t\t\t\"CORS_HOSTS\" => \"${CORS_HOSTS}\","
     local serverip_line="\t\t\t\"ServerIP\" => \"${ServerIP}\","
     local php_error_line="\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\","
 
     # idempotent line additions
     grep -qP "$vhost_line" "$PHP_ENV_CONFIG" || \
         sed -i "/bin-environment/ a\\${vhost_line}" "$PHP_ENV_CONFIG"
+    grep -qP "$corshosts_line" "$PHP_ENV_CONFIG" || \
+        sed -i "/bin-environment/ a\\${corshosts_line}" "$PHP_ENV_CONFIG"
     grep -qP "$serverip_line" "$PHP_ENV_CONFIG" || \
         sed -i "/bin-environment/ a\\${serverip_line}" "$PHP_ENV_CONFIG"
     grep -qP "$php_error_line" "$PHP_ENV_CONFIG" || \
         sed -i "/bin-environment/ a\\${php_error_line}" "$PHP_ENV_CONFIG"
 
     echo "Added ENV to php:"
-    grep -E '(VIRTUAL_HOST|ServerIP|PHP_ERROR_LOG)' "$PHP_ENV_CONFIG"
+    grep -E '(VIRTUAL_HOST|CORS_HOSTS|ServerIP|PHP_ERROR_LOG)' "$PHP_ENV_CONFIG"
 }
 
 setup_web_port() {
