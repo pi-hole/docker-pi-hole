@@ -124,6 +124,7 @@ There are other environment variables if you want to customize various things in
 | `DHCP_IPv6: <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DHCP server IPv6 support (SLAAC + RA).
 | `DHCP_rapid_commit <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DHCPv4 rapid commit (fast address assignment).
 | `WEBTHEME <"default-dark"\|"default-darker"\|"default-light">`<br/> *Optional* *Default: "default-light"* | User interface theme to use.
+| `CORS_HOSTS: <IPs delimited by ,>`<br/> *Advanced/Optional* | List of domains/subdomains on which [CORS](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing) is allowed. Does not support wildcard. Eg. `CORS_HOSTS: home.domain.com,www.domain.com,domain.com`
 
 ## Deprecated environment variables:
 While these may still work, they are likely to be removed in a future version. Where applicible, alternative variable names are indicated. Please review the table above for usage of the alternative variables
