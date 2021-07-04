@@ -1,7 +1,19 @@
-name: Build & Deploy Nightly images
+name: Build & Deploy custom image manually
 on:
-  schedule:
-    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Name of tag'
+        required: true
+      core:
+        description: 'Branch or tag of core repo'
+        required: true
+      web:
+        description: 'Branch or tag of web repo'
+        required: true
+      ftl:
+        description: 'Branch or tag of ftl repo'
+        required: true
 
 jobs:
   test-and-build:
@@ -21,10 +33,10 @@ jobs:
           ref: dev
       - name: Patching Versions File
         run: |
-          git checkout -b nightly
-          echo "CORE_VERSION=development" > VERSIONS
-          echo "WEB_VERSION=devel" >> VERSIONS
-          echo "FTL_VERSION=development" >> VERSIONS
+          git checkout -b ${{ github.event.inputs.name }}
+          echo "CORE_VERSION=${{ github.event.inputs.core }}" > VERSIONS
+          echo "WEB_VERSION=${{ github.event.inputs.web }}" >> VERSIONS
+          echo "FTL_VERSION=${{ github.event.inputs.ftl }}" >> VERSIONS
       - name: Run Tests
         run: |
           echo "Building ${ARCH}-${DEBIAN_VERSION}"
@@ -52,10 +64,10 @@ jobs:
           ref: dev
       - name: Patching Versions File
         run: |
-          git checkout -b nightly
-          echo "CORE_VERSION=development" > VERSIONS
-          echo "WEB_VERSION=devel" >> VERSIONS
-          echo "FTL_VERSION=development" >> VERSIONS
+          git checkout -b ${{ github.event.inputs.name }}
+          echo "CORE_VERSION=${{ github.event.inputs.core }}" > VERSIONS
+          echo "WEB_VERSION=${{ github.event.inputs.web }}" >> VERSIONS
+          echo "FTL_VERSION=${{ github.event.inputs.ftl }}" >> VERSIONS
       - name: Download workspace files
         uses: actions/download-artifact@v1
         with:
