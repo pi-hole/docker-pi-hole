@@ -17,7 +17,7 @@ def read_pihole_versions():
     global FTL_VERSION
     dotdot = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir, os.pardir))
     config = dotenv_values('{}/VERSIONS'.format(dotdot))
-    FTL_VERSION = config['FTL_VERSION']
+    FTL_VERSION = config['FTL_VERSION'].replace('/','-')
 
 
 @pytest.fixture()
@@ -86,7 +86,7 @@ def Docker(request, test_args, args, image, cmd, entrypoint):
 def DockerPersist(request, persist_test_args, persist_args, persist_image, persist_cmd, persist_entrypoint, Dig):
     ''' Persistent Docker container for multiple tests, instead of stopping container after one test '''
     ''' Uses DUP'd module scoped fixtures because smaller scoped fixtures won't mix with module scope '''
-    persistent_container = DockerGeneric(request, persist_test_args, persist_args, persist_image, persist_cmd, persist_entrypoint) 
+    persistent_container = DockerGeneric(request, persist_test_args, persist_args, persist_image, persist_cmd, persist_entrypoint)
     ''' attach a dig conatiner for lookups '''
     persistent_container.dig = Dig(persistent_container.id)
     return persistent_container

@@ -29,7 +29,7 @@ def read_pihole_versions():
     global FTL_VERSION
     dot = os.path.abspath('.')
     config = dotenv_values('{}/VERSIONS'.format(dot))
-    FTL_VERSION = config['FTL_VERSION']
+    FTL_VERSION = config['FTL_VERSION'].replace('/','-')
 
 
 def build_dockerfiles(args) -> bool:
