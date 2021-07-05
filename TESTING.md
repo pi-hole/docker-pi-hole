@@ -10,7 +10,7 @@ Revisions in the future may re-enable running python on your host (not just in d
 
 Should result in:
 
-- An image named `pihole:amd64` being built
+- An image named `pihole/pihole:dev-amd64-buster` being built
 - Tests being ran to confirm the image doesn't have any regressions
 
 # Local image names

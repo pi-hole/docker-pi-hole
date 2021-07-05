@@ -1,4 +1,9 @@
 #!/usr/bin/with-contenv bash
 
-s6-echo "Stopping pihole-FTL"
-kill -9 $(pgrep pihole-FTL) # TODO: REVISIT THIS SO AS TO NOT kill -9
+piholeFtlPid=$(pgrep pihole-FTL)
+if [ $? -eq 0 ]; then
+    s6-echo "Stopping pihole-FTL ($piholeFtlPid)"
+    kill -9 $piholeFtlPid
+else
+    s6-echo "Process for pihole-FTL not found."
+fi

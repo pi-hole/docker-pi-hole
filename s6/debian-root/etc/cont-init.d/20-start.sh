@@ -22,6 +22,12 @@ else
 fi
 
 # Kill dnsmasq because s6 won't like it if it's running when s6 services start
-kill -9 $(pgrep pihole-FTL) || true # TODO: REVISIT THIS SO AS TO NOT kill -9
+piholeFtlPid=$(pgrep pihole-FTL)
+if [ $? -eq 0 ]; then
+    echo "Killing pihole-FTL process ($piholeFtlPid) in preparation for s6 service startup."
+    kill -9 $piholeFtlPid
+else
+    echo "Process for pihole-FTL not found. Assuming it is already stopped and skipping kill command."
+fi
 
 pihole -v
