@@ -3,7 +3,7 @@
 piholeFtlPid=$(pgrep pihole-FTL)
 if [ $? -eq 0 ]; then
     s6-echo "Stopping pihole-FTL ($piholeFtlPid)"
-    kill -9 $piholeFtlPid
+    kill -9 $piholeFtlPid # TODO: Revisit this to remove the -9 argument
 else
     s6-echo "Process for pihole-FTL not found."
 fi

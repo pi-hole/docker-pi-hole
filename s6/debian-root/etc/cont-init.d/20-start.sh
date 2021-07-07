@@ -25,7 +25,7 @@ fi
 piholeFtlPid=$(pgrep pihole-FTL)
 if [ $? -eq 0 ]; then
     echo "Killing pihole-FTL process ($piholeFtlPid) in preparation for s6 service startup."
-    kill -9 $piholeFtlPid
+    kill -9 $piholeFtlPid # TODO: Revisit this to remove the -9 argument
 else
     echo "Process for pihole-FTL not found. Assuming it is already stopped and skipping kill command."
 fi
