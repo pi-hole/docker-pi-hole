@@ -63,10 +63,6 @@ source $setupVars
 
 export USER=pihole
 
-# fix permission denied to resolvconf post-inst /etc/resolv.conf moby/moby issue #1297
-apt-get -y install debconf-utils
-echo resolvconf resolvconf/linkify-resolvconf boolean false | debconf-set-selections
-
 export PIHOLE_SKIP_OS_CHECK=true
 
 ln -s /bin/true /usr/local/bin/service
