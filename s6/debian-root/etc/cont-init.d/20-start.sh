@@ -7,8 +7,6 @@ if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
     bashCmd='bash -e -x'
 fi
 
-# used to start dnsmasq here for gravity to use...now that conflicts port 53
-
 $bashCmd /start.sh
 # Gotta go fast, no time for gravity
 if [ -n "$PYTEST" ]; then
@@ -25,8 +23,5 @@ else
     echo "  Skipping Gravity Database Update."
     [ ! -e /etc/cron.d/gravity-on-boot ] || rm /etc/cron.d/gravity-on-boot &>/dev/null
 fi
-
-# Kill dnsmasq because s6 won't like it if it's running when s6 services start
-kill -9 $(pgrep pihole-FTL) || true # TODO: REVISIT THIS SO AS TO NOT kill -9
 
 pihole -v
