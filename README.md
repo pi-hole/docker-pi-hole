@@ -36,7 +36,7 @@ services:
       - NET_ADMIN
     restart: unless-stopped
 ```
-2. Run `docker-compose up --detach` to build and start pi-hole
+2. Run `docker-compose up -d` to build and start pi-hole
 
 [Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
 
