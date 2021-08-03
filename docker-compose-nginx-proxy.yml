@@ -3,8 +3,8 @@ version: "3"
 # https://github.com/pi-hole/docker-pi-hole/blob/master/README.md
 
 services:
-  jwilder-proxy:
-    image: jwilder/nginx-proxy
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy
     ports:
       - '80:80'
     environment:
@@ -38,7 +38,7 @@ services:
     extra_hosts:
       # Resolve to nothing domains (terminate connection)
       - 'nw2master.bioware.com nwn2.master.gamespy.com:0.0.0.0'
-      # LAN hostnames for other docker containers using jwilder
+      # LAN hostnames for other docker containers using nginx-proxy
       - 'yourDomain.lan:192.168.41.55'
       - 'pihole pihole.yourDomain.lan:192.168.41.55'
       - 'ghost ghost.yourDomain.lan:192.168.41.55'
