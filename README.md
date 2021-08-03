@@ -133,7 +133,9 @@ There are other environment variables if you want to customize various things in
 | `SKIPGRAVITYONBOOT` | unset | `<unset\|1>` | Use this option to skip updating the Gravity Database when booting up the container.  By default this environment variable is not set so the Gravity Database will be updated when the container starts up.  Setting this environment variable to 1 (or anything) will cause the Gravity Database to not be updated when container starts up.
 
 ### Experimental Variables
-| `DNSMASQ_USER: <pihole\|root>`<br/> *Experimental Default: root* | Allows running FTLDNS as non-root.
+| Variable | Default | Value | Descrption |
+| -------- | ------- | ----- | ---------- |
+| `DNSMASQ_USER` | unset | `<pihole\|root>` | Allows running FTLDNS as non-root.
 
 ## Deprecated environment variables:
 While these may still work, they are likely to be removed in a future version. Where applicible, alternative variable names are indicated. Please review the table above for usage of the alternative variables
