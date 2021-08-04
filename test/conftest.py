@@ -1,27 +1,31 @@
 
-import functools
 import os
 import pytest
 import subprocess
 import testinfra
-import types
+from dotenv import dotenv_values
 
 local_host = testinfra.get_host('local://')
 check_output = local_host.check_output
 
 DEBIAN_VERSION = os.environ.get('DEBIAN_VERSION', 'buster')
-__version__ = None
-dotdot = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir, os.pardir))
-with open('{}/VERSION'.format(dotdot), 'r') as v:
-    raw_version = v.read().strip()
-    __version__ = raw_version.replace('release/', 'release-')
+FTL_VERSION = None
+
+
+@pytest.fixture(autouse=True)
+def read_pihole_versions():
+    global FTL_VERSION
+    dotdot = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir, os.pardir))
+    config = dotenv_values('{}/VERSIONS'.format(dotdot))
+    FTL_VERSION = config['FTL_VERSION'].replace('/','-')
+
 
 @pytest.fixture()
 def run_and_stream_command_output():
     def run_and_stream_command_output_inner(command, verbose=False):
         print("Running", command)
         build_env = os.environ.copy()
-        build_env['PIHOLE_VERSION'] = __version__
+        build_env['PIHOLE_VERSION'] = FTL_VERSION
         build_result = subprocess.Popen(command.split(), env=build_env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                         bufsize=1, universal_newlines=True)
         if verbose:
@@ -82,7 +86,7 @@ def Docker(request, test_args, args, image, cmd, entrypoint):
 def DockerPersist(request, persist_test_args, persist_args, persist_image, persist_cmd, persist_entrypoint, Dig):
     ''' Persistent Docker container for multiple tests, instead of stopping container after one test '''
     ''' Uses DUP'd module scoped fixtures because smaller scoped fixtures won't mix with module scope '''
-    persistent_container = DockerGeneric(request, persist_test_args, persist_args, persist_image, persist_cmd, persist_entrypoint) 
+    persistent_container = DockerGeneric(request, persist_test_args, persist_args, persist_image, persist_cmd, persist_entrypoint)
     ''' attach a dig conatiner for lookups '''
     persistent_container.dig = Dig(persistent_container.id)
     return persistent_container
@@ -97,7 +101,7 @@ def arch(request):
 
 @pytest.fixture()
 def version():
-    return __version__
+    return FTL_VERSION
 
 @pytest.fixture()
 def debian_version():
@@ -128,7 +132,7 @@ def persist_arch():
 
 @pytest.fixture(scope='module')
 def persist_version():
-    return __version__
+    return FTL_VERSION
 
 @pytest.fixture(scope='module')
 def persist_debian_version():

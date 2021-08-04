@@ -36,7 +36,8 @@ services:
       - NET_ADMIN
     restart: unless-stopped
 ```
-2. Run `docker-compose up --detach` to build and start pi-hole
+2. Run `docker-compose up -d` to build and start pi-hole
+3. Use the Pi-hole web UI to change the DNS settings *Interface listening behavior* to "Listen on all interfaces, permit all origins", if using Docker's default `bridge` network setting
 
 [Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
 
@@ -103,7 +104,7 @@ There are other environment variables if you want to customize various things in
 | `ADMIN_EMAIL` | unset | email address | Set an administrative contact address for the Block Page |
 | `PIHOLE_DNS_` |  `8.8.8.8;8.8.4.4` | IPs delimited by `;` | Upstream DNS server(s) for Pi-hole to forward queries to, seperated by a semicolon <br/> (supports non-standard ports with `#[port number]`) e.g `127.0.0.1#5053;8.8.8.8;8.8.4.4` |
 | `DNSSEC` | `false` | `<"true"\|"false">` | Enable DNSSEC support |
-| `DNS_BOGUS_PRIV` | `true` |`<"true"\|"false">`| Enable forwarding of reverse lookups for private ranges |
+| `DNS_BOGUS_PRIV` | `true` |`<"true"\|"false">`| Never forward reverse lookups for private ranges |
 | `DNS_FQDN_REQUIRED` | `true` | `<"true"\|"false">`| Never forward non-FQDNs |
 | `REV_SERVER` | `false` | `<"true"\|"false">` | Enable DNS conditional forwarding for device name resolution |
 | `REV_SERVER_DOMAIN` | unset | Network Domain | If conditional forwarding is enabled, set the domain of the local network router |
@@ -122,6 +123,8 @@ There are other environment variables if you want to customize various things in
 | `TEMPERATUREUNIT` | `c` | `<c\|k\|f>` | Set preferred temperature unit to `c`: Celsius, `k`: Kelvin, or `f` Fahrenheit units.
 | `WEBUIBOXEDLAYOUT` | `boxed` | `<boxed\|traditional>` | Use boxed layout (helpful when working on large screens)
 | `QUERY_LOGGING` | `true` | `<"true"\|"false">` | Enable query logging or not.
+| `WEBTHEME` | `default-light` | `<"default-dark"\|"default-darker"\|"default-light">`| User interface theme to use.
+| `WEBPASSWORD_FILE`| unset | `<Docker secret path>` |Set an Admin password using [Docker secrets](https://docs.docker.com/engine/swarm/secrets/). If `WEBPASSWORD` is set, `WEBPASSWORD_FILE` is ignored. If `WEBPASSWORD` is empty, and `WEBPASSWORD_FILE` is set to a valid readable file path, then `WEBPASSWORD` will be set to the contents of `WEBPASSWORD_FILE`.
 
 ### Advanced Variables
 | Variable | Default | Value | Descrption |
@@ -131,6 +134,8 @@ There are other environment variables if you want to customize various things in
 | `DNSMASQ_LISTENING` | unset | `<local\|all\|single>` | `local` listens on all local subnets, `all` permits listening on internet origin subnets in addition to local, `single` listens only on the interface specified.
 | `WEB_PORT` | unset | `<PORT>` | **This will break the 'webpage blocked' functionality of Pi-hole** however it may help advanced setups like those running synology or `--net=host` docker argument.  This guide explains how to restore webpage blocked functionality using a linux router DNAT rule: [Alternative Synology installation method](https://discourse.pi-hole.net/t/alternative-synology-installation-method/5454?u=diginc)
 | `SKIPGRAVITYONBOOT` | unset | `<unset\|1>` | Use this option to skip updating the Gravity Database when booting up the container.  By default this environment variable is not set so the Gravity Database will be updated when the container starts up.  Setting this environment variable to 1 (or anything) will cause the Gravity Database to not be updated when container starts up.
+| `CORS_HOSTS` | unset | `<FQDNs delimited by ,>` | List of domains/subdomains on which CORS is allowed. Wildcards are not supported. Eg: `CORS_HOSTS: domain.com,home.domain.com,www.domain.com`.
+| `CUSTOM_CACHE_SIZE` | `10000` | Number | Set the cache size for dnsmasq. Useful for increasing the default cache size or to set it to 0. Note that when `DNSSEC` is "true", then this setting is ignored.
 
 ### Experimental Variables
 | Variable | Default | Value | Descrption |
@@ -175,6 +180,7 @@ Here is a rundown of other arguments for your docker-compose / docker run.
   * Ubuntu users see below for more detailed information
 * You can map other ports to Pi-hole port 80 using docker's port forwarding like this `-p 8080:80` if you are using the default blocking mode. If you are using the legacy IP blocking mode, you should not remap this port.
   * [Here is an example of running with jwilder/proxy](https://github.com/pi-hole/docker-pi-hole/blob/master/docker-compose-jwilder-proxy.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with Pi-hole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in jwilder/proxy and you need to set the matching `VIRTUAL_HOST` for the Pi-hole's container.  Please read jwilder/proxy readme for more info if you have trouble.
+* Docker's default network mode `bridge` isolates the container from the host's network. This is a more secure setting, but requires setting the Pi-hole DNS option for *Interface listening behavior* to "Listen on all interfaces, permit all origins".
 
 ### Installing on Ubuntu
 Modern releases of Ubuntu (17.10+) include [`systemd-resolved`](http://manpages.ubuntu.com/manpages/bionic/man8/systemd-resolved.service.8.html) which is configured by default to implement a caching DNS stub resolver. This will prevent pi-hole from listening on port 53.
@@ -213,6 +219,8 @@ The primary docker tags / versions are explained in the following table.  [Click
 | `v5.0-buster`           | auto detect  | Versioned tags, if you want to pin against a specific Pi-hole and Debian version, use one of these |  |
 | `v5.0-<arch>-buster `   | based on tag | Specific architectures and Debian version tags | |
 | `dev`                   | auto detect  | like latest tag, but for the development branch (pushed occasionally)   | |
+| `beta-*`                | auto detect  | Early beta releases of upcoming versions - here be dragons              | |
+| `nightly`               | auto detect  | Like `dev` but pushed every night and pulls from the latest `development` branches of the core Pi-hole components (Pi-hole, AdminLTE, FTL)  | |
 
 ### `pihole/pihole:latest` [![](https://images.microbadger.com/badges/image/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com")
 
