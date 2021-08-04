@@ -36,7 +36,7 @@ services:
       - NET_ADMIN
     restart: unless-stopped
 ```
-2. Run `docker-compose up --detach` to build and start pi-hole
+2. Run `docker-compose up -d` to build and start pi-hole
 3. Use the Pi-hole web UI to change the DNS settings *Interface listening behavior* to "Listen on all interfaces, permit all origins", if using Docker's default `bridge` network setting
 
 [Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
