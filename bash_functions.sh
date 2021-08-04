@@ -13,7 +13,7 @@ fix_capabilities() {
 
 prepare_configs() {
     # Done in /start.sh, don't do twice
-    PH_TEST=true . $PIHOLE_INSTALL
+    PH_TEST=true . "${PIHOLE_INSTALL}"
     # Set Debian webserver variables for installConfigs
     LIGHTTPD_USER="www-data"
     LIGHTTPD_GROUP="www-data"
@@ -103,6 +103,7 @@ setup_dnsmasq() {
     setup_dnsmasq_interface "$interface"
     setup_dnsmasq_listening_behaviour "$dnsmasq_listening_behaviour"
     setup_dnsmasq_user "${DNSMASQ_USER}"
+    setup_cache_size "${CUSTOM_CACHE_SIZE}"
     ProcessDNSSettings
 }
 
@@ -157,6 +158,32 @@ setup_dnsmasq_hostnames() {
     fi
 }
 
+setup_cache_size() {
+    local warning="WARNING: CUSTOM_CACHE_SIZE not used"
+    local dnsmasq_pihole_01_location="/etc/dnsmasq.d/01-pihole.conf"
+    # Quietly exit early for empty or default
+    if [[ -z "${1}" || "${1}" == '10000' ]] ; then return ; fi
+
+    if [[ "${DNSSEC}" == "true" ]] ; then
+        echo "$warning - Cannot change cache size if DNSSEC is enabled"
+        return
+    fi
+
+    if ! echo $1 | grep -q '^[0-9]*$' ; then
+        echo "$warning - $1 is not an integer"
+        return
+    fi
+
+    local -i custom_cache_size="$1"
+    if (( $custom_cache_size < 0 )); then
+        echo "$warning - $custom_cache_size is not a positive integer or zero"
+        return
+    fi
+    echo "Custom CUSTOM_CACHE_SIZE set to $custom_cache_size"
+
+    sed -i "s/^cache-size=\s*[0-9]*/cache-size=$custom_cache_size/" ${dnsmasq_pihole_01_location}
+}
+
 setup_lighttpd_bind() {
     local serverip="$1"
     # if using '--net=host' only bind lighttpd on $ServerIP and localhost
@@ -172,19 +199,22 @@ setup_php_env() {
       VIRTUAL_HOST="$ServerIP"
     fi;
     local vhost_line="\t\t\t\"VIRTUAL_HOST\" => \"${VIRTUAL_HOST}\","
+    local corshosts_line="\t\t\t\"CORS_HOSTS\" => \"${CORS_HOSTS}\","
     local serverip_line="\t\t\t\"ServerIP\" => \"${ServerIP}\","
     local php_error_line="\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\","
 
     # idempotent line additions
     grep -qP "$vhost_line" "$PHP_ENV_CONFIG" || \
         sed -i "/bin-environment/ a\\${vhost_line}" "$PHP_ENV_CONFIG"
+    grep -qP "$corshosts_line" "$PHP_ENV_CONFIG" || \
+        sed -i "/bin-environment/ a\\${corshosts_line}" "$PHP_ENV_CONFIG"
     grep -qP "$serverip_line" "$PHP_ENV_CONFIG" || \
         sed -i "/bin-environment/ a\\${serverip_line}" "$PHP_ENV_CONFIG"
     grep -qP "$php_error_line" "$PHP_ENV_CONFIG" || \
         sed -i "/bin-environment/ a\\${php_error_line}" "$PHP_ENV_CONFIG"
 
     echo "Added ENV to php:"
-    grep -E '(VIRTUAL_HOST|ServerIP|PHP_ERROR_LOG)' "$PHP_ENV_CONFIG"
+    grep -E '(VIRTUAL_HOST|CORS_HOSTS|ServerIP|PHP_ERROR_LOG)' "$PHP_ENV_CONFIG"
 }
 
 setup_web_port() {
