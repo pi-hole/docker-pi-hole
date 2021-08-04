@@ -26,7 +26,7 @@ services:
       context: .
       args:
         <<: *common-args
-        PIHOLE_BASE: multiarch/debian-debootstrap:armel-${DEBIAN_VERSION:-buster}-slim
+        PIHOLE_BASE: pihole/debian-debootstrap:armel-${DEBIAN_VERSION:-buster}-slim
         PIHOLE_ARCH: armel
         S6_ARCH: arm
   armhf:
@@ -35,7 +35,7 @@ services:
       context: .
       args:
         <<: *common-args
-        PIHOLE_BASE: multiarch/debian-debootstrap:armhf-${DEBIAN_VERSION:-buster}-slim
+        PIHOLE_BASE: pihole/debian-debootstrap:armhf-${DEBIAN_VERSION:-buster}-slim
         PIHOLE_ARCH: arm
         S6_ARCH: arm
   arm64:
@@ -44,7 +44,7 @@ services:
       context: .
       args:
         <<: *common-args
-        PIHOLE_BASE: multiarch/debian-debootstrap:arm64-${DEBIAN_VERSION:-buster}-slim
+        PIHOLE_BASE: pihole/debian-debootstrap:arm64-${DEBIAN_VERSION:-buster}-slim
         PIHOLE_ARCH: arm64
         S6_ARCH: aarch64
   i386:
@@ -53,6 +53,6 @@ services:
       context: .
       args:
         <<: *common-args
-        PIHOLE_BASE: multiarch/debian-debootstrap:i386-${DEBIAN_VERSION:-buster}-slim
+        PIHOLE_BASE: pihole/debian-debootstrap:i386-${DEBIAN_VERSION:-buster}-slim
         PIHOLE_ARCH: i386
         S6_ARCH: x86
