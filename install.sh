@@ -38,10 +38,6 @@ ln -s `which echo` /usr/local/bin/whiptail
 curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
 mv /init /s6-init
 
-# debconf-apt-progress seems to hang so get rid of it too
-which debconf-apt-progress
-mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
-
 # clone the remote repos to their local destinations
 git clone "${CORE_REMOTE_REPO}" "${CORE_LOCAL_REPO}"
 fetch_release_metadata "${CORE_LOCAL_REPO}" "${CORE_VERSION}"
