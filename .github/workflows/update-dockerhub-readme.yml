@@ -1,0 +1,21 @@
+name: Push README to Docker Hub
+on:
+  push:
+    tags:
+      - v*
+jobs:
+  PushContainerReadme:
+    runs-on: ubuntu-latest
+    name: Push README to Docker Hub
+    steps:
+      - name: git checkout
+        uses: actions/checkout@v2
+      - name: push README to Dockerhub
+        uses: christian-korneck/update-container-description-action@v1
+        env:
+          DOCKER_USER: ${{ secrets.DOCKERHUB_USER }}
+          DOCKER_PASS: ${{ secrets.DOCKERHUB_PASS }}
+        with:
+          destination_container_repo: my-user/my-repo
+          provider: dockerhub
+          readme_file: 'README.md'
