@@ -104,7 +104,7 @@ There are other environment variables if you want to customize various things in
 | `ADMIN_EMAIL` | unset | email address | Set an administrative contact address for the Block Page |
 | `PIHOLE_DNS_` |  `8.8.8.8;8.8.4.4` | IPs delimited by `;` | Upstream DNS server(s) for Pi-hole to forward queries to, seperated by a semicolon <br/> (supports non-standard ports with `#[port number]`) e.g `127.0.0.1#5053;8.8.8.8;8.8.4.4` |
 | `DNSSEC` | `false` | `<"true"\|"false">` | Enable DNSSEC support |
-| `DNS_BOGUS_PRIV` | `true` |`<"true"\|"false">`| Enable forwarding of reverse lookups for private ranges |
+| `DNS_BOGUS_PRIV` | `true` |`<"true"\|"false">`| Never forward reverse lookups for private ranges |
 | `DNS_FQDN_REQUIRED` | `true` | `<"true"\|"false">`| Never forward non-FQDNs |
 | `REV_SERVER` | `false` | `<"true"\|"false">` | Enable DNS conditional forwarding for device name resolution |
 | `REV_SERVER_DOMAIN` | unset | Network Domain | If conditional forwarding is enabled, set the domain of the local network router |
