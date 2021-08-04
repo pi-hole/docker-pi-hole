@@ -22,6 +22,8 @@ jobs:
       matrix:
         ARCH: [amd64, armhf, arm64, i386]
         DEBIAN_VERSION: [stretch, buster, bullseye]
+        exclude:
+          - {ARCH: arm64, DEBIAN_VERSION: bullseye}
     env:
       ARCH: ${{matrix.ARCH}}
       DEBIAN_VERSION: ${{matrix.DEBIAN_VERSION}}
