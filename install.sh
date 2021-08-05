@@ -91,6 +91,9 @@ sed -i $'s/)\s*uninstallFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 # Inject a message into the debug scripts Operating System section to indicate that the debug log comes from a Docker system.
 sed -i $'s/echo_current_diagnostic "Operating system"/echo_current_diagnostic "Operating system"\\\n    log_write "${INFO} Pi-hole Docker Container: ${PIHOLE_TAG:-PIHOLE_TAG is unset}"/g' /opt/pihole/piholeDebug.sh
 
+# Inject container tag into web interface footer...
+sed -i $"s/<ul class=\"list-unstyled\">/<strong>Docker Tag<\/strong> ${PIHOLE_TAG//\//\\/}\\n<ul class=\"list-unstyled\">/g" /var/www/html/admin/scripts/pi-hole/php/footer.php
+
 touch /.piholeFirstBoot
 
 echo 'Docker install successful'
