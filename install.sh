@@ -76,10 +76,20 @@ apt-get install -y --force-yes netcat-openbsd
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
 sed -i '/^WEBPASSWORD/d' /etc/pihole/setupVars.conf
 
-# Replace the call to `updatePiholeFunc` in arg parse with new `unsupportedFunc`
+# sed a new function into the `pihole` script just above the `helpFunc()` function for later use.
 sed -i $'s/helpFunc() {/unsupportedFunc() {\\\n  echo "Function not supported in Docker images"\\\n  exit 0\\\n}\\\n\\\nhelpFunc() {/g' /usr/local/bin/pihole
+# Replace a few of the `pihole` options with calls to `unsupportedFunc`:
+# pihole -up / pihole updatePihole
 sed -i $'s/)\s*updatePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
+# pihole checkout
 sed -i $'s/)\s*piholeCheckoutFunc/) unsupportedFunc/g' /usr/local/bin/pihole
+# pihole -r / pihole reconfigure
+sed -i $'s/)\s*reconfigurePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
+# pihole uninstall
+sed -i $'s/)\s*uninstallFunc/) unsupportedFunc/g' /usr/local/bin/pihole
+
+# Inject a message into the debug scripts Operating System section to indicate that the debug log comes from a Docker system.
+sed -i $'s/echo_current_diagnostic "Operating system"/echo_current_diagnostic "Operating system"\\\n    log_write "${INFO} Pi-hole Docker Container: ${PIHOLE_TAG:-PIHOLE_TAG is unset}"/g' /opt/pihole/piholeDebug.sh
 
 touch /.piholeFirstBoot
 

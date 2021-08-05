@@ -35,3 +35,5 @@ else
 fi
 
 pihole -v
+
+echo "  Container tag is: ${PIHOLE_TAG}"
