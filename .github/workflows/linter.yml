@@ -1,0 +1,32 @@
+---
+# https://github.com/BretFisher/docker-github-actions-example/blob/main/.github/workflows/linter.yml
+name: SuperLinter
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: SuperLint Repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2.3.4
+        with:
+          # Full git history is needed to get a proper list of changed files within `super-linter`
+          fetch-depth: 0
+      # https://github.com/marketplace/actions/super-linter
+      - name: Lint Code Base
+        uses: github/super-linter@v4.6.1
+        env:
+          # only lint changed files in each commit/PR
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: master
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # disable specific linters (all enabled by default)
+          # we will use hadolint, and not dockerfilelint
+          VALIDATE_DOCKERFILE: false
