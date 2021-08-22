@@ -54,6 +54,6 @@ ARG MAINTAINER
 LABEL maintainer="${MAINTAINER}"
 LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
 
-HEALTHCHECK CMD dig +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
+HEALTHCHECK CMD dig +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
 
 SHELL ["/bin/bash", "-c"]
