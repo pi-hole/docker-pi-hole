@@ -3,13 +3,15 @@ FROM $PIHOLE_BASE
 
 ARG PIHOLE_ARCH
 ENV PIHOLE_ARCH "${PIHOLE_ARCH}"
+ARG PIHOLE_TAG
+ENV PIHOLE_TAG "${PIHOLE_TAG}"
 ARG S6_ARCH
 ARG S6_VERSION
 ENV S6OVERLAY_RELEASE "https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-${S6_ARCH}.tar.gz"
 
 COPY install.sh /usr/local/bin/install.sh
-COPY VERSION /etc/docker-pi-hole-version
-ENV PIHOLE_INSTALL /root/ph_install.sh
+COPY VERSIONS /etc/pi-hole-versions
+ENV PIHOLE_INSTALL /etc/.pihole/automated\ install/basic-install.sh
 
 RUN bash -ex install.sh 2>&1 && \
     rm -rf /var/cache/apt/archives /var/lib/apt/lists/*

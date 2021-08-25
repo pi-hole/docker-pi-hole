@@ -58,6 +58,7 @@ Jinja2 = "==2.11.3"
 MarkupSafe = "==1.1.1"
 PyYAML = "==5.4"
 websocket_client = "==0.57.0"
+python-dotenv = "==0.17.1"
 
 [requires]
 python_version = "3.8"

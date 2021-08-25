@@ -1,23 +1,7 @@
-name: Build & Deploy custom image manually
+name: Build & Deploy Nightly images
 on:
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: "Name of Branch to base build on"
-        required: false
-        default: dev
-      name:
-        description: 'Name of tag'
-        required: true
-      core:
-        description: 'Branch or tag of core repo'
-        required: true
-      web:
-        description: 'Branch or tag of web repo'
-        required: true
-      ftl:
-        description: 'Branch or tag of ftl repo'
-        required: true
+  schedule:
+    - cron: '0 1 * * *'
 
 jobs:
   test-and-build:
@@ -34,13 +18,13 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.inputs.branch }}
+          ref: dev
       - name: Patching Versions File
         run: |
-          git checkout -b ${{ github.event.inputs.name }}
-          echo "CORE_VERSION=${{ github.event.inputs.core }}" > VERSIONS
-          echo "WEB_VERSION=${{ github.event.inputs.web }}" >> VERSIONS
-          echo "FTL_VERSION=${{ github.event.inputs.ftl }}" >> VERSIONS
+          git checkout -b beta-v5.9
+          echo "CORE_VERSION=release/v5.4" > VERSIONS
+          echo "WEB_VERSION=release/v5.6" >> VERSIONS
+          echo "FTL_VERSION=release/v5.9" >> VERSIONS
       - name: Run Tests
         run: |
           echo "Building ${ARCH}-${DEBIAN_VERSION}"
@@ -68,10 +52,10 @@ jobs:
           ref: dev
       - name: Patching Versions File
         run: |
-          git checkout -b ${{ github.event.inputs.name }}
-          echo "CORE_VERSION=${{ github.event.inputs.core }}" > VERSIONS
-          echo "WEB_VERSION=${{ github.event.inputs.web }}" >> VERSIONS
-          echo "FTL_VERSION=${{ github.event.inputs.ftl }}" >> VERSIONS
+          git checkout -b beta-v5.9
+          echo "CORE_VERSION=release/v5.4" > VERSIONS
+          echo "WEB_VERSION=release/v5.6" >> VERSIONS
+          echo "FTL_VERSION=release/v5.9" >> VERSIONS
       - name: Download workspace files
         uses: actions/download-artifact@v1
         with:
