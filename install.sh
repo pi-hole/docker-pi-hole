@@ -39,10 +39,10 @@ curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
 mv /init /s6-init
 
 # clone the remote repos to their local destinations
-git clone "${CORE_REMOTE_REPO}" "${CORE_LOCAL_REPO}"
+git clone --depth 10 "${CORE_REMOTE_REPO}" "${CORE_LOCAL_REPO}"
 fetch_release_metadata "${CORE_LOCAL_REPO}" "${CORE_VERSION}"
 
-git clone "${WEB_REMOTE_REPO}" "${WEB_LOCAL_REPO}"
+git clone --depth 10 "${WEB_REMOTE_REPO}" "${WEB_LOCAL_REPO}"
 fetch_release_metadata "${WEB_LOCAL_REPO}" "${WEB_VERSION}"
 
 # FTL uses a local version file for the installer to determine which version we want
