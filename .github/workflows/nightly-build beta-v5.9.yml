@@ -1,4 +1,4 @@
-name: Build & Deploy Nightly images
+name: Build & Deploy Nightly Beta 5.9 images
 on:
   schedule:
     - cron: '0 1 * * *'
