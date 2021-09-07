@@ -38,10 +38,6 @@ ln -s `which echo` /usr/local/bin/whiptail
 curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
 mv /init /s6-init
 
-# debconf-apt-progress seems to hang so get rid of it too
-which debconf-apt-progress
-mv "$(which debconf-apt-progress)" /bin/no_debconf-apt-progress
-
 # clone the remote repos to their local destinations
 git clone "${CORE_REMOTE_REPO}" "${CORE_LOCAL_REPO}"
 fetch_release_metadata "${CORE_LOCAL_REPO}" "${CORE_VERSION}"
@@ -67,10 +63,6 @@ source $setupVars
 
 export USER=pihole
 
-# fix permission denied to resolvconf post-inst /etc/resolv.conf moby/moby issue #1297
-apt-get -y install debconf-utils
-echo resolvconf resolvconf/linkify-resolvconf boolean false | debconf-set-selections
-
 export PIHOLE_SKIP_OS_CHECK=true
 
 ln -s /bin/true /usr/local/bin/service
@@ -84,10 +76,24 @@ apt-get install -y --force-yes netcat-openbsd
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
 sed -i '/^WEBPASSWORD/d' /etc/pihole/setupVars.conf
 
-# Replace the call to `updatePiholeFunc` in arg parse with new `unsupportedFunc`
+# sed a new function into the `pihole` script just above the `helpFunc()` function for later use.
 sed -i $'s/helpFunc() {/unsupportedFunc() {\\\n  echo "Function not supported in Docker images"\\\n  exit 0\\\n}\\\n\\\nhelpFunc() {/g' /usr/local/bin/pihole
+# Replace a few of the `pihole` options with calls to `unsupportedFunc`:
+# pihole -up / pihole updatePihole
 sed -i $'s/)\s*updatePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
+# pihole checkout
 sed -i $'s/)\s*piholeCheckoutFunc/) unsupportedFunc/g' /usr/local/bin/pihole
+# pihole -r / pihole reconfigure
+sed -i $'s/)\s*reconfigurePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
+# pihole uninstall
+sed -i $'s/)\s*uninstallFunc/) unsupportedFunc/g' /usr/local/bin/pihole
+
+# Inject a message into the debug scripts Operating System section to indicate that the debug log comes from a Docker system.
+sed -i $'s/echo_current_diagnostic "Operating system"/echo_current_diagnostic "Operating system"\\\n    log_write "${INFO} Pi-hole Docker Container: ${PIHOLE_TAG:-PIHOLE_TAG is unset}"/g' /opt/pihole/piholeDebug.sh
+
+# Inject container tag into web interface footer...
+sed -i $"s/<ul class=\"list-unstyled\">/<ul class=\"list-unstyled\">\\n<strong><li>Docker Tag<\/strong> ${PIHOLE_TAG//\//\\/}<\/li>/g" /var/www/html/admin/scripts/pi-hole/php/footer.php
+sed -i $"s/<ul class=\"list-inline\">/<strong>Docker Tag<\/strong> ${PIHOLE_TAG//\//\\/}\\n<ul class=\"list-inline\">/g" /var/www/html/admin/scripts/pi-hole/php/footer.php
 
 touch /.piholeFirstBoot
 

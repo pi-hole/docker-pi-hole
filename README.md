@@ -36,7 +36,7 @@ services:
       - NET_ADMIN
     restart: unless-stopped
 ```
-2. Run `docker-compose up --detach` to build and start pi-hole
+2. Run `docker-compose up -d` to build and start pi-hole
 3. Use the Pi-hole web UI to change the DNS settings *Interface listening behavior* to "Listen on all interfaces, permit all origins", if using Docker's default `bridge` network setting
 
 [Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
@@ -89,54 +89,70 @@ There are multiple different ways to run DHCP from within your Docker Pi-hole co
 
 There are other environment variables if you want to customize various things inside the docker container:
 
-| Docker Environment Var. | Description |
-| ----------------------- | ----------- |
-| `ADMIN_EMAIL: <email address>`<br/> *Optional Default: ''* | Set an administrative contact address for the Block Page
-| `TZ: <Timezone>`<br/> **Recommended** *Default: UTC* | Set your [timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) to make sure logs rotate at local midnight instead of at UTC midnight.
-| `WEBPASSWORD: <Admin password>`<br/> **Recommended** *Default: random* | http://pi.hole/admin password. Run `docker logs pihole \| grep random` to find your random pass.
-| `PIHOLE_DNS_: <IPs delimited by ;>`<br/> *Optional* *Default: 8.8.8.8;8.8.4.4* | Upstream DNS server(s) for Pi-hole to forward queries to, seperated by a semicolon <br/> (supports non-standard ports with `#[port number]`) e.g `127.0.0.1#5053;8.8.8.8;8.8.4.4`
-| `DNSSEC: <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DNSSEC support
-| `DNS_BOGUS_PRIV: <"true"\|"false">`<br/> *Optional* *Default: "true"* | Enable forwarding of reverse lookups for private ranges
-| `DNS_FQDN_REQUIRED: <"true"\|"false">`<br/> *Optional* *Default: true* | Never forward non-FQDNs
-| `REV_SERVER: <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DNS conditional forwarding for device name resolution
-| `REV_SERVER_DOMAIN: <Network Domain>`<br/> *Optional* | If conditional forwarding is enabled, set the domain of the local network router
-| `REV_SERVER_TARGET: <Router's IP>`<br/> *Optional* | If conditional forwarding is enabled, set the IP of the local network router
-| `REV_SERVER_CIDR: <Reverse DNS>`<br/> *Optional* | If conditional forwarding is enabled, set the reverse DNS zone (e.g. `192.168.0.0/24`)
-| `ServerIP: <Host's IP>`<br/> **Recommended** | **--net=host mode requires** Set to your server's LAN IP, used by web block modes and lighttpd bind address
-| `ServerIPv6: <Host's IPv6>`<br/> *Required if using IPv6* | **If you have a v6 network** set to your server's LAN IPv6 to block IPv6 ads fully
-| `VIRTUAL_HOST: <Custom Hostname>`<br/> *Optional* *Default: $ServerIP*   | What your web server 'virtual host' is, accessing admin through this Hostname/IP allows you to make changes to the whitelist / blacklists in addition to the default 'http://pi.hole/admin/' address
-| `IPv6: <"true"\|"false">`<br/> *Optional* *Default: "true"* | For unraid compatibility, strips out all the IPv6 configuration from DNS/Web services when false.
-| `INTERFACE: <NIC>`<br/> *Advanced/Optional* | The default works fine with our basic example docker run commands.  If you're trying to use DHCP with `--net host` mode then you may have to customize this or DNSMASQ_LISTENING.
-| `DNSMASQ_LISTENING: <local\|all\|single>`<br/> *Advanced/Optional* | `local` listens on all local subnets, `all` permits listening on internet origin subnets in addition to local, `single` listens only on the interface specified.
-| `WEB_PORT: <PORT>`<br/> *Advanced/Optional* | **This will break the 'webpage blocked' functionality of Pi-hole** however it may help advanced setups like those running synology or `--net=host` docker argument.  This guide explains how to restore webpage blocked functionality using a linux router DNAT rule: [Alternative Synology installation method](https://discourse.pi-hole.net/t/alternative-synology-installation-method/5454?u=diginc)
-| `CUSTOM_CACHE_SIZE: <size>`<br/> *Advanced/Optional: Default: '10000'* | Set the cache size for dnsmasq. Useful for increasing the default cache size or to set it to 0. Note that when `DNSSEC` is "true", then this setting is ignored.
-| `DNSMASQ_USER: <pihole\|root>`<br/> *Experimental Default: root* | Allows running FTLDNS as non-root.
-| `TEMPERATUREUNIT`: <c\|k\|f><br/>*Optional Default: c* | Set preferred temperature unit to `c`: Celsius, `k`: Kelvin, or `f` Fahrenheit units.
-| `WEBUIBOXEDLAYOUT: <boxed\|traditional>`<br/>*Optional Default: boxed* | Use boxed layout (helpful when working on large screens)
-| `SKIPGRAVITYONBOOT`: <Not Set\|1><br/> *Optional Default: Not Set* | Use this option to skip updating the Gravity Database when booting up the container.  By default this environment variable is not set so the Gravity Database will be updated when the container starts up.  Setting this environment variable to 1 (or anything) will cause the Gravity Database to not be updated when container starts up.
-| `QUERY_LOGGING: <"true"\|"false">`<br/> *Optional* *Default: "true"* | Enable query logging or not.
-| `DHCP_ACTIVE: <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DHCP server. Static DHCP leases can be configured with a custom `/etc/dnsmasq.d/04-pihole-static-dhcp.conf`
-| `DHCP_START: <Start IP>`<br/> *Optional* *Default: Not Set* | Start of the range of IP addresses to hand out by the DHCP server (mandatory if DHCP server is enabled).
-| `DHCP_END: <End IP>`<br/> *Optional* *Default: Not Set* | End of the range of IP addresses to hand out by the DHCP server (mandatory if DHCP server is enabled).
-| `DHCP_ROUTER: <Router's IP>`<br/> *Optional* *Default: Not Set* | Router (gateway) IP address sent by the DHCP server (mandatory if DHCP server is enabled).
-| `DHCP_LEASETIME: <hours>`<br/> *Optional* *Default: 24* | DHCP lease time in hours.
-| `PIHOLE_DOMAIN: <domain>`<br/> *Optional* *Default: lan* | Domain name sent by the DHCP server.
-| `DHCP_IPv6: <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DHCP server IPv6 support (SLAAC + RA).
-| `DHCP_rapid_commit <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DHCPv4 rapid commit (fast address assignment).
-| `WEBTHEME <"default-dark"\|"default-darker"\|"default-light">`<br/> *Optional* *Default: "default-light"* | User interface theme to use.
-| `CORS_HOSTS: <FQDNs delimited by ,>`<br/> *Advanced/Optional* | List of domains/subdomains on which CORS is allowed. Wildcards are not supported. Eg: `CORS_HOSTS: domain.com,home.domain.com,www.domain.com`.
+### Recommended Variables
+
+| Variable | Default | Value | Descrption |
+| -------- | ------- | ----- | ---------- |
+| `TZ` | UTC | `<Timezone>` | Set your [timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) to make sure logs rotate at local midnight instead of at UTC midnight.
+| `WEBPASSWORD` | random | `<Admin password>` | http://pi.hole/admin password. Run `docker logs pihole \| grep random` to find your random pass.
+| `ServerIP` | unset | `<Host's IP>` | Set to your server's LAN IP, used by web block modes and lighttpd bind address
+
+### Optional Variables
+
+| Variable | Default | Value | Descrption |
+| -------- | ------- | ----- | ---------- |
+| `ADMIN_EMAIL` | unset | email address | Set an administrative contact address for the Block Page |
+| `PIHOLE_DNS_` |  `8.8.8.8;8.8.4.4` | IPs delimited by `;` | Upstream DNS server(s) for Pi-hole to forward queries to, seperated by a semicolon <br/> (supports non-standard ports with `#[port number]`) e.g `127.0.0.1#5053;8.8.8.8;8.8.4.4` |
+| `DNSSEC` | `false` | `<"true"\|"false">` | Enable DNSSEC support |
+| `DNS_BOGUS_PRIV` | `true` |`<"true"\|"false">`| Never forward reverse lookups for private ranges |
+| `DNS_FQDN_REQUIRED` | `true` | `<"true"\|"false">`| Never forward non-FQDNs |
+| `REV_SERVER` | `false` | `<"true"\|"false">` | Enable DNS conditional forwarding for device name resolution |
+| `REV_SERVER_DOMAIN` | unset | Network Domain | If conditional forwarding is enabled, set the domain of the local network router |
+| `REV_SERVER_TARGET` | unset | Router's IP | If conditional forwarding is enabled, set the IP of the local network router |
+| `REV_SERVER_CIDR` | unset | Reverse DNS | If conditional forwarding is enabled, set the reverse DNS zone (e.g. `192.168.0.0/24`) |
+| `DHCP_ACTIVE` | `false` | `<"true"\|"false">` | Enable DHCP server. Static DHCP leases can be configured with a custom `/etc/dnsmasq.d/04-pihole-static-dhcp.conf`
+| `DHCP_START` | unset | `<Start IP>` | Start of the range of IP addresses to hand out by the DHCP server (mandatory if DHCP server is enabled).
+| `DHCP_END` | unset | `<End IP>` | End of the range of IP addresses to hand out by the DHCP server (mandatory if DHCP server is enabled).
+| `DHCP_ROUTER` | unset | `<Router's IP>` | Router (gateway) IP address sent by the DHCP server (mandatory if DHCP server is enabled).
+| `DHCP_LEASETIME` | 24 | `<hours>` | DHCP lease time in hours.
+| `PIHOLE_DOMAIN` | `lan` | `<domain>` | Domain name sent by the DHCP server.
+| `DHCP_IPv6` | `false` | `<"true"\|"false">` | Enable DHCP server IPv6 support (SLAAC + RA).
+| `DHCP_rapid_commit` | `false` | `<"true"\|"false">` | Enable DHCPv4 rapid commit (fast address assignment).
+| `VIRTUAL_HOST` | `$ServerIP` | `<Custom Hostname>` | What your web server 'virtual host' is, accessing admin through this Hostname/IP allows you to make changes to the whitelist / blacklists in addition to the default 'http://pi.hole/admin/' address
+| `IPv6:` | `true` | `<"true"\|"false">` | For unraid compatibility, strips out all the IPv6 configuration from DNS/Web services when false.
+| `TEMPERATUREUNIT` | `c` | `<c\|k\|f>` | Set preferred temperature unit to `c`: Celsius, `k`: Kelvin, or `f` Fahrenheit units.
+| `WEBUIBOXEDLAYOUT` | `boxed` | `<boxed\|traditional>` | Use boxed layout (helpful when working on large screens)
+| `QUERY_LOGGING` | `true` | `<"true"\|"false">` | Enable query logging or not.
+| `WEBTHEME` | `default-light` | `<"default-dark"\|"default-darker"\|"default-light">`| User interface theme to use.
+| `WEBPASSWORD_FILE`| unset | `<Docker secret path>` |Set an Admin password using [Docker secrets](https://docs.docker.com/engine/swarm/secrets/). If `WEBPASSWORD` is set, `WEBPASSWORD_FILE` is ignored. If `WEBPASSWORD` is empty, and `WEBPASSWORD_FILE` is set to a valid readable file path, then `WEBPASSWORD` will be set to the contents of `WEBPASSWORD_FILE`.
+
+### Advanced Variables
+| Variable | Default | Value | Descrption |
+| -------- | ------- | ----- | ---------- |
+| `ServerIPv6` | unset| `<Host's IPv6>` | **If you have a v6 network** set to your server's LAN IPv6 to block IPv6 ads fully
+| `INTERFACE` | unset | `<NIC>` | The default works fine with our basic example docker run commands.  If you're trying to use DHCP with `--net host` mode then you may have to customize this or DNSMASQ_LISTENING.
+| `DNSMASQ_LISTENING` | unset | `<local\|all\|single>` | `local` listens on all local subnets, `all` permits listening on internet origin subnets in addition to local, `single` listens only on the interface specified.
+| `WEB_PORT` | unset | `<PORT>` | **This will break the 'webpage blocked' functionality of Pi-hole** however it may help advanced setups like those running synology or `--net=host` docker argument.  This guide explains how to restore webpage blocked functionality using a linux router DNAT rule: [Alternative Synology installation method](https://discourse.pi-hole.net/t/alternative-synology-installation-method/5454?u=diginc)
+| `SKIPGRAVITYONBOOT` | unset | `<unset\|1>` | Use this option to skip updating the Gravity Database when booting up the container.  By default this environment variable is not set so the Gravity Database will be updated when the container starts up.  Setting this environment variable to 1 (or anything) will cause the Gravity Database to not be updated when container starts up.
+| `CORS_HOSTS` | unset | `<FQDNs delimited by ,>` | List of domains/subdomains on which CORS is allowed. Wildcards are not supported. Eg: `CORS_HOSTS: domain.com,home.domain.com,www.domain.com`.
+| `CUSTOM_CACHE_SIZE` | `10000` | Number | Set the cache size for dnsmasq. Useful for increasing the default cache size or to set it to 0. Note that when `DNSSEC` is "true", then this setting is ignored.
+
+### Experimental Variables
+| Variable | Default | Value | Descrption |
+| -------- | ------- | ----- | ---------- |
+| `DNSMASQ_USER` | unset | `<pihole\|root>` | Allows running FTLDNS as non-root.
 
 ## Deprecated environment variables:
 While these may still work, they are likely to be removed in a future version. Where applicible, alternative variable names are indicated. Please review the table above for usage of the alternative variables
 
 | Docker Environment Var. | Description | Replaced By |
 | ----------------------- | ----------- | ----------- |
-| `CONDITIONAL_FORWARDING: <"true"\|"false">`<br/> *Optional* *Default: "false"* | Enable DNS conditional forwarding for device name resolution | `REV_SERVER`|
-| `CONDITIONAL_FORWARDING_IP: <Router's IP>`<br/> *Optional* | If conditional forwarding is enabled, set the IP of the local network router | `REV_SERVER_TARGET` |
-| `CONDITIONAL_FORWARDING_DOMAIN: <Network Domain>`<br/> *Optional* | If conditional forwarding is enabled, set the domain of the local network router | `REV_SERVER_DOMAIN` |
-| `CONDITIONAL_FORWARDING_REVERSE: <Reverse DNS>`<br/> *Optional* | If conditional forwarding is enabled, set the reverse DNS of the local network router (e.g. `0.168.192.in-addr.arpa`) | `REV_SERVER_CIDR` |
-| `DNS1: <IP>`<br/> *Optional* *Default: 8.8.8.8* | Primary upstream DNS provider, default is google DNS | `PIHOLE_DNS_` |
-| `DNS2: <IP>`<br/> *Optional* *Default: 8.8.4.4* | Secondary upstream DNS provider, default is google DNS, `no` if only one DNS should used | `PIHOLE_DNS_` |
+| `CONDITIONAL_FORWARDING` | Enable DNS conditional forwarding for device name resolution | `REV_SERVER`|
+| `CONDITIONAL_FORWARDING_IP` | If conditional forwarding is enabled, set the IP of the local network router | `REV_SERVER_TARGET` |
+| `CONDITIONAL_FORWARDING_DOMAIN` | If conditional forwarding is enabled, set the domain of the local network router | `REV_SERVER_DOMAIN` |
+| `CONDITIONAL_FORWARDING_REVERSE` | If conditional forwarding is enabled, set the reverse DNS of the local network router (e.g. `0.168.192.in-addr.arpa`) | `REV_SERVER_CIDR` |
+| `DNS1` | Primary upstream DNS provider, default is google DNS | `PIHOLE_DNS_` |
+| `DNS2` | Secondary upstream DNS provider, default is google DNS, `no` if only one DNS should used | `PIHOLE_DNS_` |
 
 To use these env vars in docker run format style them like: `-e DNS1=1.1.1.1`
 
@@ -261,6 +277,9 @@ DNSMasq / [FTLDNS](https://docs.pi-hole.net/ftldns/in-depth/#linux-capabilities)
 - `CAP_NET_BIND_SERVICE`: Allows FTLDNS binding to TCP/UDP sockets below 1024 (specifically DNS service on port 53)
 - `CAP_NET_RAW`: use raw and packet sockets (needed for handling DHCPv6 requests, and verifying that an IP is not in use before leasing it)
 - `CAP_NET_ADMIN`: modify routing tables and other network-related operations (in particular inserting an entry in the neighbor table to answer DHCP requests using unicast packets)
+- `CAP_SYS_NICE`: FTL sets itself as an important process to get some more processing time if the latter is running low
+- `CAP_IPC_LOCK`: it gives FTL the ability to lock a region of virtual memory into physical RAM
+- `CAP_CHOWN`: we need to be able to change ownership of log files and databases in case FTL is started as a different user than `pihole`
 
 This image automatically grants those capabilities, if available, to the FTLDNS process, even when run as non-root.\
 By default, docker does not include the `NET_ADMIN` capability for non-privileged containers, and it is recommended to explicitly add it to the container using `--cap-add=NET_ADMIN`.\
