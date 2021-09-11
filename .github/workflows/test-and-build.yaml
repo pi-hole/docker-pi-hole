@@ -4,6 +4,7 @@ on:
     branches:
       - dev
     tags:
+      - '*'
   pull_request:
 
 #env:
