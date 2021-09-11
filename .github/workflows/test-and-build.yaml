@@ -3,9 +3,9 @@ on:
   push:
     branches:
       - dev
-    tags:
-      - '*'
   pull_request:
+  release:
+    types: [published]
 
 #env:
 #  DOCKER_HUB_REPO: pihole
