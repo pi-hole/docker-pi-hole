@@ -38,6 +38,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.branch }}
+      - name: Checkout Dummy Branch to set image name
         run: |
           git checkout -b ${{ github.event.inputs.name }}
       - name: Run Tests
@@ -65,6 +66,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: dev
+      - name: Checkout Dummy Branch to set image name
         run: |
           git checkout -b ${{ github.event.inputs.name }}
       - name: Download workspace files
