@@ -37,7 +37,7 @@ jobs:
           docker push "${ARCH_IMAGE}"
       - name: Upload gh-workspace
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2.2.4
         with:
           name: gh-workspace
           path: .gh-workspace
