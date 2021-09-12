@@ -60,4 +60,4 @@ jobs:
               PIHOLE_VERSION=nightly
             push: true
             tags: |
-              ${{ secrets.DOCKERHUB_USER }}/pihole:nightly
+              pihole/pihole:nightly

@@ -71,4 +71,4 @@ jobs:
             PIHOLE_VERSION=${{ github.event.inputs.name }}
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USER }}/pihole:${{ github.event.inputs.name }}
+            pihole/pihole:${{ github.event.inputs.name }}

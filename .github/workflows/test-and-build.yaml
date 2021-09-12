@@ -56,4 +56,4 @@ jobs:
             PIHOLE_VERSION=${{ env.TAG }}
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USER }}/pihole:${{ env.TAG }}
+            pihole/pihole:${{ env.TAG }}
