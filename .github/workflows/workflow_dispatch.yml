@@ -67,7 +67,6 @@ jobs:
             CORE_VERSION=${{ github.event.inputs.core }}
             WEB_VERSION=${{ github.event.inputs.web }}
             FTL_VERSION=${{ github.event.inputs.ftl }}
-            PIHOLE_TAG=${{ github.event.inputs.name }}
             PIHOLE_VERSION=${{ github.event.inputs.name }}
           push: true
           tags: |

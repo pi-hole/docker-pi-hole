@@ -63,7 +63,6 @@ def build(docker_repo: str, arch: str, debian_version: str, hub_tag: str, show_t
     build_env = os.environ.copy()
     build_env['PIHOLE_VERSION'] = os.environ.get('GIT_TAG', None)
     build_env['DEBIAN_VERSION'] = debian_version
-    build_env['PIHOLE_TAG'] = tag_name
     build_command = f'{time_arg} docker-compose -f build.yml build {cache_arg} --pull {arch}'
     print(f' ::: Building {arch} into {create_tag}')
     success = run_and_stream_command_output(build_command, build_env, verbose)

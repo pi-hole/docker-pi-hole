@@ -59,7 +59,6 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64,linux/i386,linux/arm/v7
           build-args: |
-            PIHOLE_TAG=${{ env.TAG }}
             PIHOLE_VERSION=${{ env.TAG }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}

@@ -56,7 +56,6 @@ jobs:
               CORE_VERSION=development
               WEB_VERSION=devel
               FTL_VERSION=development
-              PIHOLE_TAG=nightly
               PIHOLE_VERSION=nightly
             push: true
             tags: |
