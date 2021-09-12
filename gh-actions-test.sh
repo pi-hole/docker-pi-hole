@@ -25,6 +25,7 @@ docker run --rm \
     --env ARCH="${ARCH}" \
     --env ARCH_IMAGE="${ARCH_IMAGE}" \
     --env DEBIAN_VERSION="${DEBIAN_VERSION}" \
+    --env GIT_TAG="${GIT_TAG}" \
     ${enter} image_pipenv
 
 mkdir -p ".gh-workspace/${DEBIAN_VERSION}/"
