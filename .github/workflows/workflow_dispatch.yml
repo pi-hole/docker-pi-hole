@@ -30,17 +30,16 @@ jobs:
     env:
       ARCH: ${{matrix.ARCH}}
       DEBIAN_VERSION: ${{matrix.DEBIAN_VERSION}}
+      CORE_VERSION: ${{ github.event.inputs.core }}
+      WEB_VERSION: ${{ github.event.inputs.web }}
+      FTL_VERSION: ${{ github.event.inputs.ftl }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.branch }}
-      - name: Patching Versions File
         run: |
           git checkout -b ${{ github.event.inputs.name }}
-          echo "CORE_VERSION=${{ github.event.inputs.core }}" > VERSIONS
-          echo "WEB_VERSION=${{ github.event.inputs.web }}" >> VERSIONS
-          echo "FTL_VERSION=${{ github.event.inputs.ftl }}" >> VERSIONS
       - name: Run Tests
         run: |
           echo "Building ${ARCH}-${DEBIAN_VERSION}"
@@ -66,12 +65,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: dev
-      - name: Patching Versions File
         run: |
           git checkout -b ${{ github.event.inputs.name }}
-          echo "CORE_VERSION=${{ github.event.inputs.core }}" > VERSIONS
-          echo "WEB_VERSION=${{ github.event.inputs.web }}" >> VERSIONS
-          echo "FTL_VERSION=${{ github.event.inputs.ftl }}" >> VERSIONS
       - name: Download workspace files
         uses: actions/download-artifact@v1
         with:
