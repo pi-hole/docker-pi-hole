@@ -34,6 +34,13 @@ jobs:
         run: |
           echo "TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       -
+        name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: pihole/pihole
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       -
@@ -55,5 +62,5 @@ jobs:
             PIHOLE_TAG=${{ env.TAG }}
             PIHOLE_VERSION=${{ env.TAG }}
           push: true
-          tags: |
-            pihole/pihole:${{ env.TAG }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
