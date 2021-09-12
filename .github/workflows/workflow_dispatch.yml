@@ -45,12 +45,12 @@ jobs:
         run: |
           echo "Building ${ARCH}-${DEBIAN_VERSION}"
           ./gh-actions-test.sh
-      - name: Push the ARCH image
-        if: github.event_name != 'pull_request'
-        run: |
-          . gh-actions-vars.sh
-          echo "${{ secrets.DOCKERHUB_PASS }}" | docker login --username="${{ secrets.DOCKERHUB_USER }}" --password-stdin
-          docker push "${ARCH_IMAGE}"
+      # - name: Push the ARCH image
+      #   if: github.event_name != 'pull_request'
+      #   run: |
+      #     . gh-actions-vars.sh
+      #     echo "${{ secrets.DOCKERHUB_PASS }}" | docker login --username="${{ secrets.DOCKERHUB_USER }}" --password-stdin
+      #     docker push "${ARCH_IMAGE}"
       - name: Upload gh-workspace
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v1
