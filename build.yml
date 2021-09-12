@@ -4,6 +4,9 @@ version: "3.7"
 x-common-args: &common-args
   PIHOLE_VERSION: ${PIHOLE_VERSION}
   PIHOLE_TAG: ${PIHOLE_TAG}
+  CORE_VERSION: ${CORE_VERSION}
+  WEB_VERSION: ${WEB_VERSION}
+  FTL_VERSION: ${FTL_VERSION}
   NAME: pihole/pihole
   MAINTAINER: adam@diginc.us
   S6_VERSION: v2.1.0.2

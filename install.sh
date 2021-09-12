@@ -3,31 +3,10 @@
 mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
 
-# Source versions file
-source /etc/pi-hole-versions
-
-CORE_REMOTE_REPO=https://github.com/pi-hole/pi-hole
 CORE_LOCAL_REPO=/etc/.pihole
-WEB_REMOTE_REPO=https://github.com/pi-hole/adminLTE
 WEB_LOCAL_REPO=/var/www/html/admin
-setupVars=/etc/pihole/setupVars.conf
 
-fetch_release_metadata() {
-    local directory="$1"
-    local version="$2"
-    pushd "$directory"
-    git fetch -t
-    git remote set-branches origin '*'
-    git fetch --depth 10
-    #if version number begins with a v, it's a version number
-    if [[ $version == v* ]]; then
-        git checkout master
-        git reset --hard "$version"
-    else # else treat it as a branch
-        git checkout "$version"
-    fi
-    popd
-}
+setupVars=/etc/pihole/setupVars.conf
 
 apt-get update
 apt-get install --no-install-recommends -y curl procps ca-certificates git
@@ -37,16 +16,6 @@ c_rehash
 ln -s `which echo` /usr/local/bin/whiptail
 curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
 mv /init /s6-init
-
-# clone the remote repos to their local destinations
-git clone "${CORE_REMOTE_REPO}" "${CORE_LOCAL_REPO}"
-fetch_release_metadata "${CORE_LOCAL_REPO}" "${CORE_VERSION}"
-
-git clone "${WEB_REMOTE_REPO}" "${WEB_LOCAL_REPO}"
-fetch_release_metadata "${WEB_LOCAL_REPO}" "${WEB_VERSION}"
-
-# FTL uses a local version file for the installer to determine which version we want
-echo "${FTL_VERSION}" > /etc/pihole/ftlbranch
 
 # Preseed variables to assist with using --unattended install
 {
@@ -67,11 +36,21 @@ export PIHOLE_SKIP_OS_CHECK=true
 
 ln -s /bin/true /usr/local/bin/service
 # Run the installer in unattended mode using the preseeded variables above and --reconfigure so that local repos are not updated
-bash -ex "./${PIHOLE_INSTALL}" --unattended --reconfigure
+curl -sSL https://install.pi-hole.net | bash -sex -- --unattended
+
 rm /usr/local/bin/service
 
 # IPv6 support for nc openbsd better than traditional
 apt-get install -y --force-yes netcat-openbsd
+
+# Source the Pi-hole install script to make use of the fetch_checkout_pull_branch functions as calling pihole checkout directly does not work hre
+PH_TEST="true" . "${PIHOLE_INSTALL}"
+
+[ -n "${CORE_VERSION}" ] && fetch_checkout_pull_branch ${CORE_LOCAL_REPO} "${CORE_VERSION}" && RELOAD=1
+[ -n "${WEB_VERSION}" ] && fetch_checkout_pull_branch ${WEB_LOCAL_REPO} "${WEB_VERSION}" # No need to reload when checking out a new web branch
+[ -n "${FTL_VERSION}" ] && echo "${FTL_VERSION}" > /etc/pihole/ftlbranch && RELOAD=1
+
+[ -n "${RELOAD}" ] && bash -ex "${PIHOLE_INSTALL}" --unattended --reconfigure
 
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
 sed -i '/^WEBPASSWORD/d' /etc/pihole/setupVars.conf
