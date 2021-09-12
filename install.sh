@@ -8,13 +8,29 @@ WEB_LOCAL_REPO=/var/www/html/admin
 
 setupVars=/etc/pihole/setupVars.conf
 
+s6_download_url() {
+  DETECTED_ARCH=$(dpkg --print-architecture)
+  S6_ARCH=$DETECTED_ARCH
+  case $DETECTED_ARCH in
+  armel)
+    S6_ARCH="arm";;
+  armhf)
+    S6_ARCH="arm";;
+  arm64)
+    S6_ARCH="aarch64";;
+  i386)
+    S6_ARCH="x86";;
+esac
+  echo "https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/s6-overlay-${S6_ARCH}.tar.gz"
+}
+
 apt-get update
 apt-get install --no-install-recommends -y curl procps ca-certificates git
 # curl in armhf-buster's image has SSL issues. Running c_rehash fixes it.
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=923479
 c_rehash
 ln -s `which echo` /usr/local/bin/whiptail
-curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
+curl -L -s "$(s6_download_url)" | tar xvzf - -C /
 mv /init /s6-init
 
 # Preseed variables to assist with using --unattended install
@@ -71,8 +87,8 @@ sed -i $'s/)\s*uninstallFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 sed -i $'s/echo_current_diagnostic "Operating system"/echo_current_diagnostic "Operating system"\\\n    log_write "${INFO} Pi-hole Docker Container: ${PIHOLE_TAG:-PIHOLE_TAG is unset}"/g' /opt/pihole/piholeDebug.sh
 
 # Inject container tag into web interface footer...
-sed -i $"s/<ul class=\"list-unstyled\">/<ul class=\"list-unstyled\">\\n<strong><li>Docker Tag<\/strong> ${PIHOLE_TAG//\//\\/}<\/li>/g" /var/www/html/admin/scripts/pi-hole/php/footer.php
-sed -i $"s/<ul class=\"list-inline\">/<strong>Docker Tag<\/strong> ${PIHOLE_TAG//\//\\/}\\n<ul class=\"list-inline\">/g" /var/www/html/admin/scripts/pi-hole/php/footer.php
+sed -i $"s/<ul class=\"list-unstyled\">/<ul class=\"list-unstyled\">\\n<strong><li>Docker Tag<\/strong> ${PIHOLE_TAG}<\/li>/g" /var/www/html/admin/scripts/pi-hole/php/footer.php
+sed -i $"s/<ul class=\"list-inline\">/<strong>Docker Tag<\/strong> ${PIHOLE_TAG}\\n<ul class=\"list-inline\">/g" /var/www/html/admin/scripts/pi-hole/php/footer.php
 
 touch /.piholeFirstBoot
 
