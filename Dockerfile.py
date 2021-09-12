@@ -22,16 +22,6 @@ import sys
 import subprocess
 from dotenv import dotenv_values
 
-FTL_VERSION = None
-
-
-def read_pihole_versions():
-    global FTL_VERSION
-    dot = os.path.abspath('.')
-    config = dotenv_values('{}/VERSIONS'.format(dot))
-    FTL_VERSION = config['FTL_VERSION'].replace('/','-')
-
-
 def build_dockerfiles(args) -> bool:
     all_success = True
     if args['-v']:
@@ -64,14 +54,16 @@ def run_and_stream_command_output(command, environment_vars, verbose) -> bool:
 
 
 def build(docker_repo: str, arch: str, debian_version: str, hub_tag: str, show_time: bool, no_cache: bool, verbose: bool) -> bool:
-    create_tag = f'{docker_repo}:{FTL_VERSION}-{arch}-{debian_version}'
+    # remove the `pihole/pihole:` from hub_tag for use elsewhere
+    tag_name = hub_tag.split(":",1)[1]
+    create_tag = f'{docker_repo}:{tag_name}'
     print(f' ::: Building {create_tag}')
     time_arg = 'time' if show_time else ''
     cache_arg = '--no-cache' if no_cache else ''
     build_env = os.environ.copy()
-    build_env['PIHOLE_VERSION'] = FTL_VERSION
+    build_env['PIHOLE_VERSION'] = os.environ.get('GIT_TAG', None)
     build_env['DEBIAN_VERSION'] = debian_version
-    build_env['PIHOLE_TAG'] = hub_tag
+    build_env['PIHOLE_TAG'] = tag_name
     build_command = f'{time_arg} docker-compose -f build.yml build {cache_arg} --pull {arch}'
     print(f' ::: Building {arch} into {create_tag}')
     success = run_and_stream_command_output(build_command, build_env, verbose)
@@ -86,7 +78,6 @@ def build(docker_repo: str, arch: str, debian_version: str, hub_tag: str, show_t
 
 if __name__ == '__main__':
     args = docopt(__doc__, version='Dockerfile 1.1')
-    read_pihole_versions()
     success = build_dockerfiles(args)
     exit_code = 0 if success else 1
     sys.exit(exit_code)
