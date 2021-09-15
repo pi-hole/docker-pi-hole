@@ -20,6 +20,8 @@ s6_download_url() {
     S6_ARCH="aarch64";;
   i386)
     S6_ARCH="x86";;
+  ppc64el)
+    S6_ARCH="ppc64le";;
 esac
   echo "https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/s6-overlay-${S6_ARCH}.tar.gz"
 }
