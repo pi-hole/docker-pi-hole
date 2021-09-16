@@ -3,30 +3,27 @@
 mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
 
-# Source versions file
-source /etc/pi-hole-versions
-
-CORE_REMOTE_REPO=https://github.com/pi-hole/pi-hole
 CORE_LOCAL_REPO=/etc/.pihole
-WEB_REMOTE_REPO=https://github.com/pi-hole/adminLTE
 WEB_LOCAL_REPO=/var/www/html/admin
+
 setupVars=/etc/pihole/setupVars.conf
 
-fetch_release_metadata() {
-    local directory="$1"
-    local version="$2"
-    pushd "$directory"
-    git fetch -t
-    git remote set-branches origin '*'
-    git fetch --depth 10
-    #if version number begins with a v, it's a version number
-    if [[ $version == v* ]]; then
-        git checkout master
-        git reset --hard "$version"
-    else # else treat it as a branch
-        git checkout "$version"
-    fi
-    popd
+s6_download_url() {
+  DETECTED_ARCH=$(dpkg --print-architecture)
+  S6_ARCH=$DETECTED_ARCH
+  case $DETECTED_ARCH in
+  armel)
+    S6_ARCH="arm";;
+  armhf)
+    S6_ARCH="arm";;
+  arm64)
+    S6_ARCH="aarch64";;
+  i386)
+    S6_ARCH="x86";;
+  ppc64el)
+    S6_ARCH="ppc64le";;
+esac
+  echo "https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/s6-overlay-${S6_ARCH}.tar.gz"
 }
 
 apt-get update
@@ -35,18 +32,8 @@ apt-get install --no-install-recommends -y curl procps ca-certificates git
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=923479
 c_rehash
 ln -s `which echo` /usr/local/bin/whiptail
-curl -L -s $S6OVERLAY_RELEASE | tar xvzf - -C /
+curl -L -s "$(s6_download_url)" | tar xvzf - -C /
 mv /init /s6-init
-
-# clone the remote repos to their local destinations
-git clone "${CORE_REMOTE_REPO}" "${CORE_LOCAL_REPO}"
-fetch_release_metadata "${CORE_LOCAL_REPO}" "${CORE_VERSION}"
-
-git clone "${WEB_REMOTE_REPO}" "${WEB_LOCAL_REPO}"
-fetch_release_metadata "${WEB_LOCAL_REPO}" "${WEB_VERSION}"
-
-# FTL uses a local version file for the installer to determine which version we want
-echo "${FTL_VERSION}" > /etc/pihole/ftlbranch
 
 # Preseed variables to assist with using --unattended install
 {
@@ -67,11 +54,21 @@ export PIHOLE_SKIP_OS_CHECK=true
 
 ln -s /bin/true /usr/local/bin/service
 # Run the installer in unattended mode using the preseeded variables above and --reconfigure so that local repos are not updated
-bash -ex "./${PIHOLE_INSTALL}" --unattended --reconfigure
+curl -sSL https://install.pi-hole.net | bash -sex -- --unattended
+
 rm /usr/local/bin/service
 
 # IPv6 support for nc openbsd better than traditional
 apt-get install -y --force-yes netcat-openbsd
+
+# Source the Pi-hole install script to make use of the fetch_checkout_pull_branch functions as calling pihole checkout directly does not work hre
+PH_TEST="true" . "${PIHOLE_INSTALL}"
+
+[ -n "${CORE_VERSION}" ] && fetch_checkout_pull_branch ${CORE_LOCAL_REPO} "${CORE_VERSION}" && RELOAD=1
+[ -n "${WEB_VERSION}" ] && fetch_checkout_pull_branch ${WEB_LOCAL_REPO} "${WEB_VERSION}" # No need to reload when checking out a new web branch
+[ -n "${FTL_VERSION}" ] && echo "${FTL_VERSION}" > /etc/pihole/ftlbranch && RELOAD=1
+
+[ -n "${RELOAD}" ] && bash -ex "${PIHOLE_INSTALL}" --unattended --reconfigure
 
 sed -i 's/readonly //g' /opt/pihole/webpage.sh
 sed -i '/^WEBPASSWORD/d' /etc/pihole/setupVars.conf
@@ -89,11 +86,11 @@ sed -i $'s/)\s*reconfigurePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 sed -i $'s/)\s*uninstallFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 
 # Inject a message into the debug scripts Operating System section to indicate that the debug log comes from a Docker system.
-sed -i $'s/echo_current_diagnostic "Operating system"/echo_current_diagnostic "Operating system"\\\n    log_write "${INFO} Pi-hole Docker Container: ${PIHOLE_TAG:-PIHOLE_TAG is unset}"/g' /opt/pihole/piholeDebug.sh
+sed -i $'s/echo_current_diagnostic "Operating system"/echo_current_diagnostic "Operating system"\\\n    log_write "${INFO} Pi-hole Docker Container: ${PIHOLE_VERSION:-PIHOLE_VERSION is unset}"/g' /opt/pihole/piholeDebug.sh
 
 # Inject container tag into web interface footer...
-sed -i $"s/<ul class=\"list-unstyled\">/<ul class=\"list-unstyled\">\\n<strong><li>Docker Tag<\/strong> ${PIHOLE_TAG//\//\\/}<\/li>/g" /var/www/html/admin/scripts/pi-hole/php/footer.php
-sed -i $"s/<ul class=\"list-inline\">/<strong>Docker Tag<\/strong> ${PIHOLE_TAG//\//\\/}\\n<ul class=\"list-inline\">/g" /var/www/html/admin/scripts/pi-hole/php/footer.php
+sed -i $"s/<ul class=\"list-unstyled\">/<ul class=\"list-unstyled\">\\n<strong><li>Docker Tag<\/strong> ${PIHOLE_VERSION}<\/li>/g" /var/www/html/admin/scripts/pi-hole/php/footer.php
+sed -i $"s/<ul class=\"list-inline\">/<strong>Docker Tag<\/strong> ${PIHOLE_VERSION}\\n<ul class=\"list-inline\">/g" /var/www/html/admin/scripts/pi-hole/php/footer.php
 
 touch /.piholeFirstBoot
 

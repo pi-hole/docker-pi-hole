@@ -1,16 +1,18 @@
 ARG PIHOLE_BASE
-FROM $PIHOLE_BASE
+FROM "${PIHOLE_BASE:-debian:buster-slim}"
 
-ARG PIHOLE_ARCH
-ENV PIHOLE_ARCH "${PIHOLE_ARCH}"
-ARG PIHOLE_TAG
-ENV PIHOLE_TAG "${PIHOLE_TAG}"
-ARG S6_ARCH
-ARG S6_VERSION
-ENV S6OVERLAY_RELEASE "https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-${S6_ARCH}.tar.gz"
+ARG CORE_VERSION
+ENV CORE_VERSION "${CORE_VERSION}"
+ARG WEB_VERSION
+ENV WEB_VERSION "${WEB_VERSION}"
+ARG FTL_VERSION
+ENV FTL_VERSION "${FTL_VERSION}"
+ARG PIHOLE_VERSION
+ENV PIHOLE_VERSION "${PIHOLE_VERSION}"
+
+ENV S6_OVERLAY_VERSION v2.1.0.2
 
 COPY install.sh /usr/local/bin/install.sh
-COPY VERSIONS /etc/pi-hole-versions
 ENV PIHOLE_INSTALL /etc/.pihole/automated\ install/basic-install.sh
 
 RUN bash -ex install.sh 2>&1 && \
@@ -23,9 +25,9 @@ COPY s6/service /usr/local/bin/service
 
 # php config start passes special ENVs into
 ARG PHP_ENV_CONFIG
-ENV PHP_ENV_CONFIG "${PHP_ENV_CONFIG}"
+ENV PHP_ENV_CONFIG /etc/lighttpd/conf-enabled/15-fastcgi-php.conf
 ARG PHP_ERROR_LOG
-ENV PHP_ERROR_LOG "${PHP_ERROR_LOG}"
+ENV PHP_ERROR_LOG /var/log/lighttpd/error.log
 COPY ./start.sh /
 COPY ./bash_functions.sh /
 
@@ -44,16 +46,8 @@ ENV ServerIP 0.0.0.0
 ENV FTL_CMD no-daemon
 ENV DNSMASQ_USER root
 
-ARG PIHOLE_VERSION
-ENV VERSION "${PIHOLE_VERSION}"
 ENV PATH /opt/pihole:${PATH}
 
-ARG NAME
-LABEL image="${NAME}:${PIHOLE_VERSION}_${PIHOLE_ARCH}"
-ARG MAINTAINER
-LABEL maintainer="${MAINTAINER}"
-LABEL url="https://www.github.com/pi-hole/docker-pi-hole"
-
-HEALTHCHECK CMD dig +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
+HEALTHCHECK CMD dig +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
 
 SHELL ["/bin/bash", "-c"]

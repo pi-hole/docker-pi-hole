@@ -91,7 +91,7 @@ There are other environment variables if you want to customize various things in
 
 ### Recommended Variables
 
-| Variable | Default | Value | Descrption |
+| Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
 | `TZ` | UTC | `<Timezone>` | Set your [timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) to make sure logs rotate at local midnight instead of at UTC midnight.
 | `WEBPASSWORD` | random | `<Admin password>` | http://pi.hole/admin password. Run `docker logs pihole \| grep random` to find your random pass.
@@ -99,7 +99,7 @@ There are other environment variables if you want to customize various things in
 
 ### Optional Variables
 
-| Variable | Default | Value | Descrption |
+| Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
 | `ADMIN_EMAIL` | unset | email address | Set an administrative contact address for the Block Page |
 | `PIHOLE_DNS_` |  `8.8.8.8;8.8.4.4` | IPs delimited by `;` | Upstream DNS server(s) for Pi-hole to forward queries to, seperated by a semicolon <br/> (supports non-standard ports with `#[port number]`) e.g `127.0.0.1#5053;8.8.8.8;8.8.4.4` |
@@ -127,7 +127,7 @@ There are other environment variables if you want to customize various things in
 | `WEBPASSWORD_FILE`| unset | `<Docker secret path>` |Set an Admin password using [Docker secrets](https://docs.docker.com/engine/swarm/secrets/). If `WEBPASSWORD` is set, `WEBPASSWORD_FILE` is ignored. If `WEBPASSWORD` is empty, and `WEBPASSWORD_FILE` is set to a valid readable file path, then `WEBPASSWORD` will be set to the contents of `WEBPASSWORD_FILE`.
 
 ### Advanced Variables
-| Variable | Default | Value | Descrption |
+| Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
 | `ServerIPv6` | unset| `<Host's IPv6>` | **If you have a v6 network** set to your server's LAN IPv6 to block IPv6 ads fully
 | `INTERFACE` | unset | `<NIC>` | The default works fine with our basic example docker run commands.  If you're trying to use DHCP with `--net host` mode then you may have to customize this or DNSMASQ_LISTENING.
@@ -138,7 +138,7 @@ There are other environment variables if you want to customize various things in
 | `CUSTOM_CACHE_SIZE` | `10000` | Number | Set the cache size for dnsmasq. Useful for increasing the default cache size or to set it to 0. Note that when `DNSSEC` is "true", then this setting is ignored.
 
 ### Experimental Variables
-| Variable | Default | Value | Descrption |
+| Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
 | `DNSMASQ_USER` | unset | `<pihole\|root>` | Allows running FTLDNS as non-root.
 
@@ -277,6 +277,9 @@ DNSMasq / [FTLDNS](https://docs.pi-hole.net/ftldns/in-depth/#linux-capabilities)
 - `CAP_NET_BIND_SERVICE`: Allows FTLDNS binding to TCP/UDP sockets below 1024 (specifically DNS service on port 53)
 - `CAP_NET_RAW`: use raw and packet sockets (needed for handling DHCPv6 requests, and verifying that an IP is not in use before leasing it)
 - `CAP_NET_ADMIN`: modify routing tables and other network-related operations (in particular inserting an entry in the neighbor table to answer DHCP requests using unicast packets)
+- `CAP_SYS_NICE`: FTL sets itself as an important process to get some more processing time if the latter is running low
+- `CAP_IPC_LOCK`: it gives FTL the ability to lock a region of virtual memory into physical RAM
+- `CAP_CHOWN`: we need to be able to change ownership of log files and databases in case FTL is started as a different user than `pihole`
 
 This image automatically grants those capabilities, if available, to the FTLDNS process, even when run as non-root.\
 By default, docker does not include the `NET_ADMIN` capability for non-privileged containers, and it is recommended to explicitly add it to the container using `--cap-add=NET_ADMIN`.\

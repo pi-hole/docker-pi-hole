@@ -11,75 +11,63 @@ on:
         required: true
       core:
         description: 'Branch or tag of core repo'
-        required: true
+        required: false
       web:
         description: 'Branch or tag of web repo'
-        required: true
+        required: false
       ftl:
         description: 'Branch or tag of ftl repo'
-        required: true
+        required: false
 
 jobs:
-  test-and-build:
+  test:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        ARCH: [amd64, armhf, arm64, i386]
-        DEBIAN_VERSION: [stretch, buster]
     env:
-      ARCH: ${{matrix.ARCH}}
-      DEBIAN_VERSION: ${{matrix.DEBIAN_VERSION}}
+      ARCH: amd64
+      DEBIAN_VERSION: buster
+      CORE_VERSION: ${{ github.event.inputs.core }}
+      WEB_VERSION: ${{ github.event.inputs.web }}
+      FTL_VERSION: ${{ github.event.inputs.ftl }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.branch }}
-      - name: Patching Versions File
-        run: |
-          git checkout -b ${{ github.event.inputs.name }}
-          echo "CORE_VERSION=${{ github.event.inputs.core }}" > VERSIONS
-          echo "WEB_VERSION=${{ github.event.inputs.web }}" >> VERSIONS
-          echo "FTL_VERSION=${{ github.event.inputs.ftl }}" >> VERSIONS
       - name: Run Tests
         run: |
           echo "Building ${ARCH}-${DEBIAN_VERSION}"
           ./gh-actions-test.sh
-      - name: Push the ARCH image
-        if: github.event_name != 'pull_request'
-        run: |
-          . gh-actions-vars.sh
-          echo "${{ secrets.DOCKERHUB_PASS }}" | docker login --username="${{ secrets.DOCKERHUB_USER }}" --password-stdin
-          docker push "${ARCH_IMAGE}"
-      - name: Upload gh-workspace
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v1
-        with:
-          name: gh-workspace
-          path: .gh-workspace
 
-  publish:
+  build-and-publish:
+    needs: test
     runs-on: ubuntu-latest
-    needs: test-and-build
     steps:
-      - name: Checkout Repo
+      -
+        name: Checkout
         uses: actions/checkout@v2
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1
         with:
-          ref: dev
-      - name: Patching Versions File
-        run: |
-          git checkout -b ${{ github.event.inputs.name }}
-          echo "CORE_VERSION=${{ github.event.inputs.core }}" > VERSIONS
-          echo "WEB_VERSION=${{ github.event.inputs.web }}" >> VERSIONS
-          echo "FTL_VERSION=${{ github.event.inputs.ftl }}" >> VERSIONS
-      - name: Download workspace files
-        uses: actions/download-artifact@v1
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v2
         with:
-          name: gh-workspace
-          path: .gh-workspace
-      - name: Tag and Publish multi-arch images
-        env:
-          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
-        run: |
-          ./gh-actions-deploy.sh
+          context: .
+          platforms: linux/amd64, linux/arm64, linux/386, linux/arm/v7, linux/arm/v6, linux/ppc64le
+          build-args: |
+            CORE_VERSION=${{ github.event.inputs.core }}
+            WEB_VERSION=${{ github.event.inputs.web }}
+            FTL_VERSION=${{ github.event.inputs.ftl }}
+            PIHOLE_VERSION=${{ github.event.inputs.name }}
+          push: true
+          tags: |
+            pihole/pihole:${{ github.event.inputs.name }}
