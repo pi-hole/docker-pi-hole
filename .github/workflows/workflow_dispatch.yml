@@ -2,10 +2,6 @@ name: Build & Deploy custom image manually
 on:
   workflow_dispatch:
     inputs:
-      branch:
-        description: "Name of Branch to base build on"
-        required: false
-        default: dev
       name:
         description: 'Name of tag'
         required: true
@@ -31,8 +27,6 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.inputs.branch }}
       - name: Run Tests
         run: |
           echo "Building ${ARCH}-${DEBIAN_VERSION}"
@@ -45,8 +39,6 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.inputs.branch }}
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
