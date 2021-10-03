@@ -38,7 +38,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: pihole/pihole
+          images: ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole
           github-token: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Set up QEMU
