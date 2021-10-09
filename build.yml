@@ -14,7 +14,7 @@ services:
       context: .
       args:
         <<: *common-args
-        PIHOLE_BASE: pihole/debian-base:${DEBIAN_VERSION:-buster}
+        PIHOLE_BASE: debian:${DEBIAN_VERSION:-buster}-slim
   armel:
     image: pihole:${PIHOLE_VERSION}-armel-${DEBIAN_VERSION:-buster}
     build:
