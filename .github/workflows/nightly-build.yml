@@ -46,6 +46,13 @@ jobs:
           with:
             username: ${{ secrets.DOCKERHUB_USER }}
             password: ${{ secrets.DOCKERHUB_PASS }}
+        - 
+          name: Login to GitHub Container Registry
+          uses: docker/login-action@v1
+          with:
+            registry: ghcr.io
+            username: ${{ github.repository_owner }}
+            password: ${{ secrets.GITHUB_TOKEN }}
         -
           name: Build and push
           uses: docker/build-push-action@v2
@@ -60,3 +67,4 @@ jobs:
             push: true
             tags: |
               ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole:nightly
+              ghcr.io/${{ github.repository_owner }}/pihole:nightly
