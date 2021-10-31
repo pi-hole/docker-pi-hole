@@ -1,0 +1,36 @@
+name: Maintenance 🧰
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  dangling_images_removal:
+    runs-on: ubuntu-latest
+    name: Cleanup dangling images from GHCR 🧹📦
+    # Errors will probably be caused by excesses in API quota, so we can safely continue.
+    # Remaining images will be removed in the next scheduled run.
+    continue-on-error: true
+    # Pay attention that the org name is not necessary here, as gh will automatically take the one from the logged in user.
+    # REMEMBER TO KEEP THIS UP TO DATE WITH A LIST OF THE PUBLISHED PACKAGES.
+    strategy:
+      fail-fast: false
+      matrix:
+        container:
+          - 'pihole'
+          - 'ftl-build'
+
+    steps:
+      - name: Clone repository 🔽
+        uses: actions/checkout@v2.3.4
+
+      - name: Prepare environment 🛠️
+        run: chmod +x delete_ghcr_dangling_images.sh
+        working-directory: ./.github/workflows/maintenance
+
+      - name: Run deletion script 🗑
+        run: ./delete_ghcr_dangling_images.sh ${{ matrix.container }}
+        working-directory: ./.github/workflows/maintenance
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
