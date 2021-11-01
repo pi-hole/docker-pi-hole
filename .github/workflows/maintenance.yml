@@ -25,10 +25,6 @@ jobs:
       - name: Clone repository 🔽
         uses: actions/checkout@v2.3.4
 
-      - name: Prepare environment 🛠️
-        run: chmod +x delete_ghcr_dangling_images.sh
-        working-directory: ./.github/workflows/maintenance
-
       - name: Run deletion script 🗑
         run: ./delete_ghcr_dangling_images.sh ${{ matrix.container }}
         working-directory: ./.github/workflows/maintenance
