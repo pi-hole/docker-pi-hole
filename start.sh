@@ -40,6 +40,7 @@ export DHCP_IPv6
 export DHCP_rapid_commit
 export WEBTHEME
 export CUSTOM_CACHE_SIZE
+export RATE_LIMIT
 
 export adlistFile='/etc/pihole/adlists.list'
 
@@ -85,6 +86,7 @@ prepare_configs
 [ -n "${REV_SERVER_DOMAIN}" ] && change_setting "REV_SERVER_DOMAIN" "$REV_SERVER_DOMAIN"
 [ -n "${REV_SERVER_TARGET}" ] && change_setting "REV_SERVER_TARGET" "$REV_SERVER_TARGET"
 [ -n "${REV_SERVER_CIDR}" ] && change_setting "REV_SERVER_CIDR" "$REV_SERVER_CIDR"
+[ -n "${RATE_LIMIT}" ] && changeFTLsetting "RATE_LIMIT" "$RATE_LIMIT"
 
 if [ -z "$REV_SERVER" ];then
     # If the REV_SERVER* variables are set, then there is no need to add these.

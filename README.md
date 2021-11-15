@@ -125,6 +125,7 @@ There are other environment variables if you want to customize various things in
 | `QUERY_LOGGING` | `true` | `<"true"\|"false">` | Enable query logging or not.
 | `WEBTHEME` | `default-light` | `<"default-dark"\|"default-darker"\|"default-light">`| User interface theme to use.
 | `WEBPASSWORD_FILE`| unset | `<Docker secret path>` |Set an Admin password using [Docker secrets](https://docs.docker.com/engine/swarm/secrets/). If `WEBPASSWORD` is set, `WEBPASSWORD_FILE` is ignored. If `WEBPASSWORD` is empty, and `WEBPASSWORD_FILE` is set to a valid readable file path, then `WEBPASSWORD` will be set to the contents of `WEBPASSWORD_FILE`.
+|`RATE_LIMIT`| unset | `<rate-limit>` | The default settings for FTL's rate-limiting are to permit no more than 1000 queries in 60 seconds. Rate-limited queries are answered with a `REFUSED` reply and not further processed by FTL. |
 
 ### Advanced Variables
 | Variable | Default | Value | Description |
