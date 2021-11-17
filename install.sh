@@ -78,12 +78,15 @@ sed -i $'s/helpFunc() {/unsupportedFunc() {\\\n  echo "Function not supported in
 # Replace a few of the `pihole` options with calls to `unsupportedFunc`:
 # pihole -up / pihole updatePihole
 sed -i $'s/)\s*updatePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
-# pihole checkout
-sed -i $'s/)\s*piholeCheckoutFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 # pihole -r / pihole reconfigure
 sed -i $'s/)\s*reconfigurePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 # pihole uninstall
 sed -i $'s/)\s*uninstallFunc/) unsupportedFunc/g' /usr/local/bin/pihole
+
+if [[ "${PIHOLE_VERSION}" != "dev" && "${PIHOLE_VERSION}" != "nightly" ]]; then
+  # If we are on a version other than dev or nightly, disable `pihole checkout`
+  sed -i $'s/)\s*piholeCheckoutFunc/) unsupportedFunc/g' /usr/local/bin/pihole
+fi
 
 # Inject a message into the debug scripts Operating System section to indicate that the debug log comes from a Docker system.
 sed -i $'s/echo_current_diagnostic "Operating system"/echo_current_diagnostic "Operating system"\\\n    log_write "${INFO} Pi-hole Docker Container: ${PIHOLE_VERSION:-PIHOLE_VERSION is unset}"/g' /opt/pihole/piholeDebug.sh
