@@ -20,7 +20,7 @@ RUN bash -ex install.sh 2>&1 && \
 
 ENTRYPOINT [ "/s6-init" ]
 
-ADD s6/debian-root /
+COPY s6/debian-root /
 COPY s6/service /usr/local/bin/service
 
 # php config start passes special ENVs into
