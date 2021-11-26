@@ -76,15 +76,24 @@ prepare_configs
 [ -n "${INSTALL_WEB_SERVER}" ] && change_setting "INSTALL_WEB_SERVER" "$INSTALL_WEB_SERVER"
 [ -n "${INSTALL_WEB_INTERFACE}" ] && change_setting "INSTALL_WEB_INTERFACE" "$INSTALL_WEB_INTERFACE"
 [ -n "${LIGHTTPD_ENABLED}" ] && change_setting "LIGHTTPD_ENABLED" "$LIGHTTPD_ENABLED"
+[ -n "${DNS_BOGUS_PRIV}" ] && change_setting "DNS_BOGUS_PRIV" "$DNS_BOGUS_PRIV"
 [ -n "${ServerIP}" ] && changeFTLsetting "REPLY_ADDR4" "$ServerIP"
 [ -n "${ServerIPv6}" ] && changeFTLsetting "REPLY_ADDR6" "$ServerIPv6"
-[ -n "${DNS_BOGUS_PRIV}" ] && change_setting "DNS_BOGUS_PRIV" "$DNS_BOGUS_PRIV"
 [ -n "${DNS_FQDN_REQUIRED}" ] && change_setting "DNS_FQDN_REQUIRED" "$DNS_FQDN_REQUIRED"
 [ -n "${DNSSEC}" ] && change_setting "DNSSEC" "$DNSSEC"
 [ -n "${REV_SERVER}" ] && change_setting "REV_SERVER" "$REV_SERVER"
 [ -n "${REV_SERVER_DOMAIN}" ] && change_setting "REV_SERVER_DOMAIN" "$REV_SERVER_DOMAIN"
 [ -n "${REV_SERVER_TARGET}" ] && change_setting "REV_SERVER_TARGET" "$REV_SERVER_TARGET"
 [ -n "${REV_SERVER_CIDR}" ] && change_setting "REV_SERVER_CIDR" "$REV_SERVER_CIDR"
+
+# Get all exported environment variables starting with FTLCONF_ as a prefix and call the changeFTLsetting
+# function with the environment variable's suffix as the key. This allows applying any pihole-FTL.conf
+# setting defined here: https://docs.pi-hole.net/ftldns/configfile/
+declare -px | grep FTLCONF_ | sed -E 's/declare -x FTLCONF_([^=]+)=\"(.+)\"/\1 \2/' | while read -r name value
+  do
+    echo "Applying pihole-FTL.conf setting $name=$value"
+    changeFTLsetting "$name" "$value"
+  done
 
 if [ -z "$REV_SERVER" ];then
     # If the REV_SERVER* variables are set, then there is no need to add these.
