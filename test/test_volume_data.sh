@@ -46,8 +46,8 @@ echo "Testing $IMAGE with volumes base path $VOLUMES"
 # Running stock+empty volumes (no ports to avoid conflicts)
 CONTAINER="$(
     docker run -d \
-    -v "$VOL_PH:/etc/pihole/" \
-    -v "$VOL_DM:/etc/dnsmasq.d/" \
+    -v "$VOL_PH:/etc/pihole" \
+    -v "$VOL_DM:/etc/dnsmasq.d" \
     -v "/dev/null:/etc/pihole/adlists.list" \
     --entrypoint='' \
     $IMAGE \
@@ -92,8 +92,8 @@ assert_new_settings
 docker rm -f $CONTAINER
 CONTAINER="$(
     docker run -d \
-    -v "$VOL_PH:/etc/pihole/" \
-    -v "$VOL_DM:/etc/dnsmasq.d/" \
+    -v "$VOL_PH:/etc/pihole" \
+    -v "$VOL_DM:/etc/dnsmasq.d" \
     -v "/dev/null:/etc/pihole/adlists.list" \
     --entrypoint='' \
     $IMAGE \
