@@ -162,7 +162,7 @@ Here is a rundown of other arguments for your docker-compose / docker run.
 
 | Docker Arguments | Description |
 | ---------------- | ----------- |
-| `-p <port>:<port>` **Recommended** | Ports to expose (53, 80, 67, 443), the bare minimum ports required for Pi-holes HTTP and DNS services
+| `-p <port>:<port>` **Recommended** | Ports to expose (53, 80, 67), the bare minimum ports required for Pi-holes HTTP and DNS services
 | `--restart=unless-stopped`<br/> **Recommended** | Automatically (re)start your Pi-hole on boot or in the event of a crash
 | `-v $(pwd)/etc-pihole:/etc/pihole`<br/> **Recommended** | Volumes for your Pi-hole configs help persist changes across docker image updates
 | `-v $(pwd)/etc-dnsmasq.d:/etc/dnsmasq.d`<br/> **Recommended** | Volumes for your dnsmasq configs help persist changes across docker image updates
