@@ -20,7 +20,6 @@ services:
       - '53:53/udp'
       - "67:67/udp"
       - '8053:80/tcp'
-      - "443:443/tcp"
     volumes:
       - './etc-pihole/:/etc/pihole/'
       - './etc-dnsmasq.d/:/etc/dnsmasq.d/'
