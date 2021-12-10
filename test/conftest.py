@@ -14,7 +14,7 @@ def run_and_stream_command_output():
     def run_and_stream_command_output_inner(command, verbose=False):
         print("Running", command)
         build_env = os.environ.copy()
-        build_env['PIHOLE_VERSION'] = version
+        build_env['PIHOLE_DOCKER_TAG'] = version
         build_result = subprocess.Popen(command.split(), env=build_env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                         bufsize=1, universal_newlines=True)
         if verbose:
