@@ -14,32 +14,4 @@ services:
       context: .
       args:
         <<: *common-args
-        PIHOLE_BASE: debian:${DEBIAN_VERSION:-buster}-slim
-  armel:
-    image: pihole:${PIHOLE_DOCKER_TAG}-armel-${DEBIAN_VERSION:-buster}
-    build:
-      context: .
-      args:
-        <<: *common-args
-        PIHOLE_BASE: pihole/debian-debootstrap:armel-${DEBIAN_VERSION:-buster}-slim
-  armhf:
-    image: pihole:${PIHOLE_DOCKER_TAG}-armhf-${DEBIAN_VERSION:-buster}
-    build:
-      context: .
-      args:
-        <<: *common-args
-        PIHOLE_BASE: pihole/debian-debootstrap:armhf-${DEBIAN_VERSION:-buster}-slim
-  arm64:
-    image: pihole:${PIHOLE_DOCKER_TAG}-arm64-${DEBIAN_VERSION:-buster}
-    build:
-      context: .
-      args:
-        <<: *common-args
-        PIHOLE_BASE: pihole/debian-debootstrap:arm64-${DEBIAN_VERSION:-buster}-slim
-  i386:
-    image: pihole:${PIHOLE_DOCKER_TAG}-i386-${DEBIAN_VERSION:-buster}
-    build:
-      context: .
-      args:
-        <<: *common-args
-        PIHOLE_BASE: pihole/debian-debootstrap:i386-${DEBIAN_VERSION:-buster}-slim
+        PIHOLE_BASE: ghcr.io/pi-hole/docker-pi-hole-base:${DEBIAN_VERSION:-buster}-slim
