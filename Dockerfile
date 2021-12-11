@@ -1,27 +1,21 @@
 ARG PIHOLE_BASE
-FROM "${PIHOLE_BASE:-debian:buster-slim}"
+FROM "${PIHOLE_BASE:-ghcr.io/pi-hole/docker-pi-hole-base:buster-slim}"
 
-ARG CORE_VERSION
-ENV CORE_VERSION "${CORE_VERSION}"
-ARG WEB_VERSION
-ENV WEB_VERSION "${WEB_VERSION}"
-ARG FTL_VERSION
-ENV FTL_VERSION "${FTL_VERSION}"
-ARG PIHOLE_VERSION
-ENV PIHOLE_VERSION "${PIHOLE_VERSION}"
+ARG PIHOLE_DOCKER_TAG
+ENV PIHOLE_DOCKER_TAG "${PIHOLE_DOCKER_TAG}"
 
 ENV S6_OVERLAY_VERSION v2.1.0.2
 
 COPY install.sh /usr/local/bin/install.sh
 ENV PIHOLE_INSTALL /etc/.pihole/automated\ install/basic-install.sh
 
-RUN bash -ex install.sh 2>&1 && \
-    rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
-
 ENTRYPOINT [ "/s6-init" ]
 
-ADD s6/debian-root /
+COPY s6/debian-root /
 COPY s6/service /usr/local/bin/service
+
+RUN bash -ex install.sh 2>&1 && \
+    rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
 
 # php config start passes special ENVs into
 ARG PHP_ENV_CONFIG

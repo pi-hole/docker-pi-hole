@@ -202,7 +202,7 @@ setup_php_env() {
     local corshosts_line="\t\t\t\"CORS_HOSTS\" => \"${CORS_HOSTS}\","
     local serverip_line="\t\t\t\"ServerIP\" => \"${ServerIP}\","
     local php_error_line="\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\","
-    local pihole_docker_tag_line="\t\t\t\"PIHOLE_DOCKER_TAG\" => \"${PIHOLE_VERSION}\","
+    local pihole_docker_tag_line="\t\t\t\"PIHOLE_DOCKER_TAG\" => \"${PIHOLE_DOCKER_TAG}\","
 
     # idempotent line additions
     grep -qP "$vhost_line" "$PHP_ENV_CONFIG" || \
@@ -217,7 +217,7 @@ setup_php_env() {
         sed -i "/bin-environment/ a\\${pihole_docker_tag_line}" "$PHP_ENV_CONFIG"
 
     echo "Added ENV to php:"
-    grep -E '(VIRTUAL_HOST|CORS_HOSTS|ServerIP|PHP_ERROR_LOG)' "$PHP_ENV_CONFIG"
+    grep -E '(VIRTUAL_HOST|CORS_HOSTS|ServerIP|PHP_ERROR_LOG|PIHOLE_DOCKER_TAG)' "$PHP_ENV_CONFIG"
 }
 
 setup_web_port() {
