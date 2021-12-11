@@ -28,8 +28,8 @@ services:
       # WEBPASSWORD: 'set a secure password here or it will be random'
     # Volumes store your data between container upgrades
     volumes:
-      - './etc-pihole/:/etc/pihole/'
-      - './etc-dnsmasq.d/:/etc/dnsmasq.d/'
+      - './etc-pihole:/etc/pihole'
+      - './etc-dnsmasq.d:/etc/dnsmasq.d'
     # Recommended but not required (DHCP needs NET_ADMIN)
     #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
     cap_add:
@@ -71,8 +71,8 @@ This container uses 2 popular ports, port 53 and port 80, so **may conflict with
 If you're using a Red Hat based distribution with an SELinux Enforcing policy add `:z` to line with volumes like so:
 
 ```
-    -v "$(pwd)/etc-pihole/:/etc/pihole/:z" \
-    -v "$(pwd)/etc-dnsmasq.d/:/etc/dnsmasq.d/:z" \
+    -v "$(pwd)/etc-pihole:/etc/pihole:z" \
+    -v "$(pwd)/etc-dnsmasq.d:/etc/dnsmasq.d:z" \
 ```
 
 Volumes are recommended for persisting data across container re-creations for updating images.  The IP lookup variables may not work for everyone, please review their values and hard code IP and IPv6 if necessary.
