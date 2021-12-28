@@ -198,23 +198,17 @@ setup_php_env() {
     if [ -z "$VIRTUAL_HOST" ] ; then
       VIRTUAL_HOST="$ServerIP"
     fi;
-    local vhost_line="\t\t\t\"VIRTUAL_HOST\" => \"${VIRTUAL_HOST}\","
-    local corshosts_line="\t\t\t\"CORS_HOSTS\" => \"${CORS_HOSTS}\","
-    local serverip_line="\t\t\t\"ServerIP\" => \"${ServerIP}\","
-    local php_error_line="\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\","
-    local pihole_docker_tag_line="\t\t\t\"PIHOLE_DOCKER_TAG\" => \"${PIHOLE_DOCKER_TAG}\","
 
-    # idempotent line additions
-    grep -qP "$vhost_line" "$PHP_ENV_CONFIG" || \
-        sed -i "/bin-environment/ a\\${vhost_line}" "$PHP_ENV_CONFIG"
-    grep -qP "$corshosts_line" "$PHP_ENV_CONFIG" || \
-        sed -i "/bin-environment/ a\\${corshosts_line}" "$PHP_ENV_CONFIG"
-    grep -qP "$serverip_line" "$PHP_ENV_CONFIG" || \
-        sed -i "/bin-environment/ a\\${serverip_line}" "$PHP_ENV_CONFIG"
-    grep -qP "$php_error_line" "$PHP_ENV_CONFIG" || \
-        sed -i "/bin-environment/ a\\${php_error_line}" "$PHP_ENV_CONFIG"
-    grep -qP "$pihole_docker_tag_line" "$PHP_ENV_CONFIG" || \
-        sed -i "/bin-environment/ a\\${pihole_docker_tag_line}" "$PHP_ENV_CONFIG"
+    for config_var in "VIRTUAL_HOST" "CORS_HOSTS" "ServerIP" "PHP_ERROR_LOG" "PIHOLE_DOCKER_TAG"; do
+      local beginning_of_line="\t\t\t\"${config_var}\" => "
+      if grep -qP "$beginning_of_line" "$PHP_ENV_CONFIG" ; then
+        # replace line if already present
+        sed -i "/${beginning_of_line}/c\\${beginning_of_line}\"${!config_var}\"," "$PHP_ENV_CONFIG"
+      else
+        # add line otherwise
+        sed -i "/bin-environment/ a\\${beginning_of_line}\"${!config_var}\"," "$PHP_ENV_CONFIG"
+      fi
+    done
 
     echo "Added ENV to php:"
     grep -E '(VIRTUAL_HOST|CORS_HOSTS|ServerIP|PHP_ERROR_LOG|PIHOLE_DOCKER_TAG)' "$PHP_ENV_CONFIG"
