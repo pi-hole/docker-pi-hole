@@ -41,20 +41,7 @@ services:
 
 [Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
 
-## Upgrade Notes
-
-### v5.8+
-A check has been added in v5.8 to ensure that the `PIHOLE_DNS_` value is correct, a common error is that quotes are passed through to the script, usually because the environment variable has been defined as, e.g. `- PIHOLE_DNS_='10.0.0.2#5053;1.1.1.1'`. The following declarations are valid:
- - `PIHOLE_DNS_: 10.0.0.2#5053;1.1.1.1`
- - `PIHOLE_DNS_: '10.0.0.2#5053;1.1.1.1'`
- - `- PIHOLE_DNS_=10.0.0.2#5053;1.1.1.1`
-
-
-See [Docker documentation](https://docs.docker.com/compose/compose-file/compose-file-v3/#environment) for more detail, and discussion in [this issue thread](https://github.com/pi-hole/docker-pi-hole/issues/838)
-
 ## Overview
-
-#### Renamed from `diginc/pi-hole` to `pihole/pihole`
 
 A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86 and ARM container with [Pi-hole](https://pi-hole.net) functionality.
 
@@ -140,7 +127,7 @@ There are other environment variables if you want to customize various things in
 ### Experimental Variables
 | Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
-| `DNSMASQ_USER` | unset | `<pihole\|root>` | Allows running FTLDNS as non-root.
+| `DNSMASQ_USER` | unset | `<pihole\|root>` | Allows changing the user that FTLDNS runs as. Default: `pihole`
 
 ## Deprecated environment variables:
 While these may still work, they are likely to be removed in a future version. Where applicible, alternative variable names are indicated. Please review the table above for usage of the alternative variables
@@ -280,7 +267,6 @@ DNSMasq / [FTLDNS](https://docs.pi-hole.net/ftldns/in-depth/#linux-capabilities)
 - `CAP_NET_RAW`: use raw and packet sockets (needed for handling DHCPv6 requests, and verifying that an IP is not in use before leasing it)
 - `CAP_NET_ADMIN`: modify routing tables and other network-related operations (in particular inserting an entry in the neighbor table to answer DHCP requests using unicast packets)
 - `CAP_SYS_NICE`: FTL sets itself as an important process to get some more processing time if the latter is running low
-- `CAP_IPC_LOCK`: it gives FTL the ability to lock a region of virtual memory into physical RAM
 - `CAP_CHOWN`: we need to be able to change ownership of log files and databases in case FTL is started as a different user than `pihole`
 
 This image automatically grants those capabilities, if available, to the FTLDNS process, even when run as non-root.\
