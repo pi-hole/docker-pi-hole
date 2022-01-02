@@ -7,6 +7,6 @@ rm /run/pihole/FTL.sock 2> /dev/null
 s6-setuidgid ${DNSMASQ_USER} pihole-FTL $FTL_CMD >/dev/null 2>&1
 
 # Notes on above:
-# - DNSMASQ_USER default of root is in Dockerfile & can be overwritten by runtime container env
+# - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env
 # - /var/log/pihole*.log has FTL's output that no-daemon would normally print in FG too
 #   prevent duplicating it in docker logs by sending to dev null

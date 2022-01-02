@@ -25,8 +25,8 @@ prepare_configs() {
     # Re-apply perms from basic-install over any volume mounts that may be present (or not)
     # Also  similar to preflights for FTL https://github.com/pi-hole/pi-hole/blob/master/advanced/Templates/pihole-FTL.service
     chown pihole:root /etc/lighttpd
-    chown pihole:pihole "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" "/var/log/pihole"
-    chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf"
+    chown pihole:pihole "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" "${PI_HOLE_CONFIG_DIR}/pihole-FTL.db" "/var/log/pihole"
+    chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" "${PI_HOLE_CONFIG_DIR}/pihole-FTL.db"
     touch /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
     chown pihole:pihole /var/run/pihole /var/log/pihole
     test -f /var/run/pihole/FTL.sock && rm /var/run/pihole/FTL.sock
