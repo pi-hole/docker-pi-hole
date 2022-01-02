@@ -4,7 +4,7 @@ FROM "${PIHOLE_BASE:-ghcr.io/pi-hole/docker-pi-hole-base:buster-slim}"
 ARG PIHOLE_DOCKER_TAG
 ENV PIHOLE_DOCKER_TAG "${PIHOLE_DOCKER_TAG}"
 
-ENV S6_OVERLAY_VERSION v2.1.0.2
+ENV S6_OVERLAY_VERSION v2.2.0.3
 
 COPY install.sh /usr/local/bin/install.sh
 ENV PIHOLE_INSTALL /etc/.pihole/automated\ install/basic-install.sh
@@ -38,7 +38,7 @@ ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
 
 ENV ServerIP 0.0.0.0
 ENV FTL_CMD no-daemon
-ENV DNSMASQ_USER root
+ENV DNSMASQ_USER pihole
 
 ENV PATH /opt/pihole:${PATH}
 
