@@ -79,9 +79,6 @@ if [[ "${PIHOLE_DOCKER_TAG}" != "dev" && "${PIHOLE_DOCKER_TAG}" != "nightly" ]];
   sed -i $'s/)\s*piholeCheckoutFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 fi
 
-# Inject a message into the debug scripts Operating System section to indicate that the debug log comes from a Docker system.
-sed -i $'s/echo_current_diagnostic "Operating system"/echo_current_diagnostic "Operating system"\\\n    log_write "${INFO} Pi-hole Docker Container: ${PIHOLE_DOCKER_TAG:-PIHOLE_DOCKER_TAG is unset}"/g' /opt/pihole/piholeDebug.sh
-
 touch /.piholeFirstBoot
 
 echo 'Docker install successful'
