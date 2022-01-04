@@ -3,10 +3,11 @@
 . /opt/pihole/webpage.sh
 
 fix_capabilities() {
-    setcap CAP_NET_BIND_SERVICE,CAP_NET_RAW,CAP_NET_ADMIN,CAP_SYS_NICE,CAP_CHOWN,CAP_IPC_LOCK+ei $(which pihole-FTL) || ret=$?
+    setcap CAP_NET_BIND_SERVICE,CAP_NET_RAW,CAP_NET_ADMIN,CAP_SYS_NICE,CAP_CHOWN+ei $(which pihole-FTL) || ret=$?
 
-    if [[ $ret -ne 0 && "${DNSMASQ_USER:-root}" != "root" ]]; then
-        echo "ERROR: Failed to set capabilities for pihole-FTL. Cannot run as non-root."
+    if [[ $ret -ne 0 && "${DNSMASQ_USER:-pihole}" != "root" ]]; then
+        echo "ERROR: Unable to set capabilities for pihole-FTL. Cannot run as non-root."
+        echo "       If you are seeing this error, please set the environment variable DNSMASQ_USER=root"
         exit 1
     fi
 }
