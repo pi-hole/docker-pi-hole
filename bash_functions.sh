@@ -7,7 +7,7 @@ fix_capabilities() {
 
     if [[ $ret -ne 0 && "${DNSMASQ_USER:-pihole}" != "root" ]]; then
         echo "ERROR: Unable to set capabilities for pihole-FTL. Cannot run as non-root."
-        echo "       If you are seeing this error, please set the environment variable DNSMASQ_USER=root"
+        echo "       If you are seeing this error, please set the environment variable 'DNSMASQ_USER' to the value 'root'"
         exit 1
     fi
 }
