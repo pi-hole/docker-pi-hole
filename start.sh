@@ -152,7 +152,7 @@ fi
 # If an invalid theme name was supplied, setup WEBTHEME to use the default-light theme.
 if [ -n "${WEBTHEME}" ]; then
     case "${WEBTHEME}" in
-      "default-dark" | "default-darker" | "default-light")
+      "default-dark" | "default-darker" | "default-light" | "default-auto" | "lcars")
         echo "Setting Web Theme based on WEBTHEME variable, using value ${WEBTHEME}"
         change_setting "WEBTHEME" "${WEBTHEME}"
         ;;
