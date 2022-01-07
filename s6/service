@@ -2,29 +2,49 @@
 # This script patches all service commands into the appropriate s6- commands
 # pi-hole upstream scripts need a 'service' interface. why not systemd? docker said so.
 start() {
-    s6-svc -wU -u -T2500 /var/run/s6/services/$service
+  s6-svc -wU -u -T2500 /var/run/s6/services/$service
 }
 
 stop() {
-    s6-svc -wD -d -T2500 /var/run/s6/services/$service
+  s6-svc -wD -d -T2500 /var/run/s6/services/$service
 }
 
 restart() {
+  local pid
+
+  # Get the PID of the service we are asking to restart
+  pid=$(pgrep $service)
+
+  # Only attempt to stop the service if it is already running
+  if [ -n "$pid" ]; then
     stop
+
+    # Loop until we are certain that the process has been stopped
+    while test -d /proc/$pid; do
+      sleep 0.2
+    done
+  fi
+
+  # Check it hasn't been started by something else in the meantime
+  pid=$(pgrep $service)
+  
+  # Only attempt to start the service if it is not already running
+  if [ -z "$pid" ]; then
     start
-    #s6-svc -t -wR -T5000 /var/run/s6/services/$service
+  fi
+  
 }
 
 status() {
-    s6-svstat /var/run/s6/services/$service
+  s6-svstat /var/run/s6/services/$service
 }
 
 service="$1"
 command="$2"
 
 if [[ ! -d "/var/run/s6/services/$service" ]] ; then
-    echo "s6 service not found for $service, exiting..."
-    exit
+  echo "s6 service not found for $service, exiting..."
+  exit
 fi;
 
 ${command} "${service}"
