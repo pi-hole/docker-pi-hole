@@ -9,9 +9,9 @@ x-common-args: &common-args
 
 services:
   amd64:
-    image: pihole:${PIHOLE_DOCKER_TAG}-amd64-${DEBIAN_VERSION:-buster}
+    image: pihole:${PIHOLE_DOCKER_TAG}-amd64-${DEBIAN_VERSION:-bullseye}
     build:
       context: .
       args:
         <<: *common-args
-        PIHOLE_BASE: ghcr.io/pi-hole/docker-pi-hole-base:${DEBIAN_VERSION:-buster}-slim
+        PIHOLE_BASE: ghcr.io/pi-hole/docker-pi-hole-base:${DEBIAN_VERSION:-bullseye}-slim

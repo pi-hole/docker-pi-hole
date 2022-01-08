@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ARCH: amd64
-      DEBIAN_VERSION: buster
+      DEBIAN_VERSION: bullseye
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
