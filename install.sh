@@ -26,11 +26,6 @@ esac
   echo "https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/s6-overlay-${S6_ARCH}.tar.gz"
 }
 
-apt-get update
-apt-get install --no-install-recommends -y curl procps ca-certificates git
-# curl in armhf-buster's image has SSL issues. Running c_rehash fixes it.
-# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=923479
-c_rehash
 ln -s `which echo` /usr/local/bin/whiptail
 curl -L -s "$(s6_download_url)" | tar xvzf - -C /
 mv /init /s6-init
