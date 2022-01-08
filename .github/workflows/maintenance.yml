@@ -20,6 +20,7 @@ jobs:
         container:
           - 'pihole'
           - 'ftl-build'
+          - 'docker-pi-hole-base'
 
     steps:
       - name: Clone repository 🔽
