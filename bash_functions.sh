@@ -27,7 +27,7 @@ prepare_configs() {
     # Also  similar to preflights for FTL https://github.com/pi-hole/pi-hole/blob/master/advanced/Templates/pihole-FTL.service
     chown pihole:root /etc/lighttpd
     chown pihole:pihole "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" "/var/log/pihole"
-    chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" "${PI_HOLE_CONFIG_DIR}/pihole-FTL.db"
+    chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf"
     if [[ -e "${PI_HOLE_CONFIG_DIR}/pihole-FTL.db" ]]; then
       chown pihole:pihole "${PI_HOLE_CONFIG_DIR}/pihole-FTL.db"
       chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.db"
