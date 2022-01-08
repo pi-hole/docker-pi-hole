@@ -30,4 +30,4 @@ jobs:
         run: ./delete_ghcr_dangling_images.sh ${{ matrix.container }}
         working-directory: ./.github/workflows/maintenance
         env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DELETE_PACKAGE_TOKEN }}
