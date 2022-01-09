@@ -115,7 +115,10 @@ fi
 # Parse the PIHOLE_DNS variable, if it exists, and apply upstream servers to Pi-hole config
 if [ -n "${PIHOLE_DNS_}" ]; then
     echo "Setting DNS servers based on PIHOLE_DNS_ variable"
+    # Remove any PIHOLE_DNS_ entries from setupVars.conf, if they exist
+    sed -i '/PIHOLE_DNS_/d' setupVars.conf
     # Split into an array (delimited by ;)
+    # Loop through and add them one by one to setupVars.conf
     PIHOLE_DNS_ARR=(${PIHOLE_DNS_//;/ })
     count=1
     valid_entries=0
