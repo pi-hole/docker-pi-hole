@@ -116,7 +116,7 @@ fi
 if [ -n "${PIHOLE_DNS_}" ]; then
     echo "Setting DNS servers based on PIHOLE_DNS_ variable"
     # Remove any PIHOLE_DNS_ entries from setupVars.conf, if they exist
-    sed -i '/PIHOLE_DNS_/d' setupVars.conf
+    sed -i '/PIHOLE_DNS_/d' /etc/pihole/setupVars.conf
     # Split into an array (delimited by ;)
     # Loop through and add them one by one to setupVars.conf
     PIHOLE_DNS_ARR=(${PIHOLE_DNS_//;/ })
