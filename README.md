@@ -26,10 +26,6 @@ services:
       - "80:80/tcp"
     environment:
       TZ: 'America/Chicago'
-      WEB_UID: '1001'
-      WEB_GID: '1000'
-      PIHOLE_UID: '1001'
-      PIHOLE_GID: '1000'
       # WEBPASSWORD: 'set a secure password here or it will be random'
     # Volumes store your data between container upgrades
     volumes:
