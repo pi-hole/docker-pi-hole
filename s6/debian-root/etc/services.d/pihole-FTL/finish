@@ -1,4 +1,4 @@
 #!/usr/bin/with-contenv bash
 
 s6-echo "Stopping pihole-FTL"
-kill -15 $(pgrep pihole-FTL)
+killall -15 pihole-FTL
