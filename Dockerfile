@@ -4,7 +4,7 @@ FROM "${PIHOLE_BASE:-ghcr.io/pi-hole/docker-pi-hole-base:bullseye-slim}"
 ARG PIHOLE_DOCKER_TAG
 ENV PIHOLE_DOCKER_TAG "${PIHOLE_DOCKER_TAG}"
 
-ENV S6_OVERLAY_VERSION v2.2.0.3
+ENV S6_OVERLAY_VERSION v2.1.0.2
 
 COPY install.sh /usr/local/bin/install.sh
 ENV PIHOLE_INSTALL /etc/.pihole/automated\ install/basic-install.sh
