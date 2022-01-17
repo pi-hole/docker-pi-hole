@@ -1,6 +1,10 @@
 #!/usr/bin/with-contenv bash
 set -e
 
+if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
+    set -x ;
+fi
+
 modifyUser()
 {
   declare username=${1:-} newId=${2:-}
@@ -9,11 +13,8 @@ modifyUser()
   local currentId=$(id -u ${username})
   [[ ${currentId} -eq ${newId} ]] && return
 
-  echo "user ${username} ${currentId} => ${newId}"
-  usermod -o -u ${newId} ${username}
-
-  find / -user ${currentId} -print0 2> /dev/null | \
-    xargs -0 -n1 chown -h ${username} 2> /dev/null
+  echo "Changing ID for user: ${username} (${currentId} => ${newId})"
+  usermod -o -u ${newId} ${username}  
 }
 
 modifyGroup()
@@ -24,11 +25,8 @@ modifyGroup()
   local currentId=$(id -g ${groupname})
   [[ ${currentId} -eq ${newId} ]] && return
 
-  echo "group ${groupname} ${currentId} => ${newId}"
+  echo "Changing ID for group: ${groupname} (${currentId} => ${newId})"
   groupmod -o -g ${newId} ${groupname}
-
-  find / -group ${currentId} -print0 2> /dev/null | \
-    xargs -0 -n1 chgrp -h ${groupname} 2> /dev/null
 }
 
 modifyUser www-data ${WEB_UID}

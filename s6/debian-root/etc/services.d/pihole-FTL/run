@@ -4,6 +4,22 @@ s6-echo "Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
 # Remove possible leftovers from previous pihole-FTL processes
 rm -f /dev/shm/FTL-* 2> /dev/null
 rm /run/pihole/FTL.sock 2> /dev/null
+
+# Touch files to ensure they exist (create if non-existing, preserve if existing)
+mkdir -pm 0755 /run/pihole
+touch /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole-FTL.log /var/log/pihole.log /etc/pihole/dhcp.leases
+
+# Ensure that permissions are set so that pihole-FTL can edit all necessary files
+chown pihole:pihole /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole-FTL.log /var/log/pihole.log /etc/pihole/dhcp.leases /run/pihole /etc/pihole
+chmod 0644 /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole-FTL.log /var/log/pihole.log /etc/pihole/dhcp.leases
+
+# Ensure that permissions are set so that pihole-FTL can edit the files. We ignore errors as the file may not (yet) exist
+chmod -f 0644 /etc/pihole/macvendor.db
+# Chown database files to the user FTL runs as. We ignore errors as the files may not (yet) exist
+chown -f pihole:pihole /etc/pihole/pihole-FTL.db /etc/pihole/gravity.db /etc/pihole/macvendor.db
+# Chown database file permissions so that the pihole group (web interface) can edit the file. We ignore errors as the files may not (yet) exist
+chmod -f 0664 /etc/pihole/pihole-FTL.db
+
 s6-setuidgid ${DNSMASQ_USER} pihole-FTL $FTL_CMD >/dev/null 2>&1
 
 # Notes on above:
