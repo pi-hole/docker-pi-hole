@@ -26,6 +26,10 @@ prepare_configs() {
     
     chown pihole:root /etc/lighttpd
     
+    # In case of `pihole` UID being changed, re-chown the pihole scripts and pihole commmand
+    chown -R pihole:root "${PI_HOLE_INSTALL_DIR}"
+    chown pihole:root "${PI_HOLE_BIN_DIR}/pihole"
+    
     set -e
     # Update version numbers
     pihole updatechecker
