@@ -128,15 +128,15 @@ There are other environment variables if you want to customize various things in
 | `CORS_HOSTS` | unset | `<FQDNs delimited by ,>` | List of domains/subdomains on which CORS is allowed. Wildcards are not supported. Eg: `CORS_HOSTS: domain.com,home.domain.com,www.domain.com`.
 | `CUSTOM_CACHE_SIZE` | `10000` | Number | Set the cache size for dnsmasq. Useful for increasing the default cache size or to set it to 0. Note that when `DNSSEC` is "true", then this setting is ignored.
 | `FTLCONF_[SETTING]` | unset | As per documentation | Customize pihole-FTL.conf with settings described in the [FTLDNS Configuration page](https://docs.pi-hole.net/ftldns/configfile/). For example, to customize REPLY_ADDR6, ensure you have the `FTLCONF_REPLY_ADDR6` environment variable set.
-| PIHOLE_UID | debian system value | Number | Overrides image's default pihole user id to match a host user id  |
-| PIHOLE_GID | debian system value | Number | Overrides image's default pihole group id to match a host group id |
-| WEB_UID | debian system value | Number | Overrides image's default www-data user id to match a host user id |
-| WEB_GID | debian system value | Number | Overrides image's default www-data group id to match a host group id |
 
 ### Experimental Variables
 | Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
 | `DNSMASQ_USER` | unset | `<pihole\|root>` | Allows changing the user that FTLDNS runs as. Default: `pihole`
+| PIHOLE_UID | debian system value | Number | Overrides image's default pihole user id to match a host user id  |
+| PIHOLE_GID | debian system value | Number | Overrides image's default pihole group id to match a host group id |
+| WEB_UID | debian system value | Number | Overrides image's default www-data user id to match a host user id |
+| WEB_GID | debian system value | Number | Overrides image's default www-data group id to match a host group id |
 
 ## Deprecated environment variables:
 While these may still work, they are likely to be removed in a future version. Where applicible, alternative variable names are indicated. Please review the table above for usage of the alternative variables
