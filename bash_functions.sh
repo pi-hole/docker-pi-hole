@@ -23,23 +23,13 @@ prepare_configs() {
     touch "$setupVars"
     set +e
     mkdir -p /var/run/pihole /var/log/pihole
-    # Re-apply perms from basic-install over any volume mounts that may be present (or not)
-    # Also  similar to preflights for FTL https://github.com/pi-hole/pi-hole/blob/master/advanced/Templates/pihole-FTL.service
+    
     chown pihole:root /etc/lighttpd
-    chown pihole:pihole "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" "/var/log/pihole"
-    chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf"
-    if [[ -e "${PI_HOLE_CONFIG_DIR}/pihole-FTL.db" ]]; then
-      chown pihole:pihole "${PI_HOLE_CONFIG_DIR}/pihole-FTL.db"
-      chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.db"
-    fi
-    touch /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
-    chown pihole:pihole /var/run/pihole /var/log/pihole
-    test -f /var/run/pihole/FTL.sock && rm /var/run/pihole/FTL.sock
-    chown pihole:pihole /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /etc/pihole /var/log/pihole.log
-    if [[ -e /etc/pihole/dhcp.leases ]]; then
-      chown pihole:pihole /etc/pihole/dhcp.leases
-    fi
-    chmod 0644 /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
+    
+    # In case of `pihole` UID being changed, re-chown the pihole scripts and pihole commmand
+    chown -R pihole:root "${PI_HOLE_INSTALL_DIR}"
+    chown pihole:root "${PI_HOLE_BIN_DIR}/pihole"
+    
     set -e
     # Update version numbers
     pihole updatechecker
@@ -289,8 +279,6 @@ setup_ipv4_ipv6() {
 
 test_configs() {
     set -e
-    echo -n '::: Testing pihole-FTL DNS: '
-    sudo -u ${DNSMASQ_USER:-root} pihole-FTL test || exit 1
     echo -n '::: Testing lighttpd config: '
     lighttpd -t -f /etc/lighttpd/lighttpd.conf || exit 1
     set +e
