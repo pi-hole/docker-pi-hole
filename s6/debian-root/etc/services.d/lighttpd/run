@@ -2,11 +2,23 @@
 
 s6-echo "Starting lighttpd"
 
-# Touch log files to ensure they exist (create if non-existing, preserve if existing)
-touch /var/log/lighttpd/access.log /var/log/lighttpd/error.log
+if [[ 1 -eq ${WEBLOGS_STDOUT:-0} ]]; then
+  #lighthttpd cannot use /dev/stdout https://redmine.lighttpd.net/issues/2731
+  rm -f /var/log/lighttpd/access.log
+  mkfifo -m 600 /var/log/lighttpd/access.log
+  rm -f /var/log/lighttpd/error.log
+  mkfifo -m 600 /var/log/lighttpd/error.log
+  chown -R www-data:www-data /var/log/lighttpd
+  service lighttpd-access-log start
+  service lighttpd-error-log start
+  sleep 2
+else
+  # Touch log files to ensure they exist (create if non-existing, preserve if existing)
+  touch /var/log/lighttpd/access.log /var/log/lighttpd/error.log
 
-# Ensure that permissions are set so that lighttpd can write to the logs
-chown -R www-data:www-data /var/log/lighttpd
-chmod 0644 /var/log/lighttpd/access.log /var/log/lighttpd/error.log
+  # Ensure that permissions are set so that lighttpd can write to the logs
+  chown -R www-data:www-data /var/log/lighttpd
+  chmod 0644 /var/log/lighttpd/access.log /var/log/lighttpd/error.log
+fi
 
 lighttpd -D -f /etc/lighttpd/lighttpd.conf

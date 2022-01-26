@@ -1,0 +1,5 @@
+#!/usr/bin/with-contenv bash
+
+s6-echo "Redirecting FIFO access log to stdout"
+
+s6-setuidgid www-data cat /var/log/lighttpd/access.log 2>&1
