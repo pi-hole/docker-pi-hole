@@ -4,15 +4,21 @@ s6-echo "Starting lighttpd"
 
 if [[ 1 -eq ${WEBLOGS_STDOUT:-0} ]]; then
   #lighthttpd cannot use /dev/stdout https://redmine.lighttpd.net/issues/2731
-  rm -f /var/log/lighttpd/access.log
-  mkfifo -m 600 /var/log/lighttpd/access.log
-  rm -f /var/log/lighttpd/error.log
-  mkfifo -m 600 /var/log/lighttpd/error.log
+  for fi in /var/log/lighttpd/access.log /var/log/lighttpd/error.log
+  do
+    if [[ ! -p ${fi} ]]; then
+      rm -f ${fi}
+      mkfifo -m 600 ${fi}
+    fi
+  done
   chown -R www-data:www-data /var/log/lighttpd
   service lighttpd-access-log start
   service lighttpd-error-log start
   sleep 2
 else
+  #remove fifo if exists
+  [[ -p /var/log/lighttpd/access.log ]] && rm -Rf /var/log/lighttpd/access.log
+  [[ -p  /var/log/lighttpd/error.log ]] && rm -Rf /var/log/lighttpd/error.log
   # Touch log files to ensure they exist (create if non-existing, preserve if existing)
   touch /var/log/lighttpd/access.log /var/log/lighttpd/error.log
 
