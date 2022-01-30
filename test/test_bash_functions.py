@@ -143,16 +143,15 @@ def test_DNS_Envs_are_secondary_to_setupvars(Docker, Slow, args_env, expected_st
          expected_servers)
 
 
-@pytest.mark.parametrize('args_env, expected_stdout, expected_config_line', [
-    ('', 'binding to default interface: eth0', 'interface=eth0' ),
-    ('-e INTERFACE="eth0"', 'binding to default interface: eth0', 'interface=eth0' ),
-    ('-e INTERFACE="br0"', 'binding to custom interface: br0', 'interface=br0'),
+@pytest.mark.parametrize('args_env, expected_stdout, expected_config_line', [    
+    ('', 'binding to default interface: eth0', 'PIHOLE_INTERFACE=eth0'),
+    ('-e INTERFACE="br0"', 'binding to custom interface: br0', 'PIHOLE_INTERFACE=br0'),
 ])
 def test_DNS_interface_override_defaults(Docker, Slow, args_env, expected_stdout, expected_config_line):
     ''' When INTERFACE environment var is passed in, overwrite dnsmasq interface '''
     function = Docker.run('. /bash_functions.sh ; eval `grep "^setup_dnsmasq " /start.sh`')
     assert expected_stdout in function.stdout
-    Slow(lambda: expected_config_line + '\n' == Docker.run('grep "^interface" /etc/dnsmasq.d/01-pihole.conf').stdout)
+    Slow(lambda: expected_config_line + '\n' == Docker.run('grep "^PIHOLE_INTERFACE" /etc/pihole/setupVars.conf').stdout)
 
 
 expected_debian_lines = [

@@ -20,10 +20,9 @@ services:
       - '53:53/udp'
       - "67:67/udp"
       - '8053:80/tcp'
-      - "443:443/tcp"
     volumes:
-      - './etc-pihole/:/etc/pihole/'
-      - './etc-dnsmasq.d/:/etc/dnsmasq.d/'
+      - './etc-pihole:/etc/pihole'
+      - './etc-dnsmasq.d:/etc/dnsmasq.d'
       # run `touch ./var-log/pihole.log` first unless you like errors
       # - './var-log/pihole.log:/var/log/pihole.log'
     # Recommended but not required (DHCP needs NET_ADMIN)
@@ -52,7 +51,7 @@ services:
 #    ports:
 #      - '2368:2368/tcp'
 #    volumes:
-#      - '/etc/ghost/:/ghost-override'
+#      - '/etc/ghost:/ghost-override'
 #    environment:
 #      PROXY_LOCATION: ghost
 #      VIRTUAL_HOST: ghost.yourDomain.lan

@@ -36,4 +36,4 @@ fi
 
 pihole -v
 
-echo "  Container tag is: ${PIHOLE_VERSION}"
+echo "  Container tag is: ${PIHOLE_DOCKER_TAG}"

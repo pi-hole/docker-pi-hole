@@ -3,10 +3,11 @@
 . /opt/pihole/webpage.sh
 
 fix_capabilities() {
-    setcap CAP_NET_BIND_SERVICE,CAP_NET_RAW,CAP_NET_ADMIN+ei $(which pihole-FTL) || ret=$?
+    setcap CAP_NET_BIND_SERVICE,CAP_NET_RAW,CAP_NET_ADMIN,CAP_SYS_NICE,CAP_CHOWN+ei $(which pihole-FTL) || ret=$?
 
-    if [[ $ret -ne 0 && "${DNSMASQ_USER:-root}" != "root" ]]; then
-        echo "ERROR: Failed to set capabilities for pihole-FTL. Cannot run as non-root."
+    if [[ $ret -ne 0 && "${DNSMASQ_USER:-pihole}" != "root" ]]; then
+        echo "ERROR: Unable to set capabilities for pihole-FTL. Cannot run as non-root."
+        echo "       If you are seeing this error, please set the environment variable 'DNSMASQ_USER' to the value 'root'"
         exit 1
     fi
 }
@@ -26,7 +27,11 @@ prepare_configs() {
     # Also  similar to preflights for FTL https://github.com/pi-hole/pi-hole/blob/master/advanced/Templates/pihole-FTL.service
     chown pihole:root /etc/lighttpd
     chown pihole:pihole "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" "/var/log/pihole"
-    chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf"
+    chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.conf" "${PI_HOLE_CONFIG_DIR}/pihole-FTL.db"
+    if [[ -e "${PI_HOLE_CONFIG_DIR}/pihole-FTL.db" ]]; then
+      chown pihole:pihole "${PI_HOLE_CONFIG_DIR}/pihole-FTL.db"
+      chmod 644 "${PI_HOLE_CONFIG_DIR}/pihole-FTL.db"
+    fi
     touch /var/log/pihole-FTL.log /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole.log
     chown pihole:pihole /var/run/pihole /var/log/pihole
     test -f /var/run/pihole/FTL.sock && rm /var/run/pihole/FTL.sock
@@ -198,26 +203,20 @@ setup_php_env() {
     if [ -z "$VIRTUAL_HOST" ] ; then
       VIRTUAL_HOST="$ServerIP"
     fi;
-    local vhost_line="\t\t\t\"VIRTUAL_HOST\" => \"${VIRTUAL_HOST}\","
-    local corshosts_line="\t\t\t\"CORS_HOSTS\" => \"${CORS_HOSTS}\","
-    local serverip_line="\t\t\t\"ServerIP\" => \"${ServerIP}\","
-    local php_error_line="\t\t\t\"PHP_ERROR_LOG\" => \"${PHP_ERROR_LOG}\","
-    local pihole_docker_tag_line="\t\t\t\"PIHOLE_DOCKER_TAG\" => \"${PIHOLE_VERSION}\","
 
-    # idempotent line additions
-    grep -qP "$vhost_line" "$PHP_ENV_CONFIG" || \
-        sed -i "/bin-environment/ a\\${vhost_line}" "$PHP_ENV_CONFIG"
-    grep -qP "$corshosts_line" "$PHP_ENV_CONFIG" || \
-        sed -i "/bin-environment/ a\\${corshosts_line}" "$PHP_ENV_CONFIG"
-    grep -qP "$serverip_line" "$PHP_ENV_CONFIG" || \
-        sed -i "/bin-environment/ a\\${serverip_line}" "$PHP_ENV_CONFIG"
-    grep -qP "$php_error_line" "$PHP_ENV_CONFIG" || \
-        sed -i "/bin-environment/ a\\${php_error_line}" "$PHP_ENV_CONFIG"
-    grep -qP "$pihole_docker_tag_line" "$PHP_ENV_CONFIG" || \
-        sed -i "/bin-environment/ a\\${pihole_docker_tag_line}" "$PHP_ENV_CONFIG"
+    for config_var in "VIRTUAL_HOST" "CORS_HOSTS" "ServerIP" "PHP_ERROR_LOG" "PIHOLE_DOCKER_TAG"; do
+      local beginning_of_line="\t\t\t\"${config_var}\" => "
+      if grep -qP "$beginning_of_line" "$PHP_ENV_CONFIG" ; then
+        # replace line if already present
+        sed -i "/${beginning_of_line}/c\\${beginning_of_line}\"${!config_var}\"," "$PHP_ENV_CONFIG"
+      else
+        # add line otherwise
+        sed -i "/bin-environment/ a\\${beginning_of_line}\"${!config_var}\"," "$PHP_ENV_CONFIG"
+      fi
+    done
 
     echo "Added ENV to php:"
-    grep -E '(VIRTUAL_HOST|CORS_HOSTS|ServerIP|PHP_ERROR_LOG)' "$PHP_ENV_CONFIG"
+    grep -E '(VIRTUAL_HOST|CORS_HOSTS|ServerIP|PHP_ERROR_LOG|PIHOLE_DOCKER_TAG)' "$PHP_ENV_CONFIG"
 }
 
 setup_web_port() {

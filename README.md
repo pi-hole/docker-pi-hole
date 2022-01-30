@@ -21,19 +21,18 @@ services:
     ports:
       - "53:53/tcp"
       - "53:53/udp"
-      - "67:67/udp"
+      - "67:67/udp" # Only required if you are using Pi-hole as your DHCP server
       - "80:80/tcp"
     environment:
       TZ: 'America/Chicago'
       # WEBPASSWORD: 'set a secure password here or it will be random'
     # Volumes store your data between container upgrades
     volumes:
-      - './etc-pihole/:/etc/pihole/'
-      - './etc-dnsmasq.d/:/etc/dnsmasq.d/'
-    # Recommended but not required (DHCP needs NET_ADMIN)
+      - './etc-pihole:/etc/pihole'
+      - './etc-dnsmasq.d:/etc/dnsmasq.d'    
     #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
     cap_add:
-      - NET_ADMIN
+      - NET_ADMIN # Recommended but not required (DHCP needs NET_ADMIN)      
     restart: unless-stopped
 ```
 2. Run `docker-compose up -d` to build and start pi-hole
@@ -42,19 +41,11 @@ services:
 [Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
 
 ## Upgrade Notes
+In `2022.01` and later, the default `DNSMASQ_USER` has been changed to `pihole`, however this may cause issues on some systems such as Synology, see Issue [#963](https://github.com/pi-hole/docker-pi-hole/issues/963) for more information.
 
-### v5.8+
-A check has been added in v5.8 to ensure that the `PIHOLE_DNS_` value is correct, a common error is that quotes are passed through to the script, usually because the environment variable has been defined as, e.g. `- PIHOLE_DNS_='10.0.0.2#5053;1.1.1.1'`. The following declarations are valid:
- - `PIHOLE_DNS_: 10.0.0.2#5053;1.1.1.1`
- - `PIHOLE_DNS_: '10.0.0.2#5053;1.1.1.1'`
- - `- PIHOLE_DNS_=10.0.0.2#5053;1.1.1.1`
-
-
-See [Docker documentation](https://docs.docker.com/compose/compose-file/compose-file-v3/#environment) for more detail, and discussion in [this issue thread](https://github.com/pi-hole/docker-pi-hole/issues/838)
+If the container wont start due to issues setting capabilities, set `DNSMASQ_USER` to `root` in your environment.
 
 ## Overview
-
-#### Renamed from `diginc/pi-hole` to `pihole/pihole`
 
 A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86 and ARM container with [Pi-hole](https://pi-hole.net) functionality.
 
@@ -71,8 +62,8 @@ This container uses 2 popular ports, port 53 and port 80, so **may conflict with
 If you're using a Red Hat based distribution with an SELinux Enforcing policy add `:z` to line with volumes like so:
 
 ```
-    -v "$(pwd)/etc-pihole/:/etc/pihole/:z" \
-    -v "$(pwd)/etc-dnsmasq.d/:/etc/dnsmasq.d/:z" \
+    -v "$(pwd)/etc-pihole:/etc/pihole:z" \
+    -v "$(pwd)/etc-dnsmasq.d:/etc/dnsmasq.d:z" \
 ```
 
 Volumes are recommended for persisting data across container re-creations for updating images.  The IP lookup variables may not work for everyone, please review their values and hard code IP and IPv6 if necessary.
@@ -123,7 +114,7 @@ There are other environment variables if you want to customize various things in
 | `TEMPERATUREUNIT` | `c` | `<c\|k\|f>` | Set preferred temperature unit to `c`: Celsius, `k`: Kelvin, or `f` Fahrenheit units.
 | `WEBUIBOXEDLAYOUT` | `boxed` | `<boxed\|traditional>` | Use boxed layout (helpful when working on large screens)
 | `QUERY_LOGGING` | `true` | `<"true"\|"false">` | Enable query logging or not.
-| `WEBTHEME` | `default-light` | `<"default-dark"\|"default-darker"\|"default-light">`| User interface theme to use.
+| `WEBTHEME` | `default-light` | `<"default-dark"\|"default-darker"\|"default-light"\|"default-auto"\|"lcars">`| User interface theme to use.
 | `WEBPASSWORD_FILE`| unset | `<Docker secret path>` |Set an Admin password using [Docker secrets](https://docs.docker.com/engine/swarm/secrets/). If `WEBPASSWORD` is set, `WEBPASSWORD_FILE` is ignored. If `WEBPASSWORD` is empty, and `WEBPASSWORD_FILE` is set to a valid readable file path, then `WEBPASSWORD` will be set to the contents of `WEBPASSWORD_FILE`.
 
 ### Advanced Variables
@@ -140,7 +131,7 @@ There are other environment variables if you want to customize various things in
 ### Experimental Variables
 | Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
-| `DNSMASQ_USER` | unset | `<pihole\|root>` | Allows running FTLDNS as non-root.
+| `DNSMASQ_USER` | unset | `<pihole\|root>` | Allows changing the user that FTLDNS runs as. Default: `pihole`
 
 ## Deprecated environment variables:
 While these may still work, they are likely to be removed in a future version. Where applicible, alternative variable names are indicated. Please review the table above for usage of the alternative variables
@@ -162,7 +153,7 @@ Here is a rundown of other arguments for your docker-compose / docker run.
 
 | Docker Arguments | Description |
 | ---------------- | ----------- |
-| `-p <port>:<port>` **Recommended** | Ports to expose (53, 80, 67, 443), the bare minimum ports required for Pi-holes HTTP and DNS services
+| `-p <port>:<port>` **Recommended** | Ports to expose (53, 80, 67), the bare minimum ports required for Pi-holes HTTP and DNS services
 | `--restart=unless-stopped`<br/> **Recommended** | Automatically (re)start your Pi-hole on boot or in the event of a crash
 | `-v $(pwd)/etc-pihole:/etc/pihole`<br/> **Recommended** | Volumes for your Pi-hole configs help persist changes across docker image updates
 | `-v $(pwd)/etc-dnsmasq.d:/etc/dnsmasq.d`<br/> **Recommended** | Volumes for your dnsmasq configs help persist changes across docker image updates
@@ -280,7 +271,6 @@ DNSMasq / [FTLDNS](https://docs.pi-hole.net/ftldns/in-depth/#linux-capabilities)
 - `CAP_NET_RAW`: use raw and packet sockets (needed for handling DHCPv6 requests, and verifying that an IP is not in use before leasing it)
 - `CAP_NET_ADMIN`: modify routing tables and other network-related operations (in particular inserting an entry in the neighbor table to answer DHCP requests using unicast packets)
 - `CAP_SYS_NICE`: FTL sets itself as an important process to get some more processing time if the latter is running low
-- `CAP_IPC_LOCK`: it gives FTL the ability to lock a region of virtual memory into physical RAM
 - `CAP_CHOWN`: we need to be able to change ownership of log files and databases in case FTL is started as a different user than `pihole`
 
 This image automatically grants those capabilities, if available, to the FTLDNS process, even when run as non-root.\

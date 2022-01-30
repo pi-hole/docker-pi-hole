@@ -1,4 +1,4 @@
 #!/usr/bin/with-contenv bash
 
 s6-echo "Stopping pihole-FTL"
-kill -9 $(pgrep pihole-FTL) # TODO: REVISIT THIS SO AS TO NOT kill -9
+kill -15 $(pgrep pihole-FTL)

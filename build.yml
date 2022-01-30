@@ -2,44 +2,16 @@
 version: "3.7"
 
 x-common-args: &common-args
-  PIHOLE_VERSION: ${PIHOLE_VERSION}
+  PIHOLE_DOCKER_TAG: ${PIHOLE_DOCKER_TAG}
   CORE_VERSION: ${CORE_VERSION}
   WEB_VERSION: ${WEB_VERSION}
   FTL_VERSION: ${FTL_VERSION}
 
 services:
   amd64:
-    image: pihole:${PIHOLE_VERSION}-amd64-${DEBIAN_VERSION:-buster}
+    image: pihole:${PIHOLE_DOCKER_TAG}-amd64-${DEBIAN_VERSION:-bullseye}
     build:
       context: .
       args:
         <<: *common-args
-        PIHOLE_BASE: debian:${DEBIAN_VERSION:-buster}-slim
-  armel:
-    image: pihole:${PIHOLE_VERSION}-armel-${DEBIAN_VERSION:-buster}
-    build:
-      context: .
-      args:
-        <<: *common-args
-        PIHOLE_BASE: pihole/debian-debootstrap:armel-${DEBIAN_VERSION:-buster}-slim
-  armhf:
-    image: pihole:${PIHOLE_VERSION}-armhf-${DEBIAN_VERSION:-buster}
-    build:
-      context: .
-      args:
-        <<: *common-args
-        PIHOLE_BASE: pihole/debian-debootstrap:armhf-${DEBIAN_VERSION:-buster}-slim
-  arm64:
-    image: pihole:${PIHOLE_VERSION}-arm64-${DEBIAN_VERSION:-buster}
-    build:
-      context: .
-      args:
-        <<: *common-args
-        PIHOLE_BASE: pihole/debian-debootstrap:arm64-${DEBIAN_VERSION:-buster}-slim
-  i386:
-    image: pihole:${PIHOLE_VERSION}-i386-${DEBIAN_VERSION:-buster}
-    build:
-      context: .
-      args:
-        <<: *common-args
-        PIHOLE_BASE: pihole/debian-debootstrap:i386-${DEBIAN_VERSION:-buster}-slim
+        PIHOLE_BASE: ghcr.io/pi-hole/docker-pi-hole-base:${DEBIAN_VERSION:-bullseye}-slim
