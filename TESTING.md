@@ -1,6 +1,6 @@
 # Prerequisites 
 
-Make sure you have bash & docker.  
+Make sure you have bash & docker installed.  
 Python and some test hacks are crammed into the `Dockerfile_build` file for now.  
 Revisions in the future may re-enable running python on your host (not just in docker).
 
