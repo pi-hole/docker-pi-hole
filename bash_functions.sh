@@ -194,7 +194,7 @@ setup_php_env() {
       VIRTUAL_HOST="$ServerIP"
     fi;
 
-    for config_var in "VIRTUAL_HOST" "CORS_HOSTS" "ServerIP" "PHP_ERROR_LOG" "PIHOLE_DOCKER_TAG"; do
+    for config_var in "VIRTUAL_HOST" "CORS_HOSTS" "ServerIP" "PHP_ERROR_LOG" "PIHOLE_DOCKER_TAG" "TZ"; do
       local beginning_of_line="\t\t\t\"${config_var}\" => "
       if grep -qP "$beginning_of_line" "$PHP_ENV_CONFIG" ; then
         # replace line if already present
@@ -206,7 +206,7 @@ setup_php_env() {
     done
 
     echo "Added ENV to php:"
-    grep -E '(VIRTUAL_HOST|CORS_HOSTS|ServerIP|PHP_ERROR_LOG|PIHOLE_DOCKER_TAG)' "$PHP_ENV_CONFIG"
+    grep -E '(VIRTUAL_HOST|CORS_HOSTS|ServerIP|PHP_ERROR_LOG|PIHOLE_DOCKER_TAG|TZ)' "$PHP_ENV_CONFIG"
 }
 
 setup_web_port() {
