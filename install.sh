@@ -1,4 +1,6 @@
-#!/bin/bash -ex
+#!/bin/bash
+
+set -x
 
 mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
@@ -13,21 +15,25 @@ s6_download_url() {
   S6_ARCH=$DETECTED_ARCH
   case $DETECTED_ARCH in
   armel)
-    S6_ARCH="arm";;
-  armhf)
-    S6_ARCH="arm";;
+    S6_ARCH="armhf";;
   arm64)
     S6_ARCH="aarch64";;
   i386)
     S6_ARCH="x86";;
   ppc64el)
     S6_ARCH="ppc64le";;
+  amd64)
+    S6_ARCH="x86_64";;
 esac
-  echo "https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/s6-overlay-${S6_ARCH}.tar.gz"
+  curl -sSL https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch-${S6_OVERLAY_VERSION}.tar.xz | tar -Jvxpf - -C /
+  curl -sSL https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-${S6_ARCH}-${S6_OVERLAY_VERSION}.tar.xz | tar -Jvxpf - -C /
+  #Optional restore /usr/bin symlinks.
+  #curl -sSL https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-symlinks-noarch-${S6_OVERLAY_VERSION}.tar.xz | tar -Jxpf - -C /
+  #curl -sSL https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-symlinks-arch-${S6_OVERLAY_VERSION}.tar.xz | tar -Jxpf - -C /
 }
 
 ln -s `which echo` /usr/local/bin/whiptail
-curl -L -s "$(s6_download_url)" | tar xvzf - -C /
+s6_download_url
 mv /init /s6-init
 
 # Preseed variables to assist with using --unattended install

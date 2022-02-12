@@ -1,6 +1,0 @@
-#!/usr/bin/with-contenv bash
-
-s6-echo "Stopping lighttpd"
-service lighttpd-access-log stop
-service lighttpd-error-log stop
-killall -9 lighttpd

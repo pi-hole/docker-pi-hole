@@ -1,0 +1,3 @@
+#!/command/execlineb -P
+
+/etc/s6-overlay/scripts/my-init-up

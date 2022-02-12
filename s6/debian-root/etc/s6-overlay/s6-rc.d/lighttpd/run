@@ -1,21 +1,18 @@
-#!/usr/bin/with-contenv bash
+#!/command/with-contenv bash
 
-s6-echo "Starting lighttpd"
+if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
+    set -x ;
+fi
+
+[[ ! -d /var/cache/lighttpd/uploads ]] && mkdir -p /var/cache/lighttpd/uploads || true
 
 if [[ 1 -eq ${WEBLOGS_STDOUT:-0} ]]; then
   #lighthttpd cannot use /dev/stdout https://redmine.lighttpd.net/issues/2731
-  for fi in /var/log/lighttpd/access.log /var/log/lighttpd/error.log
-  do
-    if [[ ! -p ${fi} ]]; then
-      rm -f ${fi}
-      mkfifo -m 600 ${fi}
-    fi
-  done
-  chown -R www-data:www-data /var/log/lighttpd
+  touch /etc/s6-overlay/s6-rc.d/user/contents.d/{lighttpd-access-log,lighttpd-error-log}
   service lighttpd-access-log start
   service lighttpd-error-log start
-  sleep 2
 else
+  rm -f /etc/s6-overlay/s6-rc.d/user/contents.d/{lighttpd-access-log,lighttpd-error-log}
   #remove fifo if exists
   [[ -p /var/log/lighttpd/access.log ]] && rm -Rf /var/log/lighttpd/access.log
   [[ -p  /var/log/lighttpd/error.log ]] && rm -Rf /var/log/lighttpd/error.log
@@ -23,8 +20,8 @@ else
   touch /var/log/lighttpd/access.log /var/log/lighttpd/error.log
 
   # Ensure that permissions are set so that lighttpd can write to the logs
-  chown -R www-data:www-data /var/log/lighttpd
   chmod 0644 /var/log/lighttpd/access.log /var/log/lighttpd/error.log
 fi
 
+chown -R www-data:www-data /var/log/lighttpd
 lighttpd -D -f /etc/lighttpd/lighttpd.conf

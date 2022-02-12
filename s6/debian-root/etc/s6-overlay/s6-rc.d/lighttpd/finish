@@ -1,0 +1,12 @@
+#!/command/with-contenv bash
+
+if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
+    set -x ;
+fi
+
+s6-echo "Stopping lighttpd"
+if [[ 1 -eq ${WEBLOGS_STDOUT:-0} ]]; then
+  service lighttpd-access-log stop
+  service lighttpd-error-log stop
+fi
+killall -9 lighttpd

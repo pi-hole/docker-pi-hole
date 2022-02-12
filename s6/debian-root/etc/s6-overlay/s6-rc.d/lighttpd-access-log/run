@@ -1,0 +1,23 @@
+#!/command/with-contenv bash
+#
+# use fifo to redirect log to stdout
+#
+
+if [ "${PH_VERBOSE:-0}" -gt 0 ]; then
+  set -x
+fi
+
+[[ ! -d /var/log/lighttpd/ ]] && mkdir -p /var/log/lighttpd/ || true
+if [[ 1 -eq ${WEBLOGS_STDOUT:-0} ]]; then
+  fi=/var/log/lighttpd/access.log
+  if [[ ! -p ${fi} ]]; then
+    [[ -e ${fi} ]] && rm -f ${fi} || true
+    #needed for slow devices
+    while [[ -e ${fi} ]]; do sleep 1; done
+    mkfifo -m 640 ${fi}
+    #needed for slow devices
+    while [[ ! -p ${fi} ]]; do sleep 1; done
+  fi
+  chown www-data:www-data ${fi}
+  s6-setuidgid www-data cat ${fi} 2>&1
+fi

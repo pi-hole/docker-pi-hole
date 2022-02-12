@@ -1,0 +1,4 @@
+#!/command/with-contenv bash
+
+exec -c
+fdmove -c 2 1 /usr/sbin/cron -f
