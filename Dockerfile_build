@@ -7,6 +7,7 @@ ARG packages
 RUN apt-get update && \
     apt-get install -y python3-dev curl gcc make \
         libffi-dev libssl-dev ${packages} \
+    && rm -rf /var/lib/apt/lists/* \
     && pip3 install -U pip pipenv
 
 RUN curl -L https://github.com/docker/compose/releases/download/1.25.5/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && \
