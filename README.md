@@ -111,7 +111,7 @@ There are other environment variables if you want to customize various things in
 | `DHCP_IPv6` | `false` | `<"true"\|"false">` | Enable DHCP server IPv6 support (SLAAC + RA).
 | `DHCP_rapid_commit` | `false` | `<"true"\|"false">` | Enable DHCPv4 rapid commit (fast address assignment).
 | `VIRTUAL_HOST` | `$ServerIP` | `<Custom Hostname>` | What your web server 'virtual host' is, accessing admin through this Hostname/IP allows you to make changes to the whitelist / blacklists in addition to the default 'http://pi.hole/admin/' address
-| `IPv6:` | `true` | `<"true"\|"false">` | For unraid compatibility, strips out all the IPv6 configuration from DNS/Web services when false.
+| `IPv6` | `true` | `<"true"\|"false">` | For unraid compatibility, strips out all the IPv6 configuration from DNS/Web services when false.
 | `TEMPERATUREUNIT` | `c` | `<c\|k\|f>` | Set preferred temperature unit to `c`: Celsius, `k`: Kelvin, or `f` Fahrenheit units.
 | `WEBUIBOXEDLAYOUT` | `boxed` | `<boxed\|traditional>` | Use boxed layout (helpful when working on large screens)
 | `QUERY_LOGGING` | `true` | `<"true"\|"false">` | Enable query logging or not.
