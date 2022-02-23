@@ -69,6 +69,12 @@ sed -i $'s/)\s*uninstallFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 # pihole -r / pihole reconfigure
 sed -i $'s/)\s*reconfigurePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 
+#enable ssl mod ssl if needed (debian:billseye)
+if [ -z "$(compgen -G /etc/lighttpd/conf-enabled/*-ssl.conf)" ]; then
+  apt-get update && apt-get install -y --no-install-recommends lighttpd-mod-openssl
+  lighty-enable-mod ssl
+fi
+
 if [[ "${PIHOLE_DOCKER_TAG}" != "dev" && "${PIHOLE_DOCKER_TAG}" != "nightly" ]]; then
   # If we are on a version other than dev or nightly, disable `pihole checkout`, otherwise it is useful to have for quick troubleshooting sometimes
   sed -i $'s/)\s*piholeCheckoutFunc/) unsupportedFunc/g' /usr/local/bin/pihole
