@@ -133,7 +133,7 @@ if [ -n "${PIHOLE_DNS_}" ]; then
           # If the "address" is a domain (for example a docker link) then try to resolve it and add 
           # the result as a DNS server in setupVars.conf.
           resolved_ip="$(dig +short ${i//#*/} | head -n 1)"
-          if [ -n "${i//*#/}" ]; then
+          if [ -n "${i//*#/}" ] && [ "${i//*#/}" != "${i//#*/}" ]; then
             resolved_ip="${resolved_ip}#${i//*#/}"
           fi
           echo "Resolved ${i} from PIHOLE_DNS_ as: ${resolved_ip}"
