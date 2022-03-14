@@ -94,7 +94,7 @@ There are other environment variables if you want to customize various things in
 | Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
 | `ADMIN_EMAIL` | unset | email address | Set an administrative contact address for the Block Page |
-| `PIHOLE_DNS_` |  `8.8.8.8;8.8.4.4` | IPs delimited by `;` | Upstream DNS server(s) for Pi-hole to forward queries to, seperated by a semicolon <br/> (supports non-standard ports with `#[port number]`) e.g `127.0.0.1#5053;8.8.8.8;8.8.4.4` Note: The existence of this environment variable assumes this as the _sole_ management of upstream DNS. Upstream DNS added via the web interface will be overwritten on container restart/recreation |
+| `PIHOLE_DNS_` |  `8.8.8.8;8.8.4.4` | IPs delimited by `;` | Upstream DNS server(s) for Pi-hole to forward queries to, seperated by a semicolon <br/> (supports non-standard ports with `#[port number]`) e.g `127.0.0.1#5053;8.8.8.8;8.8.4.4` <br/> (supports [Docker service names and links](https://docs.docker.com/compose/networking/) instead of IPs) e.g `upstream0;upstream1` where `upstream0` and `upstream1` are the service names of or links to docker services <br/> Note: The existence of this environment variable assumes this as the _sole_ management of upstream DNS. Upstream DNS added via the web interface will be overwritten on container restart/recreation |
 | `DNSSEC` | `false` | `<"true"\|"false">` | Enable DNSSEC support |
 | `DNS_BOGUS_PRIV` | `true` |`<"true"\|"false">`| Never forward reverse lookups for private ranges |
 | `DNS_FQDN_REQUIRED` | `true` | `<"true"\|"false">`| Never forward non-FQDNs |
