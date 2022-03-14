@@ -142,11 +142,11 @@ if [ -n "${PIHOLE_DNS_}" ]; then
           fi
         fi
         # If the above tests fail then this is an invalid DNS server
-        echo "Invalid IP detected in PIHOLE_DNS_: ${i}"
+        echo "Invalid entry detected in PIHOLE_DNS_: ${i}"
     done
 
     if [ $valid_entries -eq 0 ]; then
-      echo "No Valid IPs dectected in PIHOLE_DNS_. Aborting"
+      echo "No Valid entries dectected in PIHOLE_DNS_. Aborting"
       exit 1
     fi
 else
