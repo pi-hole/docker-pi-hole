@@ -129,10 +129,13 @@ if [ -n "${PIHOLE_DNS_}" ]; then
           ((valid_entries=valid_entries+1))
           continue
         fi
-        if [ -n "$(dig +short $i)" ]; then
+        if [ -n "$(dig +short ${i//#*/})" ]; then
           # If the "address" is a domain (for example a docker link) then try to resolve it and add 
           # the result as a DNS server in setupVars.conf.
-          resolved_ip="$(dig +short $i | head -n 1)"
+          resolved_ip="$(dig +short ${i//#*/} | head -n 1)"
+          if [ -n "${i//*#/}" ]; then
+            resolved_ip="${resolved_ip}#${i//*#/}"
+          fi
           echo "Resolved ${i} from PIHOLE_DNS_ as: ${resolved_ip}"
           if valid_ip "$resolved_ip" || valid_ip6 "$resolved_ip" ; then
             change_setting "PIHOLE_DNS_$count" "$resolved_ip"
