@@ -127,13 +127,29 @@ if [ -n "${PIHOLE_DNS_}" ]; then
           change_setting "PIHOLE_DNS_$count" "$i"
           ((count=count+1))
           ((valid_entries=valid_entries+1))
-        else
-          echo "Invalid IP detected in PIHOLE_DNS_: ${i}"
+          continue
         fi
+        if [ -n "$(dig +short ${i//#*/})" ]; then
+          # If the "address" is a domain (for example a docker link) then try to resolve it and add 
+          # the result as a DNS server in setupVars.conf.
+          resolved_ip="$(dig +short ${i//#*/} | head -n 1)"
+          if [ -n "${i//*#/}" ] && [ "${i//*#/}" != "${i//#*/}" ]; then
+            resolved_ip="${resolved_ip}#${i//*#/}"
+          fi
+          echo "Resolved ${i} from PIHOLE_DNS_ as: ${resolved_ip}"
+          if valid_ip "$resolved_ip" || valid_ip6 "$resolved_ip" ; then
+            change_setting "PIHOLE_DNS_$count" "$resolved_ip"
+            ((count=count+1))
+            ((valid_entries=valid_entries+1))
+            continue
+          fi
+        fi
+        # If the above tests fail then this is an invalid DNS server
+        echo "Invalid entry detected in PIHOLE_DNS_: ${i}"
     done
 
     if [ $valid_entries -eq 0 ]; then
-      echo "No Valid IPs dectected in PIHOLE_DNS_. Aborting"
+      echo "No Valid entries dectected in PIHOLE_DNS_. Aborting"
       exit 1
     fi
 else
