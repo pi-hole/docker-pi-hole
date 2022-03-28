@@ -36,4 +36,13 @@ fi
 
 pihole -v
 
+# generate default certificate if needed
+if [ ! -e /etc/lighttpd/server.pem ]; then
+  echo "Generating a ssl certificate for lighttpd."
+  openssl req -x509 -newkey rsa:4096 -nodes -keyout /etc/lighttpd/key.pem -out /etc/lighttpd/certificate.pem -sha256 -days 3650 -subj "/C=US/ST=Oregon/L=Portland/O=Company Name/OU=Org/CN=www.example.com"
+  cat /etc/lighttpd/certificate.pem /etc/lighttpd/key.pem > /etc/lighttpd/server.pem
+  chown -R www-data:www-data /etc/lighttpd
+  chmod 0600 /etc/lighttpd/*.pem
+fi
+
 echo "  Container tag is: ${PIHOLE_DOCKER_TAG}"
