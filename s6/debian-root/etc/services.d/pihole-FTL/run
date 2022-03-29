@@ -20,7 +20,7 @@ chown -f pihole:pihole /etc/pihole/pihole-FTL.db /etc/pihole/gravity.db /etc/pih
 # Chown database file permissions so that the pihole group (web interface) can edit the file. We ignore errors as the files may not (yet) exist
 chmod -f 0664 /etc/pihole/pihole-FTL.db
 
-s6-setuidgid root capsh --inh=cap_net_raw,cap_chown,cap_setpcap,cap_net_bind_service,cap_net_admin,cap_dac_override --addamb=cap_setpcap,cap_chown,cap_net_bind_service,cap_net_admin,cap_net_raw,cap_dac_override,cap_setpcap+i --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD" 
+s6-setuidgid root capsh --inh=cap_net_raw,cap_chown,cap_setpcap,cap_net_bind_service,cap_net_admin,cap_dac_override --addamb=cap_setpcap,cap_chown,cap_net_bind_service,cap_net_admin,cap_net_raw,cap_dac_override,cap_setpcap --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD" 
 
 # Notes on above:
 # - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env
