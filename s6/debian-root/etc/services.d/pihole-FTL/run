@@ -7,7 +7,11 @@ rm /run/pihole/FTL.sock 2> /dev/null
 
 # Touch files to ensure they exist (create if non-existing, preserve if existing)
 mkdir -pm 0755 /run/pihole
-touch /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole-FTL.log /var/log/pihole.log /etc/pihole/dhcp.leases
+[[ ! -f /run/pihole-FTL.pid ]] && touch /run/pihole-FTL.pid
+[[ ! -f /run/pihole-FTL.port ]] && touch /run/pihole-FTL.port
+[[ ! -f /var/log/pihole-FTL.log ]] && touch /var/log/pihole-FTL.log
+[[ ! -f /var/log/pihole.log ]] && touch /var/log/pihole.log
+[[ ! -f /etc/pihole/dhcp.leases ]] && touch /etc/pihole/dhcp.leases
 
 # Ensure that permissions are set so that pihole-FTL can edit all necessary files
 chown pihole:pihole /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole-FTL.log /var/log/pihole.log /etc/pihole/dhcp.leases /run/pihole /etc/pihole
