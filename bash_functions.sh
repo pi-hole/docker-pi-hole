@@ -20,7 +20,12 @@ prepare_configs() {
     LIGHTTPD_GROUP="www-data"
     LIGHTTPD_CFG="lighttpd.conf.debian"
     installConfigs
-    touch "$setupVars"
+   
+    if [ ! -f "${setupVars}" ]; then
+        touch "${setupVars}"
+        echo "Creating empty ${setupVars} file."
+    fi
+    
     set +e
     mkdir -p /var/run/pihole /var/log/pihole
     

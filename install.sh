@@ -74,6 +74,7 @@ if [[ "${PIHOLE_DOCKER_TAG}" != "dev" && "${PIHOLE_DOCKER_TAG}" != "nightly" ]];
   sed -i $'s/)\s*piholeCheckoutFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 fi
 
-touch /.piholeFirstBoot
-
+if [ ! -f /.piholeFirstBoot ]; then
+  touch /.piholeFirstBoot
+fi
 echo 'Docker install successful'
