@@ -5,6 +5,17 @@
 </p>
 <!-- Delete above HTML and insert markdown for dockerhub : ![Pi-hole](https://pi-hole.github.io/graphics/Vortex/Vortex_with_text.png) -->
 
+## Upgrade Notes
+For `2022.04`: This release seeks to address some issues brought about by changes made to Docker in version 20.10.14
+
+Please note, for now at least, that NET_ADMIN is a required capability
+
+See: https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+
+In `2022.01` and later, the default `DNSMASQ_USER` has been changed to `pihole`, however this may cause issues on some systems such as Synology, see Issue [#963](https://github.com/pi-hole/docker-pi-hole/issues/963) for more information.
+
+If the container wont start due to issues setting capabilities, set `DNSMASQ_USER` to `root` in your environment.
+
 ## Quick Start
 
 1. Copy docker-compose.yml.example to docker-compose.yml and update as needed. See example below:
@@ -33,24 +44,13 @@ services:
       - './etc-dnsmasq.d:/etc/dnsmasq.d'    
     #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
     cap_add:
-      - NET_ADMIN # Recommended but not required (DHCP needs NET_ADMIN)      
+      - NET_ADMIN # Currently required for 2022.04 due to changes introduced in Docker 20.10.14
     restart: unless-stopped
 ```
 2. Run `docker-compose up -d` to build and start pi-hole
 3. Use the Pi-hole web UI to change the DNS settings *Interface listening behavior* to "Listen on all interfaces, permit all origins", if using Docker's default `bridge` network setting
 
 [Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
-
-## Upgrade Notes
-For `2022.04`: This release seeks to address some issues brought about by changes made to Docker in version 20.10.14
-
-Please note, for now at least, that NET_ADMIN is a required capability
-
-See: https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
-
-In `2022.01` and later, the default `DNSMASQ_USER` has been changed to `pihole`, however this may cause issues on some systems such as Synology, see Issue [#963](https://github.com/pi-hole/docker-pi-hole/issues/963) for more information.
-
-If the container wont start due to issues setting capabilities, set `DNSMASQ_USER` to `root` in your environment.
 
 ## Overview
 
