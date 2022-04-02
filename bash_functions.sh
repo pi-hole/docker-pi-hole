@@ -3,8 +3,14 @@
 . /opt/pihole/webpage.sh
 
 fix_capabilities() {
-    setcap CAP_CHOWN,CAP_NET_BIND_SERVICE,CAP_NET_ADMIN,CAP_NET_RAW+ep $(which pihole-FTL) || ret=$?
-
+    # Testing on Docker 20.10.14 with no caps set shows the following caps available to the container:
+    # Current: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=ep
+    # FTL can also use CAP_NET_ADMIN and CAP_SYS_NICE. If we try to set them when they haven't been explicitly enabled, FTL will not start. Test for them first:
+    capsh --print | grep "Current:" | grep -q cap_net_admin && NET_ADMIN=',CAP_NET_ADMIN'
+    capsh --print | grep "Current:" | grep -q cap_sys_nice && SYS_NICE=',CAP_SYS_NICE'
+    
+    setcap CAP_CHOWN,CAP_NET_BIND_SERVICE,CAP_NET_RAW${NET_ADMIN}${SYS_NICE}+ep $(which pihole-FTL) || ret=$?
+    
     if [[ $ret -ne 0 && "${DNSMASQ_USER:-pihole}" != "root" ]]; then
         echo "ERROR: Unable to set capabilities for pihole-FTL. Cannot run as non-root."
         echo "       If you are seeing this error, please set the environment variable 'DNSMASQ_USER' to the value 'root'"
