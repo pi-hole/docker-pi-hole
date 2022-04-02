@@ -7,21 +7,33 @@ fix_capabilities() {
     # Current: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=ep
     # FTL can also use CAP_NET_ADMIN and CAP_SYS_NICE. If we try to set them when they haven't been explicitly enabled, FTL will not start. Test for them first:
     
-    capsh --print | grep "Current:" | grep -q cap_chown && CAP_STR+=',CAP_CHOWN'
-    capsh --print | grep "Current:" | grep -q cap_net_bind_service && CAP_STR+=',CAP_NET_BIND_SERVICE'
-    capsh --print | grep "Current:" | grep -q cap_net_raw && CAP_STR+=',CAP_NET_RAW'
-    capsh --print | grep "Current:" | grep -q cap_net_admin && CAP_STR+=',CAP_NET_ADMIN'
-    capsh --print | grep "Current:" | grep -q cap_sys_nice && CAP_STR+=',CAP_SYS_NICE'    
+    /sbin/capsh '==' --print | grep "Current:" | grep -q cap_chown && CAP_STR=',CAP_CHOWN'
+    /sbin/capsh '==' --print | grep "Current:" | grep -q cap_net_bind_service && CAP_STR+=',CAP_NET_BIND_SERVICE'
+    /sbin/capsh '==' --print | grep "Current:" | grep -q cap_net_raw && CAP_STR+=',CAP_NET_RAW'
+    /sbin/capsh '==' --print | grep "Current:" | grep -q cap_net_admin && CAP_STR+=',CAP_NET_ADMIN' || DHCP_READY='false'
+    /sbin/capsh '==' --print | grep "Current:" | grep -q cap_sys_nice && CAP_STR+=',CAP_SYS_NICE'    
 
     if [[ ${CAP_STR} ]]; then
         # We have the (some of) the above caps available to us - apply them to pihole-FTL
         setcap ${CAP_STR:1}+ep $(which pihole-FTL) || ret=$?
+
+        if [[ $DHCP_READY == false ]] && [[ $DHCP_ACTIVE == true ]]; then
+            # DHCP is requested but NET_ADMIN is not available.
+            echo "ERROR: DHCP requested but NET_ADMIN is not available. DHCP will not be started."
+            echo "      Please add cap_net_admin to the container's capabilities or disable DHCP."
+            DHCP_ACTIVE='false'
+            change_setting "DHCP_ACTIVE" "false"
+        fi
         
         if [[ $ret -ne 0 && "${DNSMASQ_USER:-pihole}" != "root" ]]; then
             echo "ERROR: Unable to set capabilities for pihole-FTL. Cannot run as non-root."
             echo "       If you are seeing this error, please set the environment variable 'DNSMASQ_USER' to the value 'root'"
             exit 1
         fi   
+    else
+        echo "WARNING: Unable to set capabilities for pihole-FTL."
+        echo "         Please ensure that the container has the required capabilities."
+        exit 1
     fi
 }
 
