@@ -7,7 +7,7 @@ fix_capabilities() {
     # Current: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=ep
     # FTL can also use CAP_NET_ADMIN and CAP_SYS_NICE. If we try to set them when they haven't been explicitly enabled, FTL will not start. Test for them first:
     
-    /sbin/capsh '==' --print | grep "Current:" | grep -q cap_chown && CAP_STR=',CAP_CHOWN'
+    /sbin/capsh '==' --print | grep "Current:" | grep -q cap_chown && CAP_STR+=',CAP_CHOWN'
     /sbin/capsh '==' --print | grep "Current:" | grep -q cap_net_bind_service && CAP_STR+=',CAP_NET_BIND_SERVICE'
     /sbin/capsh '==' --print | grep "Current:" | grep -q cap_net_raw && CAP_STR+=',CAP_NET_RAW'
     /sbin/capsh '==' --print | grep "Current:" | grep -q cap_net_admin && CAP_STR+=',CAP_NET_ADMIN' || DHCP_READY='false'
