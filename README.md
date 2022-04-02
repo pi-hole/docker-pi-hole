@@ -42,6 +42,12 @@ services:
 [Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
 
 ## Upgrade Notes
+For `2022.04`: This release seeks to address some issues brought about by changes made to Docker in version 20.10.14
+
+Please note, for now at least, that NET_ADMIN is a required capability
+
+See: https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+
 In `2022.01` and later, the default `DNSMASQ_USER` has been changed to `pihole`, however this may cause issues on some systems such as Synology, see Issue [#963](https://github.com/pi-hole/docker-pi-hole/issues/963) for more information.
 
 If the container wont start due to issues setting capabilities, set `DNSMASQ_USER` to `root` in your environment.
