@@ -47,7 +47,7 @@ prepare_configs() {
     installConfigs
    
     if [ ! -f "${setupVars}" ]; then
-        touch "${setupVars}"
+        install /dev/null "${setupVars}"
         echo "Creating empty ${setupVars} file."
     fi
     
