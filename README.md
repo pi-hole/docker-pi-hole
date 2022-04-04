@@ -6,7 +6,7 @@
 <!-- Delete above HTML and insert markdown for dockerhub : ![Pi-hole](https://pi-hole.github.io/graphics/Vortex/Vortex_with_text.png) -->
 
 ## Upgrade Notes
-As of `2022.04.01`, you no longer need to set `CAP_NET_ADMIN` if you are not using Pi-hole as your DHCP server. The container will only try to set caps that are explicitly granted (or natively available)
+As of `2022.04.01`, `CAP_NET_ADMIN` is only required if you are using Pi-hole as your DHCP server. The container will only try to set caps that are explicitly granted (or natively available)
 
 In `2022.01` and later, the default `DNSMASQ_USER` has been changed to `pihole`, however this may cause issues on some systems such as Synology, see Issue [#963](https://github.com/pi-hole/docker-pi-hole/issues/963) for more information.
 
