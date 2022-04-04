@@ -6,11 +6,16 @@
 <!-- Delete above HTML and insert markdown for dockerhub : ![Pi-hole](https://pi-hole.github.io/graphics/Vortex/Vortex_with_text.png) -->
 
 ## Upgrade Notes
-As of `2022.04.01`, `CAP_NET_ADMIN` is only required if you are using Pi-hole as your DHCP server. The container will only try to set caps that are explicitly granted (or natively available)
 
-In `2022.01` and later, the default `DNSMASQ_USER` has been changed to `pihole`, however this may cause issues on some systems such as Synology, see Issue [#963](https://github.com/pi-hole/docker-pi-hole/issues/963) for more information.
+- **Using Watchtower? See the [Note on Watchtower](#note-on-watchtower) at the bottom of this wiki**
 
-If the container wont start due to issues setting capabilities, set `DNSMASQ_USER` to `root` in your environment.
+- You may run into issues running `2022.04` and later on `buster`-based host systems due to [a known issue with Seccomp](https://github.com/moby/moby/issues/40734). The first recommendation is to upgrade your host OS to `bullseye`, which includes a more up to date (and fixed) version of `libseccomp2`.  
+ If you absolutley cannot do this, some users [have reported](https://github.com/pi-hole/docker-pi-hole/issues/1042#issuecomment-1086728157) success in updating `libseccomp2` via backports. You can try this workaround at your own risk
+
+- As of `2022.04.01`, setting `CAP_NET_ADMIN` is only required if you are using Pi-hole as your DHCP server. The container will only try to set caps that are explicitly granted (or natively available)
+
+- In `2022.01` and later, the default `DNSMASQ_USER` has been changed to `pihole`, however this may cause issues on some systems such as Synology, see Issue [#963](https://github.com/pi-hole/docker-pi-hole/issues/963) for more information.  
+ If the container wont start due to issues setting capabilities, set `DNSMASQ_USER` to `root` in your environment.
 
 ## Quick Start
 
@@ -286,6 +291,18 @@ This image automatically grants those capabilities, if available, to the FTLDNS 
 By default, docker does not include the `NET_ADMIN` capability for non-privileged containers, and it is recommended to explicitly add it to the container using `--cap-add=NET_ADMIN`.\
 However, if DHCP and IPv6 Router Advertisements are not in use, it should be safe to skip it. For the most paranoid, it should even be possible to explicitly drop the `NET_RAW` capability to prevent FTLDNS from automatically gaining it.
 
+
+## Note on Watchtower
+
+We have also noticed that a lot of people use Watchtower to keep their Pi-hole containers up to date. For the same reason we don't provide an auto-update feature on a bare metal install, you _should not_ have a system automatically update your Pi-hole container. Especially unattended. As much as we try to ensure nothing will go wrong, sometimes things do go wrong - and you need to set aside time to _manually_ pull and update to the version of the container you wish to run. The upgrade process should be along the lines of:
+
+ - **Important**: Read the release notes. Sometimes you will need to make changes other than just updating the image
+ - Pull the new image
+ - Stop and _remove_ the running Pi-hole container
+   - If you care about your data (logs/customizations), make sure you have it volume-mapped or it will be deleted in this step.
+ - Recreate the container using the new image
+
+Pi-hole is an integral part of your network, don't let it fall over because of an unattended update in the middle of the night.
 # User Feedback
 
 Please report issues on the [GitHub project](https://github.com/pi-hole/docker-pi-hole) when you suspect something docker related.  Pi-hole or general docker questions are best answered on our [user forums](https://github.com/pi-hole/pi-hole/blob/master/README.md#get-help-or-connect-with-us-on-the-web).  Ping me (@diginc) on the forums if it's a docker container and you're not sure if it's docker related.
