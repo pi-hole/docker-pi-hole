@@ -47,7 +47,7 @@ prepare_configs() {
     installConfigs
    
     if [ ! -f "${setupVars}" ]; then
-        install /dev/null "${setupVars}"
+        install -m 644 /dev/null "${setupVars}"
         echo "Creating empty ${setupVars} file."
     fi
     
