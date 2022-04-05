@@ -17,7 +17,7 @@ jobs:
       DEBIAN_VERSION: buster
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Run Tests
         run: |
           echo "Building ${ARCH}-${DEBIAN_VERSION}"
@@ -31,11 +31,11 @@ jobs:
       -
         name: Checkout
         if: github.event_name != 'schedule'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       -
         name: Checkout dev branch if we are building nightly
         if: github.event_name == 'schedule'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: dev
       -
