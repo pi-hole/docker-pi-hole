@@ -1,5 +1,7 @@
 # Docker Pi-hole
 
+[![Mark stale issues](https://github.com/bveiseh/messsin-with-pidockers/actions/workflows/stale.yml/badge.svg)](https://github.com/bveiseh/messsin-with-pidockers/actions/workflows/stale.yml)
+
 <p align="center">
 <a href="https://pi-hole.net"><img src="https://pi-hole.github.io/graphics/Vortex/Vortex_with_text.png" width="150" height="255" alt="Pi-hole"></a><br/>
 </p>
