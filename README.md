@@ -7,7 +7,7 @@
 
 ## Upgrade Notes
 
-- **Using Watchtower? See the [Note on Watchtower](#note-on-watchtower) at the bottom of this wiki**
+- **Using Watchtower? See the [Note on Watchtower](#note-on-watchtower) at the bottom of this readme**
 
 - You may run into issues running `2022.04` and later on `buster`-based host systems due to [a known issue with Seccomp](https://github.com/moby/moby/issues/40734). The first recommendation is to upgrade your host OS to `bullseye`, which includes a more up to date (and fixed) version of `libseccomp2`.  
  _If you absolutley cannot do this, some users [have reported](https://github.com/pi-hole/docker-pi-hole/issues/1042#issuecomment-1086728157) success in updating `libseccomp2` via backports. You can try this workaround at your own risk_  
