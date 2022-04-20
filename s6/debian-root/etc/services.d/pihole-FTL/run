@@ -25,7 +25,7 @@ chown -f pihole:pihole /etc/pihole/pihole-FTL.db /etc/pihole/gravity.db /etc/pih
 chmod -f 0664 /etc/pihole/pihole-FTL.db
 
 # Call capsh with the detected capabilities
-capsh --inh=${CAP_STR:1} --addamb=${CAP_STR:1} --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD" 
+capsh --inh=${CAP_STR:1} --addamb=${CAP_STR:1} --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null 2>&1" 
 
 # Notes on above:
 # - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env
