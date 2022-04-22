@@ -56,7 +56,7 @@ prepare_configs() {
     
     chown pihole:root /etc/lighttpd
     
-    # In case of `pihole` UID being changed, re-chown the pihole scripts and pihole commmand
+    # In case of `pihole` UID being changed, re-chown the pihole scripts and pihole command
     chown -R pihole:root "${PI_HOLE_INSTALL_DIR}"
     chown pihole:root "${PI_HOLE_BIN_DIR}/pihole"
     
@@ -83,7 +83,7 @@ validate_env() {
     # Optional IPv6 is a valid address
     if [[ -n "$ServerIPv6" ]] ; then
         if [[ "$ServerIPv6" == 'kernel' ]] ; then
-            echo "ERROR: You passed in IPv6 with a value of 'kernel', this maybe beacuse you do not have IPv6 enabled on your network"
+            echo "ERROR: You passed in IPv6 with a value of 'kernel', this maybe because you do not have IPv6 enabled on your network"
             unset ServerIPv6
             exit 1
         fi
