@@ -9,8 +9,11 @@
 
 - **Using Watchtower? See the [Note on Watchtower](#note-on-watchtower) at the bottom of this readme**
 
-- You may run into issues running `2022.04` and later on `buster`-based host systems due to [a known issue with Seccomp](https://github.com/moby/moby/issues/40734). The first recommendation is to upgrade your host OS to `bullseye`, which includes a more up to date (and fixed) version of `libseccomp2`.  
- _If you absolutely cannot do this, some users [have reported](https://github.com/pi-hole/docker-pi-hole/issues/1042#issuecomment-1086728157) success in updating `libseccomp2` via backports. You can try this workaround at your own risk_  
+- Due to [a known issue with Docker and libseccomp <2.5](https://github.com/moby/moby/issues/40734), you may run into issues running `2022.04` and later on host systems with an older version of `libseccomp2` ([Such as Debian/Raspbian buster or Ubuntu 20.04](https://pkgs.org/download/libseccomp2), and maybe [CentOS 7](https://pkgs.org/download/libseccomp)). 
+
+  The first recommendation is to upgrade your host OS, which will include a more up to date (and fixed) version of `libseccomp`. 
+  
+  _If you absolutely cannot do this, some users [have reported](https://github.com/pi-hole/docker-pi-hole/issues/1042#issuecomment-1086728157) success in updating `libseccomp2` via backports on debian, or similar via updates on Ubuntu. You can try this workaround at your own risk_  
 
 - Some users [have reported issues](https://github.com/pi-hole/docker-pi-hole/issues/963#issuecomment-1095602502) with using the `--privileged` flag on `2022.04` and above. TL;DR, don't use that that mode, and be [explicit with the permitted caps](https://github.com/pi-hole/docker-pi-hole#note-on-capabilities) (if needed) instead
 
