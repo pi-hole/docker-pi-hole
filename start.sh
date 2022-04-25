@@ -149,7 +149,7 @@ if [ -n "${PIHOLE_DNS_}" ]; then
     done
 
     if [ $valid_entries -eq 0 ]; then
-      echo "No Valid entries dectected in PIHOLE_DNS_. Aborting"
+      echo "No Valid entries detected in PIHOLE_DNS_. Aborting"
       exit 1
     fi
 else

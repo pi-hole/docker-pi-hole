@@ -41,7 +41,7 @@ def args(args_volumes, args_env):
 
 @pytest.fixture()
 def test_args():
-    ''' test override fixture to provide arguments seperate from our core args '''
+    ''' test override fixture to provide arguments separate from our core args '''
     return ''
 
 def DockerGeneric(request, _test_args, _args, _image, _cmd, _entrypoint):
@@ -76,7 +76,7 @@ def DockerPersist(request, persist_test_args, persist_args, persist_image, persi
     ''' Persistent Docker container for multiple tests, instead of stopping container after one test '''
     ''' Uses DUP'd module scoped fixtures because smaller scoped fixtures won't mix with module scope '''
     persistent_container = DockerGeneric(request, persist_test_args, persist_args, persist_image, persist_cmd, persist_entrypoint)
-    ''' attach a dig conatiner for lookups '''
+    ''' attach a dig container for lookups '''
     persistent_container.dig = Dig(persistent_container.id)
     return persistent_container
 
@@ -145,7 +145,7 @@ def persist_args(persist_args_volumes, persist_args_env):
 
 @pytest.fixture(scope='module')
 def persist_test_args():
-    ''' test override fixture to provide arguments seperate from our core args '''
+    ''' test override fixture to provide arguments separate from our core args '''
     return ''
 
 @pytest.fixture(scope='module')
