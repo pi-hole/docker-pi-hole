@@ -13,7 +13,7 @@
 
   The first recommendation is to upgrade your host OS, which will include a more up to date (and fixed) version of `libseccomp`. 
   
-  _If you absolutely cannot do this, some users [have reported](https://github.com/pi-hole/docker-pi-hole/issues/1042#issuecomment-1086728157) success in updating `libseccomp2` via backports on debian, or similar via updates on Ubuntu. You can try this workaround at your own risk_  
+  _If you absolutely cannot do this, some users [have reported](https://github.com/pi-hole/docker-pi-hole/issues/1042#issuecomment-1086728157) success in updating `libseccomp2` via backports and `docker.io` from bullseye on debian (more details [here](https://blog.samcater.com/fix-workaround-rpi4-docker-libseccomp2-docker-20/)) on debian, or similar via updates on Ubuntu. You can try this workaround at your own risk_  
 
 - Some users [have reported issues](https://github.com/pi-hole/docker-pi-hole/issues/963#issuecomment-1095602502) with using the `--privileged` flag on `2022.04` and above. TL;DR, don't use that that mode, and be [explicit with the permitted caps](https://github.com/pi-hole/docker-pi-hole#note-on-capabilities) (if needed) instead
 
