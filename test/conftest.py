@@ -23,7 +23,7 @@ def run_and_stream_command_output():
                     print(line, end='')
         build_result.wait()
         if build_result.returncode != 0:
-            print("     ::: Error running".format(command))
+            print(f'     ::: Error running: {command}')
             print(build_result.stderr)
     return run_and_stream_command_output_inner
 

@@ -48,7 +48,7 @@ def run_and_stream_command_output(command, environment_vars, verbose) -> bool:
                 print(line, end='')
     build_result.wait()
     if build_result.returncode != 0:
-        print("     ::: Error running".format(command))
+        print(f'     ::: Error running: {command}')
         print(build_result.stderr)
     return build_result.returncode == 0
 
