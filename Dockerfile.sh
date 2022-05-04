@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # @param ${ARCH}             The architecture to build. Example: amd64
-# @param ${DEBIAN_VERSION}   The debian version to build. Example: buster
+# @param ${DEBIAN_VERSION}   The debian version to build. Example: bullseye
 # @param ${ARCH_IMAGE}       What the Docker Hub Image should be tagged as [default: None]
 
 set -eux

@@ -222,23 +222,16 @@ Users of older Ubuntu releases (circa 17.04) will need to disable dnsmasq.
 
 ## Docker tags and versioning
 
-The primary docker tags / versions are explained in the following table.  [Click here to see the full list of tags](https://store.docker.com/community/images/pihole/pihole/tags), I also try to tag with the specific version of Pi-hole Core for version archival purposes, the web version that comes with the core releases should be in the [GitHub Release notes](https://github.com/pi-hole/docker-pi-hole/releases).
+The primary docker tags are explained in the following table.  [Click here to see the full list of tags](https://store.docker.com/community/images/pihole/pihole/tags). See [GitHub Release notes](https://github.com/pi-hole/docker-pi-hole/releases) to see the specific version of Pi-hole Core, Web, and FTL included in the release.
 
-| tag                     | architecture | description                                                             | Dockerfile |
-| ---                     | ------------ | -----------                                                             | ---------- |
-| `latest`                | auto detect  | x86, arm, or arm64 container, docker auto detects your architecture.    | [Dockerfile](https://github.com/pi-hole/docker-pi-hole/blob/master/Dockerfile) |
-| `v5.0`                  | auto detect  | Versioned tags, if you want to pin against a specific Pi-hole version, use one of these |  |
-| `v5.0-buster`           | auto detect  | Versioned tags, if you want to pin against a specific Pi-hole and Debian version, use one of these |  |
-| `v5.0-<arch>-buster `   | based on tag | Specific architectures and Debian version tags | |
-| `dev`                   | auto detect  | like latest tag, but for the development branch (pushed occasionally)   | |
-| `beta-*`                | auto detect  | Early beta releases of upcoming versions - here be dragons              | |
-| `nightly`               | auto detect  | Like `dev` but pushed every night and pulls from the latest `development` branches of the core Pi-hole components (Pi-hole, AdminLTE, FTL)  | |
-
-### `pihole/pihole:latest` [![](https://images.microbadger.com/badges/image/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/pihole/pihole:latest.svg)](https://microbadger.com/images/pihole/pihole "Get your own version badge on microbadger.com")
-
-This version of the docker aims to be as close to a standard Pi-hole installation by using the recommended base OS and the exact configs and scripts (minimally modified to get them working).  This enables fast updating when an update comes from Pi-hole.
-
-https://hub.docker.com/r/pihole/pihole/tags/
+| tag                 | description                                                                                                                                
+|---------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| `latest`            | Always latest release                                                                                                                      |
+| `2022.04`           | Date-based release that can receive bugfix updates                                                                                         |
+| `2022.04.1`         | A specific image that will not receive updates                                                                                             |
+| `dev`               | Similar to `latest`, but for the development branch (pushed occasionally)                                                                  |
+| `*beta`             | Early beta releases of upcoming versions - here be dragons                                                                                 |
+| `nightly`           | Like `dev` but pushed every night and pulls from the latest `development` branches of the core Pi-hole components (Pi-hole, AdminLTE, FTL) |
 
 ## Upgrading, Persistence, and Customizations
 

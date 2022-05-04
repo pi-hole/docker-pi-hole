@@ -7,7 +7,7 @@ import testinfra
 local_host = testinfra.get_host('local://')
 check_output = local_host.check_output
 
-DEBIAN_VERSION = os.environ.get('DEBIAN_VERSION', 'buster')
+DEBIAN_VERSION = os.environ.get('DEBIAN_VERSION', 'bullseye')
 
 @pytest.fixture()
 def run_and_stream_command_output():
