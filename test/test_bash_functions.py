@@ -168,14 +168,14 @@ expected_debian_lines = [
 def test_debian_setup_php_env(Docker, expected_lines, repeat_function):
     ''' confirm all expected output is there and nothing else '''
     stdout = ''
-    for i in range(repeat_function):
+    for _ in range(repeat_function):
         stdout = Docker.run('. /bash_functions.sh ; eval `grep setup_php_env /start.sh`').stdout
     for expected_line in expected_lines:
         search_config_cmd = "grep -c '{}' /etc/lighttpd/conf-enabled/15-fastcgi-php.conf".format(expected_line)
         search_config_count = Docker.run(search_config_cmd)
         found_lines = int(search_config_count.stdout.rstrip('\n'))
         if found_lines > 1:
-            assert False, "Found line {} times (more than once): {}".format(expected_line)
+            assert False, f'Found line {expected_line} times (more than once): {found_lines}'
 
 
 def test_webPassword_random_generation(Docker):

@@ -7,7 +7,7 @@ import testinfra
 local_host = testinfra.get_host('local://')
 check_output = local_host.check_output
 
-DEBIAN_VERSION = os.environ.get('DEBIAN_VERSION', 'buster')
+DEBIAN_VERSION = os.environ.get('DEBIAN_VERSION', 'bullseye')
 
 @pytest.fixture()
 def run_and_stream_command_output():
@@ -23,7 +23,7 @@ def run_and_stream_command_output():
                     print(line, end='')
         build_result.wait()
         if build_result.returncode != 0:
-            print("     ::: Error running".format(command))
+            print(f'     ::: Error running: {command}')
             print(build_result.stderr)
     return run_and_stream_command_output_inner
 
