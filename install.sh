@@ -76,11 +76,6 @@ sed -i $'s/)\s*uninstallFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 # pihole -r / pihole reconfigure
 sed -i $'s/)\s*reconfigurePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 
-if [[ "${PIHOLE_DOCKER_TAG}" != "dev" && "${PIHOLE_DOCKER_TAG}" != "nightly" ]]; then
-  # If we are on a version other than dev or nightly, disable `pihole checkout`, otherwise it is useful to have for quick troubleshooting sometimes
-  sed -i $'s/)\s*piholeCheckoutFunc/) unsupportedFunc/g' /usr/local/bin/pihole
-fi
-
 if [ ! -f /.piholeFirstBoot ]; then
   touch /.piholeFirstBoot
 fi
