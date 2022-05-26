@@ -18,6 +18,10 @@ ENV PHP_ENV_CONFIG /etc/lighttpd/conf-enabled/15-fastcgi-php.conf
 ARG PHP_ERROR_LOG
 ENV PHP_ERROR_LOG /var/log/lighttpd/error-pihole.log
 
+# Add PADD to the container, too.
+ADD https://raw.githubusercontent.com/pi-hole/PADD/master/padd.sh /padd.sh
+RUN chmod +x /padd.sh
+
 # IPv6 disable flag for networks/devices that do not support it
 ENV IPv6 True
 
