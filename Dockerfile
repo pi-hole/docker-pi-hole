@@ -25,6 +25,10 @@ ENV PHP_ERROR_LOG /var/log/lighttpd/error.log
 COPY ./start.sh /
 COPY ./bash_functions.sh /
 
+# Add PADD to the container, too.
+ADD https://raw.githubusercontent.com/pi-hole/PADD/master/padd.sh /padd.sh
+RUN chmod +x /padd.sh
+
 # IPv6 disable flag for networks/devices that do not support it
 ENV IPv6 True
 
