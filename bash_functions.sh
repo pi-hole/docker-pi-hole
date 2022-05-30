@@ -289,7 +289,7 @@ setup_web_password() {
         generate_password
     else
         # ENV WEBPASSWORD is set an will be used
-        echo "Assigning password defined by Environment Variable"
+        echo "::: Assigning password defined by Environment Variable"
     fi
 
     PASS="$WEBPASSWORD"
