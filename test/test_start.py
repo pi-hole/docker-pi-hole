@@ -7,9 +7,9 @@ import time
 
 # If the test runs /start.sh, do not let s6 run it too!  Kill entrypoint to avoid race condition/duplicated execution
 @pytest.mark.parametrize('persist_entrypoint,persist_cmd,persist_args_env', [('--entrypoint=tail','-f /dev/null','')])
-def test_ServerIP_missing_is_not_required_anymore(RunningPiHole):
+def test_ServerIP_missing_is_not_required_anymore(docker,RunningPiHole):
     ''' When args to docker are empty start.sh exits saying ServerIP is required '''
-    start = Docker.run('/start.sh')
+    start = docker.run('/start.sh')
     error_msg = "ERROR: To function correctly you must pass an environment variables of 'ServerIP' into the docker container"
     assert start.rc == 1
     assert error_msg in start.stdout
@@ -21,9 +21,9 @@ def test_ServerIP_missing_is_not_required_anymore(RunningPiHole):
     ('-e ServerIP="1.2.3.4" -e ServerIPv6="1234:1234:1234:ZZZZ"', "Environment variable (1234:1234:1234:ZZZZ) doesn't appear to be a valid IPv6 address",1),
     ('-e ServerIP="1.2.3.4" -e ServerIPv6="kernel"', "ERROR: You passed in IPv6 with a value of 'kernel'",1),
 ])
-def test_ServerIP_invalid_IPs_triggers_exit_error(Docker, error_msg, expect_rc):
+def test_ServerIP_invalid_IPs_triggers_exit_error(docker, error_msg, expect_rc):
     ''' When args to docker are empty start.sh exits saying ServerIP is required '''
-    start = Docker.run('/start.sh')
+    start = docker.run('/start.sh')
     assert start.rc == expect_rc
     assert 'ERROR' in start.stdout
     assert error_msg in start.stdout
