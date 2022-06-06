@@ -44,7 +44,7 @@ def test_args():
     ''' test override fixture to provide arguments separate from our core args '''
     return ''
 
-def DockerGeneric(request, _test_args, _args, _image, _cmd, _entrypoint):
+def docker_generic(request, _test_args, _args, _image, _cmd, _entrypoint):
     #assert 'docker' in check_output('id'), "Are you in the docker group?"
     # Always appended PYTEST arg to tell pihole we're testing
     if 'pihole' in _image and 'PYTEST=1' not in _args:
@@ -67,17 +67,17 @@ def DockerGeneric(request, _test_args, _args, _image, _cmd, _entrypoint):
 
 
 @pytest.fixture
-def Docker(request, test_args, args, image, cmd, entrypoint):
+def docker(request, test_args, args, image, cmd, entrypoint):
     ''' One-off Docker container run '''
-    return DockerGeneric(request, test_args, args, image, cmd, entrypoint)
+    return docker_generic(request, test_args, args, image, cmd, entrypoint)
 
 @pytest.fixture(scope='module')
-def DockerPersist(request, persist_test_args, persist_args, persist_image, persist_cmd, persist_entrypoint, Dig):
+def docker_persist(request, persist_test_args, persist_args, persist_image, persist_cmd, persist_entrypoint, dig):
     ''' Persistent Docker container for multiple tests, instead of stopping container after one test '''
     ''' Uses DUP'd module scoped fixtures because smaller scoped fixtures won't mix with module scope '''
-    persistent_container = DockerGeneric(request, persist_test_args, persist_args, persist_image, persist_cmd, persist_entrypoint)
+    persistent_container = docker_generic(request, persist_test_args, persist_args, persist_image, persist_cmd, persist_entrypoint)
     ''' attach a dig container for lookups '''
-    persistent_container.dig = Dig(persistent_container.id)
+    persistent_container.dig = dig(persistent_container.id)
     return persistent_container
 
 @pytest.fixture
@@ -171,12 +171,12 @@ def persist_entrypoint():
     return ''
 
 @pytest.fixture
-def Slow():
+def slow():
     """
     Run a slow check, check if the state is correct for `timeout` seconds.
     """
     import time
-    def slow(check, timeout=20):
+    def _slow(check, timeout=20):
         timeout_at = time.time() + timeout
         while True:
             try:
@@ -188,26 +188,26 @@ def Slow():
                     raise e
             else:
                 return
-    return slow
+    return _slow
 
 @pytest.fixture(scope='module')
-def Dig():
+def dig():
     ''' separate container to link to pi-hole and perform lookups '''
     ''' a docker pull is faster than running an install of dnsutils '''
-    def dig(docker_id):
+    def _dig(docker_id):
         args  = '--link {}:test_pihole'.format(docker_id)
         image = 'azukiapp/dig'
         cmd   = 'tail -f /dev/null'
-        dig_container = DockerGeneric(request, '', args, image, cmd, '')
+        dig_container = docker_generic(request, '', args, image, cmd, '')
         return dig_container
-    return dig
+    return _dig
 
 '''
 Persistent Docker container for testing service post start.sh
 '''
 @pytest.fixture
-def RunningPiHole(DockerPersist, Slow, persist_webserver):
+def running_pihole(docker_persist, slow, persist_webserver):
     ''' Persist a fully started docker-pi-hole to help speed up subsequent tests '''
-    Slow(lambda: DockerPersist.run('pgrep pihole-FTL').rc == 0)
-    Slow(lambda: DockerPersist.run('pgrep lighttpd').rc == 0)
-    return DockerPersist
+    slow(lambda: docker_persist.run('pgrep pihole-FTL').rc == 0)
+    slow(lambda: docker_persist.run('pgrep lighttpd').rc == 0)
+    return docker_persist
