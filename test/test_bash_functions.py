@@ -172,9 +172,8 @@ expected_debian_lines = [
 ])
 def test_debian_setup_php_env(docker, expected_lines, repeat_function):
     ''' confirm all expected output is there and nothing else '''
-    stdout = ''
     for _ in range(repeat_function):
-        stdout = docker.run('. /bash_functions.sh ; eval `grep setup_php_env /start.sh`').stdout
+        docker.run('. /bash_functions.sh ; eval `grep setup_php_env /start.sh`').stdout
     for expected_line in expected_lines:
         search_config_cmd = "grep -c '{}' /etc/lighttpd/conf-enabled/15-fastcgi-php.conf".format(expected_line)
         search_config_count = docker.run(search_config_cmd)

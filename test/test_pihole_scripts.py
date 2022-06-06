@@ -13,7 +13,6 @@ def running_pihole(docker_persist, slow, persist_webserver, persist_tag, start_c
         pihole-FTL start based `pihole` script command
         
         Individual tests all must override start_cmd'''
-    #print docker_persist.run('ps -ef').stdout
     assert docker_persist.dig.run('ping -c 1 test_pihole').rc == 0
     slow(lambda: docker_persist.run('pgrep pihole-FTL').rc == 0)
     slow(lambda: docker_persist.run('pgrep {}'.format(persist_webserver)).rc == 0)
