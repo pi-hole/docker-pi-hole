@@ -39,6 +39,7 @@ export PIHOLE_DOMAIN
 export DHCP_IPv6
 export DHCP_rapid_commit
 export WEBTHEME
+export WEBPASSWORD
 export CUSTOM_CACHE_SIZE
 
 export adlistFile='/etc/pihole/adlists.list'
@@ -67,7 +68,6 @@ echo " ::: Starting docker specific checks & setup for docker pihole/pihole"
 
 fix_capabilities
 load_web_password_secret
-generate_password
 validate_env || exit 1
 prepare_configs
 
@@ -185,7 +185,7 @@ fi
 [[ -n "${DHCP_ACTIVE}" && ${DHCP_ACTIVE} == "true" ]] && echo "Setting DHCP server" && setup_dhcp
 
 setup_web_port "$WEB_PORT"
-setup_web_password "$WEBPASSWORD"
+setup_web_password
 setup_temp_unit "$TEMPERATUREUNIT"
 setup_ui_layout "$WEBUIBOXEDLAYOUT"
 setup_admin_email "$ADMIN_EMAIL"

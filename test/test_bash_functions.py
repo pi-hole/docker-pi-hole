@@ -178,9 +178,12 @@ def test_debian_setup_php_env(Docker, expected_lines, repeat_function):
             assert False, f'Found line {expected_line} times (more than once): {found_lines}'
 
 
+WEBPASSWORD_TEST_FUNCTION_COMMAND='. /bash_functions.sh ; eval `grep setup_web_password /start.sh`'
+
+
 def test_webPassword_random_generation(Docker):
     ''' When a user sets webPassword env the admin password gets set to that '''
-    function = Docker.run('. /bash_functions.sh ; eval `grep generate_password /start.sh`')
+    function = Docker.run(WEBPASSWORD_TEST_FUNCTION_COMMAND)
     assert 'assigning random password' in function.stdout.lower()
 
 
@@ -191,7 +194,7 @@ def test_webPassword_random_generation(Docker):
 ])
 def test_webPassword_env_assigns_password_to_file_or_removes_if_empty(Docker, args_env, secure, setupVarsHash):
     ''' When a user sets webPassword env the admin password gets set or removed if empty '''
-    function = Docker.run('. /bash_functions.sh ; eval `grep setup_web_password /start.sh`')
+    function = Docker.run(WEBPASSWORD_TEST_FUNCTION_COMMAND)
 
     if secure:
         assert 'new password set' in function.stdout.lower()
@@ -203,11 +206,18 @@ def test_webPassword_env_assigns_password_to_file_or_removes_if_empty(Docker, ar
 
 @pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
 @pytest.mark.parametrize('test_args', ['-e WEBPASSWORD=login', '-e WEBPASSWORD=""'])
-def test_webPassword_pre_existing_trumps_all_envs(Docker, args_env, test_args):
-    '''When a user setup webPassword in the volume prior to first container boot,
-        during prior container boot, the prior volume password is left intact / setup skipped'''
-    Docker.run('. /opt/pihole/webpage.sh ; add_setting WEBPASSWORD volumepass')
-    function = Docker.run('. /bash_functions.sh ; eval `grep setup_web_password /start.sh`')
+def test_env_always_updates_password(Docker, args_env, test_args):
+    '''When a user sets the WEBPASSWORD environment variable, ensure it always sets the password'''    
+    function = Docker.run(WEBPASSWORD_TEST_FUNCTION_COMMAND)
 
-    assert '::: Pre existing WEBPASSWORD found' in function.stdout
+    assert '::: Assigning password defined by Environment Variable' in function.stdout    
+
+
+@pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
+def test_setupvars_trumps_random_password_if_set(Docker, args_env, test_args):
+    '''If a password is already set in setupVars, and no password is set in the environment variable, do not generate a random password'''
+    Docker.run('. /opt/pihole/utils.sh ; addOrEditKeyValPair /etc/pihole/setupVars.conf WEBPASSWORD volumepass')
+    function = Docker.run(WEBPASSWORD_TEST_FUNCTION_COMMAND)
+
+    assert 'Pre existing WEBPASSWORD found' in function.stdout
     assert Docker.run('grep -q \'{}\' {}'.format('WEBPASSWORD=volumepass', '/etc/pihole/setupVars.conf')).rc == 0
