@@ -270,13 +270,7 @@ load_web_password_secret() {
    fi;
 }
 
-generate_password() {
-    if [ -z "${WEBPASSWORD+x}" ] ; then
-        # Not set at all, give the user a random pass
-        WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
-        echo "Assigning random password: $WEBPASSWORD"
-    fi;
-}
+
 
 setup_web_password() {
     if [ -z "${WEBPASSWORD+x}" ] ; then
@@ -285,8 +279,9 @@ setup_web_password() {
         # Exit if setupvars already has a password
         setup_var_exists "WEBPASSWORD" && return
 
-        # Generate new password
-        generate_password
+        # Generate new random password
+        WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
+        echo "Assigning random password: $WEBPASSWORD"
     else
         # ENV WEBPASSWORD is set an will be used
         echo "::: Assigning password defined by Environment Variable"
