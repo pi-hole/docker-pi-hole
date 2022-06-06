@@ -3,6 +3,16 @@ import os
 import pytest
 import re
 
+SETUPVARS_LOC='/etc/pihole/setupVars.conf'
+DNSMASQ_CONFIG_LOC = '/etc/dnsmasq.d/01-pihole.conf'
+EVAL_SETUP_DNSMASQ='. /bash_functions.sh ; eval `grep "^setup_dnsmasq " /start.sh`'
+EVAL_SETUP_WEB_PASSWORD='. /bash_functions.sh ; eval `grep setup_web_password /start.sh`'
+
+def _cat(file):
+    return 'cat {}'.format(file)
+
+def _grep(string, file):
+    return 'grep -q \'{}\' {}'.format(string,file)
 
 @pytest.mark.parametrize('test_args,expected_ipv6,expected_stdout', [
     ('', True, 'IPv4 and IPv6'),
@@ -35,7 +45,7 @@ def test_overrides_default_web_port(docker, slow, test_args):
     function = docker.run('. /bash_functions.sh ; eval `grep setup_web_port /start.sh`')
     assert "Custom WEB_PORT set to 999" in function.stdout
     assert "INFO: Without proper router DNAT forwarding to 127.0.0.1:999, you may not get any blocked websites on ads" in function.stdout
-    slow(lambda: re.search(CONFIG_LINE, docker.run('cat {}'.format(WEB_CONFIG)).stdout) != None)
+    slow(lambda: re.search(CONFIG_LINE, docker.run(_cat(WEB_CONFIG)).stdout) != None)
 
 
 @pytest.mark.parametrize('test_args,expected_error', [
@@ -52,11 +62,10 @@ def test_bad_input_to_web_port(docker, test_args, expected_error):
 def test_overrides_default_custom_cache_size(docker, slow, test_args, cache_size):
     ''' Changes the cache_size setting to increase or decrease the cache size for dnsmasq'''
     CONFIG_LINE = r'cache-size\s*=\s*{}'.format(cache_size)
-    DNSMASQ_CONFIG = '/etc/dnsmasq.d/01-pihole.conf'
 
     function = docker.run('echo ${CUSTOM_CACHE_SIZE};. ./bash_functions.sh; echo ${CUSTOM_CACHE_SIZE}; eval `grep setup_dnsmasq /start.sh`')
     assert "Custom CUSTOM_CACHE_SIZE set to {}".format(cache_size) in function.stdout
-    slow(lambda: re.search(CONFIG_LINE, docker.run('cat {}'.format(DNSMASQ_CONFIG)).stdout) != None)
+    slow(lambda: re.search(CONFIG_LINE, docker.run(_cat(DNSMASQ_CONFIG_LOC)).stdout) != None)
 
 
 @pytest.mark.parametrize('test_args', [
@@ -65,20 +74,18 @@ def test_overrides_default_custom_cache_size(docker, slow, test_args, cache_size
 ])
 def test_bad_input_to_custom_cache_size(docker, slow, test_args):
     CONFIG_LINE = r'cache-size\s*=\s*10000'
-    DNSMASQ_CONFIG = '/etc/dnsmasq.d/01-pihole.conf'
 
     docker.run('. ./bash_functions.sh; eval `grep setup_dnsmasq /start.sh`')
-    slow(lambda: re.search(CONFIG_LINE, docker.run('cat {}'.format(DNSMASQ_CONFIG)).stdout) != None)
+    slow(lambda: re.search(CONFIG_LINE, docker.run(_cat(DNSMASQ_CONFIG_LOC)).stdout) != None)
 
 @pytest.mark.parametrize('test_args', [
     '-e DNSSEC="true" -e CUSTOM_CACHE_SIZE="0"',
 ])
 def test_dnssec_enabled_with_custom_cache_size(docker, slow, test_args):
     CONFIG_LINE = r'cache-size\s*=\s*10000'
-    DNSMASQ_CONFIG = '/etc/dnsmasq.d/01-pihole.conf'
 
     docker.run('. ./bash_functions.sh; eval `grep setup_dnsmasq /start.sh`')
-    slow(lambda: re.search(CONFIG_LINE, docker.run('cat {}'.format(DNSMASQ_CONFIG)).stdout) != None)
+    slow(lambda: re.search(CONFIG_LINE, docker.run(_cat(DNSMASQ_CONFIG_LOC)).stdout) != None)
 
 
 # DNS Environment Variable behavior in combinations of modified pihole LTE settings
@@ -95,7 +102,7 @@ def test_override_default_servers_with_dns_envvars(docker, slow, args_env, expec
     ''' on first boot when DNS vars are NOT set explain default google DNS settings are used
                    or when DNS vars are set override the pihole DNS settings '''
     assert docker.run('test -f /.piholeFirstBoot').rc == 0
-    function = docker.run('. /bash_functions.sh ; eval `grep "^setup_dnsmasq " /start.sh`')
+    function = docker.run(EVAL_SETUP_DNSMASQ)
     assert expected_stdout in function.stdout
     expected_servers = 'server={}\n'.format(dns1) if dns2 == None else 'server={}\nserver={}\n'.format(dns1, dns2)
     slow(lambda: expected_servers == docker.run('grep "^server=[^/]" /etc/dnsmasq.d/01-pihole.conf').stdout)
@@ -121,18 +128,16 @@ def test_dns_envs_are_secondary_to_setupvars(docker, slow, args_env, expected_st
     # Given we are not booting for the first time
     assert docker.run('rm /.piholeFirstBoot').rc == 0
 
-    # and a user already has custom pihole dns variables in setup vars
-    dns_count = 1
-    setupvars = '/etc/pihole/setupVars.conf'
-    docker.run('sed -i "/^PIHOLE_DNS/ d" {}'.format(setupvars))
-    docker.run('echo "PIHOLE_DNS_1={}" | tee -a {}'.format(dns1, setupvars))
+    # and a user already has custom pihole dns variables in setup vars    
+    docker.run('sed -i "/^PIHOLE_DNS/ d" {}'.format(SETUPVARS_LOC))
+    docker.run('echo "PIHOLE_DNS_1={}" | tee -a {}'.format(dns1, SETUPVARS_LOC))
     if dns2:
-        docker.run('echo "PIHOLE_DNS_2={}" | tee -a {}'.format(dns2, setupvars))
-    docker.run('sync {}'.format(setupvars))
-    slow(lambda: 'PIHOLE_DNS' in docker.run('cat {}'.format(setupvars)).stdout)
+        docker.run('echo "PIHOLE_DNS_2={}" | tee -a {}'.format(dns2, SETUPVARS_LOC))
+    docker.run('sync {}'.format(SETUPVARS_LOC))
+    slow(lambda: 'PIHOLE_DNS' in docker.run(_cat(SETUPVARS_LOC)).stdout)
 
     # When we run setup dnsmasq during startup of the container
-    function = docker.run('. /bash_functions.sh ; eval `grep "^setup_dnsmasq " /start.sh`')
+    function = docker.run(EVAL_SETUP_DNSMASQ)
     assert expected_stdout in function.stdout
 
     # Then the servers are still what the user had customized if forced dnsmasq is not set
@@ -149,9 +154,9 @@ def test_dns_envs_are_secondary_to_setupvars(docker, slow, args_env, expected_st
 ])
 def test_dns_interface_override_defaults(docker, slow, args_env, expected_stdout, expected_config_line):
     ''' When INTERFACE environment var is passed in, overwrite dnsmasq interface '''
-    function = docker.run('. /bash_functions.sh ; eval `grep "^setup_dnsmasq " /start.sh`')
+    function = docker.run(EVAL_SETUP_DNSMASQ)
     assert expected_stdout in function.stdout
-    slow(lambda: expected_config_line + '\n' == docker.run('grep "^PIHOLE_INTERFACE" /etc/pihole/setupVars.conf').stdout)
+    slow(lambda: expected_config_line + '\n' == docker.run('grep "^PIHOLE_INTERFACE" {}'.format(SETUPVARS_LOC)).stdout)
 
 
 expected_debian_lines = [
@@ -178,12 +183,10 @@ def test_debian_setup_php_env(docker, expected_lines, repeat_function):
             assert False, f'Found line {expected_line} times (more than once): {found_lines}'
 
 
-WEBPASSWORD_TEST_FUNCTION_COMMAND='. /bash_functions.sh ; eval `grep setup_web_password /start.sh`'
-
 
 def test_webpassword_random_generation(docker):
     ''' When a user sets webPassword env the admin password gets set to that '''
-    function = docker.run(WEBPASSWORD_TEST_FUNCTION_COMMAND)
+    function = docker.run(EVAL_SETUP_WEB_PASSWORD)
     assert 'assigning random password' in function.stdout.lower()
 
 
@@ -194,21 +197,21 @@ def test_webpassword_random_generation(docker):
 ])
 def test_webpassword_env_assigns_password_to_file_or_removes_if_empty(docker, args_env, secure, setupvars_hash):
     ''' When a user sets webPassword env the admin password gets set or removed if empty '''
-    function = docker.run(WEBPASSWORD_TEST_FUNCTION_COMMAND)
+    function = docker.run(EVAL_SETUP_WEB_PASSWORD)
 
     if secure:
         assert 'new password set' in function.stdout.lower()
-        assert docker.run('grep -q \'{}\' {}'.format(setupvars_hash, '/etc/pihole/setupVars.conf')).rc == 0
+        assert docker.run(_grep(setupvars_hash, SETUPVARS_LOC)).rc == 0
     else:
         assert 'password removed' in function.stdout.lower()
-        assert docker.run('grep -q \'{}\' {}'.format('^WEBPASSWORD=$', '/etc/pihole/setupVars.conf')).rc == 0
+        assert docker.run(_grep('^WEBPASSWORD=$', SETUPVARS_LOC)).rc == 0
 
 
 @pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
 @pytest.mark.parametrize('test_args', ['-e WEBPASSWORD=login', '-e WEBPASSWORD=""'])
 def test_env_always_updates_password(docker, args_env, test_args):
     '''When a user sets the WEBPASSWORD environment variable, ensure it always sets the password'''    
-    function = docker.run(WEBPASSWORD_TEST_FUNCTION_COMMAND)
+    function = docker.run(EVAL_SETUP_WEB_PASSWORD)
 
     assert '::: Assigning password defined by Environment Variable' in function.stdout    
 
@@ -216,8 +219,8 @@ def test_env_always_updates_password(docker, args_env, test_args):
 @pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
 def test_setupvars_trumps_random_password_if_set(docker, args_env, test_args):
     '''If a password is already set in setupvars, and no password is set in the environment variable, do not generate a random password'''
-    docker.run('. /opt/pihole/utils.sh ; addOrEditKeyValPair /etc/pihole/setupVars.conf WEBPASSWORD volumepass')
-    function = docker.run(WEBPASSWORD_TEST_FUNCTION_COMMAND)
+    docker.run('. /opt/pihole/utils.sh ; addOrEditKeyValPair {} WEBPASSWORD volumepass'.format(SETUPVARS_LOC))
+    function = docker.run(EVAL_SETUP_WEB_PASSWORD)
 
     assert 'Pre existing WEBPASSWORD found' in function.stdout
-    assert docker.run('grep -q \'{}\' {}'.format('WEBPASSWORD=volumepass', '/etc/pihole/setupVars.conf')).rc == 0
+    assert docker.run(_grep('WEBPASSWORD=volumepass', SETUPVARS_LOC)).rc == 0
