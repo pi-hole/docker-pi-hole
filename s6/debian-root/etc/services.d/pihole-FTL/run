@@ -41,5 +41,5 @@ capsh --inh=${CAP_STR:1} --addamb=${CAP_STR:1} --user=$DNSMASQ_USER --keep=1 -- 
 
 # Notes on above:
 # - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env
-# - /var/log/pihole*.log has FTL's output that no-daemon would normally print in FG too
+# - /var/log/pihole/pihole*.log has FTL's output that no-daemon would normally print in FG too
 #   prevent duplicating it in docker logs by sending to dev null
