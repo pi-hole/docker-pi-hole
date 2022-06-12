@@ -4,7 +4,7 @@ s6-echo "Starting lighttpd"
 
 if [[ 1 -eq ${WEBLOGS_STDOUT:-0} ]]; then
   #lighthttpd cannot use /dev/stdout https://redmine.lighttpd.net/issues/2731
-  for fi in /var/log/lighttpd/access-pihole.log /var/log/lighttpd/erro-pihole.log
+  for fi in /var/log/lighttpd/access-pihole.log /var/log/lighttpd/error-pihole.log
   do
     if [[ ! -p ${fi} ]]; then
       rm -f ${fi}
