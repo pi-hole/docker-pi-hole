@@ -162,7 +162,7 @@ def test_dns_interface_override_defaults(docker, slow, args_env, expected_stdout
 expected_debian_lines = [
     '"VIRTUAL_HOST" => "127.0.0.1"',
     '"ServerIP" => "127.0.0.1"',
-    '"PHP_ERROR_LOG" => "/var/log/lighttpd/error.log"'
+    '"PHP_ERROR_LOG" => "/var/log/lighttpd/error-pihole.log"'
 ]
 
 
