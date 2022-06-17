@@ -7,6 +7,10 @@ if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
     bashCmd='bash -e -x'
 fi
 
+if [ "${PH_NAMESERVER:-0}" -gt 0 ] ; then
+    echo nameserver ${PH_NAMESERVER} > /etc/resolv.conf
+fi
+
 $bashCmd /start.sh
 # Gotta go fast, no time for gravity
 if [ -n "$PYTEST" ]; then
