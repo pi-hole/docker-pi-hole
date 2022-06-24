@@ -23,3 +23,4 @@ jobs:
         exempt-issue-labels: 'pinned, Fixed in next release, bug, never-stale, documentation, investigating'
         exempt-all-issue-assignees: true
         operations-per-run: 300
+        stale-issue-reason: 'not_planned'
