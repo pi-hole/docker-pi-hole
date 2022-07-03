@@ -303,4 +303,4 @@ We have noticed that a lot of people use Watchtower to keep their Pi-hole contai
 Pi-hole is an integral part of your network, don't let it fall over because of an unattended update in the middle of the night.
 # User Feedback
 
-Please report issues on the [GitHub project](https://github.com/pi-hole/docker-pi-hole) when you suspect something docker related.  Pi-hole or general docker questions are best answered on our [user forums](https://github.com/pi-hole/pi-hole/blob/master/README.md#get-help-or-connect-with-us-on-the-web).  Ping me (@diginc) on the forums if it's a docker container and you're not sure if it's docker related.
+Please report issues on the [GitHub project](https://github.com/pi-hole/docker-pi-hole) when you suspect something docker related.  Pi-hole or general docker questions are best answered on our [user forums](https://discourse.pi-hole.net/c/bugs-problems-issues/docker/30).
