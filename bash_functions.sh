@@ -39,7 +39,7 @@ fix_capabilities() {
 
 prepare_configs() {
     # Done in /start.sh, don't do twice
-    PH_TEST=true . "${PIHOLE_INSTALL}"
+    SKIP_INSTALL=true . "${PIHOLE_INSTALL}"
     # Set Debian webserver variables for installConfigs
     LIGHTTPD_USER="www-data"
     LIGHTTPD_GROUP="www-data"

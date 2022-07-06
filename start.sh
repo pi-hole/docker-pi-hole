@@ -54,8 +54,8 @@ export adlistFile='/etc/pihole/adlists.list'
 # Ensure we have all functions available to update our configurations
 . /opt/pihole/webpage.sh
 
-# PH_TEST prevents the install from actually running (someone should rename that)
-PH_TEST=true . "${PIHOLE_INSTALL}"
+# SKIP_INSTALL prevents the install from actually running
+SKIP_INSTALL=true . "${PIHOLE_INSTALL}"
 
 echo " ::: Starting docker specific checks & setup for docker pihole/pihole"
 
