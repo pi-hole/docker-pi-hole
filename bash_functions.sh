@@ -6,12 +6,12 @@ fix_capabilities() {
     # Testing on Docker 20.10.14 with no caps set shows the following caps available to the container:
     # Current: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=ep
     # FTL can also use CAP_NET_ADMIN and CAP_SYS_NICE. If we try to set them when they haven't been explicitly enabled, FTL will not start. Test for them first:
-    
+
     /sbin/capsh --has-p=cap_chown && CAP_STR+=',CAP_CHOWN'
     /sbin/capsh --has-p=cap_net_bind_service && CAP_STR+=',CAP_NET_BIND_SERVICE'
     /sbin/capsh --has-p=cap_net_raw && CAP_STR+=',CAP_NET_RAW'
     /sbin/capsh --has-p=cap_net_admin && CAP_STR+=',CAP_NET_ADMIN' || DHCP_READY='false'
-    /sbin/capsh --has-p=cap_sys_nice && CAP_STR+=',CAP_SYS_NICE'    
+    /sbin/capsh --has-p=cap_sys_nice && CAP_STR+=',CAP_SYS_NICE'
 
     if [[ ${CAP_STR} ]]; then
         # We have the (some of) the above caps available to us - apply them to pihole-FTL
@@ -24,12 +24,12 @@ fix_capabilities() {
             DHCP_ACTIVE='false'
             change_setting "DHCP_ACTIVE" "false"
         fi
-        
+
         if [[ $ret -ne 0 && "${DNSMASQ_USER:-pihole}" != "root" ]]; then
             echo "ERROR: Unable to set capabilities for pihole-FTL. Cannot run as non-root."
             echo "       If you are seeing this error, please set the environment variable 'DNSMASQ_USER' to the value 'root'"
             exit 1
-        fi   
+        fi
     else
         echo "WARNING: Unable to set capabilities for pihole-FTL."
         echo "         Please ensure that the container has the required capabilities."
@@ -45,21 +45,21 @@ prepare_configs() {
     LIGHTTPD_GROUP="www-data"
     LIGHTTPD_CFG="lighttpd.conf.debian"
     installConfigs
-   
+
     if [ ! -f "${setupVars}" ]; then
         install -m 644 /dev/null "${setupVars}"
         echo "Creating empty ${setupVars} file."
     fi
-    
+
     set +e
     mkdir -p /var/run/pihole /var/log/pihole
-    
+
     chown pihole:root /etc/lighttpd
-    
+
     # In case of `pihole` UID being changed, re-chown the pihole scripts and pihole command
     chown -R pihole:root "${PI_HOLE_INSTALL_DIR}"
     chown pihole:root "${PI_HOLE_BIN_DIR}/pihole"
-    
+
     set -e
     # Update version numbers
     pihole updatechecker
@@ -270,18 +270,25 @@ load_web_password_secret() {
    fi;
 }
 
-generate_password() {
-    if [ -z "${WEBPASSWORD+x}" ] ; then
-        # Not set at all, give the user a random pass
-        WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
-        echo "Assigning random password: $WEBPASSWORD"
-    fi;
-}
+
 
 setup_web_password() {
-    setup_var_exists "WEBPASSWORD" && return
+    if [ -z "${WEBPASSWORD+x}" ] ; then
+        # ENV WEBPASSWORD is not set
 
-    PASS="$1"
+        # Exit if setupvars already has a password
+        setup_var_exists "WEBPASSWORD" && return
+
+        # Generate new random password
+        WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
+        echo "Assigning random password: $WEBPASSWORD"
+    else
+        # ENV WEBPASSWORD is set an will be used
+        echo "::: Assigning password defined by Environment Variable"
+    fi
+
+    PASS="$WEBPASSWORD"
+
     # Explicitly turn off bash printing when working with secrets
     { set +x; } 2>/dev/null
 
