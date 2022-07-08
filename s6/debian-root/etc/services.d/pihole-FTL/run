@@ -6,7 +6,7 @@ rm -f /dev/shm/FTL-* 2> /dev/null
 rm /run/pihole/FTL.sock 2> /dev/null
 
 # install /dev/null files to ensure they exist (create if non-existing, preserve if existing)
-mkdir -pm 0755 /run/pihole
+mkdir -pm 0755 /run/pihole /var/log/pihole
 [[ ! -f /run/pihole-FTL.pid ]] && install /dev/null /run/pihole-FTL.pid
 [[ ! -f /run/pihole-FTL.port ]] && install /dev/null /run/pihole-FTL.port
 [[ ! -f /var/log/pihole/FTL.log ]] && install /dev/null /var/log/pihole/FTL.log
@@ -14,8 +14,8 @@ mkdir -pm 0755 /run/pihole
 [[ ! -f /etc/pihole/dhcp.leases ]] && install /dev/null /etc/pihole/dhcp.leases
 
 # Ensure that permissions are set so that pihole-FTL can edit all necessary files
-chown pihole:pihole /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole/pihole-FTL.log /var/log/pihole/pihole.log /etc/pihole/dhcp.leases /run/pihole /etc/pihole
-chmod 0644 /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole/pihole-FTL.log /var/log/pihole/pihole.log /etc/pihole/dhcp.leases
+chown pihole:pihole /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole/FTL.log /var/log/pihole/pihole.log /etc/pihole/dhcp.leases /run/pihole /etc/pihole
+chmod 0644 /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole/FTL.log /var/log/pihole/pihole.log /etc/pihole/dhcp.leases
 
 # Ensure that permissions are set so that pihole-FTL can edit the files. We ignore errors as the file may not (yet) exist
 chmod -f 0644 /etc/pihole/macvendor.db
@@ -32,7 +32,7 @@ if [ ! -f /var/log/pihole.log ]; then
 
 fi
 if [ ! -f /var/log/pihole-FTL.log ]; then
-    ln -s /var/log/pihole/pihole-FTL.log /var/log/pihole-FTL.log
+    ln -s /var/log/pihole/FTL.log /var/log/pihole-FTL.log
     chown -h pihole:pihole /var/log/pihole-FTL.log
 fi
 
