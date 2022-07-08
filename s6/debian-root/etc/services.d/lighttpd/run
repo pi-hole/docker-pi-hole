@@ -4,7 +4,7 @@ s6-echo "Starting lighttpd"
 
 if [[ 1 -eq ${WEBLOGS_STDOUT:-0} ]]; then
   #lighthttpd cannot use /dev/stdout https://redmine.lighttpd.net/issues/2731
-  for fi in /var/log/lighttpd/access.log /var/log/lighttpd/error.log
+  for fi in /var/log/lighttpd/access-pihole.log /var/log/lighttpd/error-pihole.log
   do
     if [[ ! -p ${fi} ]]; then
       rm -f ${fi}
@@ -17,16 +17,16 @@ if [[ 1 -eq ${WEBLOGS_STDOUT:-0} ]]; then
   sleep 2
 else
   #remove fifo if exists
-  [[ -p /var/log/lighttpd/access.log ]] && rm -Rf /var/log/lighttpd/access.log
-  [[ -p  /var/log/lighttpd/error.log ]] && rm -Rf /var/log/lighttpd/error.log
+  [[ -p /var/log/lighttpd/access-pihole.log ]] && rm -Rf /var/log/lighttpd/access-pihole.log
+  [[ -p  /var/log/lighttpd/error-pihole.log ]] && rm -Rf /var/log/lighttpd/error-pihole.log
 
   # install /dev/null log files to ensure they exist (create if non-existing, preserve if existing)
-  [[ ! -f /var/log/lighttpd/access.log ]] && install /dev/null /var/log/lighttpd/access.log
-  [[ ! -f  /var/log/lighttpd/error.log ]] && install /dev/null /var/log/lighttpd/error.log
+  [[ ! -f /var/log/lighttpd/access-pihole.log ]] && install /dev/null /var/log/lighttpd/access-pihole.log
+  [[ ! -f  /var/log/lighttpd/error-pihole.log ]] && install /dev/null /var/log/lighttpd/error-pihole.log
 
   # Ensure that permissions are set so that lighttpd can write to the logs
   chown -R www-data:www-data /var/log/lighttpd
-  chmod 0644 /var/log/lighttpd/access.log /var/log/lighttpd/error.log
+  chmod 0644 /var/log/lighttpd/access-pihole.log /var/log/lighttpd/error-pihole.log
 fi
 
 lighttpd -D -f /etc/lighttpd/lighttpd.conf

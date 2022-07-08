@@ -21,7 +21,7 @@ RUN bash -ex install.sh 2>&1 && \
 ARG PHP_ENV_CONFIG
 ENV PHP_ENV_CONFIG /etc/lighttpd/conf-enabled/15-fastcgi-php.conf
 ARG PHP_ERROR_LOG
-ENV PHP_ERROR_LOG /var/log/lighttpd/error.log
+ENV PHP_ERROR_LOG /var/log/lighttpd/error-pihole.log
 COPY ./start.sh /
 COPY ./bash_functions.sh /
 

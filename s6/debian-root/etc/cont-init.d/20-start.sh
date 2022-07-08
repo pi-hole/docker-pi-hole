@@ -28,7 +28,7 @@ if [ -z "$SKIPGRAVITYONBOOT" ] || [ ! -e "${gravityDBfile}" ]; then
         echo "  Ignoring SKIPGRAVITYONBOOT on this occaision."
     fi
 
-    echo '@reboot root PATH="$PATH:/usr/sbin:/usr/local/bin/" pihole updateGravity >/var/log/pihole_updateGravity.log || cat /var/log/pihole_updateGravity.log' > /etc/cron.d/gravity-on-boot
+    echo '@reboot root PATH="$PATH:/usr/sbin:/usr/local/bin/" pihole updateGravity >/var/log/pihole/pihole_updateGravity.log || cat /var/log/pihole/pihole_updateGravity.log' > /etc/cron.d/gravity-on-boot
 else
     echo "  Skipping Gravity Database Update."
     [ ! -e /etc/cron.d/gravity-on-boot ] || rm /etc/cron.d/gravity-on-boot &>/dev/null

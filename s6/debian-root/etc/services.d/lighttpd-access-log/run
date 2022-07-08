@@ -2,4 +2,4 @@
 
 s6-echo "Starting lighttpd-access-log"
 
-s6-setuidgid www-data cat /var/log/lighttpd/access.log 2>&1
+s6-setuidgid www-data cat /var/log/lighttpd/access-pihole.log 2>&1
