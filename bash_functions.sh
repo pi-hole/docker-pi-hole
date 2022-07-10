@@ -45,6 +45,7 @@ prepare_configs() {
     LIGHTTPD_GROUP="www-data"
     LIGHTTPD_CFG="lighttpd.conf.debian"
     installConfigs
+    installLogrotate || true #installLogRotate can return 2 or 3, but we are still OK to continue in that case
 
     if [ ! -f "${setupVars}" ]; then
         install -m 644 /dev/null "${setupVars}"
@@ -70,11 +71,11 @@ prepare_configs() {
         cp -f "${setupVars}" "${setupVars}.update.bak"
     fi
 
-    #If the user has volume mounted /etc/pihole, then macvendor.db may be missing. See: https://github.com/pi-hole/docker-pi-hole/issues/1137
-    if [[ ! -f "/etc/pihole/macvendor.db" ]]; then
-        echo "Downloading missing macvendor.db"
-        curl -sSL "https://ftl.pi-hole.net/macvendor.db" -o "/etc/pihole/macvendor.db" || true
+    # Remove any existing macvendor.db and replace it with a symblink to the one moved to the root directory (see install.sh)
+    if [[ -f "/etc/pihole/macvendor.db" ]]; then
+        rm /etc/pihole/macvendor.db
     fi
+    ln -s /macvendor.db /etc/pihole/macvendor.db
 }
 
 validate_env() {
