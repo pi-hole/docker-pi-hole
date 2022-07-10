@@ -69,6 +69,12 @@ prepare_configs() {
     if [[ -e "${setupVars}" ]]; then
         cp -f "${setupVars}" "${setupVars}.update.bak"
     fi
+
+    #If the user has volume mounted /etc/pihole, then macvendor.db may be missing. See: https://github.com/pi-hole/docker-pi-hole/issues/1137
+    if [[ ! -f "/etc/pihole/macvendor.db" ]]; then
+        echo "Downloading missing macvendor.db"
+        curl -sSL "https://ftl.pi-hole.net/macvendor.db" -o "/etc/pihole/macvendor.db" || true
+    fi
 }
 
 validate_env() {
