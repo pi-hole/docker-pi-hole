@@ -7,11 +7,11 @@ fix_capabilities() {
     # Current: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=ep
     # FTL can also use CAP_NET_ADMIN and CAP_SYS_NICE. If we try to set them when they haven't been explicitly enabled, FTL will not start. Test for them first:
 
-    /sbin/capsh --has-p=cap_chown && CAP_STR+=',CAP_CHOWN'
-    /sbin/capsh --has-p=cap_net_bind_service && CAP_STR+=',CAP_NET_BIND_SERVICE'
-    /sbin/capsh --has-p=cap_net_raw && CAP_STR+=',CAP_NET_RAW'
-    /sbin/capsh --has-p=cap_net_admin && CAP_STR+=',CAP_NET_ADMIN' || DHCP_READY='false'
-    /sbin/capsh --has-p=cap_sys_nice && CAP_STR+=',CAP_SYS_NICE'
+    /sbin/capsh --has-p=cap_chown 2>/dev/null && CAP_STR+=',CAP_CHOWN'
+    /sbin/capsh --has-p=cap_net_bind_service 2>/dev/null && CAP_STR+=',CAP_NET_BIND_SERVICE'
+    /sbin/capsh --has-p=cap_net_raw 2>/dev/null && CAP_STR+=',CAP_NET_RAW'
+    /sbin/capsh --has-p=cap_net_admin 2>/dev/null && CAP_STR+=',CAP_NET_ADMIN' || DHCP_READY='false'
+    /sbin/capsh --has-p=cap_sys_nice 2>/dev/null && CAP_STR+=',CAP_SYS_NICE'
 
     if [[ ${CAP_STR} ]]; then
         # We have the (some of) the above caps available to us - apply them to pihole-FTL
@@ -39,7 +39,7 @@ fix_capabilities() {
 
 prepare_configs() {
     # Done in /start.sh, don't do twice
-    PH_TEST=true . "${PIHOLE_INSTALL}"
+    SKIP_INSTALL=true . "${PIHOLE_INSTALL}"
     # Set Debian webserver variables for installConfigs
     LIGHTTPD_USER="www-data"
     LIGHTTPD_GROUP="www-data"
