@@ -5,7 +5,7 @@
 # (which then sources basic-install.sh)
 [ -n "${QUERY_LOGGING}" ] && export QUERY_LOGGING_OVERRIDE="${QUERY_LOGGING}"
 
-# Legacy Env Vars preserved for backwards compatability - convert them to FTLCONF_ equivalents
+# Legacy Env Vars preserved for backwards compatibility - convert them to FTLCONF_ equivalents
 [ -n "${ServerIP}" ] && echo "ServerIP is deprecated. Converting to FTLCONF_REPLY_ADDR4" && export "FTLCONF_REPLY_ADDR4"="$ServerIP"
 [ -n "${ServerIPv6}" ] && echo "ServerIPv6 is deprecated. Converting to FTLCONF_REPLY_ADDR6" && export "FTLCONF_REPLY_ADDR6"="$ServerIPv6"
 

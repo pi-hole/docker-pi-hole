@@ -65,7 +65,7 @@ ensure_basic_configuration() {
     if [ ! -f "${setupVars}" ]; then
         install -m 644 /dev/null "${setupVars}"
         echo "Creating empty ${setupVars} file."
-        # The following setting needs to exist else the web interface version wont show in pihole -v
+        # The following setting needs to exist else the web interface version won't show in pihole -v
         change_setting "INSTALL_WEB_INTERFACE" "true"
     fi
 
