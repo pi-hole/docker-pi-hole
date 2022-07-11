@@ -1,4 +1,5 @@
 #!/bin/bash -ex
+# shellcheck disable=SC2034
 
 mkdir -p /etc/pihole/
 mkdir -p /var/run/pihole
@@ -33,7 +34,6 @@ if [[ "${PIHOLE_DOCKER_TAG}" = 'nightly' ||  "${PIHOLE_DOCKER_TAG}" = 'dev' ]]; 
   rm -rf /var/lib/apt/lists/*
 fi
 
-ln -s `which echo` /usr/local/bin/whiptail
 curl -L -s "$(s6_download_url)" | tar xvzf - -C /
 mv /init /s6-init
 
@@ -62,7 +62,6 @@ if [[ "${PIHOLE_DOCKER_TAG}" = 'nightly'  ]]; then
   yes | pihole checkout dev
 fi
 
-sed -i 's/readonly //g' /opt/pihole/webpage.sh
 sed -i '/^WEBPASSWORD/d' /etc/pihole/setupVars.conf
 
 # sed a new function into the `pihole` script just above the `helpFunc()` function for later use.

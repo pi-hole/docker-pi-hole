@@ -5,28 +5,20 @@ import time
 ''' Note, testinfra builtins don't seem fully compatible with
         docker containers (esp. musl based OSs) stripped down nature '''
 
-# If the test runs /start.sh, do not let s6 run it too!  Kill entrypoint to avoid race condition/duplicated execution
-@pytest.mark.parametrize('persist_entrypoint,persist_cmd,persist_args_env', [('--entrypoint=tail','-f /dev/null','')])
-def test_serverip_missing_is_not_required_anymore(running_pihole):
-    ''' When args to docker are empty start.sh exits saying ServerIP is required '''
-    start = docker.run('/start.sh')
-    error_msg = "ERROR: To function correctly you must pass an environment variables of 'ServerIP' into the docker container"
-    assert start.rc == 1
-    assert error_msg in start.stdout
 
 # If the test runs /start.sh, do not let s6 run it too!  Kill entrypoint to avoid race condition/duplicated execution
 @pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])
-@pytest.mark.parametrize('args,error_msg,expect_rc', [ 
-    ('-e ServerIP="1.2.3.z"', "ServerIP Environment variable (1.2.3.z) doesn't appear to be a valid IPv4 address",1), 
-    ('-e ServerIP="1.2.3.4" -e ServerIPv6="1234:1234:1234:ZZZZ"', "Environment variable (1234:1234:1234:ZZZZ) doesn't appear to be a valid IPv6 address",1),
-    ('-e ServerIP="1.2.3.4" -e ServerIPv6="kernel"', "ERROR: You passed in IPv6 with a value of 'kernel'",1),
+@pytest.mark.parametrize('args,error_msg,expect_rc', [
+    ('-e FTLCONF_REPLY_ADDR4="1.2.3.z"', "FTLCONF_REPLY_ADDR4 Environment variable (1.2.3.z) doesn't appear to be a valid IPv4 address",1),
+    ('-e FTLCONF_REPLY_ADDR4="1.2.3.4" -e FTLCONF_REPLY_ADDR6="1234:1234:1234:ZZZZ"', "Environment variable (1234:1234:1234:ZZZZ) doesn't appear to be a valid IPv6 address",1),
+    ('-e FTLCONF_REPLY_ADDR4="1.2.3.4" -e FTLCONF_REPLY_ADDR6="kernel"', "ERROR: You passed in IPv6 with a value of 'kernel'",1),
 ])
-def test_serverip_invalid_ips_triggers_exit_error(docker, error_msg, expect_rc):
-    ''' When args to docker are empty start.sh exits saying ServerIP is required '''
+def test_ftlconf_reply_addr_invalid_ips_triggers_exit_error(docker, error_msg, expect_rc):
     start = docker.run('/start.sh')
     assert start.rc == expect_rc
     assert 'ERROR' in start.stdout
     assert error_msg in start.stdout
+
 
 @pytest.mark.parametrize('hostname,expected_ip', [
     ('pi.hole',                        '127.0.0.1'),
@@ -62,7 +54,7 @@ def test_admin_requests_load_as_expected(running_pihole, version, addr, url):
     validate_curl(http_rc, expected_http_code, page_contents)
     assert http_rc.rc == 0
     assert int(http_rc.stdout) == expected_http_code
-    for html_text in ['dns_queries_today', 'Content-Security-Policy', 
+    for html_text in ['dns_queries_today', 'Content-Security-Policy',
                       'scripts/pi-hole/js/footer.js']:
         # version removed, not showing up in footer of test env (fix me)
         assert html_text in page_contents
