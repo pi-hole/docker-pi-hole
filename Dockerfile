@@ -4,12 +4,12 @@ FROM "${PIHOLE_BASE:-ghcr.io/pi-hole/docker-pi-hole-base:bullseye-slim}"
 ARG PIHOLE_DOCKER_TAG
 ENV PIHOLE_DOCKER_TAG "${PIHOLE_DOCKER_TAG}"
 
-ENV S6_OVERLAY_VERSION v2.1.0.2
+ENV S6_OVERLAY_VERSION v3.1.1.2
 
-COPY install.sh /usr/local/bin/install.sh
+COPY ./scripts/install.sh /usr/local/bin/install.sh
 ENV PIHOLE_INSTALL /etc/.pihole/automated\ install/basic-install.sh
 
-ENTRYPOINT [ "/s6-init" ]
+ENTRYPOINT [ "/init" ]
 
 COPY s6/debian-root /
 COPY s6/service /usr/local/bin/service
@@ -22,8 +22,9 @@ ARG PHP_ENV_CONFIG
 ENV PHP_ENV_CONFIG /etc/lighttpd/conf-enabled/15-fastcgi-php.conf
 ARG PHP_ERROR_LOG
 ENV PHP_ERROR_LOG /var/log/lighttpd/error-pihole.log
-COPY ./start.sh /
-COPY ./bash_functions.sh /
+COPY ./scripts/start.sh /
+COPY ./scripts/bash_functions.sh /
+COPY ./scripts/gravityonboot.sh /
 
 # IPv6 disable flag for networks/devices that do not support it
 ENV IPv6 True

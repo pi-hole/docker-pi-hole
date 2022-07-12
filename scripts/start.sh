@@ -27,7 +27,6 @@ echo " ::: Starting docker specific checks & setup for docker pihole/pihole"
 
 # Initial checks
 # ===========================
-fix_capabilities
 validate_env || exit 1
 ensure_basic_configuration
 
@@ -44,9 +43,7 @@ setup_FTL_server || true
 [ -n "${DNS_FQDN_REQUIRED}" ] && change_setting "DNS_FQDN_REQUIRED" "$DNS_FQDN_REQUIRED"
 [ -n "${DNSSEC}" ] && change_setting "DNSSEC" "$DNSSEC"
 [ -n "${DNS_BOGUS_PRIV}" ] && change_setting "DNS_BOGUS_PRIV" "$DNS_BOGUS_PRIV"
-# We call the following function directly as it also allows us to run ProcessDNSSettings
-# (to commit settings to 01-pihole.conf) without sourcing webpage.sh
-pihole -a -i "$DNSMASQ_LISTENING"
+setup_FTL_ProcessDNSSettings
 
 # Web interface setup
 # ===========================
@@ -72,7 +69,7 @@ test_configs
 
 [ -f /.piholeFirstBoot ] && rm /.piholeFirstBoot
 
-echo " ::: Docker start setup complete"
+echo "::: Docker start setup complete"
 
 pihole -v
 

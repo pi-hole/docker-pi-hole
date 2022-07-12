@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bash
+#!/command/with-contenv bash
 set -e
 
 if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
@@ -14,7 +14,7 @@ modifyUser()
   [[ ${currentId} -eq ${newId} ]] && return
 
   echo "Changing ID for user: ${username} (${currentId} => ${newId})"
-  usermod -o -u ${newId} ${username}  
+  usermod -o -u ${newId} ${username}
 }
 
 modifyGroup()

@@ -9,23 +9,23 @@ WEB_LOCAL_REPO=/var/www/html/admin
 
 setupVars=/etc/pihole/setupVars.conf
 
-s6_download_url() {
+detect_arch() {
   DETECTED_ARCH=$(dpkg --print-architecture)
   S6_ARCH=$DETECTED_ARCH
   case $DETECTED_ARCH in
+  amd64)
+    S6_ARCH="x86_64";;
   armel)
     S6_ARCH="arm";;
   armhf)
-    S6_ARCH="arm";;
+    S6_ARCH="armhf";;
   arm64)
     S6_ARCH="aarch64";;
   i386)
     S6_ARCH="x86";;
-  ppc64el)
-    S6_ARCH="ppc64le";;
 esac
-  echo "https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/s6-overlay-${S6_ARCH}.tar.gz"
 }
+
 
 # Helps to have some additional tools in the dev image when debugging
 if [[ "${PIHOLE_DOCKER_TAG}" = 'nightly' ||  "${PIHOLE_DOCKER_TAG}" = 'dev' ]]; then
@@ -34,8 +34,10 @@ if [[ "${PIHOLE_DOCKER_TAG}" = 'nightly' ||  "${PIHOLE_DOCKER_TAG}" = 'dev' ]]; 
   rm -rf /var/lib/apt/lists/*
 fi
 
-curl -L -s "$(s6_download_url)" | tar xvzf - -C /
-mv /init /s6-init
+detect_arch
+
+curl -L -s "https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz" | tar Jxpf - -C /
+curl -L -s "https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/s6-overlay-${S6_ARCH}.tar.xz" | tar Jxpf - -C /
 
 # Preseed variables to assist with using --unattended install
 {

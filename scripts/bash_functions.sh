@@ -17,41 +17,6 @@ changeFTLsetting() {
     addOrEditKeyValPair "${FTLconf}" "${1}" "${2}"
 }
 
-fix_capabilities() {
-    # Testing on Docker 20.10.14 with no caps set shows the following caps available to the container:
-    # Current: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=ep
-    # FTL can also use CAP_NET_ADMIN and CAP_SYS_NICE. If we try to set them when they haven't been explicitly enabled, FTL will not start. Test for them first:
-
-    /sbin/capsh --has-p=cap_chown 2>/dev/null && CAP_STR+=',CAP_CHOWN'
-    /sbin/capsh --has-p=cap_net_bind_service 2>/dev/null && CAP_STR+=',CAP_NET_BIND_SERVICE'
-    /sbin/capsh --has-p=cap_net_raw 2>/dev/null && CAP_STR+=',CAP_NET_RAW'
-    /sbin/capsh --has-p=cap_net_admin 2>/dev/null && CAP_STR+=',CAP_NET_ADMIN' || DHCP_READY='false'
-    /sbin/capsh --has-p=cap_sys_nice 2>/dev/null && CAP_STR+=',CAP_SYS_NICE'
-
-    if [[ ${CAP_STR} ]]; then
-        # We have the (some of) the above caps available to us - apply them to pihole-FTL
-        setcap ${CAP_STR:1}+ep "$(which pihole-FTL)" || ret=$?
-
-        if [[ $DHCP_READY == false ]] && [[ $DHCP_ACTIVE == true ]]; then
-            # DHCP is requested but NET_ADMIN is not available.
-            echo "ERROR: DHCP requested but NET_ADMIN is not available. DHCP will not be started."
-            echo "      Please add cap_net_admin to the container's capabilities or disable DHCP."
-            DHCP_ACTIVE='false'
-            change_setting "DHCP_ACTIVE" "false"
-        fi
-
-        if [[ $ret -ne 0 && "${DNSMASQ_USER:-pihole}" != "root" ]]; then
-            echo "ERROR: Unable to set capabilities for pihole-FTL. Cannot run as non-root."
-            echo "       If you are seeing this error, please set the environment variable 'DNSMASQ_USER' to the value 'root'"
-            exit 1
-        fi
-    else
-        echo "WARNING: Unable to set capabilities for pihole-FTL."
-        echo "         Please ensure that the container has the required capabilities."
-        exit 1
-    fi
-}
-
 # shellcheck disable=SC2034
 ensure_basic_configuration() {
 
@@ -99,6 +64,8 @@ ensure_basic_configuration() {
     if [ ! -f /etc/dnsmasq.d/01-pihole.conf ] ; then
         cp /etc/.pihole/advanced/01-pihole.conf /etc/dnsmasq.d/
     fi;
+
+    # setup_or_skip_gravity
 }
 
 validate_env() {
@@ -301,6 +268,14 @@ setup_FTL_upstream_DNS(){
     fi
 }
 
+setup_FTL_ProcessDNSSettings(){
+    # Commit settings to 01-pihole.conf
+
+    # shellcheck source=/dev/null
+    . /opt/pihole/webpage.sh
+    ProcessDNSSettings
+}
+
 setup_lighttpd_bind() {
     local serverip="${FTLCONF_REPLY_ADDR4}"
     # if using '--net=host' only bind lighttpd on $FTLCONF_REPLY_ADDR6 and localhost
@@ -496,32 +471,3 @@ setup_admin_email() {
       pihole -a -e "$EMAIL"
   fi
 }
-
-setup_or_skip_gravity(){
-    # Gotta go fast, no time for gravity
-    if [ -n "$PYTEST" ]; then
-        sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)"
-    fi
-
-    gravityDBfile="/etc/pihole/gravity.db"
-    config_file="/etc/pihole/pihole-FTL.conf"
-    # make a point to mention which config file we're checking, as breadcrumb to revisit if/when pihole-FTL.conf is succeeded by TOML
-    echo "  Checking if custom gravity.db is set in ${config_file}"
-    if [[ -f "${config_file}" ]]; then
-        gravityDBfile="$(grep --color=never -Po "^GRAVITYDB=\K.*" "${config_file}" 2> /dev/null || echo "/etc/pihole/gravity.db")"
-    fi
-
-
-    if [ -z "$SKIPGRAVITYONBOOT" ] || [ ! -e "${gravityDBfile}" ]; then
-        if [ -n "$SKIPGRAVITYONBOOT" ];then
-            echo "  SKIPGRAVITYONBOOT is set, however ${gravityDBfile} does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate."
-            echo "  Ignoring SKIPGRAVITYONBOOT on this occaision."
-        fi
-        # shellcheck disable=SC2016
-        echo '@reboot root PATH="$PATH:/usr/sbin:/usr/local/bin/" pihole updateGravity >/var/log/pihole/pihole_updateGravity.log || cat /var/log/pihole/pihole_updateGravity.log' > /etc/cron.d/gravity-on-boot
-    else
-        echo "  Skipping Gravity Database Update."
-        [ ! -e /etc/cron.d/gravity-on-boot ] || rm /etc/cron.d/gravity-on-boot &>/dev/null
-    fi
-}
-
