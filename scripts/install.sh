@@ -22,7 +22,7 @@ detect_arch() {
   arm64)
     S6_ARCH="aarch64";;
   i386)
-    S6_ARCH="x86";;
+    S6_ARCH="i686";;
 esac
 }
 
