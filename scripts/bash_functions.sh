@@ -303,6 +303,14 @@ setup_FTL_upstream_DNS(){
     fi
 }
 
+setup_FTL_ProcessDNSSettings(){
+    # Commit settings to 01-pihole.conf
+
+    # shellcheck source=/dev/null
+    . /opt/pihole/webpage.sh
+    ProcessDNSSettings
+}
+
 setup_lighttpd_bind() {
     local serverip="${FTLCONF_REPLY_ADDR4}"
     # if using '--net=host' only bind lighttpd on $FTLCONF_REPLY_ADDR6 and localhost
