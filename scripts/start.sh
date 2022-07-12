@@ -27,7 +27,6 @@ echo " ::: Starting docker specific checks & setup for docker pihole/pihole"
 
 # Initial checks
 # ===========================
-fix_capabilities
 validate_env || exit 1
 ensure_basic_configuration
 
