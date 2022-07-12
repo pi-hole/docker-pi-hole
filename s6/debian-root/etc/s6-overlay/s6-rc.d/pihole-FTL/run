@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bash
+#!/command/with-contenv bash
 
 s6-echo "Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
 # Remove possible leftovers from previous pihole-FTL processes
@@ -37,7 +37,7 @@ if [ ! -f /var/log/pihole-FTL.log ]; then
 fi
 
 # Call capsh with the detected capabilities
-capsh --inh=${CAP_STR:1} --addamb=${CAP_STR:1} --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null 2>&1" 
+capsh --inh=${CAP_STR:1} --addamb=${CAP_STR:1} --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null 2>&1"
 
 # Notes on above:
 # - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env

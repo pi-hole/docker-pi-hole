@@ -46,7 +46,7 @@ setup_FTL_server || true
 [ -n "${DNS_BOGUS_PRIV}" ] && change_setting "DNS_BOGUS_PRIV" "$DNS_BOGUS_PRIV"
 # We call the following function directly as it also allows us to run ProcessDNSSettings
 # (to commit settings to 01-pihole.conf) without sourcing webpage.sh
-pihole -a -i "$DNSMASQ_LISTENING"
+# pihole -a -i "$DNSMASQ_LISTENING"
 
 # Web interface setup
 # ===========================
@@ -72,7 +72,7 @@ test_configs
 
 [ -f /.piholeFirstBoot ] && rm /.piholeFirstBoot
 
-echo " ::: Docker start setup complete"
+echo "::: Docker start setup complete"
 
 pihole -v
 
