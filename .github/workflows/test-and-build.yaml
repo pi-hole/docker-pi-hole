@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - dev
+      - massive-refactor
   pull_request:
   release:
     types: [published]

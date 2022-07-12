@@ -7,9 +7,7 @@ start() {
 }
 
 stop() {
-  #s6-svc -wD -d -T2500 /var/run/s6/services/$service
-  # /command/s6-svc -wD -d -T2500 /run/service/$service
-  /command/s6-rc -d change $service
+  /command/s6-svc -wD -d -T2500 /run/service/$service
 }
 
 restart() {
@@ -35,16 +33,13 @@ restart() {
 
   # Only attempt to start the service if it is not already running
   if [ -z "$pid" ]; then
-    # s6-svc -wu -u -T2500 /var/run/s6/services/$service
-    # /command/s6-svc -wu -u -T2500 /run/service/$service
-    /command/s6-rc -u change $service
+    /command/s6-svc -wu -u -T2500 /run/service/$service
   fi
 
 }
 
 status() {
   /command/s6-svstat /run/service/$service
-  #/var/run/s6/services/$service
 }
 
 service="$1"
