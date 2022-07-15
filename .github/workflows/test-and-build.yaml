@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - dev
+      - massive-refactor
   pull_request:
   release:
     types: [published]
@@ -12,16 +13,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      ARCH: amd64
-      DEBIAN_VERSION: bullseye
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
       - name: Run Tests
         run: |
-          echo "Building ${ARCH}-${DEBIAN_VERSION}"
-          ./gh-actions-test.sh
+          echo "Building image to test"
+          ./build-and-test.sh
 
   build-and-publish:
     if: github.event_name != 'pull_request'
@@ -76,7 +74,7 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ./src/
           platforms: linux/amd64, linux/arm64, linux/386, linux/arm/v7, linux/arm/v6
           build-args: |
             PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}

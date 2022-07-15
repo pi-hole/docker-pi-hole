@@ -1,4 +1,3 @@
-
 import os
 import pytest
 import subprocess
@@ -7,7 +6,6 @@ import testinfra
 local_host = testinfra.get_host('local://')
 check_output = local_host.check_output
 
-DEBIAN_VERSION = os.environ.get('DEBIAN_VERSION', 'bullseye')
 TAIL_DEV_NULL='tail -f /dev/null'
 
 @pytest.fixture()
@@ -85,21 +83,13 @@ def docker_persist(request, persist_test_args, persist_args, persist_image, pers
 def entrypoint():
     return ''
 
-@pytest.fixture(params=['amd64', 'armhf', 'arm64', 'armel', 'i386'])
-def arch(request):
-    return request.param
-
 @pytest.fixture()
 def version():
     return os.environ.get('GIT_TAG', None)
 
 @pytest.fixture()
-def debian_version():
-    return DEBIAN_VERSION
-
-@pytest.fixture()
-def tag(version, arch, debian_version):
-    return '{}-{}-{}'.format(version, arch, debian_version)
+def tag(version):
+    return '{}'.format(version)
 
 @pytest.fixture
 def webserver(tag):
@@ -116,17 +106,8 @@ def cmd():
     return TAIL_DEV_NULL
 
 @pytest.fixture(scope='module')
-def persist_arch():
-    '''amd64 only, dnsmasq/pihole-FTL(?untested?) will not start under qemu-user-static :('''
-    return 'amd64'
-
-@pytest.fixture(scope='module')
 def persist_version():
     return version
-
-@pytest.fixture(scope='module')
-def persist_debian_version():
-    return DEBIAN_VERSION
 
 @pytest.fixture(scope='module')
 def persist_args_dns():
@@ -138,7 +119,7 @@ def persist_args_volumes():
 
 @pytest.fixture(scope='module')
 def persist_args_env():
-    return '-e FTLCONF_REPLY_ADDR4="127.0.0.1"'
+    return '-e ServerIP="127.0.0.1"'
 
 @pytest.fixture(scope='module')
 def persist_args(persist_args_volumes, persist_args_env):
@@ -150,8 +131,8 @@ def persist_test_args():
     return ''
 
 @pytest.fixture(scope='module')
-def persist_tag(persist_version, persist_arch, persist_debian_version):
-    return '{}_{}_{}'.format(persist_version, persist_arch, persist_debian_version)
+def persist_tag(persist_version):
+    return '{}'.format(persist_version)
 
 @pytest.fixture(scope='module')
 def persist_webserver(persist_tag):
@@ -212,4 +193,3 @@ def running_pihole(docker_persist, slow, persist_webserver):
     slow(lambda: docker_persist.run('pgrep pihole-FTL').rc == 0)
     slow(lambda: docker_persist.run('pgrep lighttpd').rc == 0)
     return docker_persist
-
