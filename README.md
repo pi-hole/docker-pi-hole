@@ -56,7 +56,7 @@ services:
 2. Run `docker-compose up -d` to build and start pi-hole
 3. Use the Pi-hole web UI to change the DNS settings *Interface listening behavior* to "Listen on all interfaces, permit all origins", if using Docker's default `bridge` network setting
 
-[Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh).
+[Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/examples/docker_run.sh).
 
 ## Overview
 
@@ -70,7 +70,7 @@ A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86
 
 ## Running Pi-hole Docker
 
-This container uses 2 popular ports, port 53 and port 80, so **may conflict with existing applications ports**.  If you have no other services or docker containers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pi-hole/docker-pi-hole/blob/master/docker_run.sh)
+This container uses 2 popular ports, port 53 and port 80, so **may conflict with existing applications ports**.  If you have no other services or docker containers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pi-hole/docker-pi-hole/blob/master/examples/docker_run.sh)
 
 If you're using a Red Hat based distribution with an SELinux Enforcing policy add `:z` to line with volumes like so:
 
@@ -191,7 +191,7 @@ Here is a rundown of other arguments for your docker-compose / docker run.
   * Don't forget to stop your services from auto-starting again after you reboot
   * Ubuntu users see below for more detailed information
 * You can map other ports to Pi-hole port 80 using docker's port forwarding like this `-p 8080:80` if you are using the default blocking mode. If you are using the legacy IP blocking mode, you should not remap this port.
-  * [Here is an example of running with nginxproxy/nginx-proxy](https://github.com/pi-hole/docker-pi-hole/blob/master/docker-compose-nginx-proxy.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with Pi-hole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in nginxproxy/nginx-proxy and you need to set the matching `VIRTUAL_HOST` for the Pi-hole's container.  Please read nginxproxy/nginx-proxy readme for more info if you have trouble.
+  * [Here is an example of running with nginxproxy/nginx-proxy](https://github.com/pi-hole/docker-pi-hole/blob/master/examples/docker-compose-nginx-proxy.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with Pi-hole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in nginxproxy/nginx-proxy and you need to set the matching `VIRTUAL_HOST` for the Pi-hole's container.  Please read nginxproxy/nginx-proxy readme for more info if you have trouble.
 * Docker's default network mode `bridge` isolates the container from the host's network. This is a more secure setting, but requires setting the Pi-hole DNS option for *Interface listening behavior* to "Listen on all interfaces, permit all origins".
 
 ### Installing on Ubuntu
@@ -272,7 +272,7 @@ Similarly for the webserver you can customize configs in /etc/lighttpd
 
 ### Systemd init script
 
-As long as your docker system service auto starts on boot and you run your container with `--restart=unless-stopped` your container should always start on boot and restart on crashes.  If you prefer to have your docker container run as a systemd service instead, add the file [pihole.service](https://raw.githubusercontent.com/pi-hole/docker-pi-hole/master/pihole.service) to "/etc/systemd/system"; customize whatever your container name is and remove `--restart=unless-stopped` from your docker run.  Then after you have initially created the docker container using the docker run command above, you can control it with "systemctl start pihole" or "systemctl stop pihole" (instead of `docker start`/`docker stop`).  You can also enable it to auto-start on boot with "systemctl enable pihole" (as opposed to `--restart=unless-stopped` and making sure docker service auto-starts on boot).
+As long as your docker system service auto starts on boot and you run your container with `--restart=unless-stopped` your container should always start on boot and restart on crashes.  If you prefer to have your docker container run as a systemd service instead, add the file [pihole.service](https://raw.githubusercontent.com/pi-hole/docker-pi-hole/master/examples/pihole.service) to "/etc/systemd/system"; customize whatever your container name is and remove `--restart=unless-stopped` from your docker run.  Then after you have initially created the docker container using the docker run command above, you can control it with "systemctl start pihole" or "systemctl stop pihole" (instead of `docker start`/`docker stop`).  You can also enable it to auto-start on boot with "systemctl enable pihole" (as opposed to `--restart=unless-stopped` and making sure docker service auto-starts on boot).
 
 NOTE:  After initial run you may need to manually stop the docker container with "docker stop pihole" before the systemctl can start controlling the container.
 
