@@ -1,2 +1,2 @@
-#!/usr/bin/execlineb
+#!/command/execlineb
 foreground { bash -e /start.sh }
