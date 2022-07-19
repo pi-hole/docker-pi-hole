@@ -1,4 +1,13 @@
 #!/bin/bash
+
+# If user has set QUERY_LOGGING Env Var, copy it out to _OVERRIDE,
+# else it will get overridden itself when we source basic-install.sh
+[ -n "${QUERY_LOGGING}" ] && export QUERY_LOGGING_OVERRIDE="${QUERY_LOGGING}"
+
+# Legacy Env Vars preserved for backwards compatibility - convert them to FTLCONF_ equivalents
+[ -n "${ServerIP}" ] && echo "ServerIP is deprecated. Converting to FTLCONF_REPLY_ADDR4" && export "FTLCONF_REPLY_ADDR4"="$ServerIP"
+[ -n "${ServerIPv6}" ] && echo "ServerIPv6 is deprecated. Converting to FTLCONF_REPLY_ADDR6" && export "FTLCONF_REPLY_ADDR6"="$ServerIPv6"
+
 # Some of the bash_functions use utilities from Pi-hole's utils.sh
 # shellcheck disable=SC2154
 # shellcheck source=/dev/null
@@ -356,28 +365,26 @@ load_web_password_secret() {
 
 setup_web_password() {
     if [ -z "${WEBPASSWORD+x}" ] ; then
-        # ENV WEBPASSWORD is not set
+        # ENV WEBPASSWORD_OVERRIDE is not set
 
         # Exit if setupvars already has a password
         setup_var_exists "WEBPASSWORD" && return
-
         # Generate new random password
         WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
         echo "Assigning random password: $WEBPASSWORD"
     else
-        # ENV WEBPASSWORD is set an will be used
+        # ENV WEBPASSWORD_OVERRIDE is set and will be used
         echo "::: Assigning password defined by Environment Variable"
+        # WEBPASSWORD="$WEBPASSWORD"
     fi
-
-    PASS="$WEBPASSWORD"
 
     # Explicitly turn off bash printing when working with secrets
     { set +x; } 2>/dev/null
 
-    if [[ "$PASS" == "" ]] ; then
+    if [[ "$WEBPASSWORD" == "" ]] ; then
         echo "" | pihole -a -p
     else
-        pihole -a -p "$PASS" "$PASS"
+        pihole -a -p "$WEBPASSWORD" "$WEBPASSWORD"
     fi
 
     # To avoid printing this if conditional in bash debug, turn off  debug above..
