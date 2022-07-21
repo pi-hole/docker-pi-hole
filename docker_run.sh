@@ -25,7 +25,7 @@ printf 'Starting up pihole container '
 for i in $(seq 1 20); do
     if [ "$(docker inspect -f "{{.State.Health.Status}}" pihole)" == "healthy" ] ; then
         printf ' OK'
-        echo -e "\n$(docker logs pihole 2> /dev/null | grep 'password:') for your pi-hole: https://${IP}/admin/"
+        echo -e "\n$(docker logs pihole 2> /dev/null | grep 'password:') for your pi-hole: http://${IP}/admin/"
         exit 0
     else
         sleep 3
