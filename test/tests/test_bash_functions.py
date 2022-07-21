@@ -5,9 +5,9 @@ import re
 
 SETUPVARS_LOC='/etc/pihole/setupVars.conf'
 DNSMASQ_CONFIG_LOC = '/etc/dnsmasq.d/01-pihole.conf'
-EVAL_SETUP_FTL_CACHESIZE='. ./bash_functions.sh ; eval `grep setup_FTL_CacheSize /start.sh`'
-EVAL_SETUP_FTL_INTERFACE='. ./bash_functions.sh ; eval `grep setup_FTL_Interface /start.sh`'
-EVAL_SETUP_WEB_PASSWORD='. ./bash_functions.sh ; eval `grep setup_web_password /start.sh`'
+CMD_SETUP_FTL_CACHESIZE='. bash_functions.sh ; setup_FTL_CacheSize'
+CMD_SETUP_FTL_INTERFACE='. bash_functions.sh ; setup_FTL_Interface'
+CMD_SETUP_WEB_PASSWORD='. bash_functions.sh ; setup_web_password'
 
 def _cat(file):
     return 'cat {}'.format(file)
@@ -76,7 +76,7 @@ def test_overrides_default_custom_cache_size(docker, slow, test_args, cache_size
 def test_bad_input_to_custom_cache_size(docker, slow, test_args):
     CONFIG_LINE = r'cache-size\s*=\s*10000'
 
-    docker.run(EVAL_SETUP_FTL_CACHESIZE)
+    docker.run(CMD_SETUP_FTL_CACHESIZE)
     slow(lambda: re.search(CONFIG_LINE, docker.run(_cat(DNSMASQ_CONFIG_LOC)).stdout) != None)
 
 @pytest.mark.parametrize('test_args', [
@@ -85,7 +85,7 @@ def test_bad_input_to_custom_cache_size(docker, slow, test_args):
 def test_dnssec_enabled_with_custom_cache_size(docker, slow, test_args):
     CONFIG_LINE = r'cache-size\s*=\s*10000'
 
-    docker.run(EVAL_SETUP_FTL_CACHESIZE)
+    docker.run(CMD_SETUP_FTL_CACHESIZE)
     slow(lambda: re.search(CONFIG_LINE, docker.run(_cat(DNSMASQ_CONFIG_LOC)).stdout) != None)
 
 
@@ -95,7 +95,7 @@ def test_dnssec_enabled_with_custom_cache_size(docker, slow, test_args):
 ])
 def test_dns_interface_override_defaults(docker, slow, args_env, expected_stdout, expected_config_line):
     ''' When INTERFACE environment var is passed in, overwrite dnsmasq interface '''
-    function = docker.run(EVAL_SETUP_FTL_INTERFACE)
+    function = docker.run(CMD_SETUP_FTL_INTERFACE)
     assert expected_stdout in function.stdout
     slow(lambda: expected_config_line + '\n' == docker.run('grep "^PIHOLE_INTERFACE" {}'.format(SETUPVARS_LOC)).stdout)
 
@@ -125,7 +125,7 @@ def test_debian_setup_php_env(docker, expected_lines, repeat_function):
 
 def test_webpassword_random_generation(docker):
     ''' When a user sets webPassword env the admin password gets set to that '''
-    function = docker.run(EVAL_SETUP_WEB_PASSWORD)
+    function = docker.run(CMD_SETUP_WEB_PASSWORD)
     assert 'assigning random password' in function.stdout.lower()
 
 
@@ -136,7 +136,7 @@ def test_webpassword_random_generation(docker):
 ])
 def test_webpassword_env_assigns_password_to_file_or_removes_if_empty(docker, args_env, secure, setupvars_hash):
     ''' When a user sets webPassword env the admin password gets set or removed if empty '''
-    function = docker.run(EVAL_SETUP_WEB_PASSWORD)
+    function = docker.run(CMD_SETUP_WEB_PASSWORD)
 
     if secure:
         assert 'new password set' in function.stdout.lower()
@@ -150,7 +150,7 @@ def test_webpassword_env_assigns_password_to_file_or_removes_if_empty(docker, ar
 @pytest.mark.parametrize('test_args', ['-e WEBPASSWORD=login', '-e WEBPASSWORD=""'])
 def test_env_always_updates_password(docker, args_env, test_args):
     '''When a user sets the WEBPASSWORD environment variable, ensure it always sets the password'''
-    function = docker.run(EVAL_SETUP_WEB_PASSWORD)
+    function = docker.run(CMD_SETUP_WEB_PASSWORD)
 
     assert '::: Assigning password defined by Environment Variable' in function.stdout
 
@@ -159,7 +159,7 @@ def test_env_always_updates_password(docker, args_env, test_args):
 def test_setupvars_trumps_random_password_if_set(docker, args_env, test_args):
     '''If a password is already set in setupvars, and no password is set in the environment variable, do not generate a random password'''
     docker.run('. /opt/pihole/utils.sh ; addOrEditKeyValPair {} WEBPASSWORD volumepass'.format(SETUPVARS_LOC))
-    function = docker.run(EVAL_SETUP_WEB_PASSWORD)
+    function = docker.run(CMD_SETUP_WEB_PASSWORD)
 
     assert 'Pre existing WEBPASSWORD found' in function.stdout
     assert docker.run(_grep('WEBPASSWORD=volumepass', SETUPVARS_LOC)).rc == 0
