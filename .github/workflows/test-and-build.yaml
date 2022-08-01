@@ -3,9 +3,13 @@ on:
   schedule:
     - cron: '0 2 * * *'
   push:
+    paths-ignore:
+      - 'README.md'
     branches:
       - dev
   pull_request:
+    paths-ignore:
+      - 'README.md'
   release:
     types: [published]
 
