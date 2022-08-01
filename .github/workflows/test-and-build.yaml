@@ -3,18 +3,39 @@ on:
   schedule:
     - cron: '0 2 * * *'
   push:
-    paths-ignore:
-      - 'README.md'
     branches:
       - dev
   pull_request:
-    paths-ignore:
-      - 'README.md'
   release:
     types: [published]
 
 jobs:
+   # JOB to run change detection
+  changes:
+    runs-on: ubuntu-latest
+    # Set job outputs to values from filter step
+    outputs:
+      requires-build: ${{ steps.filter.outputs.requires-build }}
+    steps:
+    -
+        name: Checkout Repo
+        uses: actions/checkout@v3
+    -
+        name: Check which files have been touched
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            requires-build:
+              - 'src/**'
+              - 'test/**'
+              - '.github/workflows/test-and-build.yaml'
+              - 'build-and-test.sh'
+
   test:
+    needs: changes
+    # Only run this step if certain files have been touched, or if it is a scheduled build.
+    if: ${{ needs.changes.outputs.requires-build == 'true' || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -26,6 +47,7 @@ jobs:
 
   build-and-publish:
     if: github.event_name != 'pull_request'
+    # If only readme has been touched, for example, then the `test` job will have been skipped. This job will therefore be skipped, too.
     needs: test
     runs-on: ubuntu-latest
     steps:
