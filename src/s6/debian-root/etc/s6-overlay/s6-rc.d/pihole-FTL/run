@@ -1,0 +1,78 @@
+#!/command/with-contenv bash
+
+# Testing on Docker 20.10.14 with no caps set shows the following caps available to the container:
+# Current: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=ep
+# FTL can also use CAP_NET_ADMIN and CAP_SYS_NICE. If we try to set them when they haven't been explicitly enabled, FTL will not start. Test for them first:
+
+/sbin/capsh --has-p=cap_chown 2>/dev/null && CAP_STR+=',CAP_CHOWN'
+/sbin/capsh --has-p=cap_net_bind_service 2>/dev/null && CAP_STR+=',CAP_NET_BIND_SERVICE'
+/sbin/capsh --has-p=cap_net_raw 2>/dev/null && CAP_STR+=',CAP_NET_RAW'
+/sbin/capsh --has-p=cap_net_admin 2>/dev/null && CAP_STR+=',CAP_NET_ADMIN' || DHCP_READY='false'
+/sbin/capsh --has-p=cap_sys_nice 2>/dev/null && CAP_STR+=',CAP_SYS_NICE'
+
+if [[ ${CAP_STR} ]]; then
+    # We have the (some of) the above caps available to us - apply them to pihole-FTL
+    setcap ${CAP_STR:1}+ep "$(which pihole-FTL)" || ret=$?
+
+    if [[ $DHCP_READY == false ]] && [[ $DHCP_ACTIVE == true ]]; then
+        # DHCP is requested but NET_ADMIN is not available.
+        echo "ERROR: DHCP requested but NET_ADMIN is not available. DHCP will not be started."
+        echo "      Please add cap_net_admin to the container's capabilities or disable DHCP."
+        DHCP_ACTIVE='false'
+        change_setting "DHCP_ACTIVE" "false"
+    fi
+
+    if [[ $ret -ne 0 && "${DNSMASQ_USER:-pihole}" != "root" ]]; then
+        echo "ERROR: Unable to set capabilities for pihole-FTL. Cannot run as non-root."
+        echo "       If you are seeing this error, please set the environment variable 'DNSMASQ_USER' to the value 'root'"
+        exit 1
+    fi
+else
+    echo "WARNING: Unable to set capabilities for pihole-FTL."
+    echo "         Please ensure that the container has the required capabilities."
+    exit 1
+fi
+
+s6-echo "Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
+# Remove possible leftovers from previous pihole-FTL processes
+rm -f /dev/shm/FTL-* 2> /dev/null
+rm /run/pihole/FTL.sock 2> /dev/null
+
+# install /dev/null files to ensure they exist (create if non-existing, preserve if existing)
+mkdir -pm 0755 /run/pihole /var/log/pihole
+[[ ! -f /run/pihole-FTL.pid ]] && install /dev/null /run/pihole-FTL.pid
+[[ ! -f /run/pihole-FTL.port ]] && install /dev/null /run/pihole-FTL.port
+[[ ! -f /var/log/pihole/FTL.log ]] && install /dev/null /var/log/pihole/FTL.log
+[[ ! -f /var/log/pihole/pihole.log ]] && install /dev/null /var/log/pihole/pihole.log
+[[ ! -f /etc/pihole/dhcp.leases ]] && install /dev/null /etc/pihole/dhcp.leases
+
+# Ensure that permissions are set so that pihole-FTL can edit all necessary files
+chown pihole:pihole /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole/FTL.log /var/log/pihole/pihole.log /etc/pihole/dhcp.leases /run/pihole /etc/pihole
+chmod 0644 /run/pihole-FTL.pid /run/pihole-FTL.port /var/log/pihole/FTL.log /var/log/pihole/pihole.log /etc/pihole/dhcp.leases
+
+# Ensure that permissions are set so that pihole-FTL can edit the files. We ignore errors as the file may not (yet) exist
+chmod -f 0644 /etc/pihole/macvendor.db
+# Chown database files to the user FTL runs as. We ignore errors as the files may not (yet) exist
+chown -f pihole:pihole /etc/pihole/pihole-FTL.db /etc/pihole/gravity.db /etc/pihole/macvendor.db
+# Chown database file permissions so that the pihole group (web interface) can edit the file. We ignore errors as the files may not (yet) exist
+chmod -f 0664 /etc/pihole/pihole-FTL.db
+
+# Backward compatibility for user-scripts that still expect log files in /var/log instead of /var/log/pihole/
+# Should be removed with Pi-hole v6.0
+if [ ! -f /var/log/pihole.log ]; then
+    ln -s /var/log/pihole/pihole.log /var/log/pihole.log
+    chown -h pihole:pihole /var/log/pihole.log
+
+fi
+if [ ! -f /var/log/pihole-FTL.log ]; then
+    ln -s /var/log/pihole/FTL.log /var/log/pihole-FTL.log
+    chown -h pihole:pihole /var/log/pihole-FTL.log
+fi
+
+# Call capsh with the detected capabilities
+capsh --inh=${CAP_STR:1} --addamb=${CAP_STR:1} --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null 2>&1"
+
+# Notes on above:
+# - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env
+# - /var/log/pihole/pihole*.log has FTL's output that no-daemon would normally print in FG too
+#   prevent duplicating it in docker logs by sending to dev null

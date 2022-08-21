@@ -1,0 +1,4 @@
+#!/command/with-contenv bash
+
+s6-echo "Stopping cron"
+killall -9 cron

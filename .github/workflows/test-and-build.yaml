@@ -10,21 +10,44 @@ on:
     types: [published]
 
 jobs:
-  test:
+   # JOB to run change detection
+  changes:
     runs-on: ubuntu-latest
-    env:
-      ARCH: amd64
-      DEBIAN_VERSION: bullseye
+    # Set job outputs to values from filter step
+    outputs:
+      requires-build: ${{ steps.filter.outputs.requires-build }}
+    steps:
+    -
+        name: Checkout Repo
+        uses: actions/checkout@v3
+    -
+        name: Check which files have been touched
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            requires-build:
+              - 'src/**'
+              - 'test/**'
+              - '.github/workflows/test-and-build.yaml'
+              - 'build-and-test.sh'
+
+  test:
+    needs: changes
+    # Only run this step if certain files have been touched, or if it is a scheduled build.
+    if: ${{ needs.changes.outputs.requires-build == 'true' || github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
       - name: Run Tests
         run: |
-          echo "Building ${ARCH}-${DEBIAN_VERSION}"
-          ./gh-actions-test.sh
+          echo "Building image to test"
+          ./build-and-test.sh
 
   build-and-publish:
     if: github.event_name != 'pull_request'
+    # If only readme has been touched, for example, then the `test` job will have been skipped. This job will therefore be skipped, too.
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -77,7 +100,7 @@ jobs:
         if: github.event_name != 'schedule'
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ./src/
           platforms: linux/amd64, linux/arm64, linux/386, linux/arm/v7, linux/arm/v6
           build-args: |
             PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}

@@ -1,5 +1,0 @@
-#!/usr/bin/with-contenv bash
-
-s6-echo "Starting lighttpd-access-log"
-
-s6-setuidgid www-data cat /var/log/lighttpd/access-pihole.log 2>&1
