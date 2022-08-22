@@ -32,7 +32,7 @@ def args_volumes():
 
 @pytest.fixture()
 def args_env():
-    return '-e FTLCONF_REPLY_ADDR4="127.0.0.1"'
+    return '-e FTLCONF_LOCAL_IPV4="127.0.0.1"'
 
 @pytest.fixture()
 def args(args_volumes, args_env):

@@ -5,8 +5,12 @@
 [ -n "${QUERY_LOGGING}" ] && export QUERY_LOGGING_OVERRIDE="${QUERY_LOGGING}"
 
 # Legacy Env Vars preserved for backwards compatibility - convert them to FTLCONF_ equivalents
-[ -n "${ServerIP}" ] && echo "ServerIP is deprecated. Converting to FTLCONF_REPLY_ADDR4" && export "FTLCONF_REPLY_ADDR4"="$ServerIP"
-[ -n "${ServerIPv6}" ] && echo "ServerIPv6 is deprecated. Converting to FTLCONF_REPLY_ADDR6" && export "FTLCONF_REPLY_ADDR6"="$ServerIPv6"
+[ -n "${ServerIP}" ] && echo "ServerIP is deprecated. Converting to FTLCONF_LOCAL_IPV4" && export "FTLCONF_LOCAL_IPV4"="$ServerIP"
+[ -n "${ServerIPv6}" ] && echo "ServerIPv6 is deprecated. Converting to FTLCONF_LOCAL_IPV6" && export "FTLCONF_LOCAL_IPV6"="$ServerIPv6"
+
+# Previously used FTLCONF_ equivalent has since been deprecated, also convert this one
+[ -n "${FTLCONF_REPLY_ADDR4}" ] && echo "FTLCONF_REPLY_ADDR4 is deprecated. Converting to FTLCONF_LOCAL_IPV4" && export "FTLCONF_LOCAL_IPV4"="$FTLCONF_REPLY_ADDR4"
+[ -n "${FTLCONF_REPLY_ADDR6}" ] && echo "FTLCONF_REPLY_ADDR6 is deprecated. Converting to FTLCONF_LOCAL_IPV6" && export "FTLCONF_LOCAL_IPV6"="$FTLCONF_REPLY_ADDR6"
 
 # Some of the bash_functions use utilities from Pi-hole's utils.sh
 # shellcheck disable=SC2154
@@ -78,24 +82,24 @@ ensure_basic_configuration() {
 }
 
 validate_env() {
-    # Optional FTLCONF_REPLY_ADDR4 is a valid IP
+    # Optional FTLCONF_LOCAL_IPV4 is a valid IP
     # nc won't throw any text based errors when it times out connecting to a valid IP, otherwise it complains about the DNS name being garbage
     # if nc doesn't behave as we expect on a valid IP the routing table should be able to look it up and return a 0 retcode
-    if [[ "$(nc -4 -w1 -z "$FTLCONF_REPLY_ADDR4" 53 2>&1)" != "" ]] && ! ip route get "$FTLCONF_REPLY_ADDR4" > /dev/null ; then
-        echo "ERROR: FTLCONF_REPLY_ADDR4 Environment variable ($FTLCONF_REPLY_ADDR4) doesn't appear to be a valid IPv4 address"
+    if [[ "$(nc -4 -w1 -z "$FTLCONF_LOCAL_IPV4" 53 2>&1)" != "" ]] && ! ip route get "$FTLCONF_LOCAL_IPV4" > /dev/null ; then
+        echo "ERROR: FTLCONF_LOCAL_IPV4 Environment variable ($FTLCONF_LOCAL_IPV4) doesn't appear to be a valid IPv4 address"
         exit 1
     fi
 
     # Optional IPv6 is a valid address
-    if [[ -n "$FTLCONF_REPLY_ADDR6" ]] ; then
-        if [[ "$FTLCONF_REPLY_ADDR6" == 'kernel' ]] ; then
+    if [[ -n "$FTLCONF_LOCAL_IPV6" ]] ; then
+        if [[ "$FTLCONF_LOCAL_IPV6" == 'kernel' ]] ; then
             echo "ERROR: You passed in IPv6 with a value of 'kernel', this maybe because you do not have IPv6 enabled on your network"
-            unset FTLCONF_REPLY_ADDR6
+            unset FTLCONF_LOCAL_IPV6
             exit 1
         fi
-        if [[ "$(nc -6 -w1 -z "$FTLCONF_REPLY_ADDR6" 53 2>&1)" != "" ]] && ! ip route get "$FTLCONF_REPLY_ADDR6" > /dev/null ; then
-            echo "ERROR: FTLCONF_REPLY_ADDR6 Environment variable ($FTLCONF_REPLY_ADDR6) doesn't appear to be a valid IPv6 address"
-            echo "  TIP: If your server is not IPv6 enabled just remove '-e FTLCONF_REPLY_ADDR6' from your docker container"
+        if [[ "$(nc -6 -w1 -z "$FTLCONF_LOCAL_IPV6" 53 2>&1)" != "" ]] && ! ip route get "$FTLCONF_LOCAL_IPV6" > /dev/null ; then
+            echo "ERROR: FTLCONF_LOCAL_IPV6 Environment variable ($FTLCONF_LOCAL_IPV6) doesn't appear to be a valid IPv6 address"
+            echo "  TIP: If your server is not IPv6 enabled just remove '-e FTLCONF_LOCAL_IPV6' from your docker container"
             exit 1
         fi
     fi;
@@ -286,8 +290,8 @@ setup_FTL_ProcessDNSSettings(){
 }
 
 setup_lighttpd_bind() {
-    local serverip="${FTLCONF_REPLY_ADDR4}"
-    # if using '--net=host' only bind lighttpd on $FTLCONF_REPLY_ADDR6 and localhost
+    local serverip="${FTLCONF_LOCAL_IPV4}"
+    # if using '--net=host' only bind lighttpd on $FTLCONF_LOCAL_IPV4 and localhost
     if grep -q "docker" /proc/net/dev && [[ $serverip != 0.0.0.0 ]]; then #docker (docker0 by default) should only be present on the host system
         if ! grep -q "server.bind" /etc/lighttpd/lighttpd.conf ; then # if the declaration is already there, don't add it again
             sed -i -E "s/server\.port\s+\=\s+([0-9]+)/server.bind\t\t = \"${serverip}\"\nserver.port\t\t = \1\n"\$SERVER"\[\"socket\"\] == \"127\.0\.0\.1:\1\" \{\}/" /etc/lighttpd/lighttpd.conf
@@ -297,7 +301,7 @@ setup_lighttpd_bind() {
 
 setup_web_php_env() {
     if [ -z "$VIRTUAL_HOST" ] ; then
-      VIRTUAL_HOST="$FTLCONF_REPLY_ADDR4"
+      VIRTUAL_HOST="$FTLCONF_LOCAL_IPV4"
     fi;
 
     for config_var in "VIRTUAL_HOST" "CORS_HOSTS" "PHP_ERROR_LOG" "PIHOLE_DOCKER_TAG" "TZ"; do
@@ -331,7 +335,7 @@ setup_web_port() {
         return
     fi
     echo "Custom WEB_PORT set to $web_port"
-    echo "INFO: Without proper router DNAT forwarding to $FTLCONF_REPLY_ADDR4:$web_port, you may not get any blocked websites on ads"
+    echo "INFO: Without proper router DNAT forwarding to $FTLCONF_LOCAL_IPV4:$web_port, you may not get any blocked websites on ads"
 
     # Update lighttpd's port
     sed -i '/server.port\s*=\s*80\s*$/ s/80/'"${WEB_PORT}"'/g' /etc/lighttpd/lighttpd.conf
