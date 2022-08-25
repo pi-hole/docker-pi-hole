@@ -39,6 +39,12 @@ detect_arch
 curl -L -s "https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz" | tar Jxpf - -C /
 curl -L -s "https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/s6-overlay-${S6_ARCH}.tar.xz" | tar Jxpf - -C /
 
+# IMPORTANT: #########################################################################
+# Move /init somewhere else to prevent issues with podman/RHEL                       #
+# See: https://github.com/pi-hole/docker-pi-hole/issues/1176#issuecomment-1227587045 #
+mv /init /s6-init                                                                    #
+######################################################################################
+
 # Preseed variables to assist with using --unattended install
 {
   echo "PIHOLE_INTERFACE=eth0"
