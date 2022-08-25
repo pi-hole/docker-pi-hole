@@ -9,7 +9,7 @@ ENV S6_OVERLAY_VERSION v3.1.1.2
 COPY ./scripts/install.sh /usr/local/bin/install.sh
 ENV PIHOLE_INSTALL /etc/.pihole/automated\ install/basic-install.sh
 
-ENTRYPOINT [ "/init" ]
+ENTRYPOINT [ "/s6-init" ]
 
 COPY s6/debian-root /
 COPY s6/service /usr/local/bin/service
