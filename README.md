@@ -222,6 +222,9 @@ Note that it is also possible to disable `systemd-resolved` entirely. However, t
 
 Users of older Ubuntu releases (circa 17.04) will need to disable dnsmasq.
 
+## Installing on Dokku
+@Rikj000 has produced a guide to assist users [installing Pi-hole on Dokku](https://github.com/Rikj000/Pihole-Dokku-Installation)
+
 ## Docker tags and versioning
 
 The primary docker tags are explained in the following table.  [Click here to see the full list of tags](https://store.docker.com/community/images/pihole/pihole/tags). See [GitHub Release notes](https://github.com/pi-hole/docker-pi-hole/releases) to see the specific version of Pi-hole Core, Web, and FTL included in the release.
