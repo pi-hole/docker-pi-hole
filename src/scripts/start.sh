@@ -1,5 +1,9 @@
 #!/bin/bash -e
 
+if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
+    set -x ;
+fi
+
 # The below functions are all contained in bash_functions.sh
 # shellcheck source=/dev/null
 . /bash_functions.sh
