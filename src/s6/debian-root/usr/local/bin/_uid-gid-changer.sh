@@ -1,4 +1,4 @@
-#!/command/with-contenv bash
+#!/bin/bash
 set -e
 
 if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
