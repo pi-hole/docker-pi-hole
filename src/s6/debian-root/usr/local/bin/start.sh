@@ -6,7 +6,7 @@ fi
 
 # The below functions are all contained in bash_functions.sh
 # shellcheck source=/dev/null
-. /bash_functions.sh
+. /usr/local/bin/bash_functions.sh
 
 # shellcheck source=/dev/null
 SKIP_INSTALL=true . "${PIHOLE_INSTALL}"
