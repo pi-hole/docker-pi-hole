@@ -44,7 +44,11 @@ fix_capabilities() {
     if [[ ${CAP_STR} ]]; then
         # We have the (some of) the above caps available to us - apply them to pihole-FTL
         echo "  [i] Applying the following caps to pihole-FTL:"
-        echo "      ${CAP_STR:1}"
+        IFS=',' read -ra CAPS <<< "${CAP_STR:1}"
+        for i in "${CAPS[@]}"; do
+            echo "        * ${i}"
+        done
+
         setcap ${CAP_STR:1}+ep "$(which pihole-FTL)" || ret=$?
 
         if [[ $DHCP_READY == false ]] && [[ $DHCP_ACTIVE == true ]]; then
