@@ -171,6 +171,12 @@ setup_FTL_Interface(){
     change_setting "PIHOLE_INTERFACE" "${interface}"
 }
 
+setup_FTL_ListeningBehaviour(){
+    if [ -n "$DNSMASQ_LISTENING" ]; then
+      change_setting "DNSMASQ_LISTENING" "${DNSMASQ_LISTENING}"
+    fi;
+}
+
 setup_FTL_CacheSize() {
     local warning="  [i] WARNING: CUSTOM_CACHE_SIZE not used"
     local dnsmasq_pihole_01_location="/etc/dnsmasq.d/01-pihole.conf"

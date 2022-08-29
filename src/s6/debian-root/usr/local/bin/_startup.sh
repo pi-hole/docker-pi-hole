@@ -53,6 +53,7 @@ setup_FTL_upstream_DNS
 apply_FTL_Configs_From_Env
 setup_FTL_User
 setup_FTL_Interface
+setup_FTL_ListeningBehaviour
 setup_FTL_CacheSize
 setup_FTL_query_logging
 setup_FTL_server || true
