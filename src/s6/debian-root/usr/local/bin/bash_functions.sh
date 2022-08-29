@@ -34,7 +34,7 @@ fix_capabilities() {
     # Testing on Docker 20.10.14 with no caps set shows the following caps available to the container:
     # Current: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=ep
     # FTL can also use CAP_NET_ADMIN and CAP_SYS_NICE. If we try to set them when they haven't been explicitly enabled, FTL will not start. Test for them first:
-
+    echo "  [i] Setting capabilites on pihole-FTL where possible"
     /sbin/capsh --has-p=cap_chown 2>/dev/null && CAP_STR+=',CAP_CHOWN'
     /sbin/capsh --has-p=cap_net_bind_service 2>/dev/null && CAP_STR+=',CAP_NET_BIND_SERVICE'
     /sbin/capsh --has-p=cap_net_raw 2>/dev/null && CAP_STR+=',CAP_NET_RAW'
@@ -43,6 +43,8 @@ fix_capabilities() {
 
     if [[ ${CAP_STR} ]]; then
         # We have the (some of) the above caps available to us - apply them to pihole-FTL
+        echo "  [i] Applying the following caps to pihole-FTL:"
+        echo "      ${CAP_STR:1}"
         setcap ${CAP_STR:1}+ep "$(which pihole-FTL)" || ret=$?
 
         if [[ $DHCP_READY == false ]] && [[ $DHCP_ACTIVE == true ]]; then
@@ -54,13 +56,13 @@ fix_capabilities() {
         fi
 
         if [[ $ret -ne 0 && "${DNSMASQ_USER:-pihole}" != "root" ]]; then
-            echo "ERROR: Unable to set capabilities for pihole-FTL. Cannot run as non-root."
-            echo "       If you are seeing this error, please set the environment variable 'DNSMASQ_USER' to the value 'root'"
+            echo "  [!] ERROR: Unable to set capabilities for pihole-FTL. Cannot run as non-root."
+            echo "            If you are seeing this error, please set the environment variable 'DNSMASQ_USER' to the value 'root'"
             exit 1
         fi
     else
-        echo "WARNING: Unable to set capabilities for pihole-FTL."
-        echo "         Please ensure that the container has the required capabilities."
+        echo "  [!] WARNING: Unable to set capabilities for pihole-FTL."
+        echo "              Please ensure that the container has the required capabilities."
         exit 1
     fi
 }
@@ -68,7 +70,7 @@ fix_capabilities() {
 
 # shellcheck disable=SC2034
 ensure_basic_configuration() {
-
+    echo "  [i] Ensuring basic configuration by re-running select functions from basic-install.sh"
     # Set Debian webserver variables for installConfigs
     LIGHTTPD_USER="www-data"
     LIGHTTPD_GROUP="www-data"
@@ -78,7 +80,7 @@ ensure_basic_configuration() {
 
     if [ ! -f "${setupVars}" ]; then
         install -m 644 /dev/null "${setupVars}"
-        echo "Creating empty ${setupVars} file."
+        echo "  [i] Creating empty ${setupVars} file."
         # The following setting needs to exist else the web interface version won't show in pihole -v
         change_setting "INSTALL_WEB_INTERFACE" "true"
     fi
@@ -129,13 +131,13 @@ validate_env() {
     # Optional IPv6 is a valid address
     if [[ -n "$FTLCONF_LOCAL_IPV6" ]] ; then
         if [[ "$FTLCONF_LOCAL_IPV6" == 'kernel' ]] ; then
-            echo "ERROR: You passed in IPv6 with a value of 'kernel', this maybe because you do not have IPv6 enabled on your network"
+            echo "  [!] ERROR: You passed in IPv6 with a value of 'kernel', this maybe because you do not have IPv6 enabled on your network"
             unset FTLCONF_LOCAL_IPV6
             exit 1
         fi
         if [[ "$(nc -6 -w1 -z "$FTLCONF_LOCAL_IPV6" 53 2>&1)" != "" ]] && ! ip route get "$FTLCONF_LOCAL_IPV6" > /dev/null ; then
-            echo "ERROR: FTLCONF_LOCAL_IPV6 Environment variable ($FTLCONF_LOCAL_IPV6) doesn't appear to be a valid IPv6 address"
-            echo "  TIP: If your server is not IPv6 enabled just remove '-e FTLCONF_LOCAL_IPV6' from your docker container"
+            echo "  [!] ERROR: FTLCONF_LOCAL_IPV6 Environment variable ($FTLCONF_LOCAL_IPV6) doesn't appear to be a valid IPv6 address"
+            echo "        TIP: If your server is not IPv6 enabled just remove '-e FTLCONF_LOCAL_IPV6' from your docker container"
             exit 1
         fi
     fi;
@@ -161,12 +163,12 @@ setup_FTL_Interface(){
     if [ "$interface" != 'eth0' ] ; then
       interfaceType='custom'
     fi;
-    echo "FTL binding to $interfaceType interface: $interface"
+    echo "  [i] FTL binding to $interfaceType interface: $interface"
     change_setting "PIHOLE_INTERFACE" "${interface}"
 }
 
 setup_FTL_CacheSize() {
-    local warning="WARNING: CUSTOM_CACHE_SIZE not used"
+    local warning="  [i] WARNING: CUSTOM_CACHE_SIZE not used"
     local dnsmasq_pihole_01_location="/etc/dnsmasq.d/01-pihole.conf"
     # Quietly exit early for empty or default
     if [[ -z "${CUSTOM_CACHE_SIZE}" || "${CUSTOM_CACHE_SIZE}" == '10000' ]] ; then return ; fi
@@ -186,7 +188,7 @@ setup_FTL_CacheSize() {
         echo "$warning - $custom_cache_size is not a positive integer or zero"
         return
     fi
-    echo "Custom CUSTOM_CACHE_SIZE set to $custom_cache_size"
+    echo "  [i] Custom CUSTOM_CACHE_SIZE set to $custom_cache_size"
 
     change_setting "CACHE_SIZE" "$custom_cache_size"
     sed -i "s/^cache-size=\s*[0-9]*/cache-size=$custom_cache_size/" ${dnsmasq_pihole_01_location}
@@ -198,14 +200,14 @@ apply_FTL_Configs_From_Env(){
     # setting defined here: https://docs.pi-hole.net/ftldns/configfile/
     declare -px | grep FTLCONF_ | sed -E 's/declare -x FTLCONF_([^=]+)=\"(.+)\"/\1 \2/' | while read -r name value
     do
-        echo "Applying pihole-FTL.conf setting $name=$value"
+        echo "  [i] Applying pihole-FTL.conf setting $name=$value"
         changeFTLsetting "$name" "$value"
     done
 }
 
 setup_FTL_dhcp() {
   if [ -z "${DHCP_START}" ] || [ -z "${DHCP_END}" ] || [ -z "${DHCP_ROUTER}" ]; then
-    echo "ERROR: Won't enable DHCP server because mandatory Environment variables are missing: DHCP_START, DHCP_END and/or DHCP_ROUTER"
+    echo "  [!] ERROR: Won't enable DHCP server because mandatory Environment variables are missing: DHCP_START, DHCP_END and/or DHCP_ROUTER"
     change_setting "DHCP_ACTIVE" "false"
   else
     change_setting "DHCP_ACTIVE" "${DHCP_ACTIVE}"
@@ -221,14 +223,14 @@ setup_FTL_dhcp() {
 
 setup_FTL_query_logging(){
     if [ "${QUERY_LOGGING_OVERRIDE}" == "false" ]; then
-        echo "::: Disabling Query Logging"
+        echo "  [i] Disabling Query Logging"
         change_setting "QUERY_LOGGING" "$QUERY_LOGGING_OVERRIDE"
         removeKey "${dnsmasqconfig}" log-queries
     else
         # If it is anything other than false, set it to true
         change_setting "QUERY_LOGGING" "true"
         # Set pihole logging on for good measure
-        echo "::: Enabling Query Logging"
+        echo "  [i] Enabling Query Logging"
         addKey "${dnsmasqconfig}" log-queries
     fi
 
@@ -255,13 +257,13 @@ setup_FTL_upstream_DNS(){
         # For backward compatibility, if DNS1 and/or DNS2 are set, but PIHOLE_DNS_ is not, convert them to
         # a semi-colon delimited string and store in PIHOLE_DNS_
         # They are not used anywhere if PIHOLE_DNS_ is set already
-        [ -n "${DNS1}" ] && echo "Converting DNS1 to PIHOLE_DNS_" && PIHOLE_DNS_="$DNS1"
-        [[ -n "${DNS2}" && "${DNS2}" != "no" ]] && echo "Converting DNS2 to PIHOLE_DNS_" && PIHOLE_DNS_="$PIHOLE_DNS_;$DNS2"
+        [ -n "${DNS1}" ] && echo "  [i] Converting DNS1 to PIHOLE_DNS_" && PIHOLE_DNS_="$DNS1"
+        [[ -n "${DNS2}" && "${DNS2}" != "no" ]] && echo "  [i] Converting DNS2 to PIHOLE_DNS_" && PIHOLE_DNS_="$PIHOLE_DNS_;$DNS2"
     fi
 
     # Parse the PIHOLE_DNS variable, if it exists, and apply upstream servers to Pi-hole config
     if [ -n "${PIHOLE_DNS_}" ]; then
-        echo "Setting DNS servers based on PIHOLE_DNS_ variable"
+        echo "  [i] Setting DNS servers based on PIHOLE_DNS_ variable"
         # Remove any PIHOLE_DNS_ entries from setupVars.conf, if they exist
         sed -i '/PIHOLE_DNS_/d' /etc/pihole/setupVars.conf
         # Split into an array (delimited by ;)
@@ -295,12 +297,12 @@ setup_FTL_upstream_DNS(){
                 fi
               fi
               # If the above tests fail then this is an invalid DNS server
-              echo "Invalid entry detected in PIHOLE_DNS_: ${i}"
+              echo "  [!] Invalid entry detected in PIHOLE_DNS_: ${i}"
             fi
         done
 
         if [ $valid_entries -eq 0 ]; then
-            echo "No Valid entries detected in PIHOLE_DNS_. Aborting"
+            echo "  [!] No Valid entries detected in PIHOLE_DNS_. Aborting"
             exit 1
         fi
     else
@@ -310,11 +312,11 @@ setup_FTL_upstream_DNS(){
         setupVarsDNS="$(grep 'PIHOLE_DNS_' /etc/pihole/setupVars.conf || true)"
 
         if [ -z "${setupVarsDNS}" ]; then
-            echo "Configuring default DNS servers: 8.8.8.8, 8.8.4.4"
+            echo "  [i] Configuring default DNS servers: 8.8.8.8, 8.8.4.4"
             change_setting "PIHOLE_DNS_1" "8.8.8.8"
             change_setting "PIHOLE_DNS_2" "8.8.4.4"
         else
-            echo "Existing DNS servers detected in setupVars.conf. Leaving them alone"
+            echo "  [i] Existing DNS servers detected in setupVars.conf. Leaving them alone"
         fi
     fi
 }
@@ -353,12 +355,12 @@ setup_web_php_env() {
       fi
     done
 
-    echo "Added ENV to php:"
+    echo "  [i] Added ENV to php:"
     grep -E '(VIRTUAL_HOST|CORS_HOSTS|PHP_ERROR_LOG|PIHOLE_DOCKER_TAG|TZ)' "$PHP_ENV_CONFIG"
 }
 
 setup_web_port() {
-    local warning="WARNING: Custom WEB_PORT not used"
+    local warning="  [!] WARNING: Custom WEB_PORT not used"
     # Quietly exit early for empty or default
     if [[ -z "${WEB_PORT}" || "${WEB_PORT}" == '80' ]] ; then return ; fi
 
@@ -372,8 +374,8 @@ setup_web_port() {
         echo "$warning - $web_port is not within valid port range of 1-65535"
         return
     fi
-    echo "Custom WEB_PORT set to $web_port"
-    echo "INFO: Without proper router DNAT forwarding to $FTLCONF_LOCAL_IPV4:$web_port, you may not get any blocked websites on ads"
+    echo "  [i] Custom WEB_PORT set to $web_port"
+    echo "  [i] Without proper router DNAT forwarding to $FTLCONF_LOCAL_IPV4:$web_port, you may not get any blocked websites on ads"
 
     # Update lighttpd's port
     sed -i '/server.port\s*=\s*80\s*$/ s/80/'"${WEB_PORT}"'/g' /etc/lighttpd/lighttpd.conf
@@ -386,11 +388,11 @@ setup_web_theme(){
     if [ -n "${WEBTHEME}" ]; then
         case "${WEBTHEME}" in
         "default-dark" | "default-darker" | "default-light" | "default-auto" | "lcars")
-            echo "Setting Web Theme based on WEBTHEME variable, using value ${WEBTHEME}"
+            echo "  [i] Setting Web Theme based on WEBTHEME variable, using value ${WEBTHEME}"
             change_setting "WEBTHEME" "${WEBTHEME}"
             ;;
         *)
-            echo "Invalid theme name supplied: ${WEBTHEME}, falling back to default-light."
+            echo "  [!] Invalid theme name supplied: ${WEBTHEME}, falling back to default-light."
             change_setting "WEBTHEME" "default-light"
             ;;
         esac
@@ -413,10 +415,10 @@ setup_web_password() {
         setup_var_exists "WEBPASSWORD" && return
         # Generate new random password
         WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
-        echo "Assigning random password: $WEBPASSWORD"
+        echo "  [i] Assigning random password: $WEBPASSWORD"
     else
         # ENV WEBPASSWORD_OVERRIDE is set and will be used
-        echo "::: Assigning password defined by Environment Variable"
+        echo "  [i] Assigning password defined by Environment Variable"
         # WEBPASSWORD="$WEBPASSWORD"
     fi
 
@@ -442,15 +444,15 @@ setup_ipv4_ipv6() {
         ip_versions="IPv4"
         sed -i '/use-ipv6.pl/ d' /etc/lighttpd/lighttpd.conf
     fi;
-    echo "Using $ip_versions"
+    echo "  [i] Using $ip_versions"
 }
 
 test_configs() {
     set -e
-    echo -n '::: Testing lighttpd config: '
+    echo -n '  [i] Testing lighttpd config: '
     lighttpd -t -f /etc/lighttpd/lighttpd.conf || exit 1
     set +e
-    echo "::: All config checks passed, cleared for startup ..."
+    echo "  [i] All config checks passed, cleared for startup ..."
 }
 
 setup_blocklists() {
@@ -459,22 +461,21 @@ setup_blocklists() {
     exit_string="(exiting ${FUNCNAME[0]} early)"
 
     if [ -n "${skip_setup_blocklists}" ]; then
-        echo "::: skip_setup_blocklists requested ($exit_string)"
+        echo "  [i] skip_setup_blocklists requested $exit_string"
         return
     fi
 
     # 2. The adlist file exists already (restarted container or volume mounted list)
     if [ -f "${adlistFile}" ]; then
-        echo "::: Preexisting ad list ${adlistFile} detected ($exit_string)"
-        cat "${adlistFile}"
+        echo "  [i] Preexisting ad list ${adlistFile} detected $exit_string"
         return
     fi
 
-    echo "::: ${FUNCNAME[0]} now setting default blocklists up: "
-    echo "::: TIP: Use a docker volume for ${adlistFile} if you want to customize for first boot"
+    echo "  [i] ${FUNCNAME[0]} now setting default blocklists up: "
+    echo "  [i] TIP: Use a docker volume for ${adlistFile} if you want to customize for first boot"
     installDefaultBlocklists
 
-    echo "::: Blocklists (${adlistFile}) now set to:"
+    echo "  [i] Blocklists (${adlistFile}) now set to:"
     cat "${adlistFile}"
 }
 
@@ -484,7 +485,7 @@ setup_var_exists() {
         local REQUIRED_VALUE="[^\n]+"
     fi
     if grep -Pq "^${KEY}=${REQUIRED_VALUE}" "$setupVars"; then
-        echo "::: Pre existing ${KEY} found"
+        echo "  [i] Pre existing ${KEY} found"
         true
     else
         false

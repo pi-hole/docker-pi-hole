@@ -11,11 +11,11 @@ fi
 # shellcheck source=/dev/null
 SKIP_INSTALL=true . "${PIHOLE_INSTALL}"
 
-echo " ::: Starting docker specific checks & setup for docker pihole/pihole"
+echo "  [i] Starting docker specific checks & setup for docker pihole/pihole"
 
 # TODO:
 #if [ ! -f /.piholeFirstBoot ] ; then
-#    echo " ::: Not first container startup so not running docker's setup, re-create container to run setup again"
+#    echo "   [i] Not first container startup so not running docker's setup, re-create container to run setup again"
 #else
 #    regular_setup_functions
 #fi
@@ -66,8 +66,12 @@ test_configs
 
 [ -f /.piholeFirstBoot ] && rm /.piholeFirstBoot
 
-echo "::: Docker start setup complete"
+echo "  [i] Docker start setup complete"
+echo ""
 
 pihole -v
 
 echo "  Container tag is: ${PIHOLE_DOCKER_TAG}"
+echo ""
+echo "  [i] pihole-FTL ($FTL_CMD) will be started as ${DNSMASQ_USER}"
+echo ""

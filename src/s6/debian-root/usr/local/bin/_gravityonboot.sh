@@ -1,4 +1,9 @@
 #!/bin/bash
+
+if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
+    set -x ;
+fi
+
 gravityDBfile="/etc/pihole/gravity.db"
 config_file="/etc/pihole/pihole-FTL.conf"
 # make a point to mention which config file we're checking, as breadcrumb to revisit if/when pihole-FTL.conf is succeeded by TOML
