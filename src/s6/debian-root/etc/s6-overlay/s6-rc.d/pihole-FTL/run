@@ -1,6 +1,9 @@
 #!/command/with-contenv bash
 
-s6-echo "Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
+if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
+    set -x ;
+fi
+
 # Remove possible leftovers from previous pihole-FTL processes
 rm -f /dev/shm/FTL-* 2> /dev/null
 rm /run/pihole/FTL.sock 2> /dev/null

@@ -1,4 +1,4 @@
-#!/command/with-contenv bash
+#!/bin/bash
 set -e
 
 if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
@@ -13,7 +13,7 @@ modifyUser()
   local currentId=$(id -u ${username})
   [[ ${currentId} -eq ${newId} ]] && return
 
-  echo "Changing ID for user: ${username} (${currentId} => ${newId})"
+  echo "  [i] Changing ID for user: ${username} (${currentId} => ${newId})"
   usermod -o -u ${newId} ${username}
 }
 
@@ -25,7 +25,7 @@ modifyGroup()
   local currentId=$(id -g ${groupname})
   [[ ${currentId} -eq ${newId} ]] && return
 
-  echo "Changing ID for group: ${groupname} (${currentId} => ${newId})"
+  echo "  [i] Changing ID for group: ${groupname} (${currentId} => ${newId})"
   groupmod -o -g ${newId} ${groupname}
 }
 

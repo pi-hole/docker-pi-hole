@@ -1,2 +1,2 @@
 #!/command/execlineb
-background { bash -e /gravityonboot.sh }
+background { bash -e /usr/local/bin/_gravityonboot.sh }

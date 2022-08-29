@@ -26,7 +26,7 @@ def test_ipv6_not_true_removes_ipv6(docker, slow, test_args, expected_ipv6, expe
     IPV6_LINE = 'use-ipv6.pl'
     WEB_CONFIG = '/etc/lighttpd/lighttpd.conf'
 
-    function = docker.run('. /bash_functions.sh ; setup_ipv4_ipv6')
+    function = docker.run('. /usr/local/bin/bash_functions.sh ; setup_ipv4_ipv6')
     assert "Using {}".format(expected_stdout) in function.stdout
     if expected_stdout == 'IPv4':
         assert 'IPv6' not in function.stdout
@@ -43,9 +43,9 @@ def test_overrides_default_web_port(docker, slow, test_args):
     CONFIG_LINE = r'server.port\s*=\s*999'
     WEB_CONFIG = '/etc/lighttpd/lighttpd.conf'
 
-    function = docker.run('. /bash_functions.sh ; eval `grep setup_web_port /start.sh`')
-    assert "Custom WEB_PORT set to 999" in function.stdout
-    assert "INFO: Without proper router DNAT forwarding to 127.0.0.1:999, you may not get any blocked websites on ads" in function.stdout
+    function = docker.run('. /usr/local/bin/bash_functions.sh ; eval `grep setup_web_port /usr/local/bin/_startup.sh`')
+    assert "  [i] Custom WEB_PORT set to 999" in function.stdout
+    assert "  [i] Without proper router DNAT forwarding to 127.0.0.1:999, you may not get any blocked websites on ads" in function.stdout
     slow(lambda: re.search(CONFIG_LINE, docker.run(_cat(WEB_CONFIG)).stdout) != None)
 
 
@@ -55,7 +55,7 @@ def test_overrides_default_web_port(docker, slow, test_args):
     ('-e WEB_PORT="99999"', 'WARNING: Custom WEB_PORT not used - 99999 is not within valid port range of 1-65535'),
 ])
 def test_bad_input_to_web_port(docker, test_args, expected_error):
-    function = docker.run('. /bash_functions.sh ; eval `grep setup_web_port /start.sh`')
+    function = docker.run('. /usr/local/bin/bash_functions.sh ; eval `grep setup_web_port /usr/local/bin/_startup.sh`')
     assert expected_error in function.stdout
 
 
@@ -64,7 +64,7 @@ def test_overrides_default_custom_cache_size(docker, slow, test_args, cache_size
     ''' Changes the cache_size setting to increase or decrease the cache size for dnsmasq'''
     CONFIG_LINE = r'cache-size\s*=\s*{}'.format(cache_size)
 
-    function = docker.run('echo ${CUSTOM_CACHE_SIZE};. ./bash_functions.sh; echo ${CUSTOM_CACHE_SIZE}; eval `grep setup_FTL_CacheSize /start.sh`')
+    function = docker.run('echo ${CUSTOM_CACHE_SIZE};. ./usr/local/bin/bash_functions.sh; echo ${CUSTOM_CACHE_SIZE}; eval `grep setup_FTL_CacheSize /usr/local/bin/_startup.sh`')
     assert "Custom CUSTOM_CACHE_SIZE set to {}".format(cache_size) in function.stdout
     slow(lambda: re.search(CONFIG_LINE, docker.run(_cat(DNSMASQ_CONFIG_LOC)).stdout) != None)
 
@@ -113,7 +113,7 @@ expected_debian_lines = [
 def test_debian_setup_php_env(docker, expected_lines, repeat_function):
     ''' confirm all expected output is there and nothing else '''
     for _ in range(repeat_function):
-        docker.run('. /bash_functions.sh ; eval `grep setup_php_env /start.sh`').stdout
+        docker.run('. /usr/local/bin/bash_functions.sh ; eval `grep setup_php_env /usr/local/bin/_startup.sh`').stdout
     for expected_line in expected_lines:
         search_config_cmd = "grep -c '{}' /etc/lighttpd/conf-enabled/15-fastcgi-php.conf".format(expected_line)
         search_config_count = docker.run(search_config_cmd)
@@ -152,7 +152,7 @@ def test_env_always_updates_password(docker, args_env, test_args):
     '''When a user sets the WEBPASSWORD environment variable, ensure it always sets the password'''
     function = docker.run(CMD_SETUP_WEB_PASSWORD)
 
-    assert '::: Assigning password defined by Environment Variable' in function.stdout
+    assert '  [i] Assigning password defined by Environment Variable' in function.stdout
 
 
 @pytest.mark.parametrize('entrypoint,cmd', [('--entrypoint=tail','-f /dev/null')])

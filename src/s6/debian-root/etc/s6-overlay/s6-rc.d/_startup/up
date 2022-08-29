@@ -1,2 +1,2 @@
 #!/command/execlineb
-foreground { bash -e /start.sh }
+foreground { bash -e /usr/local/bin/_startup.sh }
