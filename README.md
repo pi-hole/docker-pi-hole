@@ -146,10 +146,10 @@ There are other environment variables if you want to customize various things in
 | Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
 | `DNSMASQ_USER` | unset | `<pihole\|root>` | Allows changing the user that FTLDNS runs as. Default: `pihole`|
-| `PIHOLE_UID` | debian system value | Number | Overrides image's default pihole user id to match a host user id  |
-| `PIHOLE_GID` | debian system value | Number | Overrides image's default pihole group id to match a host group id |
-| `WEB_UID` | debian system value | Number | Overrides image's default www-data user id to match a host user id |
-| `WEB_GID` | debian system value | Number | Overrides image's default www-data group id to match a host group id |
+| `PIHOLE_UID` | `999` | Number | Overrides image's default pihole user id to match a host user id<br/>**IMPORTANT**: id must not already be in use inside the container! |
+| `PIHOLE_GID` | `999` | Number | Overrides image's default pihole group id to match a host group id<br/>**IMPORTANT**: id must not already be in use inside the container!|
+| `WEB_UID` | `33` | Number | Overrides image's default www-data user id to match a host user id<br/>**IMPORTANT**: id must not already be in use inside the container! (Make sure it is different to `PIHOLE_UID` if you are using that, also)|
+| `WEB_GID` | `33` | Number | Overrides image's default www-data group id to match a host group id<br/>**IMPORTANT**: id must not already be in use inside the container! (Make sure it is different to `PIHOLE_GID` if you are using that, also)|
 | `WEBLOGS_STDOUT` | 0 | 0&vert;1 | 0 logs to defined files, 1 redirect access and error logs to stdout |
 
 ## Deprecated environment variables:
