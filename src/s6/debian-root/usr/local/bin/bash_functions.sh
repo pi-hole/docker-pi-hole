@@ -102,6 +102,7 @@ ensure_basic_configuration() {
     set -e
     # Update version numbers
     pihole updatechecker
+    pihole updatechecker remote
     # Re-write all of the setupVars to ensure required ones are present (like QUERY_LOGGING)
 
     # If the setup variable file exists,
