@@ -524,11 +524,3 @@ setup_web_layout() {
       fi
   fi
 }
-
-setup_admin_email() {
-  local EMAIL="${ADMIN_EMAIL}"
-  # check if var is empty
-  if [[ "$EMAIL" != "" ]] ; then
-      pihole -a -e "$EMAIL"
-  fi
-}
