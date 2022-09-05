@@ -1,0 +1,5 @@
+pihole-dev.lab {
+  tls internal
+  redir / /admin
+  reverse_proxy pihole:8081
+}
