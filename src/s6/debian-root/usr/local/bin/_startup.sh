@@ -43,7 +43,6 @@ setup_lighttpd_bind
 
 # Misc Setup
 # ===========================
-setup_admin_email
 setup_blocklists
 
 # FTL setup
