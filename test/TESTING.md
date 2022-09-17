@@ -12,3 +12,8 @@ Should result in:
 
 - An image named `pihole:[branch-name]` being built
 - Tests being ran to confirm the image doesn't have any regressions
+
+# Modify Pipfile
+
+You can enter into the test docker image using `./build-and-test.sh enter`.
+From there, you can `cd test` and execute any needed pipenv commands.
