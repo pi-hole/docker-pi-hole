@@ -9,7 +9,7 @@ fi
 . /usr/local/bin/bash_functions.sh
 
 # shellcheck source=/dev/null
-SKIP_INSTALL=true . "${PIHOLE_INSTALL}"
+SKIP_INSTALL=true . /etc/.pihole/automated\ install/basic-install.sh
 
 echo "  [i] Starting docker specific checks & setup for docker pihole/pihole"
 
