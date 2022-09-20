@@ -2,11 +2,7 @@ ARG PIHOLE_BASE
 FROM "${PIHOLE_BASE:-ghcr.io/pi-hole/docker-pi-hole-base:bullseye-slim}"
 
 ARG PIHOLE_DOCKER_TAG
-ENV PIHOLE_DOCKER_TAG "${PIHOLE_DOCKER_TAG}"
-
-ENV S6_OVERLAY_VERSION v3.1.1.2
-
-ENV PIHOLE_INSTALL /etc/.pihole/automated\ install/basic-install.sh
+RUN echo "${PIHOLE_DOCKER_TAG}" > /pihole.docker.tag
 
 ENTRYPOINT [ "/s6-init" ]
 
@@ -32,7 +28,6 @@ EXPOSE 80
 ENV S6_KEEP_ENV 1
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
 ENV S6_CMD_WAIT_FOR_SERVICES_MAXTIME 0
-
 
 ENV FTLCONF_LOCAL_IPV4 0.0.0.0
 ENV FTL_CMD no-daemon
