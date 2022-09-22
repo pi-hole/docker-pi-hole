@@ -16,7 +16,7 @@ detect_arch() {
   amd64)
     S6_ARCH="x86_64";;
   armel)
-    S6_ARCH="arm";;
+    S6_ARCH="armhf";;
   armhf)
     S6_ARCH="armhf";;
   arm64)
