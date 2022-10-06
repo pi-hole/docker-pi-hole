@@ -16,7 +16,7 @@ detect_arch() {
   amd64)
     S6_ARCH="x86_64";;
   armel)
-    S6_ARCH="arm";;
+    S6_ARCH="armhf";;
   armhf)
     S6_ARCH="armhf";;
   arm64)
@@ -27,14 +27,17 @@ esac
 }
 
 
+DOCKER_TAG=$(cat /pihole.docker.tag)
 # Helps to have some additional tools in the dev image when debugging
-if [[ "${PIHOLE_DOCKER_TAG}" = 'nightly' ||  "${PIHOLE_DOCKER_TAG}" = 'dev' ]]; then
+if [[ "${DOCKER_TAG}" = 'nightly' ||  "${DOCKER_TAG}" = 'dev' ]]; then
   apt-get update
   apt-get install --no-install-recommends -y nano less
   rm -rf /var/lib/apt/lists/*
 fi
 
 detect_arch
+
+S6_OVERLAY_VERSION=v3.1.1.2
 
 curl -L -s "https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz" | tar Jxpf - -C /
 curl -L -s "https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/s6-overlay-${S6_ARCH}.tar.xz" | tar Jxpf - -C /
@@ -66,7 +69,7 @@ export PIHOLE_SKIP_OS_CHECK=true
 curl -sSL https://install.pi-hole.net | bash -sex -- --unattended
 
 # At this stage, if we are building a :nightly tag, then switch the Pi-hole install to dev versions
-if [[ "${PIHOLE_DOCKER_TAG}" = 'nightly'  ]]; then
+if [[ "${DOCKER_TAG}" = 'nightly'  ]]; then
   yes | pihole checkout dev
 fi
 
