@@ -1,13 +1,25 @@
 ARG PIHOLE_BASE
-FROM "${PIHOLE_BASE:-ghcr.io/pi-hole/docker-pi-hole-base:bullseye-slim}"
+FROM ubuntu:latest
+
+ENV TZ=Europe/Berlin
+ENV WEBPASSWORD=changeme
+
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt update -y && apt upgrade -y && apt install php curl -y
 
 ARG PIHOLE_DOCKER_TAG
 RUN echo "${PIHOLE_DOCKER_TAG}" > /pihole.docker.tag
 
 ENTRYPOINT [ "/s6-init" ]
 
+ # etc and usr are now in /
 COPY s6/debian-root /
+# file is in /usr/local/bin/service
 COPY s6/service /usr/local/bin/service
+
+WORKDIR /usr/local/bin
 
 RUN bash -ex install.sh 2>&1 && \
     rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
