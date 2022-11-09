@@ -100,9 +100,6 @@ ensure_basic_configuration() {
     chown pihole:root "${PI_HOLE_BIN_DIR}/pihole"
 
     set -e
-    # Update version numbers
-    pihole updatechecker
-    pihole updatechecker remote
     # Re-write all of the setupVars to ensure required ones are present (like QUERY_LOGGING)
 
     # If the setup variable file exists,
