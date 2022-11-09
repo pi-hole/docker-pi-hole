@@ -1,4 +1,5 @@
 #!/bin/bash
+# This script contains function calls and lines that may rely on pihole-FTL to be running, it is run as part of a oneshot service on container startup
 
 if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
     set -x ;
@@ -21,3 +22,12 @@ if [ -z "$SKIPGRAVITYONBOOT" ] || [ ! -f "${gravityDBfile}" ]; then
 else
     echo "  Skipping Gravity Database Update."
 fi
+
+# Run update checker to check for newer container, and display version output
+echo ""
+pihole updatechecker
+pihole -v
+
+DOCKER_TAG=$(cat /pihole.docker.tag)
+echo "  Container tag is: ${DOCKER_TAG}"
+echo ""

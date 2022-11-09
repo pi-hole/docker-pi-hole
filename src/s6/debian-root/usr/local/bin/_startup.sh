@@ -69,9 +69,6 @@ test_configs
 echo "  [i] Docker start setup complete"
 echo ""
 
-pihole -v
 
-echo "  Container tag is: ${PIHOLE_DOCKER_TAG}"
-echo ""
 echo "  [i] pihole-FTL ($FTL_CMD) will be started as ${DNSMASQ_USER}"
 echo ""
