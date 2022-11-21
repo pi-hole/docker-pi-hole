@@ -33,7 +33,7 @@ services:
     networks:
       - caddy-net  # Need to plug into caddy net to access proxy
     ports:
-      - "8081/tcp" # Pi-hole web admin interface, proxied through Caddy (configure port in Caddyfile)
+      - "8081:80/tcp" # Pi-hole web admin interface, proxied through Caddy (configure port in Caddyfile)
       # Following are NOT proxied through Caddy, bound to host net instead:
       - "53:53/udp"
       - "53:53/tcp"
