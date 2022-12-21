@@ -228,11 +228,13 @@ Users of older Ubuntu releases (circa 17.04) will need to disable dnsmasq.
 
 The primary docker tags are explained in the following table.  [Click here to see the full list of tags](https://store.docker.com/community/images/pihole/pihole/tags). See [GitHub Release notes](https://github.com/pi-hole/docker-pi-hole/releases) to see the specific version of Pi-hole Core, Web, and FTL included in the release.
 
+The Date-based (including incremented "Patch" versions) do not relate to any kind of semantic version number, rather a date is used to differentiate between the new version and the old version, nothing more. Release notes will always contain full details of changes in the container, including changes to core Pi-hole components
+
 | tag                 | description
 |---------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
 | `latest`            | Always latest release                                                                                                                      |
-| `2022.04`           | Date-based release that can receive bugfix updates                                                                                         |
-| `2022.04.1`         | A specific image that will not receive updates                                                                                             |
+| `2022.04`           | Date-based release                                                                                                                         |
+| `2022.04.1`         | Second release in a given month                                                                                                            |
 | `dev`               | Similar to `latest`, but for the development branch (pushed occasionally)                                                                  |
 | `*beta`             | Early beta releases of upcoming versions - here be dragons                                                                                 |
 | `nightly`           | Like `dev` but pushed every night and pulls from the latest `development` branches of the core Pi-hole components (Pi-hole, AdminLTE, FTL) |

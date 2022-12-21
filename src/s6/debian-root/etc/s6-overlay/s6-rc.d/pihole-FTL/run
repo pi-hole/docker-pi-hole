@@ -38,8 +38,7 @@ if [ ! -f /var/log/pihole-FTL.log ]; then
     chown -h pihole:pihole /var/log/pihole-FTL.log
 fi
 
-# Call capsh with the detected capabilities
-capsh --inh=${CAP_STR:1} --addamb=${CAP_STR:1} --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null 2>&1"
+capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null 2>&1"
 
 # Notes on above:
 # - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env
