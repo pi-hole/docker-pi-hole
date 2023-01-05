@@ -353,8 +353,8 @@ setup_web_php_env() {
     fi;
 
     for config_var in "VIRTUAL_HOST" "CORS_HOSTS" "PHP_ERROR_LOG" "PIHOLE_DOCKER_TAG" "TZ"; do
-      local beginning_of_line="\t\t\t\"${config_var}\" => "
-      if grep -qP "$beginning_of_line" "$PHP_ENV_CONFIG" ; then
+      local beginning_of_line="                    \"${config_var}\" => "
+      if grep -qP "^$beginning_of_line" "$PHP_ENV_CONFIG" ; then
         # replace line if already present
         sed -i "/${beginning_of_line}/c\\${beginning_of_line}\"${!config_var}\"," "$PHP_ENV_CONFIG"
       else
