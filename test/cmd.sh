@@ -2,7 +2,7 @@
 set -eux
 
 docker build ./src --tag pihole:${GIT_TAG} --no-cache
-docker images
+docker images pihole:${GIT_TAG}
 
 # auto-format the pytest code
 python -m black ./test/tests/
