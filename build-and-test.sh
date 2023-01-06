@@ -17,4 +17,5 @@ docker run --rm \
     --workdir "$(pwd)" \
     --env PIPENV_CACHE_DIR="$(pwd)/.pipenv" \
     --env GIT_TAG="${GIT_TAG}" \
+    --env PY_COLORS=1 \
     ${enter} image_pipenv
