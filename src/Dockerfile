@@ -1,5 +1,17 @@
 ARG PIHOLE_BASE
-FROM "${PIHOLE_BASE:-ghcr.io/pi-hole/docker-pi-hole-base:bullseye-slim}"
+# FROM "${PIHOLE_BASE:-ghcr.io/pi-hole/docker-pi-hole-base:bullseye-slim}"
+FROM debian:bullseye-slim
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+        # Packages Specific to Docker:
+        procps \
+        xz-utils \
+        curl \
+        ca-certificates \
+        git \
+        sudo \
+    && rm -rf /var/lib/apt/lists/*
+
 
 ARG PIHOLE_DOCKER_TAG
 RUN echo "${PIHOLE_DOCKER_TAG}" > /pihole.docker.tag
