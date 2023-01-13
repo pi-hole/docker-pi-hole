@@ -34,7 +34,7 @@ setup_web_password
 setup_web_theme
 setup_web_temp_unit
 setup_web_layout
-setup_web_php_env
+# setup_web_php_env
 
 # lighttpd setup
 # ===========================
@@ -50,7 +50,7 @@ setup_blocklists
 setup_FTL_upstream_DNS
 [[ -n "${DHCP_ACTIVE}" && ${DHCP_ACTIVE} == "true" ]] && echo "Setting DHCP server" && setup_FTL_dhcp
 apply_FTL_Configs_From_Env
-setup_FTL_User
+# setup_FTL_User
 setup_FTL_Interface
 setup_FTL_ListeningBehaviour
 setup_FTL_CacheSize

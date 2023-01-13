@@ -113,10 +113,7 @@ ensure_basic_configuration() {
         changeFTLsetting "MACVENDORDB" "/macvendor.db"
     fi
 
-    # When fresh empty directory volumes are used then we need to create this file
-    if [ ! -f /etc/dnsmasq.d/01-pihole.conf ] ; then
-        cp /etc/.pihole/advanced/01-pihole.conf /etc/dnsmasq.d/
-    fi;
+    # setup_or_skip_gravity
 }
 
 validate_env() {
@@ -197,7 +194,7 @@ setup_FTL_CacheSize() {
     echo "  [i] Custom CUSTOM_CACHE_SIZE set to $custom_cache_size"
 
     change_setting "CACHE_SIZE" "$custom_cache_size"
-    sed -i "s/^cache-size=\s*[0-9]*/cache-size=$custom_cache_size/" ${dnsmasq_pihole_01_location}
+    # sed -i "s/^cache-size=\s*[0-9]*/cache-size=$custom_cache_size/" ${dnsmasq_pihole_01_location}
 }
 
 apply_FTL_Configs_From_Env(){
@@ -231,13 +228,13 @@ setup_FTL_query_logging(){
     if [ "${QUERY_LOGGING_OVERRIDE}" == "false" ]; then
         echo "  [i] Disabling Query Logging"
         change_setting "QUERY_LOGGING" "$QUERY_LOGGING_OVERRIDE"
-        removeKey "${dnsmasqconfig}" log-queries
+        #removeKey "${dnsmasqconfig}" log-queries
     else
         # If it is anything other than false, set it to true
         change_setting "QUERY_LOGGING" "true"
         # Set pihole logging on for good measure
         echo "  [i] Enabling Query Logging"
-        addKey "${dnsmasqconfig}" log-queries
+        #addKey "${dnsmasqconfig}" log-queries
     fi
 
 }
@@ -332,7 +329,7 @@ setup_FTL_ProcessDNSSettings(){
 
     # shellcheck source=/dev/null
     . /opt/pihole/webpage.sh
-    ProcessDNSSettings
+   # ProcessDNSSettings
 }
 
 setup_lighttpd_bind() {

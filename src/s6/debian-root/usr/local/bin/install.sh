@@ -65,13 +65,24 @@ export USER=pihole
 
 export PIHOLE_SKIP_OS_CHECK=true
 
-# Run the installer in unattended mode using the preseeded variables above and --reconfigure so that local repos are not updated
-curl -sSL https://install.pi-hole.net | bash -sex -- --unattended
+# # Run the installer in unattended mode using the preseeded variables above and --reconfigure so that local repos are not updated
+# curl -sSL https://install.pi-hole.net | bash -sex -- --unattended
 
-# At this stage, if we are building a :nightly tag, then switch the Pi-hole install to dev versions
-if [[ "${DOCKER_TAG}" = 'nightly'  ]]; then
-  yes | pihole checkout dev
-fi
+# # At this stage, if we are building a :nightly tag, then switch the Pi-hole install to dev versions
+# if [[ "${DOCKER_TAG}" = 'nightly'  ]]; then
+#   yes | pihole checkout dev
+# fi
+
+git clone https://github.com/pi-hole/adminLTE /var/www/html/admin
+cd /var/www/html/admin
+git checkout new/FTL_is_my_new_home
+
+echo "new/http" | tee /etc/pihole/ftlbranch
+
+sudo git clone https://github.com/pi-hole/pi-hole /etc/.pihole
+cd /etc/.pihole
+sudo git checkout development-v6
+bash -ex /etc/.pihole/automated\ install/basic-install.sh --unattended
 
 sed -i '/^WEBPASSWORD/d' /etc/pihole/setupVars.conf
 
