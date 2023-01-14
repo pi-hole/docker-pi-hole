@@ -36,11 +36,6 @@ setup_web_temp_unit
 setup_web_layout
 # setup_web_php_env
 
-# lighttpd setup
-# ===========================
-setup_ipv4_ipv6
-setup_lighttpd_bind
-
 # Misc Setup
 # ===========================
 setup_blocklists
@@ -49,7 +44,7 @@ setup_blocklists
 # ===========================
 setup_FTL_upstream_DNS
 [[ -n "${DHCP_ACTIVE}" && ${DHCP_ACTIVE} == "true" ]] && echo "Setting DHCP server" && setup_FTL_dhcp
-apply_FTL_Configs_From_Env
+# apply_FTL_Configs_From_Env
 # setup_FTL_User
 setup_FTL_Interface
 setup_FTL_ListeningBehaviour
@@ -59,10 +54,7 @@ setup_FTL_server || true
 [ -n "${DNS_FQDN_REQUIRED}" ] && change_setting "DNS_FQDN_REQUIRED" "$DNS_FQDN_REQUIRED"
 [ -n "${DNSSEC}" ] && change_setting "DNSSEC" "$DNSSEC"
 [ -n "${DNS_BOGUS_PRIV}" ] && change_setting "DNS_BOGUS_PRIV" "$DNS_BOGUS_PRIV"
-# The following must be called last! It will source setupVars.conf and override any env vars users pass in before they have been applied
-setup_FTL_ProcessDNSSettings
 
-test_configs
 
 [ -f /.piholeFirstBoot ] && rm /.piholeFirstBoot
 

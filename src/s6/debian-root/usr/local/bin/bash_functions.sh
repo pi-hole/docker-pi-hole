@@ -22,12 +22,8 @@ export FTLconf="/etc/pihole/pihole-FTL.conf"
 export dnsmasqconfig="/etc/dnsmasq.d/01-pihole.conf"
 export adlistFile="/etc/pihole/adlists.list"
 
-change_setting() {
-    addOrEditKeyValPair "${setupVars}" "${1}" "${2}"
-}
-
-changeFTLsetting() {
-    addOrEditKeyValPair "${FTLconf}" "${1}" "${2}"
+changeNewFTLSetting(){
+    pihole-FTL --config "${1}" "${2}"
 }
 
 fix_capabilities() {
@@ -75,37 +71,18 @@ fix_capabilities() {
 # shellcheck disable=SC2034
 ensure_basic_configuration() {
     echo "  [i] Ensuring basic configuration by re-running select functions from basic-install.sh"
-    # Set Debian webserver variables for installConfigs
-    LIGHTTPD_USER="www-data"
-    LIGHTTPD_GROUP="www-data"
-    LIGHTTPD_CFG="lighttpd.conf.debian"
-    installConfigs
+    # TODO: Is this it?
     installLogrotate || true #installLogRotate can return 2 or 3, but we are still OK to continue in that case
-
-    if [ ! -f "${setupVars}" ]; then
-        install -m 644 /dev/null "${setupVars}"
-        echo "  [i] Creating empty ${setupVars} file."
-        # The following setting needs to exist else the web interface version won't show in pihole -v
-        change_setting "INSTALL_WEB_INTERFACE" "true"
-    fi
 
     set +e
     mkdir -p /var/run/pihole /var/log/pihole
     touch /var/log/pihole/FTL.log /var/log/pihole/pihole.log
-
-    chown pihole:root /etc/lighttpd
 
     # In case of `pihole` UID being changed, re-chown the pihole scripts and pihole command
     chown -R pihole:root "${PI_HOLE_INSTALL_DIR}"
     chown pihole:root "${PI_HOLE_BIN_DIR}/pihole"
 
     set -e
-    # Re-write all of the setupVars to ensure required ones are present (like QUERY_LOGGING)
-
-    # If the setup variable file exists,
-    if [[ -e "${setupVars}" ]]; then
-        cp -f "${setupVars}" "${setupVars}.update.bak"
-    fi
 
     # If FTLCONF_MACVENDORDB is not set
     if [[ -z "${FTLCONF_MACVENDORDB:-}" ]]; then
@@ -198,13 +175,15 @@ setup_FTL_CacheSize() {
 }
 
 apply_FTL_Configs_From_Env(){
-    # Get all exported environment variables starting with FTLCONF_ as a prefix and call the changeFTLsetting
+    ### TODO: This is going to need a major rework to support the new FTL config file.
+
+    # Get all exported environment variables starting with FTLCONF_ as a prefix and call the changeNewFTLSetting
     # function with the environment variable's suffix as the key. This allows applying any pihole-FTL.conf
     # setting defined here: https://docs.pi-hole.net/ftldns/configfile/
     declare -px | grep FTLCONF_ | sed -E 's/declare -x FTLCONF_([^=]+)=\"(|.+)\"/\1 \2/' | while read -r name value
     do
         echo "  [i] Applying pihole-FTL.conf setting $name=$value"
-        changeFTLsetting "$name" "$value"
+        changeNewFTLSetting "$name" "$value"
     done
 }
 
@@ -213,14 +192,14 @@ setup_FTL_dhcp() {
     echo "  [!] ERROR: Won't enable DHCP server because mandatory Environment variables are missing: DHCP_START, DHCP_END and/or DHCP_ROUTER"
     change_setting "DHCP_ACTIVE" "false"
   else
-    change_setting "DHCP_ACTIVE" "${DHCP_ACTIVE}"
-    change_setting "DHCP_START" "${DHCP_START}"
-    change_setting "DHCP_END" "${DHCP_END}"
-    change_setting "DHCP_ROUTER" "${DHCP_ROUTER}"
-    change_setting "DHCP_LEASETIME" "${DHCP_LEASETIME}"
-    change_setting "PIHOLE_DOMAIN" "${PIHOLE_DOMAIN}"
-    change_setting "DHCP_IPv6" "${DHCP_IPv6}"
-    change_setting "DHCP_rapid_commit" "${DHCP_rapid_commit}"
+    changeNewFTLSetting "dhcp.active" "${DHCP_ACTIVE}"
+    changeNewFTLSetting "dhcp.start" "${DHCP_START}"
+    changeNewFTLSetting "dhcp.end" "${DHCP_END}"
+    changeNewFTLSetting "dhcp.router" "${DHCP_ROUTER}"
+    changeNewFTLSetting "dhcp.leasetime" "${DHCP_LEASETIME}"
+    #changeNewFTLSetting "PIHOLE_DOMAIN" "${PIHOLE_DOMAIN}"
+    changeNewFTLSetting "dhcp.ipv6" "${DHCP_IPv6}"
+    changeNewFTLSetting "dhcp.rapid_commit" "${DHCP_rapid_commit}"
   fi
 }
 
@@ -240,19 +219,11 @@ setup_FTL_query_logging(){
 }
 
 setup_FTL_server(){
-    [ -n "${REV_SERVER}" ] && change_setting "REV_SERVER" "$REV_SERVER"
-    [ -n "${REV_SERVER_DOMAIN}" ] && change_setting "REV_SERVER_DOMAIN" "$REV_SERVER_DOMAIN"
-    [ -n "${REV_SERVER_TARGET}" ] && change_setting "REV_SERVER_TARGET" "$REV_SERVER_TARGET"
-    [ -n "${REV_SERVER_CIDR}" ] && change_setting "REV_SERVER_CIDR" "$REV_SERVER_CIDR"
 
-    if [ -z "$REV_SERVER" ];then
-        # If the REV_SERVER* variables are set, then there is no need to add these.
-        # If it is not set, then adding these variables is fine, and they will be converted by the Pi-hole install script
-        [ -n "${CONDITIONAL_FORWARDING}" ] && change_setting "CONDITIONAL_FORWARDING" "$CONDITIONAL_FORWARDING"
-        [ -n "${CONDITIONAL_FORWARDING_IP}" ] && change_setting "CONDITIONAL_FORWARDING_IP" "$CONDITIONAL_FORWARDING_IP"
-        [ -n "${CONDITIONAL_FORWARDING_DOMAIN}" ] && change_setting "CONDITIONAL_FORWARDING_DOMAIN" "$CONDITIONAL_FORWARDING_DOMAIN"
-        [ -n "${CONDITIONAL_FORWARDING_REVERSE}" ] && change_setting "CONDITIONAL_FORWARDING_REVERSE" "$CONDITIONAL_FORWARDING_REVERSE"
-    fi
+    [ -n "${REV_SERVER}" ] && changeNewFTLSetting "dnsmasq.rev_server.active" "$REV_SERVER"
+    [ -n "${REV_SERVER_DOMAIN}" ] && changeNewFTLSetting "dnsmasq.rev_server.domain" "$REV_SERVER_DOMAIN"
+    [ -n "${REV_SERVER_TARGET}" ] && changeNewFTLSetting "dnsmasq.rev_server.target" "$REV_SERVER_TARGET"
+    [ -n "${REV_SERVER_CIDR}" ] && changeNewFTLSetting "dnsmasq.rev_server.cidr" "$REV_SERVER_CIDR"
 }
 
 setup_FTL_upstream_DNS(){
@@ -267,127 +238,39 @@ setup_FTL_upstream_DNS(){
     # Parse the PIHOLE_DNS variable, if it exists, and apply upstream servers to Pi-hole config
     if [ -n "${PIHOLE_DNS_}" ]; then
         echo "  [i] Setting DNS servers based on PIHOLE_DNS_ variable"
-        # Remove any PIHOLE_DNS_ entries from setupVars.conf, if they exist
-        sed -i '/PIHOLE_DNS_/d' /etc/pihole/setupVars.conf
-        # Split into an array (delimited by ;)
-        # Loop through and add them one by one to setupVars.conf
-        IFS=";" read -r -a PIHOLE_DNS_ARR <<< "${PIHOLE_DNS_}"
-        count=1
-        valid_entries=0
-        for i in "${PIHOLE_DNS_ARR[@]}"; do
-            # Ensure we don't have an empty value first (see https://github.com/pi-hole/docker-pi-hole/issues/1174#issuecomment-1228763422 )
-            if [ -n "$i" ]; then
-              if valid_ip "$i" || valid_ip6 "$i" ; then
-                change_setting "PIHOLE_DNS_$count" "$i"
-                ((count=count+1))
-                ((valid_entries=valid_entries+1))
-                continue
-              fi
-              # shellcheck disable=SC2086
-              if [ -n "$(dig +short ${i//#*/})" ]; then
-                # If the "address" is a domain (for example a docker link) then try to resolve it and add
-                # the result as a DNS server in setupVars.conf.
-                resolved_ip="$(dig +short ${i//#*/} | head -n 1)"
-                if [ -n "${i//*#/}" ] && [ "${i//*#/}" != "${i//#*/}" ]; then
-                    resolved_ip="${resolved_ip}#${i//*#/}"
-                fi
-                echo "Resolved ${i} from PIHOLE_DNS_ as: ${resolved_ip}"
-                if valid_ip "$resolved_ip" || valid_ip6 "$resolved_ip" ; then
-                    change_setting "PIHOLE_DNS_$count" "$resolved_ip"
-                    ((count=count+1))
-                    ((valid_entries=valid_entries+1))
-                    continue
-                fi
-              fi
-              # If the above tests fail then this is an invalid DNS server
-              echo "  [!] Invalid entry detected in PIHOLE_DNS_: ${i}"
-            fi
-        done
+        # Replace all semi-colons in PIHOLE_DNS_ with escaped double quote, comma, and escaped double quote
+        # This is to create a valid JSON array string
+        changeNewFTLSetting "dnsmasq.upstreams" "[\"${PIHOLE_DNS_//;/\",\"}\"]"
 
-        if [ $valid_entries -eq 0 ]; then
-            echo "  [!] No Valid entries detected in PIHOLE_DNS_. Aborting"
-            exit 1
-        fi
+        # TODO: Discuss with @DL6ER if pihole-FTL should be modified to accept a semicolon delimited string for simplicity
+        #       ALso noted during testing that FTL will fall over if an invalid hostname is passed into the array
+        #       I have removed a lot of validation code from this side of things for now, but may be worth revisiting it. (and make it easier to read than it was)
+
     else
         # Environment variable has not been set, but there may be existing values in an existing setupVars.conf
         # if this is the case, we do not want to overwrite these with the defaults of 8.8.8.8 and 8.8.4.4
         # Pi-hole can run with only one upstream configured, so we will just check for one.
+
+        # TODO: setupVars is going to be deprecated in the future, so this code will need to be revisited
         setupVarsDNS="$(grep 'PIHOLE_DNS_' /etc/pihole/setupVars.conf || true)"
 
         if [ -z "${setupVarsDNS}" ]; then
             echo "  [i] Configuring default DNS servers: 8.8.8.8, 8.8.4.4"
-            change_setting "PIHOLE_DNS_1" "8.8.8.8"
-            change_setting "PIHOLE_DNS_2" "8.8.4.4"
+            changeNewFTLSetting "dnsmasq.upstreams" "[\"8.8.8.8\",\"8.8.4.4\"]"
         else
             echo "  [i] Existing DNS servers detected in setupVars.conf. Leaving them alone"
         fi
     fi
 }
 
-setup_FTL_ProcessDNSSettings(){
-    # Commit settings to 01-pihole.conf
+# setup_FTL_ProcessDNSSettings(){
+#     # Commit settings to 01-pihole.conf
 
-    # shellcheck source=/dev/null
-    . /opt/pihole/webpage.sh
-   # ProcessDNSSettings
-}
+#     # shellcheck source=/dev/null
+#     #. /opt/pihole/webpage.sh
+#    # ProcessDNSSettings
+# }
 
-setup_lighttpd_bind() {
-    local bind_addr="${WEB_BIND_ADDR}"
-
-    if [[ -z "$bind_addr" ]]; then
-        # if using '--net=host' bind lighttpd on $FTLCONF_LOCAL_IPV4 (for backward compatibility with #154).
-        if grep -q "docker" /proc/net/dev && [[ $FTLCONF_LOCAL_IPV4 != 0.0.0.0 ]]; then #docker (docker0 by default) should only be present on the host system
-            echo "  [i] WARNING: running in host network mode forces lighttpd's bind address to \$FTLCONF_LOCAL_IPV4 ($FTLCONF_LOCAL_IPV4)."
-            echo "  [i] This behaviour is deprecated and will be removed in a future version. If your installation depends on a custom bind address (not 0.0.0.0) you should set the \$WEB_BIND_ADDR environment variable to the desired value."
-            bind_addr="${FTLCONF_LOCAL_IPV4}"
-        # bind on 0.0.0.0 by default
-        else
-            bind_addr="0.0.0.0"
-        fi
-    fi
-
-    # Overwrite lighttpd's bind address, always listen on localhost
-    if [[ $bind_addr != 0.0.0.0 ]]; then
-        if ! grep -q "server.bind" /etc/lighttpd/lighttpd.conf ; then # if the declaration is already there, don't add it again
-            sed -i -E "s/server\.port\s+\=\s+([0-9]+)/server.bind\t\t = \"${bind_addr}\"\nserver.port\t\t = \1\n"\$SERVER"\[\"socket\"\] == \"127\.0\.0\.1:\1\" \{\}/" /etc/lighttpd/lighttpd.conf
-        fi
-    fi
-}
-
-setup_web_php_env() {
-    local config_file
-    config_file="/etc/lighttpd/conf-available/15-pihole-admin.conf"
-    # if the environment variable VIRTUAL_HOST is not set, or is empty, then set it to the hostname of the container
-    VIRTUAL_HOST="${VIRTUAL_HOST:-$HOSTNAME}"
-
-    for config_var in "VIRTUAL_HOST" "CORS_HOSTS" "PHP_ERROR_LOG" "PIHOLE_DOCKER_TAG" "TZ"; do
-      local beginning_of_line="                    \"${config_var}\" => "
-      if grep -qP "^$beginning_of_line" "$config_file" ; then
-        # replace line if already present
-        sed -i "/${beginning_of_line}/c\\${beginning_of_line}\"${!config_var}\"," "$config_file"
-      else
-        # add line otherwise
-        sed -i "/bin-environment/ a\\${beginning_of_line}\"${!config_var}\"," "$config_file"
-      fi
-    done
-
-    echo "  [i] Added ENV to php:"
-    grep -E '(VIRTUAL_HOST|CORS_HOSTS|PHP_ERROR_LOG|PIHOLE_DOCKER_TAG|TZ)' "$config_file"
-
-    # Create an additional file in the lighttpd config directory to redirect the root to the admin page
-    # if the host matches either VIRTUAL_HOST (Or HOSTNAME if it is not set) or FTLCONF_LOCAL_IPV4
-    cat <<END > /etc/lighttpd/conf-enabled/15-pihole-admin-redirect-docker.conf
-    \$HTTP["url"] == "/" {
-        \$HTTP["host"] == "${VIRTUAL_HOST}" {
-            url.redirect = ("" => "/admin/")
-        }
-        \$HTTP["host"] == "${FTLCONF_LOCAL_IPV4}" {
-            url.redirect = ("" => "/admin/")
-        }
-    }
-END
-}
 
 setup_web_port() {
     local warning="  [!] WARNING: Custom WEB_PORT not used"
@@ -407,8 +290,8 @@ setup_web_port() {
     echo "  [i] Custom WEB_PORT set to $web_port"
     echo "  [i] Without proper router DNAT forwarding to ${WEB_BIND_ADDR:-$FTLCONF_LOCAL_IPV4}:$web_port, you may not get any blocked websites on ads"
 
-    # Update lighttpd's port
-    sed -i '/server.port\s*=\s*80\s*$/ s/80/'"${WEB_PORT}"'/g' /etc/lighttpd/lighttpd.conf
+    changeNewFTLSetting "http.port" "$web_port"
+
 
 }
 
@@ -466,23 +349,6 @@ setup_web_password() {
     if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
         set -x
     fi
-}
-
-setup_ipv4_ipv6() {
-    local ip_versions="IPv4 and IPv6"
-    if [ "${IPv6,,}" != "true" ] ; then
-        ip_versions="IPv4"
-        sed -i '/use-ipv6.pl/ d' /etc/lighttpd/lighttpd.conf
-    fi;
-    echo "  [i] Using $ip_versions"
-}
-
-test_configs() {
-    set -e
-    echo -n '  [i] Testing lighttpd config: '
-    lighttpd -t -f /etc/lighttpd/lighttpd.conf || exit 1
-    set +e
-    echo "  [i] All config checks passed, cleared for startup ..."
 }
 
 setup_blocklists() {
