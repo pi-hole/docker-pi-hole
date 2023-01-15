@@ -182,7 +182,7 @@ def test_debian_setup_php_env(docker, expected_lines, repeat_function):
         )
     for expected_line in expected_lines:
         search_config_cmd = (
-            "grep -c '{}' /etc/lighttpd/conf-enabled/15-fastcgi-php.conf".format(
+            "grep -c '{}' /etc/lighttpd/conf-enabled/15-pihole-admin.conf".format(
                 expected_line
             )
         )

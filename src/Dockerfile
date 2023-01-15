@@ -14,7 +14,7 @@ RUN bash -ex install.sh 2>&1 && \
 
 # php config start passes special ENVs into
 ARG PHP_ENV_CONFIG
-ENV PHP_ENV_CONFIG /etc/lighttpd/conf-enabled/15-fastcgi-php.conf
+ENV PHP_ENV_CONFIG /etc/lighttpd/conf-enabled/15-pihole-admin.conf
 ARG PHP_ERROR_LOG
 ENV PHP_ERROR_LOG /var/log/lighttpd/error-pihole.log
 
