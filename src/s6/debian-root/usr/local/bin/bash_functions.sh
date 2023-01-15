@@ -348,9 +348,10 @@ setup_lighttpd_bind() {
 }
 
 setup_web_php_env() {
-    if [ -z "$VIRTUAL_HOST" ] ; then
-      VIRTUAL_HOST="$FTLCONF_LOCAL_IPV4"
-    fi;
+    # if the environment variable VIRTUAL_HOST is not set, or is empty, then set it to the IP address of the container
+    if [ -z "${VIRTUAL_HOST}" ] || [ "${VIRTUAL_HOST}" == "" ]; then
+        VIRTUAL_HOST="${FTLCONF_LOCAL_IPV4}"
+    fi
 
     for config_var in "VIRTUAL_HOST" "CORS_HOSTS" "PHP_ERROR_LOG" "PIHOLE_DOCKER_TAG" "TZ"; do
       local beginning_of_line="                    \"${config_var}\" => "
