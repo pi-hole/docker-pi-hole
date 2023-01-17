@@ -9,6 +9,8 @@
 
 - **Using Watchtower? See the [Note on Watchtower](#note-on-watchtower) at the bottom of this readme**
 
+- As of `2023.01`, if you have any modifications for lighttpd via an `external.conf` file, this file now needs to be mapped into `/etc/lighttpd/conf-enabled/whateverfile.conf` instead
+
 - Due to [a known issue with Docker and libseccomp <2.5](https://github.com/moby/moby/issues/40734), you may run into issues running `2022.04` and later on host systems with an older version of `libseccomp2` ([Such as Debian/Raspbian buster or Ubuntu 20.04](https://pkgs.org/download/libseccomp2), and maybe [CentOS 7](https://pkgs.org/download/libseccomp)).
 
   The first recommendation is to upgrade your host OS, which will include a more up to date (and fixed) version of `libseccomp`.
@@ -16,11 +18,6 @@
   _If you absolutely cannot do this, some users [have reported](https://github.com/pi-hole/docker-pi-hole/issues/1042#issuecomment-1086728157) success in updating `libseccomp2` via backports on debian, or similar via updates on Ubuntu. You can try this workaround at your own risk_  (Note, you may also find that you need the latest `docker.io` (more details [here](https://blog.samcater.com/fix-workaround-rpi4-docker-libseccomp2-docker-20/))
 
 - Some users [have reported issues](https://github.com/pi-hole/docker-pi-hole/issues/963#issuecomment-1095602502) with using the `--privileged` flag on `2022.04` and above. TL;DR, don't use that mode, and be [explicit with the permitted caps](https://github.com/pi-hole/docker-pi-hole#note-on-capabilities) (if needed) instead
-
-- As of `2022.04.01`, setting `CAP_NET_ADMIN` is only required if you are using Pi-hole as your DHCP server. The container will only try to set caps that are explicitly granted (or natively available)
-
-- In `2022.01` and later, the default `DNSMASQ_USER` has been changed to `pihole`, however this may cause issues on some systems such as Synology, see Issue [#963](https://github.com/pi-hole/docker-pi-hole/issues/963) for more information.
- If the container won't start due to issues setting capabilities, set `DNSMASQ_USER` to `root` in your environment.
 
 ## Quick Start
 
@@ -144,7 +141,7 @@ There are other environment variables if you want to customize various things in
 ### Experimental Variables
 | Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
-| `DNSMASQ_USER` | unset | `<pihole\|root>` | Allows changing the user that FTLDNS runs as. Default: `pihole`|
+| `DNSMASQ_USER` | unset | `<pihole\|root>` | Allows changing the user that FTLDNS runs as. Default: `pihole`, some systems such as Synology NAS may require you to change this to `root` (See [#963](https://github.com/pi-hole/docker-pi-hole/issues/963)) |
 | `PIHOLE_UID` | `999` | Number | Overrides image's default pihole user id to match a host user id<br/>**IMPORTANT**: id must not already be in use inside the container! |
 | `PIHOLE_GID` | `999` | Number | Overrides image's default pihole group id to match a host group id<br/>**IMPORTANT**: id must not already be in use inside the container!|
 | `WEB_UID` | `33` | Number | Overrides image's default www-data user id to match a host user id<br/>**IMPORTANT**: id must not already be in use inside the container! (Make sure it is different to `PIHOLE_UID` if you are using that, also)|
