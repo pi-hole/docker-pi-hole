@@ -348,6 +348,8 @@ setup_lighttpd_bind() {
 }
 
 setup_web_php_env() {
+    local config_file
+    config_file="/etc/lighttpd/conf-available/15-pihole-admin.conf"
     # if the environment variable VIRTUAL_HOST is not set, or is empty, then set it to the IP address of the container
     if [ -z "${VIRTUAL_HOST}" ] || [ "${VIRTUAL_HOST}" == "" ]; then
         VIRTUAL_HOST="${FTLCONF_LOCAL_IPV4}"
@@ -355,17 +357,17 @@ setup_web_php_env() {
 
     for config_var in "VIRTUAL_HOST" "CORS_HOSTS" "PHP_ERROR_LOG" "PIHOLE_DOCKER_TAG" "TZ"; do
       local beginning_of_line="                    \"${config_var}\" => "
-      if grep -qP "^$beginning_of_line" "$PHP_ENV_CONFIG" ; then
+      if grep -qP "^$beginning_of_line" "$config_file" ; then
         # replace line if already present
-        sed -i "/${beginning_of_line}/c\\${beginning_of_line}\"${!config_var}\"," "$PHP_ENV_CONFIG"
+        sed -i "/${beginning_of_line}/c\\${beginning_of_line}\"${!config_var}\"," "$config_file"
       else
         # add line otherwise
-        sed -i "/bin-environment/ a\\${beginning_of_line}\"${!config_var}\"," "$PHP_ENV_CONFIG"
+        sed -i "/bin-environment/ a\\${beginning_of_line}\"${!config_var}\"," "$config_file"
       fi
     done
 
     echo "  [i] Added ENV to php:"
-    grep -E '(VIRTUAL_HOST|CORS_HOSTS|PHP_ERROR_LOG|PIHOLE_DOCKER_TAG|TZ)' "$PHP_ENV_CONFIG"
+    grep -E '(VIRTUAL_HOST|CORS_HOSTS|PHP_ERROR_LOG|PIHOLE_DOCKER_TAG|TZ)' "$config_file"
 }
 
 setup_web_port() {
