@@ -349,10 +349,10 @@ setup_lighttpd_bind() {
 
 setup_web_php_env() {
     local config_file
-    config_file="/etc/lighttpd/conf-enabled/15-pihole-admin.conf"
-    # if the environment variable VIRTUAL_HOST is not set, or is empty, then set it to the IP address of the container
+    config_file="/etc/lighttpd/conf-available/15-pihole-admin.conf"
+    # if the environment variable VIRTUAL_HOST is not set, or is empty, then set it to the hostname of the container
     if [ -z "${VIRTUAL_HOST}" ] || [ "${VIRTUAL_HOST}" == "" ]; then
-        VIRTUAL_HOST="${FTLCONF_LOCAL_IPV4}"
+        VIRTUAL_HOST="${HOSTNAME}"
     fi
 
     for config_var in "VIRTUAL_HOST" "CORS_HOSTS" "PHP_ERROR_LOG" "PIHOLE_DOCKER_TAG" "TZ"; do
