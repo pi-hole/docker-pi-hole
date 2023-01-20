@@ -206,7 +206,7 @@ apply_FTL_Configs_From_Env(){
     # Get all exported environment variables starting with FTLCONF_ as a prefix and call the changeFTLsetting
     # function with the environment variable's suffix as the key. This allows applying any pihole-FTL.conf
     # setting defined here: https://docs.pi-hole.net/ftldns/configfile/
-    declare -px | grep FTLCONF_ | sed -E 's/declare -x FTLCONF_([^=]+)=\"(.+)\"/\1 \2/' | while read -r name value
+    declare -px | grep FTLCONF_ | sed -E 's/declare -x FTLCONF_([^=]+)=\"(|.+)\"/\1 \2/' | while read -r name value
     do
         echo "  [i] Applying pihole-FTL.conf setting $name=$value"
         changeFTLsetting "$name" "$value"
