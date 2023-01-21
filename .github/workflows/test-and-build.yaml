@@ -79,5 +79,6 @@ jobs:
           build-args: |
             PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}
           push: true
+          provenance: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
