@@ -247,3 +247,44 @@ def test_setupvars_trumps_random_password_if_set(docker, args_env, test_args):
 
     assert "Pre existing WEBPASSWORD found" in function.stdout
     assert docker.run(_grep("WEBPASSWORD=volumepass", SETUPVARS_LOC)).rc == 0
+
+
+@pytest.mark.parametrize(
+    "args_env,test_args,expected_bind,expect_warning",
+    [
+        ("-e FTLCONF_LOCAL_IPV4=192.0.2.10", "--net=host", "192.0.2.10", True),
+        ("-e FTLCONF_LOCAL_IPV4=192.0.2.10", "", "0.0.0.0", False),
+        (
+            "-e WEB_BIND_ADDR=192.0.2.20 -e FTLCONF_LOCAL_IPV4=192.0.2.10",
+            "--net=host",
+            "192.0.2.20",
+            False,
+        ),
+        (
+            "-e WEB_BIND_ADDR=192.0.2.20 -e FTLCONF_LOCAL_IPV4=192.0.2.10",
+            "",
+            "192.0.2.20",
+            False,
+        ),
+    ],
+)
+def test_setup_lighttpd_bind(
+    docker, args_env, test_args, expected_bind, expect_warning
+):
+    """Lighttpd's bind address is correctly set"""
+    WEB_CONFIG = "/etc/lighttpd/lighttpd.conf"
+    WARNING_EXTRACT = "[i] WARNING: running in host network mode forces"
+
+    function = docker.run(". /usr/local/bin/bash_functions.sh ; setup_lighttpd_bind")
+
+    if expect_warning:
+        assert WARNING_EXTRACT in function.stdout
+    else:
+        assert WARNING_EXTRACT not in function.stdout
+
+    config = docker.run(f"cat {WEB_CONFIG} | grep 'server.bind'")
+
+    if expected_bind == "0.0.0.0":
+        assert "server.bind" not in config.stdout
+    else:
+        assert f'server.bind		 = "{expected_bind}"' in config.stdout
