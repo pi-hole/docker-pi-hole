@@ -338,11 +338,24 @@ setup_FTL_ProcessDNSSettings(){
 }
 
 setup_lighttpd_bind() {
-    local serverip="${FTLCONF_LOCAL_IPV4}"
-    # if using '--net=host' only bind lighttpd on $FTLCONF_LOCAL_IPV4 and localhost
-    if grep -q "docker" /proc/net/dev && [[ $serverip != 0.0.0.0 ]]; then #docker (docker0 by default) should only be present on the host system
+    local bind_addr="${WEB_BIND_ADDR}"
+
+    if [[ -z "$bind_addr" ]]; then
+        # if using '--net=host' bind lighttpd on $FTLCONF_LOCAL_IPV4 (for backward compatibility with #154).
+        if grep -q "docker" /proc/net/dev && [[ $FTLCONF_LOCAL_IPV4 != 0.0.0.0 ]]; then #docker (docker0 by default) should only be present on the host system
+            echo "  [i] WARNING: running in host network mode forces lighttpd's bind address to \$FTLCONF_LOCAL_IPV4 ($FTLCONF_LOCAL_IPV4)."
+            echo "  [i] This behaviour is deprecated and will be removed in a future version. If your installation depends on a custom bind address (not 0.0.0.0) you should set the \$WEB_BIND_ADDR environment variable to the desired value."
+            bind_addr="${FTLCONF_LOCAL_IPV4}"
+        # bind on 0.0.0.0 by default
+        else
+            bind_addr="0.0.0.0"
+        fi
+    fi
+
+    # Overwrite lighttpd's bind address, always listen on localhost
+    if [[ $bind_addr != 0.0.0.0 ]]; then
         if ! grep -q "server.bind" /etc/lighttpd/lighttpd.conf ; then # if the declaration is already there, don't add it again
-            sed -i -E "s/server\.port\s+\=\s+([0-9]+)/server.bind\t\t = \"${serverip}\"\nserver.port\t\t = \1\n"\$SERVER"\[\"socket\"\] == \"127\.0\.0\.1:\1\" \{\}/" /etc/lighttpd/lighttpd.conf
+            sed -i -E "s/server\.port\s+\=\s+([0-9]+)/server.bind\t\t = \"${bind_addr}\"\nserver.port\t\t = \1\n"\$SERVER"\[\"socket\"\] == \"127\.0\.0\.1:\1\" \{\}/" /etc/lighttpd/lighttpd.conf
         fi
     fi
 }
@@ -386,7 +399,7 @@ setup_web_port() {
         return
     fi
     echo "  [i] Custom WEB_PORT set to $web_port"
-    echo "  [i] Without proper router DNAT forwarding to $FTLCONF_LOCAL_IPV4:$web_port, you may not get any blocked websites on ads"
+    echo "  [i] Without proper router DNAT forwarding to ${WEB_BIND_ADDR:-$FTLCONF_LOCAL_IPV4}:$web_port, you may not get any blocked websites on ads"
 
     # Update lighttpd's port
     sed -i '/server.port\s*=\s*80\s*$/ s/80/'"${WEB_PORT}"'/g' /etc/lighttpd/lighttpd.conf
