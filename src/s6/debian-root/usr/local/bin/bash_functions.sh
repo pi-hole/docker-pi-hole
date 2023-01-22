@@ -399,7 +399,7 @@ setup_web_port() {
         return
     fi
     echo "  [i] Custom WEB_PORT set to $web_port"
-    echo "  [i] Without proper router DNAT forwarding to $FTLCONF_LOCAL_IPV4:$web_port, you may not get any blocked websites on ads"
+    echo "  [i] Without proper router DNAT forwarding to ${WEB_BIND_ADDR:-$FTLCONF_LOCAL_IPV4}:$web_port, you may not get any blocked websites on ads"
 
     # Update lighttpd's port
     sed -i '/server.port\s*=\s*80\s*$/ s/80/'"${WEB_PORT}"'/g' /etc/lighttpd/lighttpd.conf
