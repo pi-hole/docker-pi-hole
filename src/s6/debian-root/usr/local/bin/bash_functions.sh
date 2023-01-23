@@ -107,11 +107,11 @@ ensure_basic_configuration() {
         cp -f "${setupVars}" "${setupVars}.update.bak"
     fi
 
-    # Remove any existing macvendor.db and replace it with a symblink to the one moved to the root directory (see install.sh)
-    if [[ -f "/etc/pihole/macvendor.db" ]]; then
-        rm /etc/pihole/macvendor.db
+    # If FTLCONF_MACVENDORDB is not set
+    if [[ -z "${FTLCONF_MACVENDORDB:-}" ]]; then
+        # User is not passing in a custom location - so force FTL to use the file we moved to / during the build
+        changeFTLsetting "MACVENDORDB" "/macvendor.db"
     fi
-    ln -s /macvendor.db /etc/pihole/macvendor.db
 
     # When fresh empty directory volumes are used then we need to create this file
     if [ ! -f /etc/dnsmasq.d/01-pihole.conf ] ; then
