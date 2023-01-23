@@ -118,11 +118,6 @@ ensure_basic_configuration() {
         cp /etc/.pihole/advanced/01-pihole.conf /etc/dnsmasq.d/
     fi;
 
-    # Ensure that /run/lighttpd exists for the php socket, and is owned by www-data.
-    # Without this, the web interface will return a 503. Not sure how this used to work, as this was always the directory that was used in previous versions of the image.
-    mkdir -p /run/lighttpd
-    chown www-data:www-data /run/lighttpd
-
     # setup_or_skip_gravity
 }
 
