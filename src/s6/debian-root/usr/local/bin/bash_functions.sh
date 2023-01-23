@@ -107,21 +107,16 @@ ensure_basic_configuration() {
         cp -f "${setupVars}" "${setupVars}.update.bak"
     fi
 
-    # Remove any existing macvendor.db and replace it with a symblink to the one moved to the root directory (see install.sh)
-    if [[ -f "/etc/pihole/macvendor.db" ]]; then
-        rm /etc/pihole/macvendor.db
+    # If FTLCONF_MACVENDORDB is not set
+    if [[ -z "${FTLCONF_MACVENDORDB:-}" ]]; then
+        # User is not passing in a custom location - so force FTL to use the file we moved to / during the build
+        changeFTLsetting "MACVENDORDB" "/macvendor.db"
     fi
-    ln -s /macvendor.db /etc/pihole/macvendor.db
 
     # When fresh empty directory volumes are used then we need to create this file
     if [ ! -f /etc/dnsmasq.d/01-pihole.conf ] ; then
         cp /etc/.pihole/advanced/01-pihole.conf /etc/dnsmasq.d/
     fi;
-
-    # Ensure that /run/lighttpd exists for the php socket, and is owned by www-data.
-    # Without this, the web interface will return a 503. Not sure how this used to work, as this was always the directory that was used in previous versions of the image.
-    mkdir -p /run/lighttpd
-    chown www-data:www-data /run/lighttpd
 
     # setup_or_skip_gravity
 }

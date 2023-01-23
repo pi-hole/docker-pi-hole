@@ -86,11 +86,11 @@ sed -i $'s/)\s*uninstallFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 # pihole -r / pihole reconfigure
 sed -i $'s/)\s*reconfigurePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 
-# Move macvendor.db to root dir and symlink it back into /etc/pihole. See https://github.com/pi-hole/docker-pi-hole/issues/1137
+# Move macvendor.db to root dir See https://github.com/pi-hole/docker-pi-hole/issues/1137
+# During startup we will change FTL's configuration to point to this file instead of /etc/pihole/macvendor.db
 # If user goes on to bind monunt this directory to their host, then we can easily ensure macvendor.db is the latest
 # (it is otherwise only updated when FTL is updated, which doesn't happen as part of the normal course of running this image)
 mv /etc/pihole/macvendor.db /macvendor.db
-ln -s /macvendor.db /etc/pihole/macvendor.db
 
 if [ ! -f /.piholeFirstBoot ]; then
   touch /.piholeFirstBoot
