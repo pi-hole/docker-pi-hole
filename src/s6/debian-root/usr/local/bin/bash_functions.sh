@@ -117,8 +117,6 @@ ensure_basic_configuration() {
     if [ ! -f /etc/dnsmasq.d/01-pihole.conf ] ; then
         cp /etc/.pihole/advanced/01-pihole.conf /etc/dnsmasq.d/
     fi;
-
-    # setup_or_skip_gravity
 }
 
 validate_env() {
@@ -364,9 +362,7 @@ setup_web_php_env() {
     local config_file
     config_file="/etc/lighttpd/conf-available/15-pihole-admin.conf"
     # if the environment variable VIRTUAL_HOST is not set, or is empty, then set it to the hostname of the container
-    if [ -z "${VIRTUAL_HOST}" ] || [ "${VIRTUAL_HOST}" == "" ]; then
-        VIRTUAL_HOST="${HOSTNAME}"
-    fi
+    VIRTUAL_HOST="${VIRTUAL_HOST:-$HOSTNAME}"
 
     for config_var in "VIRTUAL_HOST" "CORS_HOSTS" "PHP_ERROR_LOG" "PIHOLE_DOCKER_TAG" "TZ"; do
       local beginning_of_line="                    \"${config_var}\" => "
@@ -381,6 +377,19 @@ setup_web_php_env() {
 
     echo "  [i] Added ENV to php:"
     grep -E '(VIRTUAL_HOST|CORS_HOSTS|PHP_ERROR_LOG|PIHOLE_DOCKER_TAG|TZ)' "$config_file"
+
+    # Create an additional file in the lighttpd config directory to redirect the root to the admin page
+    # if the host matches either VIRTUAL_HOST (Or HOSTNAME if it is not set) or FTLCONF_LOCAL_IPV4
+    cat <<END > /etc/lighttpd/conf-enabled/15-pihole-admin-redirect-docker.conf
+    \$HTTP["url"] == "/" {
+        \$HTTP["host"] == "${VIRTUAL_HOST}" {
+            url.redirect = ("" => "/admin/")
+        }
+        \$HTTP["host"] == "${FTLCONF_LOCAL_IPV4}" {
+            url.redirect = ("" => "/admin/")
+        }
+    }
+END
 }
 
 setup_web_port() {
