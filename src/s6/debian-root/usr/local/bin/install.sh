@@ -75,7 +75,7 @@ export PIHOLE_SKIP_OS_CHECK=true
 
 git clone https://github.com/pi-hole/adminLTE /var/www/html/admin
 cd /var/www/html/admin
-git checkout new/FTL_is_my_new_home
+git checkout devel-v6
 
 echo "new/http" | tee /etc/pihole/ftlbranch
 
