@@ -79,9 +79,9 @@ git checkout devel-v6
 
 echo "new/http" | tee /etc/pihole/ftlbranch
 
-sudo git clone https://github.com/pi-hole/pi-hole /etc/.pihole
+git clone https://github.com/pi-hole/pi-hole /etc/.pihole
 cd /etc/.pihole
-sudo git checkout development-v6
+git checkout development-v6
 bash -ex /etc/.pihole/automated\ install/basic-install.sh --unattended
 
 sed -i '/^WEBPASSWORD/d' /etc/pihole/setupVars.conf

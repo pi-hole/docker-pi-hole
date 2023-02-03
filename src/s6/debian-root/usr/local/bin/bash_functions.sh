@@ -87,7 +87,7 @@ ensure_basic_configuration() {
     # If FTLCONF_MACVENDORDB is not set
     if [[ -z "${FTLCONF_MACVENDORDB:-}" ]]; then
         # User is not passing in a custom location - so force FTL to use the file we moved to / during the build
-        changeFTLsetting "MACVENDORDB" "/macvendor.db"
+        changeNewFTLSetting "files.macvendor" "/macvendor.db"
     fi
 
     # setup_or_skip_gravity
