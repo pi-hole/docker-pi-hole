@@ -17,14 +17,9 @@
 # shellcheck source=/dev/null
 . /opt/pihole/utils.sh
 
-export setupVars="/etc/pihole/setupVars.conf"
 export FTLconf="/etc/pihole/pihole-FTL.conf"
 export dnsmasqconfig="/etc/dnsmasq.d/01-pihole.conf"
 export adlistFile="/etc/pihole/adlists.list"
-
-changeNewFTLSetting(){
-    pihole-FTL --config "${1}" "${2}"
-}
 
 fix_capabilities() {
     # Testing on Docker 20.10.14 with no caps set shows the following caps available to the container:
@@ -52,7 +47,7 @@ fix_capabilities() {
             echo "ERROR: DHCP requested but NET_ADMIN is not available. DHCP will not be started."
             echo "      Please add cap_net_admin to the container's capabilities or disable DHCP."
             DHCP_ACTIVE='false'
-            change_setting "DHCP_ACTIVE" "false"
+            setFTLConfigValue dhcp.active false
         fi
 
         if [[ $ret -ne 0 && "${DNSMASQ_USER:-pihole}" != "root" ]]; then
@@ -81,13 +76,14 @@ ensure_basic_configuration() {
     # In case of `pihole` UID being changed, re-chown the pihole scripts and pihole command
     chown -R pihole:root "${PI_HOLE_INSTALL_DIR}"
     chown pihole:root "${PI_HOLE_BIN_DIR}/pihole"
+    chown -R pihole:pihole /etc/pihole
 
     set -e
 
     # If FTLCONF_MACVENDORDB is not set
     if [[ -z "${FTLCONF_MACVENDORDB:-}" ]]; then
         # User is not passing in a custom location - so force FTL to use the file we moved to / during the build
-        changeNewFTLSetting "files.macvendor" "/macvendor.db"
+        setFTLConfigValue "files.macvendor" "/macvendor.db"
     fi
 
     # setup_or_skip_gravity
@@ -138,12 +134,12 @@ setup_FTL_Interface(){
       interfaceType='custom'
     fi;
     echo "  [i] FTL binding to $interfaceType interface: $interface"
-    change_setting "PIHOLE_INTERFACE" "${interface}"
+    setFTLConfigValue dns.interface "${interface}"
 }
 
 setup_FTL_ListeningBehaviour(){
     if [ -n "$DNSMASQ_LISTENING" ]; then
-      change_setting "DNSMASQ_LISTENING" "${DNSMASQ_LISTENING}"
+      setFTLConfigValue dns.listeningMode "${DNSMASQ_LISTENING}"
     fi;
 }
 
@@ -170,60 +166,56 @@ setup_FTL_CacheSize() {
     fi
     echo "  [i] Custom CUSTOM_CACHE_SIZE set to $custom_cache_size"
 
-    change_setting "CACHE_SIZE" "$custom_cache_size"
-    # sed -i "s/^cache-size=\s*[0-9]*/cache-size=$custom_cache_size/" ${dnsmasq_pihole_01_location}
+    setFTLConfigValue dns.cacheSize "$custom_cache_size"
 }
 
 apply_FTL_Configs_From_Env(){
     ### TODO: This is going to need a major rework to support the new FTL config file.
 
-    # Get all exported environment variables starting with FTLCONF_ as a prefix and call the changeNewFTLSetting
+    # Get all exported environment variables starting with FTLCONF_ as a prefix and call the setFTLConfigValue
     # function with the environment variable's suffix as the key. This allows applying any pihole-FTL.conf
     # setting defined here: https://docs.pi-hole.net/ftldns/configfile/
     declare -px | grep FTLCONF_ | sed -E 's/declare -x FTLCONF_([^=]+)=\"(|.+)\"/\1 \2/' | while read -r name value
     do
         echo "  [i] Applying pihole-FTL.conf setting $name=$value"
-        changeNewFTLSetting "$name" "$value"
+        setFTLConfigValue "$name" "$value"
     done
 }
 
 setup_FTL_dhcp() {
   if [ -z "${DHCP_START}" ] || [ -z "${DHCP_END}" ] || [ -z "${DHCP_ROUTER}" ]; then
     echo "  [!] ERROR: Won't enable DHCP server because mandatory Environment variables are missing: DHCP_START, DHCP_END and/or DHCP_ROUTER"
-    change_setting "DHCP_ACTIVE" "false"
+    setFTLConfigValue dhcp.active false
   else
-    changeNewFTLSetting "dhcp.active" "${DHCP_ACTIVE}"
-    changeNewFTLSetting "dhcp.start" "${DHCP_START}"
-    changeNewFTLSetting "dhcp.end" "${DHCP_END}"
-    changeNewFTLSetting "dhcp.router" "${DHCP_ROUTER}"
-    changeNewFTLSetting "dhcp.leasetime" "${DHCP_LEASETIME}"
-    #changeNewFTLSetting "PIHOLE_DOMAIN" "${PIHOLE_DOMAIN}"
-    changeNewFTLSetting "dhcp.ipv6" "${DHCP_IPv6}"
-    changeNewFTLSetting "dhcp.rapid_commit" "${DHCP_rapid_commit}"
+    setFTLConfigValue dhcp.active "${DHCP_ACTIVE}"
+    setFTLConfigValue dhcp.start "${DHCP_START}"
+    setFTLConfigValue dhcp.end "${DHCP_END}"
+    setFTLConfigValue dhcp.router "${DHCP_ROUTER}"
+    setFTLConfigValue dhcp.leasetime "${DHCP_LEASETIME}"
+    #setFTLConfigValue PIHOLE_DOMAIN "${PIHOLE_DOMAIN}"
+    setFTLConfigValue dhcp.ipv6 "${DHCP_IPv6}"
+    setFTLConfigValue dhcp.rapid_commit "${DHCP_rapid_commit}"
   fi
 }
 
 setup_FTL_query_logging(){
     if [ "${QUERY_LOGGING_OVERRIDE}" == "false" ]; then
         echo "  [i] Disabling Query Logging"
-        change_setting "QUERY_LOGGING" "$QUERY_LOGGING_OVERRIDE"
-        #removeKey "${dnsmasqconfig}" log-queries
+        setFTLConfigValue dns.queryLogging "${QUERY_LOGGING_OVERRIDE}"
     else
         # If it is anything other than false, set it to true
-        change_setting "QUERY_LOGGING" "true"
-        # Set pihole logging on for good measure
         echo "  [i] Enabling Query Logging"
-        #addKey "${dnsmasqconfig}" log-queries
+        setFTLConfigValue dns.queryLogging true
     fi
 
 }
 
 setup_FTL_server(){
 
-    [ -n "${REV_SERVER}" ] && changeNewFTLSetting "dnsmasq.rev_server.active" "$REV_SERVER"
-    [ -n "${REV_SERVER_DOMAIN}" ] && changeNewFTLSetting "dnsmasq.rev_server.domain" "$REV_SERVER_DOMAIN"
-    [ -n "${REV_SERVER_TARGET}" ] && changeNewFTLSetting "dnsmasq.rev_server.target" "$REV_SERVER_TARGET"
-    [ -n "${REV_SERVER_CIDR}" ] && changeNewFTLSetting "dnsmasq.rev_server.cidr" "$REV_SERVER_CIDR"
+    [ -n "${REV_SERVER}" ] && setFTLConfigValue "dnsmasq.rev_server.active" "$REV_SERVER"
+    [ -n "${REV_SERVER_DOMAIN}" ] && setFTLConfigValue "dnsmasq.rev_server.domain" "$REV_SERVER_DOMAIN"
+    [ -n "${REV_SERVER_TARGET}" ] && setFTLConfigValue "dnsmasq.rev_server.target" "$REV_SERVER_TARGET"
+    [ -n "${REV_SERVER_CIDR}" ] && setFTLConfigValue "dnsmasq.rev_server.cidr" "$REV_SERVER_CIDR"
 }
 
 setup_FTL_upstream_DNS(){
@@ -240,25 +232,24 @@ setup_FTL_upstream_DNS(){
         echo "  [i] Setting DNS servers based on PIHOLE_DNS_ variable"
         # Replace all semi-colons in PIHOLE_DNS_ with escaped double quote, comma, and escaped double quote
         # This is to create a valid JSON array string
-        changeNewFTLSetting "dnsmasq.upstreams" "[\"${PIHOLE_DNS_//;/\",\"}\"]"
+        setFTLConfigValue dns.upstreams "[\"${PIHOLE_DNS_//;/\",\"}\"]"
 
         # TODO: Discuss with @DL6ER if pihole-FTL should be modified to accept a semicolon delimited string for simplicity
         #       ALso noted during testing that FTL will fall over if an invalid hostname is passed into the array
         #       I have removed a lot of validation code from this side of things for now, but may be worth revisiting it. (and make it easier to read than it was)
 
     else
-        # Environment variable has not been set, but there may be existing values in an existing setupVars.conf
+        # Environment variable has not been set, but there may be existing values in an existing pihole.toml
         # if this is the case, we do not want to overwrite these with the defaults of 8.8.8.8 and 8.8.4.4
         # Pi-hole can run with only one upstream configured, so we will just check for one.
 
-        # TODO: setupVars is going to be deprecated in the future, so this code will need to be revisited
-        setupVarsDNS="$(grep 'PIHOLE_DNS_' /etc/pihole/setupVars.conf || true)"
+        emptyTomlUpstreams="$(grep 'upstreams = \[   \]' /etc/pihole/pihole.toml || true)"
 
-        if [ -z "${setupVarsDNS}" ]; then
+        if [ -n "${emptyTomlUpstreams}" ]; then
             echo "  [i] Configuring default DNS servers: 8.8.8.8, 8.8.4.4"
-            changeNewFTLSetting "dnsmasq.upstreams" "[\"8.8.8.8\",\"8.8.4.4\"]"
+            setFTLConfigValue dns.upstreams "[\"8.8.8.8\",\"8.8.4.4\"]"
         else
-            echo "  [i] Existing DNS servers detected in setupVars.conf. Leaving them alone"
+            echo "  [i] Existing DNS servers detected in pihole.toml. Leaving them alone"
         fi
     fi
 }
@@ -290,9 +281,7 @@ setup_web_port() {
     echo "  [i] Custom WEB_PORT set to $web_port"
     echo "  [i] Without proper router DNAT forwarding to ${WEB_BIND_ADDR:-$FTLCONF_LOCAL_IPV4}:$web_port, you may not get any blocked websites on ads"
 
-    changeNewFTLSetting "http.port" "$web_port"
-
-
+    setFTLConfigValue webserver.port "$web_port"
 }
 
 setup_web_theme(){
@@ -302,11 +291,11 @@ setup_web_theme(){
         case "${WEBTHEME}" in
         "default-dark" | "default-darker" | "default-light" | "default-auto" | "lcars")
             echo "  [i] Setting Web Theme based on WEBTHEME variable, using value ${WEBTHEME}"
-            change_setting "WEBTHEME" "${WEBTHEME}"
+            setFTLConfigValue webserver.interface.theme "${WEBTHEME}"
             ;;
         *)
             echo "  [!] Invalid theme name supplied: ${WEBTHEME}, falling back to default-light."
-            change_setting "WEBTHEME" "default-light"
+            setFTLConfigValue webserver.interface.theme "default-light"
             ;;
         esac
     fi
@@ -324,8 +313,10 @@ setup_web_password() {
     if [ -z "${WEBPASSWORD+x}" ] ; then
         # ENV WEBPASSWORD_OVERRIDE is not set
 
-        # Exit if setupvars already has a password
-        setup_var_exists "WEBPASSWORD" && return
+        # Exit if password is already set (TODO: Revisit this. Maybe make setting password in environment variable mandatory?)
+        if [[ $(pihole-FTL --config webserver.api.pwhash) != '""' ]]; then
+            return
+        fi
         # Generate new random password
         WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
         echo "  [i] Assigning random password: $WEBPASSWORD"
@@ -375,18 +366,6 @@ setup_blocklists() {
     cat "${adlistFile}"
 }
 
-setup_var_exists() {
-    local KEY="$1"
-    if [ -n "$2" ]; then
-        local REQUIRED_VALUE="[^\n]+"
-    fi
-    if grep -Pq "^${KEY}=${REQUIRED_VALUE}" "$setupVars"; then
-        echo "  [i] Pre existing ${KEY} found"
-        true
-    else
-        false
-    fi
-}
 
 setup_web_temp_unit() {
   local UNIT="${TEMPERATUREUNIT}"
@@ -405,7 +384,7 @@ setup_web_layout() {
   if [[ "$LO" != "" ]] ; then
       # check if we have valid types boxed | traditional
       if [[ "$LO" == "traditional" || "$LO" == "boxed" ]] ; then
-          change_setting "WEBUIBOXEDLAYOUT" "$WEBUIBOXEDLAYOUT"
+        setFTLConfigValue webserver.interface.boxed "$LO"
       fi
   fi
 }

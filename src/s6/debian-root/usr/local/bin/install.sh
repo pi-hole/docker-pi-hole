@@ -7,8 +7,6 @@ mkdir -p /var/run/pihole
 CORE_LOCAL_REPO=/etc/.pihole
 WEB_LOCAL_REPO=/var/www/html/admin
 
-setupVars=/etc/pihole/setupVars.conf
-
 detect_arch() {
   DETECTED_ARCH=$(dpkg --print-architecture)
   S6_ARCH=$DETECTED_ARCH
@@ -48,19 +46,6 @@ curl -L -s "https://github.com/just-containers/s6-overlay/releases/download/${S6
 mv /init /s6-init                                                                    #
 ######################################################################################
 
-# Preseed variables to assist with using --unattended install
-{
-  echo "PIHOLE_INTERFACE=eth0"
-  echo "IPV4_ADDRESS=0.0.0.0"
-  echo "IPV6_ADDRESS=0:0:0:0:0:0"
-  echo "PIHOLE_DNS_1=8.8.8.8"
-  echo "QUERY_LOGGING=true"
-  echo "INSTALL_WEB_SERVER=true"
-  echo "INSTALL_WEB_INTERFACE=true"
-  echo "LIGHTTPD_ENABLED=true"
-}>> "${setupVars}"
-source $setupVars
-
 export USER=pihole
 
 export PIHOLE_SKIP_OS_CHECK=true
@@ -84,7 +69,7 @@ cd /etc/.pihole
 git checkout development-v6
 bash -ex /etc/.pihole/automated\ install/basic-install.sh --unattended
 
-sed -i '/^WEBPASSWORD/d' /etc/pihole/setupVars.conf
+pihole-FTL --config webserver.api.pwhash ""
 
 # sed a new function into the `pihole` script just above the `helpFunc()` function for later use.
 sed -i $'s/helpFunc() {/unsupportedFunc() {\\\n  echo "Function not supported in Docker images"\\\n  exit 0\\\n}\\\n\\\nhelpFunc() {/g' /usr/local/bin/pihole

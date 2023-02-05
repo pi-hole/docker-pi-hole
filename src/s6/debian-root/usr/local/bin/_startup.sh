@@ -51,9 +51,9 @@ setup_FTL_ListeningBehaviour
 setup_FTL_CacheSize
 setup_FTL_query_logging
 setup_FTL_server || true
-[ -n "${DNS_FQDN_REQUIRED}" ] && change_setting "DNS_FQDN_REQUIRED" "$DNS_FQDN_REQUIRED"
-[ -n "${DNSSEC}" ] && change_setting "DNSSEC" "$DNSSEC"
-[ -n "${DNS_BOGUS_PRIV}" ] && change_setting "DNS_BOGUS_PRIV" "$DNS_BOGUS_PRIV"
+[ -n "${DNS_FQDN_REQUIRED}" ] && setFTLConfigValue dns.domainNeeded "$DNS_FQDN_REQUIRED"
+[ -n "${DNSSEC}" ] && setFTLConfigValue dns.dnssec "$DNSSEC"
+[ -n "${DNS_BOGUS_PRIV}" ] && setFTLConfigValue dns.bogusPriv "$DNS_BOGUS_PRIV"
 
 
 [ -f /.piholeFirstBoot ] && rm /.piholeFirstBoot
