@@ -266,7 +266,7 @@ setup_FTL_upstream_DNS(){
 setup_web_port() {
     local warning="  [!] WARNING: Custom WEB_PORT not used"
     # Quietly exit early for empty or default
-    if [[ -z "${WEB_PORT}" || "${WEB_PORT}" == '80' ]] ; then return ; fi
+    if [[ -z "${WEB_PORT}" ]] ; then return ; fi
 
     if ! echo "$WEB_PORT" | grep -q '^[0-9][0-9]*$' ; then
         echo "$warning - $WEB_PORT is not an integer"
