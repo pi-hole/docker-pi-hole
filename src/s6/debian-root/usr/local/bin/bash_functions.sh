@@ -4,14 +4,6 @@
 # else it will get overridden itself when we source basic-install.sh
 [ -n "${QUERY_LOGGING}" ] && export QUERY_LOGGING_OVERRIDE="${QUERY_LOGGING}"
 
-# Legacy Env Vars preserved for backwards compatibility - convert them to FTLCONF_ equivalents
-[ -n "${ServerIP}" ] && echo "ServerIP is deprecated. Converting to FTLCONF_LOCAL_IPV4" && export "FTLCONF_LOCAL_IPV4"="$ServerIP"
-[ -n "${ServerIPv6}" ] && echo "ServerIPv6 is deprecated. Converting to FTLCONF_LOCAL_IPV6" && export "FTLCONF_LOCAL_IPV6"="$ServerIPv6"
-
-# Previously used FTLCONF_ equivalent has since been deprecated, also convert this one
-[ -n "${FTLCONF_REPLY_ADDR4}" ] && echo "FTLCONF_REPLY_ADDR4 is deprecated. Converting to FTLCONF_LOCAL_IPV4" && export "FTLCONF_LOCAL_IPV4"="$FTLCONF_REPLY_ADDR4"
-[ -n "${FTLCONF_REPLY_ADDR6}" ] && echo "FTLCONF_REPLY_ADDR6 is deprecated. Converting to FTLCONF_LOCAL_IPV6" && export "FTLCONF_LOCAL_IPV6"="$FTLCONF_REPLY_ADDR6"
-
 # Some of the bash_functions use utilities from Pi-hole's utils.sh
 # shellcheck disable=SC2154
 # shellcheck source=/dev/null
@@ -42,7 +34,7 @@ fix_capabilities() {
 
         setcap ${CAP_STR:1}+ep "$(which pihole-FTL)" || ret=$?
 
-        if [[ $DHCP_READY == false ]] && [[ $DHCP_ACTIVE == true ]]; then
+        if [[ $DHCP_READY == false ]] && [[ $FTLCONF_dhcp_active == true ]]; then
             # DHCP is requested but NET_ADMIN is not available.
             echo "ERROR: DHCP requested but NET_ADMIN is not available. DHCP will not be started."
             echo "      Please add cap_net_admin to the container's capabilities or disable DHCP."
@@ -80,37 +72,13 @@ ensure_basic_configuration() {
 
     set -e
 
-    # If FTLCONF_MACVENDORDB is not set
-    if [[ -z "${FTLCONF_MACVENDORDB:-}" ]]; then
+    # If FTLCONF_files_macvendor is not set
+    if [[ -z "${FTLCONF_files_macvendor:-}" ]]; then
         # User is not passing in a custom location - so force FTL to use the file we moved to / during the build
         setFTLConfigValue "files.macvendor" "/macvendor.db"
     fi
 
     # setup_or_skip_gravity
-}
-
-validate_env() {
-    # Optional FTLCONF_LOCAL_IPV4 is a valid IP
-    # nc won't throw any text based errors when it times out connecting to a valid IP, otherwise it complains about the DNS name being garbage
-    # if nc doesn't behave as we expect on a valid IP the routing table should be able to look it up and return a 0 retcode
-    if [[ "$(nc -4 -w1 -z "$FTLCONF_LOCAL_IPV4" 53 2>&1)" != "" ]] && ! ip route get "$FTLCONF_LOCAL_IPV4" > /dev/null ; then
-        echo "ERROR: FTLCONF_LOCAL_IPV4 Environment variable ($FTLCONF_LOCAL_IPV4) doesn't appear to be a valid IPv4 address"
-        exit 1
-    fi
-
-    # Optional IPv6 is a valid address
-    if [[ -n "$FTLCONF_LOCAL_IPV6" ]] ; then
-        if [[ "$FTLCONF_LOCAL_IPV6" == 'kernel' ]] ; then
-            echo "  [!] ERROR: You passed in IPv6 with a value of 'kernel', this maybe because you do not have IPv6 enabled on your network"
-            unset FTLCONF_LOCAL_IPV6
-            exit 1
-        fi
-        if [[ "$(nc -6 -w1 -z "$FTLCONF_LOCAL_IPV6" 53 2>&1)" != "" ]] && ! ip route get "$FTLCONF_LOCAL_IPV6" > /dev/null ; then
-            echo "  [!] ERROR: FTLCONF_LOCAL_IPV6 Environment variable ($FTLCONF_LOCAL_IPV6) doesn't appear to be a valid IPv6 address"
-            echo "        TIP: If your server is not IPv6 enabled just remove '-e FTLCONF_LOCAL_IPV6' from your docker container"
-            exit 1
-        fi
-    fi;
 }
 
 setup_FTL_User(){
@@ -125,77 +93,37 @@ setup_FTL_User(){
     fi
 }
 
-setup_FTL_Interface(){
-    local interface="${INTERFACE:-eth0}"
-
-    # Set the interface for FTL to listen on
-    local interfaceType='default'
-    if [ "$interface" != 'eth0' ] ; then
-      interfaceType='custom'
-    fi;
-    echo "  [i] FTL binding to $interfaceType interface: $interface"
-    setFTLConfigValue dns.interface "${interface}"
-}
-
-setup_FTL_ListeningBehaviour(){
-    if [ -n "$DNSMASQ_LISTENING" ]; then
-      setFTLConfigValue dns.listeningMode "${DNSMASQ_LISTENING}"
-    fi;
-}
-
-setup_FTL_CacheSize() {
-    local warning="  [i] WARNING: CUSTOM_CACHE_SIZE not used"
-    local dnsmasq_pihole_01_location="/etc/dnsmasq.d/01-pihole.conf"
-    # Quietly exit early for empty or default
-    if [[ -z "${CUSTOM_CACHE_SIZE}" || "${CUSTOM_CACHE_SIZE}" == '10000' ]] ; then return ; fi
-
-    if [[ "${DNSSEC}" == "true" ]] ; then
-        echo "$warning - Cannot change cache size if DNSSEC is enabled"
-        return
-    fi
-
-    if ! echo "$CUSTOM_CACHE_SIZE" | grep -q '^[0-9]*$' ; then
-        echo "$warning - $CUSTOM_CACHE_SIZE is not an integer"
-        return
-    fi
-
-    local -i custom_cache_size="$CUSTOM_CACHE_SIZE"
-    if (( custom_cache_size < 0 )); then
-        echo "$warning - $custom_cache_size is not a positive integer or zero"
-        return
-    fi
-    echo "  [i] Custom CUSTOM_CACHE_SIZE set to $custom_cache_size"
-
-    setFTLConfigValue dns.cacheSize "$custom_cache_size"
-}
-
 apply_FTL_Configs_From_Env(){
-    ### TODO: This is going to need a major rework to support the new FTL config file.
-
     # Get all exported environment variables starting with FTLCONF_ as a prefix and call the setFTLConfigValue
     # function with the environment variable's suffix as the key. This allows applying any pihole-FTL.conf
     # setting defined here: https://docs.pi-hole.net/ftldns/configfile/
+    echo ""
+    echo "==========Applying settings from environment variables=========="
+    source /opt/pihole/COL_TABLE
     declare -px | grep FTLCONF_ | sed -E 's/declare -x FTLCONF_([^=]+)=\"(|.+)\"/\1 \2/' | while read -r name value
     do
-        echo "  [i] Applying pihole-FTL.conf setting $name=$value"
-        setFTLConfigValue "$name" "$value"
-    done
-}
+        # Replace underscores wi1th dots in the name to match pihole-FTL expectiations
+        name="${name//_/.}"
 
-setup_FTL_dhcp() {
-  if [ -z "${DHCP_START}" ] || [ -z "${DHCP_END}" ] || [ -z "${DHCP_ROUTER}" ]; then
-    echo "  [!] ERROR: Won't enable DHCP server because mandatory Environment variables are missing: DHCP_START, DHCP_END and/or DHCP_ROUTER"
-    setFTLConfigValue dhcp.active false
-  else
-    setFTLConfigValue dhcp.active "${DHCP_ACTIVE}"
-    setFTLConfigValue dhcp.start "${DHCP_START}"
-    setFTLConfigValue dhcp.end "${DHCP_END}"
-    setFTLConfigValue dhcp.router "${DHCP_ROUTER}"
-    setFTLConfigValue dhcp.leasetime "${DHCP_LEASETIME}"
-    #setFTLConfigValue PIHOLE_DOMAIN "${PIHOLE_DOMAIN}"
-    setFTLConfigValue dhcp.ipv6 "${DHCP_IPv6}"
-    setFTLConfigValue dhcp.rapid_commit "${DHCP_rapid_commit}"
-  fi
+        # Special handing for the value if the name is dns.upstreams
+        if [ "$name" == "dns.upstreams" ]; then
+            value="[\"${value//;/\",\"}\"]"
+        fi
+
+        if [ "$name" == "dns.reply.host.overwrite.v4" ]; then
+            name="dns.reply.host.overwrite_v4"
+        fi
+
+        if $(setFTLConfigValue "${name}" "${value}" 2>&1); then
+            echo "  ${TICK} Applied pihole-FTL setting $name=$value"
+        else
+            echo "  ${CROSS} Error Applying pihole-FTL setting $name=$value"
+        fi
+
+
+    done
+    echo "================================================================"
+    echo ""
 }
 
 setup_FTL_query_logging(){
@@ -210,50 +138,6 @@ setup_FTL_query_logging(){
 
 }
 
-setup_FTL_server(){
-
-    [ -n "${REV_SERVER}" ] && setFTLConfigValue "dnsmasq.rev_server.active" "$REV_SERVER"
-    [ -n "${REV_SERVER_DOMAIN}" ] && setFTLConfigValue "dnsmasq.rev_server.domain" "$REV_SERVER_DOMAIN"
-    [ -n "${REV_SERVER_TARGET}" ] && setFTLConfigValue "dnsmasq.rev_server.target" "$REV_SERVER_TARGET"
-    [ -n "${REV_SERVER_CIDR}" ] && setFTLConfigValue "dnsmasq.rev_server.cidr" "$REV_SERVER_CIDR"
-}
-
-setup_FTL_upstream_DNS(){
-    if [ -z "${PIHOLE_DNS_}" ]; then
-        # For backward compatibility, if DNS1 and/or DNS2 are set, but PIHOLE_DNS_ is not, convert them to
-        # a semi-colon delimited string and store in PIHOLE_DNS_
-        # They are not used anywhere if PIHOLE_DNS_ is set already
-        [ -n "${DNS1}" ] && echo "  [i] Converting DNS1 to PIHOLE_DNS_" && PIHOLE_DNS_="$DNS1"
-        [[ -n "${DNS2}" && "${DNS2}" != "no" ]] && echo "  [i] Converting DNS2 to PIHOLE_DNS_" && PIHOLE_DNS_="$PIHOLE_DNS_;$DNS2"
-    fi
-
-    # Parse the PIHOLE_DNS variable, if it exists, and apply upstream servers to Pi-hole config
-    if [ -n "${PIHOLE_DNS_}" ]; then
-        echo "  [i] Setting DNS servers based on PIHOLE_DNS_ variable"
-        # Replace all semi-colons in PIHOLE_DNS_ with escaped double quote, comma, and escaped double quote
-        # This is to create a valid JSON array string
-        setFTLConfigValue dns.upstreams "[\"${PIHOLE_DNS_//;/\",\"}\"]"
-
-        # TODO: Discuss with @DL6ER if pihole-FTL should be modified to accept a semicolon delimited string for simplicity
-        #       ALso noted during testing that FTL will fall over if an invalid hostname is passed into the array
-        #       I have removed a lot of validation code from this side of things for now, but may be worth revisiting it. (and make it easier to read than it was)
-
-    else
-        # Environment variable has not been set, but there may be existing values in an existing pihole.toml
-        # if this is the case, we do not want to overwrite these with the defaults of 8.8.8.8 and 8.8.4.4
-        # Pi-hole can run with only one upstream configured, so we will just check for one.
-
-        emptyTomlUpstreams="$(grep 'upstreams = \[   \]' /etc/pihole/pihole.toml || true)"
-
-        if [ -n "${emptyTomlUpstreams}" ]; then
-            echo "  [i] Configuring default DNS servers: 8.8.8.8, 8.8.4.4"
-            setFTLConfigValue dns.upstreams "[\"8.8.8.8\",\"8.8.4.4\"]"
-        else
-            echo "  [i] Existing DNS servers detected in pihole.toml. Leaving them alone"
-        fi
-    fi
-}
-
 # setup_FTL_ProcessDNSSettings(){
 #     # Commit settings to 01-pihole.conf
 
@@ -262,44 +146,6 @@ setup_FTL_upstream_DNS(){
 #    # ProcessDNSSettings
 # }
 
-
-setup_web_port() {
-    local warning="  [!] WARNING: Custom WEB_PORT not used"
-    # Quietly exit early for empty or default
-    if [[ -z "${WEB_PORT}" ]] ; then return ; fi
-
-    if ! echo "$WEB_PORT" | grep -q '^[0-9][0-9]*$' ; then
-        echo "$warning - $WEB_PORT is not an integer"
-        return
-    fi
-
-    local -i web_port="$WEB_PORT"
-    if (( web_port < 1 || web_port > 65535 )); then
-        echo "$warning - $web_port is not within valid port range of 1-65535"
-        return
-    fi
-    echo "  [i] Custom WEB_PORT set to $web_port"
-    echo "  [i] Without proper router DNAT forwarding to ${WEB_BIND_ADDR:-$FTLCONF_LOCAL_IPV4}:$web_port, you may not get any blocked websites on ads"
-
-    setFTLConfigValue webserver.port "$web_port"
-}
-
-setup_web_theme(){
-    # Parse the WEBTHEME variable, if it exists, and set the selected theme if it is one of the supported values.
-    # If an invalid theme name was supplied, setup WEBTHEME to use the default-light theme.
-    if [ -n "${WEBTHEME}" ]; then
-        case "${WEBTHEME}" in
-        "default-dark" | "default-darker" | "default-light" | "default-auto" | "lcars")
-            echo "  [i] Setting Web Theme based on WEBTHEME variable, using value ${WEBTHEME}"
-            setFTLConfigValue webserver.interface.theme "${WEBTHEME}"
-            ;;
-        *)
-            echo "  [!] Invalid theme name supplied: ${WEBTHEME}, falling back to default-light."
-            setFTLConfigValue webserver.interface.theme "default-light"
-            ;;
-        esac
-    fi
-}
 
 load_web_password_secret() {
    # If WEBPASSWORD is not set at all, attempt to read password from WEBPASSWORD_FILE,
@@ -364,27 +210,4 @@ setup_blocklists() {
 
     echo "  [i] Blocklists (${adlistFile}) now set to:"
     cat "${adlistFile}"
-}
-
-
-setup_web_temp_unit() {
-  local UNIT="${TEMPERATUREUNIT}"
-  # check if var is empty
-  if [[ "$UNIT" != "" ]] ; then
-      # check if we have valid units
-      if [[ "$UNIT" == "c" || "$UNIT" == "k" || $UNIT == "f" ]] ; then
-          pihole -a -"${UNIT}"
-      fi
-  fi
-}
-
-setup_web_layout() {
-  local LO="${WEBUIBOXEDLAYOUT}"
-  # check if var is empty
-  if [[ "$LO" != "" ]] ; then
-      # check if we have valid types boxed | traditional
-      if [[ "$LO" == "traditional" || "$LO" == "boxed" ]] ; then
-        setFTLConfigValue webserver.interface.boxed "$LO"
-      fi
-  fi
 }
