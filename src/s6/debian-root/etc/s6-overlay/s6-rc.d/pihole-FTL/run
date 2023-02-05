@@ -17,7 +17,7 @@ mkdir -pm 0755 /run/pihole /var/log/pihole
 
 # Ensure that permissions are set so that pihole-FTL can edit all necessary files
 chown pihole:pihole /run/pihole-FTL.pid /var/log/pihole/FTL.log /var/log/pihole/pihole.log /etc/pihole/dhcp.leases /run/pihole /etc/pihole
-chmod 0644 /run/pihole-FTL.pid /var/log/pihole/FTL.log /var/log/pihole/pihole.log /etc/pihole/dhcp.leases
+chmod 0644 /run/pihole-FTL.pid /var/log/pihole/FTL.log /var/log/pihole/pihole.log /etc/pihole/dhcp.leases /etc/pihole/pihole.toml
 
 # Ensure that permissions are set so that pihole-FTL can edit the files. We ignore errors as the file may not (yet) exist
 chmod -f 0644 /etc/pihole/macvendor.db
