@@ -9,8 +9,6 @@
 # shellcheck source=/dev/null
 . /opt/pihole/utils.sh
 
-export FTLconf="/etc/pihole/pihole-FTL.conf"
-export dnsmasqconfig="/etc/dnsmasq.d/01-pihole.conf"
 export adlistFile="/etc/pihole/adlists.list"
 
 fix_capabilities() {
@@ -77,20 +75,6 @@ ensure_basic_configuration() {
         # User is not passing in a custom location - so force FTL to use the file we moved to / during the build
         setFTLConfigValue "files.macvendor" "/macvendor.db"
     fi
-
-    # setup_or_skip_gravity
-}
-
-setup_FTL_User(){
-    # Run DNSMASQ as root user to avoid SHM permission issues
-    if grep -r -q '^\s*user=' /etc/dnsmasq.* ; then
-        # Change user that had been set previously to root
-        for f in $(grep -r -l '^\s*user=' /etc/dnsmasq.*); do
-            sed -i "/^\s*user=/ c\user=${DNSMASQ_USER}" "${f}"
-        done
-    else
-      echo -e "\nuser=${DNSMASQ_USER}" >> /etc/dnsmasq.conf
-    fi
 }
 
 apply_FTL_Configs_From_Env(){
@@ -110,17 +94,18 @@ apply_FTL_Configs_From_Env(){
             value="[\"${value//;/\",\"}\"]"
         fi
 
-        if [ "$name" == "dns.reply.host.overwrite.v4" ]; then
-            name="dns.reply.host.overwrite_v4"
-        fi
-
-        if $(setFTLConfigValue "${name}" "${value}" 2>&1); then
-            echo "  ${TICK} Applied pihole-FTL setting $name=$value"
+        if [ "$name" == "webserver.api.password" ]; then
+            masked_value=$(printf "%${#value}s" | tr " " "*")
         else
-            echo "  ${CROSS} Error Applying pihole-FTL setting $name=$value"
+            masked_value=$value
         fi
 
-
+        if $(pihole-FTL --config "${name}" "${value}" > /ftlconfoutput); then
+            echo "  ${TICK} Applied pihole-FTL setting $name=$masked_value"
+        else
+            echo "  ${CROSS} Error Applying pihole-FTL setting $name=$masked_value"
+            echo "  ${INFO}   $(cat /ftlconfoutput)"
+        fi
     done
     echo "================================================================"
     echo ""
@@ -137,14 +122,6 @@ setup_FTL_query_logging(){
     fi
 
 }
-
-# setup_FTL_ProcessDNSSettings(){
-#     # Commit settings to 01-pihole.conf
-
-#     # shellcheck source=/dev/null
-#     #. /opt/pihole/webpage.sh
-#    # ProcessDNSSettings
-# }
 
 
 load_web_password_secret() {

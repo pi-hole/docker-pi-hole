@@ -5,13 +5,7 @@ if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
     set -x ;
 fi
 
-gravityDBfile="/etc/pihole/gravity.db"
-config_file="/etc/pihole/pihole-FTL.conf"
-# make a point to mention which config file we're checking, as breadcrumb to revisit if/when pihole-FTL.conf is succeeded by TOML
-echo "  Checking if custom gravity.db is set in ${config_file}"
-if [[ -f "${config_file}" ]]; then
-    gravityDBfile="$(grep --color=never -Po "^GRAVITYDB=\K.*" "${config_file}" 2> /dev/null || echo "/etc/pihole/gravity.db")"
-fi
+gravityDBfile=$(pihole-FTL --config files.gravity)
 
 if [ -z "$SKIPGRAVITYONBOOT" ] || [ ! -f "${gravityDBfile}" ]; then
     if [ -n "$SKIPGRAVITYONBOOT" ];then
