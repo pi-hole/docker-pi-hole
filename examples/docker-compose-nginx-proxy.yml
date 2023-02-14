@@ -30,7 +30,7 @@ services:
     cap_add:
       - NET_ADMIN
     environment:
-      ServerIP: 192.168.41.55
+      FTLCONF_LOCAL_IPV4: 192.168.41.55
       PROXY_LOCATION: pihole
       VIRTUAL_HOST: pihole.yourDomain.lan
       VIRTUAL_PORT: 80
