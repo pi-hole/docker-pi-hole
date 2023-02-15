@@ -7,20 +7,75 @@
 # Some of the bash_functions use utilities from Pi-hole's utils.sh
 # shellcheck disable=SC2154
 # shellcheck source=/dev/null
-. /opt/pihole/utils.sh
+# . /opt/pihole/utils.sh
 
-export adlistFile="/etc/pihole/adlists.list"
+#######################
+# returns value from FTLs config file using pihole-FTL --config
+#
+# Takes one argument: key
+# Example getFTLConfigValue dns.piholePTR
+#######################
+getFTLConfigValue(){
+  pihole-FTL --config -q "${1}"
+}
+
+#######################
+# sets value in FTLs config file using pihole-FTL --config
+#
+# Takes two arguments: key and value
+# Example setFTLConfigValue dns.piholePTR PI.HOLE
+#
+# Note, for complex values such as dns.upstreams, you should wrap the value in single quotes:
+# setFTLConfigValue dns.upstreams '[ "8.8.8.8" , "8.8.4.4" ]'
+#######################
+setFTLConfigValue(){
+  pihole-FTL --config "${1}" "${2}" >/dev/null
+}
+
+# export adlistFile="/etc/pihole/adlists.list"
+
+# shellcheck disable=SC2034
+ensure_basic_configuration() {
+    echo "  [i] Ensuring basic configuration by re-running select functions from basic-install.sh"
+
+
+    # installScripts > /dev/null
+    # installLogrotate || true #installLogRotate can return 2 or 3, but we are still OK to continue in that case
+
+    # set +e
+    mkdir -p /var/run/pihole /var/log/pihole
+    touch /var/log/pihole/FTL.log /var/log/pihole/pihole.log
+    chown -R pihole:pihole /var/run/pihole /var/log/pihole
+
+    # In case of `pihole` UID being changed, re-chown the pihole scripts and pihole command
+    # chown -R pihole:root "${PI_HOLE_INSTALL_DIR}"
+    # chown pihole:root "${PI_HOLE_BIN_DIR}/pihole"
+
+    mkdir -p /etc/pihole
+    echo "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" >> /etc/pihole/adlists.list
+    chown -R pihole:pihole /etc/pihole
+
+
+    # set -e
+
+    # # If FTLCONF_files_macvendor is not set
+    # if [[ -z "${FTLCONF_files_macvendor:-}" ]]; then
+    #     # User is not passing in a custom location - so force FTL to use the file we moved to / during the build
+    #     setFTLConfigValue "files.macvendor" "/macvendor.db"
+    # fi
+}
+
 
 fix_capabilities() {
     # Testing on Docker 20.10.14 with no caps set shows the following caps available to the container:
     # Current: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=ep
     # FTL can also use CAP_NET_ADMIN and CAP_SYS_NICE. If we try to set them when they haven't been explicitly enabled, FTL will not start. Test for them first:
     echo "  [i] Setting capabilities on pihole-FTL where possible"
-    /sbin/capsh --has-p=cap_chown 2>/dev/null && CAP_STR+=',CAP_CHOWN'
-    /sbin/capsh --has-p=cap_net_bind_service 2>/dev/null && CAP_STR+=',CAP_NET_BIND_SERVICE'
-    /sbin/capsh --has-p=cap_net_raw 2>/dev/null && CAP_STR+=',CAP_NET_RAW'
-    /sbin/capsh --has-p=cap_net_admin 2>/dev/null && CAP_STR+=',CAP_NET_ADMIN' || DHCP_READY='false'
-    /sbin/capsh --has-p=cap_sys_nice 2>/dev/null && CAP_STR+=',CAP_SYS_NICE'
+    capsh --has-p=cap_chown 2>/dev/null && CAP_STR+=',CAP_CHOWN'
+    capsh --has-p=cap_net_bind_service 2>/dev/null && CAP_STR+=',CAP_NET_BIND_SERVICE'
+    capsh --has-p=cap_net_raw 2>/dev/null && CAP_STR+=',CAP_NET_RAW'
+    capsh --has-p=cap_net_admin 2>/dev/null && CAP_STR+=',CAP_NET_ADMIN' || DHCP_READY='false'
+    capsh --has-p=cap_sys_nice 2>/dev/null && CAP_STR+=',CAP_SYS_NICE'
 
     if [[ ${CAP_STR} ]]; then
         # We have the (some of) the above caps available to us - apply them to pihole-FTL
@@ -53,29 +108,6 @@ fix_capabilities() {
 }
 
 
-# shellcheck disable=SC2034
-ensure_basic_configuration() {
-    echo "  [i] Ensuring basic configuration by re-running select functions from basic-install.sh"
-    # TODO: Is this it?
-    installLogrotate || true #installLogRotate can return 2 or 3, but we are still OK to continue in that case
-
-    set +e
-    mkdir -p /var/run/pihole /var/log/pihole
-    touch /var/log/pihole/FTL.log /var/log/pihole/pihole.log
-
-    # In case of `pihole` UID being changed, re-chown the pihole scripts and pihole command
-    chown -R pihole:root "${PI_HOLE_INSTALL_DIR}"
-    chown pihole:root "${PI_HOLE_BIN_DIR}/pihole"
-    chown -R pihole:pihole /etc/pihole
-
-    set -e
-
-    # If FTLCONF_files_macvendor is not set
-    if [[ -z "${FTLCONF_files_macvendor:-}" ]]; then
-        # User is not passing in a custom location - so force FTL to use the file we moved to / during the build
-        setFTLConfigValue "files.macvendor" "/macvendor.db"
-    fi
-}
 
 apply_FTL_Configs_From_Env(){
     # Get all exported environment variables starting with FTLCONF_ as a prefix and call the setFTLConfigValue
@@ -100,7 +132,7 @@ apply_FTL_Configs_From_Env(){
             masked_value=$value
         fi
 
-        if $(pihole-FTL --config "${name}" "${value}" > /ftlconfoutput); then
+        if $(sudo -u pihole pihole-FTL --config "${name}" "${value}" > /ftlconfoutput); then
             echo "  ${TICK} Applied pihole-FTL setting $name=$masked_value"
         else
             echo "  ${CROSS} Error Applying pihole-FTL setting $name=$masked_value"
@@ -165,26 +197,26 @@ setup_web_password() {
     fi
 }
 
-setup_blocklists() {
-    # Exit/return early without setting up adlists with defaults for any of the following conditions:
-    # 1. skip_setup_blocklists env is set
-    exit_string="(exiting ${FUNCNAME[0]} early)"
+# setup_blocklists() {
+#     # Exit/return early without setting up adlists with defaults for any of the following conditions:
+#     # 1. skip_setup_blocklists env is set
+#     exit_string="(exiting ${FUNCNAME[0]} early)"
 
-    if [ -n "${skip_setup_blocklists}" ]; then
-        echo "  [i] skip_setup_blocklists requested $exit_string"
-        return
-    fi
+#     if [ -n "${skip_setup_blocklists}" ]; then
+#         echo "  [i] skip_setup_blocklists requested $exit_string"
+#         return
+#     fi
 
-    # 2. The adlist file exists already (restarted container or volume mounted list)
-    if [ -f "${adlistFile}" ]; then
-        echo "  [i] Preexisting ad list ${adlistFile} detected $exit_string"
-        return
-    fi
+#     # 2. The adlist file exists already (restarted container or volume mounted list)
+#     if [ -f "${adlistFile}" ]; then
+#         echo "  [i] Preexisting ad list ${adlistFile} detected $exit_string"
+#         return
+#     fi
 
-    echo "  [i] ${FUNCNAME[0]} now setting default blocklists up: "
-    echo "  [i] TIP: Use a docker volume for ${adlistFile} if you want to customize for first boot"
-    installDefaultBlocklists
+#     echo "  [i] ${FUNCNAME[0]} now setting default blocklists up: "
+#     echo "  [i] TIP: Use a docker volume for ${adlistFile} if you want to customize for first boot"
+#     # installDefaultBlocklists
 
-    echo "  [i] Blocklists (${adlistFile}) now set to:"
-    cat "${adlistFile}"
-}
+#     echo "  [i] Blocklists (${adlistFile}) now set to:"
+#     cat "${adlistFile}"
+# }
