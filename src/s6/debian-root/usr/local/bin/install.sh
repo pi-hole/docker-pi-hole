@@ -92,6 +92,12 @@ sed -i $'s/)\s*reconfigurePiholeFunc/) unsupportedFunc/g' /usr/local/bin/pihole
 # (it is otherwise only updated when FTL is updated, which doesn't happen as part of the normal course of running this image)
 mv /etc/pihole/macvendor.db /macvendor.db
 
+
+## Remove the default lighttpd unconfigured config:
+rm /etc/lighttpd/conf-enabled/99-unconfigured.conf
+## Remove the default lighttpd placeholder page for good measure
+rm /var/www/html/index.lighttpd.html
+
 if [ ! -f /.piholeFirstBoot ]; then
   touch /.piholeFirstBoot
 fi
