@@ -31,7 +31,7 @@ DOCKER_TAG=$(cat /pihole.docker.tag)
 # Helps to have some additional tools in the dev image when debugging
 if [[ "${DOCKER_TAG}" = 'nightly' ||  "${DOCKER_TAG}" = 'dev' ]]; then
   apt-get update
-  apt-get install --no-install-recommends -y nano less
+  apt-get install --no-install-recommends -y nano less vim-tiny
   rm -rf /var/lib/apt/lists/*
 fi
 
