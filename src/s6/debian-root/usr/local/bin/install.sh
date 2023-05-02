@@ -98,7 +98,7 @@ rm /etc/lighttpd/conf-enabled/99-unconfigured.conf
 ## Remove the default lighttpd placeholder page for good measure
 rm /var/www/html/index.lighttpd.html
 ## Remove redundant directories created by the installer to reduce docker image size
-rm -rf /tmp/* /var/www/html/admin/.git* /etc/.pihole/.git*
+rm -rf /tmp/*
 
 if [ ! -f /.piholeFirstBoot ]; then
   touch /.piholeFirstBoot
