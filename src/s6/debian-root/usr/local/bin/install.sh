@@ -13,14 +13,10 @@ detect_arch() {
   DETECTED_ARCH=$(arch)
   S6_ARCH=$DETECTED_ARCH
   case $DETECTED_ARCH in
-  amd64)
-    S6_ARCH="x86_64";;
   armel)
     S6_ARCH="armhf";;
-  armhf)
+  armv7l)
     S6_ARCH="armhf";;
-  arm64)
-    S6_ARCH="aarch64";;
   i386)
     S6_ARCH="i686";;
 esac
