@@ -10,7 +10,7 @@ WEB_LOCAL_REPO=/var/www/html/admin
 setupVars=/etc/pihole/setupVars.conf
 
 detect_arch() {
-  DETECTED_ARCH=$(dpkg --print-architecture)
+  DETECTED_ARCH=$(arch)
   S6_ARCH=$DETECTED_ARCH
   case $DETECTED_ARCH in
   amd64)
@@ -94,9 +94,13 @@ mv /etc/pihole/macvendor.db /macvendor.db
 
 
 ## Remove the default lighttpd unconfigured config:
-rm /etc/lighttpd/conf-enabled/99-unconfigured.conf
+if [ -f /etc/lighttpd/conf-enabled/99-unconfigured.conf ]; then
+  rm /etc/lighttpd/conf-enabled/99-unconfigured.conf
+fi
 ## Remove the default lighttpd placeholder page for good measure
-rm /var/www/html/index.lighttpd.html
+if [ -f /var/www/html/index.lighttpd.html ]; then
+  rm /var/www/html/index.lighttpd.html
+fi
 ## Remove redundant directories created by the installer to reduce docker image size
 rm -rf /tmp/*
 
