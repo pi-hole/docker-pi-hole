@@ -43,6 +43,7 @@ setup_lighttpd_bind
 
 # Misc Setup
 # ===========================
+installCron
 setup_blocklists
 
 # FTL setup
