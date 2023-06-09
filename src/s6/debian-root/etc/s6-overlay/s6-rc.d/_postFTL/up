@@ -1,2 +1,0 @@
-#!/command/execlineb
-background { bash -e /usr/local/bin/_postFTL.sh }
