@@ -118,7 +118,7 @@ apply_FTL_Configs_From_Env(){
     source /opt/pihole/COL_TABLE
     declare -px | grep FTLCONF_ | sed -E 's/declare -x FTLCONF_([^=]+)=\"(|.+)\"/\1 \2/' | while read -r name value
     do
-        # Replace underscores wi1th dots in the name to match pihole-FTL expectiations
+        # Replace underscores with dots in the name to match pihole-FTL expectiations
         name="${name//_/.}"
 
         # Special handing for the value if the name is dns.upstreams
