@@ -6,12 +6,12 @@ FROM alpine:latest
 RUN apk add --no-cache git libcap bash
 
 # download a repo from github
-RUN git clone --branch devel-v6 https://github.com/pi-hole/AdminLTE.git /var/www/html/admin
+RUN git clone --branch development-v6 https://github.com/pi-hole/AdminLTE.git /var/www/html/admin
 RUN git clone --branch development-v6 https://github.com/pi-hole/pi-hole.git /etc/.pihole
 
 # Download the latest version of pihole-FTL for alpine:
 # Probably need this to be built for different architectures
-ADD https://ftl.pi-hole.net/new/http/pihole-FTL-musl-linux-x86_64 /usr/bin/pihole-FTL
+ADD https://ftl.pi-hole.net/development-v6/pihole-FTL-musl-linux-x86_64 /usr/bin/pihole-FTL
 ADD https://ftl.pi-hole.net/macvendor.db /macvendor.db
 
 RUN cd /etc/.pihole && \
