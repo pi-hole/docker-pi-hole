@@ -1,0 +1,48 @@
+name: Merge and push
+description: Apply meta, create manifest, and push to container registry
+
+inputs:
+  imagename:
+    required: true
+    description: The name of the image to push
+  platform:
+    required: true
+    description: The platform to push the image for
+
+runs:
+  using: "composite"
+  steps:
+    -
+      name: Docker meta
+      id: meta_docker
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          ${{ inputs.imagename }},enable=${{ github.event_name != 'pull_request' && github.event_name != 'workflow_dispatch' }}
+          foo/bar,enable=${{ github.event_name == 'pull_request' }}
+        # We want to tag the image with the latest tag if the workflow was triggered by a tag
+        flavor: |
+          latest=${{ startsWith(github.ref, 'refs/tags/') }}
+        # tags:
+          # type=schedule means that a tag is applied when the workflow is triggered by a schedule event
+          # type=ref,event=branch means that a tag is applied when the workflow is triggered by a push to a branch
+          # type=ref,event=tag means that a tag is applied when the workflow is triggered by a push to a tag
+        tags: |
+          type=schedule,suffix=-${{ inputs.platform }},enable=${{ github.event_name == 'schedule' }}
+          type=ref,event=branch,suffix=-${{ inputs.platform }},enable=${{ github.event_name != 'schedule' }}
+          type=ref,event=tag,suffix=-${{ inputs.platform }}
+    -
+      name: Create manifest list and push to repository
+      working-directory: /tmp/digests/dockerhub/${{ inputs.platform }}
+      # When using composite actions, you have to specify the shell. As you
+      # don’t specify a runner type in composite actions, you need to specify
+      # the shell instead for each action.
+      shell: bash
+      run: |
+        docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+          $(printf '${{ inputs.imagename }}@sha256:%s ' *)
+    -
+      name: Inspect image
+      shell: bash
+      run: |
+        docker buildx imagetools inspect ${{ inputs.imagename }}:${{ steps.meta_docker.outputs.version }}

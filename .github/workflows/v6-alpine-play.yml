@@ -1,65 +1,192 @@
 name: Build & Publish
 on:
   schedule:
-    - cron: '0 5 * * *'
+    - cron: "0 5 * * *"
   push:
     branches:
       - v6-alpine-play
 
+env:
+  DOCKER_REGISTRY_IMAGE: ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole
+  GITHUB_REGISTRY_IMAGE: ghcr.io/${{ github.repository_owner }}/pihole
+
 jobs:
-  build-and-publish:
+  build-and-test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            container: alpine:3.18
+          - platform: linux/386
+            container: alpine:3.18
+          # - platform: linux/arm/v5
+          #   container: debian:stretch-slim
+          # - platform: linux/arm/v6
+          #   container: debian:bullseye-slim
+          - platform: linux/arm/v6
+            container: alpine:3.18
+          - platform: linux/arm/v7
+            container: alpine:3.18
+          - platform: linux/arm64/v8
+            container: alpine:3.18
+          - platform: linux/riscv64
+            container: alpine:edge
     steps:
-      -
-        name: Checkout
-        if: github.event_name != 'schedule'
-        uses: actions/checkout@v3
-      -
-        name: Checkout dev branch if we are building
-        if: github.event_name == 'schedule'
+      - name: Checkout Repo
         uses: actions/checkout@v3
         with:
           ref: v6-alpine-play
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      -
-        name: Docker meta
+      - name: Docker meta (Docker Hub and GitHub Container Registry)
         id: meta
         uses: docker/metadata-action@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           images: |
-            ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole
-            ghcr.io/${{ github.repository_owner }}/pihole
+            ${{ env.DOCKER_REGISTRY_IMAGE }}
+            ${{ env.GITHUB_REGISTRY_IMAGE }}
           flavor: |
             latest=false
           tags: |
             v6-alpine-play
-      -
-        name: Login to DockerHub
-        uses: docker/login-action@v2
+      - name: Login to DockerHub and GitHub Container Registry
+        uses: ./.github/actions/login-repo
         with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
-      -
-        name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+          docker_username: ${{ secrets.DOCKERHUB_USER }}
+          docker_password: ${{ secrets.DOCKERHUB_PASS }}
+          ghcr_username: ${{ github.repository_owner }}
+          ghcr_password: ${{ secrets.GITHUB_TOKEN }}
+      - # Add support for more platforms with QEMU (optional)
+        # https://github.com/docker/setup-qemu-action
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      -
-        name: Build and push
-        uses: docker/build-push-action@v4
+          platforms: all
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build container and push by digest (Docker Hub)
+        id: build_docker
+        uses: docker/build-push-action@v3
         with:
           context: ./src/
-          platforms: linux/amd64, linux/386, linux/arm/v6, linux/arm/v7, linux/arm64/v8, linux/riscv64
+          platforms: ${{ matrix.platform }}
           build-args: |
             PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}
+            CONTAINER=${{ matrix.container }}
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          outputs: |
+            type=image,name=${{ env.DOCKER_REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+      - name: Build container and push by digest (GitHub Container Registry)
+        id: build_ghcr
+        uses: docker/build-push-action@v3
+        with:
+          context: ./src/
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}
+            CONTAINER=${{ matrix.container }}
+          push: true
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: |
+            type=image,name=${{ env.GITHUB_REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+      - name: Export digests
+        run: |
+          mkdir -p /tmp/digests/dockerhub/${{ env.context }}
+          mkdir -p /tmp/digests/ghcr/${{ env.context }}
+          digest_docker="${{ steps.build_docker.outputs.digest }}"
+          touch "/tmp/digests/dockerhub/${{ env.context }}/${digest_docker#sha256:}"
+          digest_ghcr="${{ steps.build_ghcr.outputs.digest }}"
+          touch "/tmp/digests/ghcr/${{ env.context }}/${digest_ghcr#sha256:}"
+      - name: Upload digest
+        uses: actions/upload-artifact@v3
+        with:
+          name: digests
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # Merge all the digests into a single file
+  # If we would push immediately above, the individual runners would overwrite each other's images
+  # https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
+  merge-and-deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - build-and-test
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Download digests
+        uses: actions/download-artifact@v3
+        with:
+          name: digests
+          path: /tmp/digests
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to DockerHub and GitHub Container Registry
+        uses: ./.github/actions/login-repo
+        with:
+          docker_username: ${{ secrets.DOCKERHUB_USER }}
+          docker_password: ${{ secrets.DOCKERHUB_PASS }}
+          ghcr_username: ${{ github.repository_owner }}
+          ghcr_password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta (Docker Hub and GitHub Container Registry)
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          images: |
+            ${{ env.DOCKER_REGISTRY_IMAGE }}
+          flavor: |
+            latest=false
+          tags: |
+            v6-alpine-play
+
+      - name: Create manifest list and push
+        working-directory: /tmp/digests/dockerhub
+        run: |
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.DOCKER_REGISTRY_IMAGE }}@sha256:%s ' *)
+
+      - name: Inspect image
+        run: |
+          docker buildx imagetools inspect ${{ env.DOCKER_REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
+
+      - name: Create manifest list and push
+        working-directory: /tmp/digests/ghcr
+        run: |
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.GITHUB_REGISTRY_IMAGE }}@sha256:%s ' *)
+
+      - name: Inspect image
+        run: |
+          docker buildx imagetools inspect ${{ env.GITHUB_REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
+
+      # Push the digests to Docker Hub and GitHub Container Registry
+
+      # -
+      #   name: Collect and push (Alpine, Docker Hub)
+      #   uses: ./.github/actions/merge-and-push
+      #   with:
+      #     imagename: ${{ env.DOCKER_REGISTRY_IMAGE }}
+      #     platform: alpine
+      # # -
+      # #   name: Collect and push (Debian, Docker Hub)
+      # #   uses: ./.github/actions/merge-and-push
+      # #   with:
+      # #     imagename: ${{ env.DOCKER_REGISTRY_IMAGE }}
+      # #     platform: debian
+      # -
+      #   name: Collect and push (Alpine, GitHub Container Registry)
+      #   uses: ./.github/actions/merge-and-push
+      #   with:
+      #     imagename: ${{ env.GITHUB_REGISTRY_IMAGE }}
+      #     platform: alpine
+      # -
+      #   name: Collect and push (Debian, GitHub Container Registry)
+      #   uses: ./.github/actions/merge-and-push
+      #   with:
+      #     imagename: ${{ env.GITHUB_REGISTRY_IMAGE }}
+      #     platform: debian
