@@ -4,7 +4,7 @@ on:
     - cron: '0 5 * * *'
   push:
     branches:
-      - v6-pre-alpha
+      - v6-alpine-play
 
 jobs:
   build-and-publish:
@@ -19,7 +19,7 @@ jobs:
         if: github.event_name == 'schedule'
         uses: actions/checkout@v3
         with:
-          ref: v6-pre-alpha
+          ref: v6-alpine-play
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -57,7 +57,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./src/
-          platforms: linux/amd64, linux/arm64, linux/386, linux/arm/v7, linux/arm/v6
+          platforms: linux/amd64, linux/386, linux/arm/v6, linux/arm/v7, linux/arm64/v8, linux/riscv64
           build-args: |
             PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}
           push: true
