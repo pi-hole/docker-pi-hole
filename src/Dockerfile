@@ -44,7 +44,8 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then FTLARCH=amd64; \
     elif [ "$TARGETPLATFORM" = "linux/arm64/v8" ]; then FTLARCH=armv64; \
     elif [ "$TARGETPLATFORM" = "linux/riscv64" ]; then FTLARCH=riscv64; \
     else FTLARCH=amd64; fi \
-    && curl -sSL "https://ftl.pi-hole.net/development-v6/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL
+    && curl -sSL "https://ftl.pi-hole.net/development-v6/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL && \
+    chmod +x /usr/bin/pihole-FTL
 
 
 ADD https://ftl.pi-hole.net/macvendor.db /macvendor.db
@@ -56,7 +57,16 @@ RUN cd /etc/.pihole && \
     install -Dm755 -t /opt/pihole ./automated\ install/uninstall.sh && \
     install -Dm755 -t /opt/pihole ./advanced/Scripts/COL_TABLE && \
     install -Dm755 -t /usr/local/bin pihole && \
-    install -Dm644 ./advanced/bash-completion/pihole /etc/bash_completion.d/pihole
+    install -Dm644 ./advanced/bash-completion/pihole /etc/bash_completion.d/pihole && \
+    install -Dm644 ./advanced/Templates/pihole.cron /var/spool/cron/crontabs/pihole && \
+    # Randomize gravity update time
+    sed -i "s/59 1 /$((1 + RANDOM % 58)) $((3 + RANDOM % 2))/" /var/spool/cron/crontabs/pihole && \
+    # Randomize update checker time
+    sed -i "s/59 17/$((1 + RANDOM % 58)) $((12 + RANDOM % 8))/" /var/spool/cron/crontabs/pihole && \
+    # Grab some useful bits from FTL's service scripts
+    install -T -m 0755 ./advanced/Templates/pihole-FTL-prestart.sh /opt/pihole/pihole-FTL-prestart.sh && \
+    install -T -m 0755 ./advanced/Templates/pihole-FTL-poststop.sh /opt/pihole/pihole-FTL-poststop.sh
+
 
 
 ENV DNSMASQ_USER=pihole
@@ -68,7 +78,7 @@ ADD bash_functions.sh /usr/bin/bash_functions.sh
 ADD start.sh /usr/bin/start.sh
 
 RUN chmod +x /usr/bin/start.sh
-RUN chmod +x /usr/bin/pihole-FTL
+
 
 
 HEALTHCHECK CMD dig +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
