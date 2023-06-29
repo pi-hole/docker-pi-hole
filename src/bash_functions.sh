@@ -58,11 +58,12 @@ ensure_basic_configuration() {
 
     # set -e
 
-    # # If FTLCONF_files_macvendor is not set
-    # if [[ -z "${FTLCONF_files_macvendor:-}" ]]; then
-    #     # User is not passing in a custom location - so force FTL to use the file we moved to / during the build
-    #     setFTLConfigValue "files.macvendor" "/macvendor.db"
-    # fi
+    # If FTLCONF_files_macvendor is not set
+    if [[ -z "${FTLCONF_files_macvendor:-}" ]]; then
+        # User is not passing in a custom location - so force FTL to use the file we moved to / during the build
+        setFTLConfigValue "files.macvendor" "/macvendor.db"
+        chown pihole:pihole /macvendor.db
+    fi
 }
 
 
