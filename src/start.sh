@@ -73,6 +73,8 @@ crond
 
 pihole -g
 
+pihole updatechecker
+
 tail -f /var/log/pihole-FTL.log
 
 # Notes on above:
