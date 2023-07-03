@@ -21,10 +21,6 @@ jobs:
             container: alpine:3.18
           - platform: linux/386
             container: alpine:3.18
-          # - platform: linux/arm/v5
-          #   container: debian:stretch-slim
-          # - platform: linux/arm/v6
-          #   container: debian:bullseye-slim
           - platform: linux/arm/v6
             container: alpine:3.18
           - platform: linux/arm/v7
@@ -38,6 +34,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: v6-alpine-play
+
       - name: Docker meta (Docker Hub and GitHub Container Registry)
         id: meta
         uses: docker/metadata-action@v4
@@ -50,6 +47,7 @@ jobs:
             latest=false
           tags: |
             v6-alpine-play
+
       - name: Login to DockerHub and GitHub Container Registry
         uses: ./.github/actions/login-repo
         with:
@@ -57,6 +55,7 @@ jobs:
           docker_password: ${{ secrets.DOCKERHUB_PASS }}
           ghcr_username: ${{ github.repository_owner }}
           ghcr_password: ${{ secrets.GITHUB_TOKEN }}
+
       - # Add support for more platforms with QEMU (optional)
         # https://github.com/docker/setup-qemu-action
         name: Set up QEMU
@@ -65,6 +64,7 @@ jobs:
           platforms: all
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+
       - name: Build container and push by digest (Docker Hub)
         id: build_docker
         uses: docker/build-push-action@v3
@@ -78,6 +78,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
             type=image,name=${{ env.DOCKER_REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+
       - name: Build container and push by digest (GitHub Container Registry)
         id: build_ghcr
         uses: docker/build-push-action@v3
@@ -91,6 +92,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
             type=image,name=${{ env.GITHUB_REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+
       - name: Export digests
         run: |
           mkdir -p /tmp/digests/dockerhub/${{ env.context }}
@@ -99,6 +101,7 @@ jobs:
           touch "/tmp/digests/dockerhub/${{ env.context }}/${digest_docker#sha256:}"
           digest_ghcr="${{ steps.build_ghcr.outputs.digest }}"
           touch "/tmp/digests/ghcr/${{ env.context }}/${digest_ghcr#sha256:}"
+
       - name: Upload digest
         uses: actions/upload-artifact@v3
         with:
@@ -117,13 +120,16 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
+
       - name: Download digests
         uses: actions/download-artifact@v3
         with:
           name: digests
           path: /tmp/digests
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+
       - name: Login to DockerHub and GitHub Container Registry
         uses: ./.github/actions/login-repo
         with:
@@ -139,6 +145,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           images: |
             ${{ env.DOCKER_REGISTRY_IMAGE }}
+            ${{ env.GITHUB_REGISTRY_IMAGE }}
           flavor: |
             latest=false
           tags: |
@@ -163,30 +170,3 @@ jobs:
       - name: Inspect image
         run: |
           docker buildx imagetools inspect ${{ env.GITHUB_REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
-
-      # Push the digests to Docker Hub and GitHub Container Registry
-
-      # -
-      #   name: Collect and push (Alpine, Docker Hub)
-      #   uses: ./.github/actions/merge-and-push
-      #   with:
-      #     imagename: ${{ env.DOCKER_REGISTRY_IMAGE }}
-      #     platform: alpine
-      # # -
-      # #   name: Collect and push (Debian, Docker Hub)
-      # #   uses: ./.github/actions/merge-and-push
-      # #   with:
-      # #     imagename: ${{ env.DOCKER_REGISTRY_IMAGE }}
-      # #     platform: debian
-      # -
-      #   name: Collect and push (Alpine, GitHub Container Registry)
-      #   uses: ./.github/actions/merge-and-push
-      #   with:
-      #     imagename: ${{ env.GITHUB_REGISTRY_IMAGE }}
-      #     platform: alpine
-      # -
-      #   name: Collect and push (Debian, GitHub Container Registry)
-      #   uses: ./.github/actions/merge-and-push
-      #   with:
-      #     imagename: ${{ env.GITHUB_REGISTRY_IMAGE }}
-      #     platform: debian
