@@ -6,7 +6,6 @@ ARG TARGETPLATFORM
 # download a repo from github
 # TODO - probably remove a lot of these
 RUN apk add --no-cache git \
-                       libcap \
                        bash \
                        curl \
                        bind-tools \
@@ -22,14 +21,12 @@ RUN apk add --no-cache git \
                        iproute2-ss \
                        jq \
                        coreutils \
-                       ncurses \
                        dialog \
                        newt \
                        procps \
                        dhcpcd \
                        openrc \
                        ncurses \
-                       newt \
                        nano \
                        less
 
