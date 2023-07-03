@@ -69,7 +69,15 @@ sh /opt/pihole/pihole-FTL-prestart.sh
 capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
 
 # Start crond for scheduled scripts (logrotate, pihole flush, gravity update etc)
-crond
+# crond
+
+# Randomize gravity update time
+sed -i "s/59 1 /$((1 + RANDOM % 58)) $((3 + RANDOM % 2))/" /crontab.txt
+# Randomize update checker time
+sed -i "s/59 17/$((1 + RANDOM % 58)) $((12 + RANDOM % 8))/" /crontab.txt
+/usr/bin/crontab /crontab.txt
+
+/usr/sbin/crond
 
 pihole -g
 

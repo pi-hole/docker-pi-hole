@@ -1,0 +1,3 @@
+59 1  * * 6 PATH="$PATH:/usr/sbin:/usr/local/bin/" pihole updateGravity >/var/log/pihole/pihole_updateGravity.log || cat /var/log/pihole/pihole_updateGravity.log
+00 00 * * * PATH="$PATH:/usr/sbin:/usr/local/bin/" pihole flush once quiet
+59 17 * * * PATH="$PATH:/usr/sbin:/usr/local/bin/" pihole updatechecker
