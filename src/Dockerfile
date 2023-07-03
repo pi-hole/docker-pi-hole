@@ -1,5 +1,5 @@
-ARG CONTAINER="alpine:edge"
-FROM ${CONTAINER}
+ARG CONTAINER="3.18"
+FROM alpine:${CONTAINER}
 # https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 ARG TARGETPLATFORM
 

@@ -7,8 +7,8 @@ on:
       - v6-alpine-play
 
 env:
-  DOCKER_REGISTRY_IMAGE: ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole
-  GITHUB_REGISTRY_IMAGE: ghcr.io/${{ github.repository_owner }}/pihole
+  dockerhub: ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole
+  ghcr: ghcr.io/${{ github.repository_owner }}/pihole
 
 jobs:
   build-and-test:
@@ -16,19 +16,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        registry: [dockerhub, ghcr]
+        platform: [linux/amd64, linux/386, linux/arm/v6, linux/arm/v7, linux/arm64/v8]
+        container: [3.18]
         include:
-          - platform: linux/amd64
-            container: alpine:3.18
-          - platform: linux/386
-            container: alpine:3.18
-          - platform: linux/arm/v6
-            container: alpine:3.18
-          - platform: linux/arm/v7
-            container: alpine:3.18
-          - platform: linux/arm64/v8
-            container: alpine:3.18
-          - platform: linux/riscv64
-            container: alpine:edge
+          - registry: dockerhub
+            platform: linux/riscv64
+            container: edge
+          - registry: ghcr
+            platform: linux/riscv64
+            container: edge
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -41,8 +38,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           images: |
-            ${{ env.DOCKER_REGISTRY_IMAGE }}
-            ${{ env.GITHUB_REGISTRY_IMAGE }}
+            ${{ env[matrix.registry] }}
           flavor: |
             latest=false
           tags: |
@@ -56,17 +52,15 @@ jobs:
           ghcr_username: ${{ github.repository_owner }}
           ghcr_password: ${{ secrets.GITHUB_TOKEN }}
 
-      - # Add support for more platforms with QEMU (optional)
-        # https://github.com/docker/setup-qemu-action
-        name: Set up QEMU
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
           platforms: all
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build container and push by digest (Docker Hub)
-        id: build_docker
+      - name: Build container and push by digest (${{ matrix.registry }})
+        id: build
         uses: docker/build-push-action@v3
         with:
           context: ./src/
@@ -77,30 +71,13 @@ jobs:
           push: true
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
-            type=image,name=${{ env.DOCKER_REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
-
-      - name: Build container and push by digest (GitHub Container Registry)
-        id: build_ghcr
-        uses: docker/build-push-action@v3
-        with:
-          context: ./src/
-          platforms: ${{ matrix.platform }}
-          build-args: |
-            PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}
-            CONTAINER=${{ matrix.container }}
-          push: true
-          labels: ${{ steps.meta.outputs.labels }}
-          outputs: |
-            type=image,name=${{ env.GITHUB_REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+            type=image,name=${{ env[matrix.registry] }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digests
         run: |
-          mkdir -p /tmp/digests/dockerhub/${{ env.context }}
-          mkdir -p /tmp/digests/ghcr/${{ env.context }}
-          digest_docker="${{ steps.build_docker.outputs.digest }}"
-          touch "/tmp/digests/dockerhub/${{ env.context }}/${digest_docker#sha256:}"
-          digest_ghcr="${{ steps.build_ghcr.outputs.digest }}"
-          touch "/tmp/digests/ghcr/${{ env.context }}/${digest_ghcr#sha256:}"
+          mkdir -p /tmp/digests/${{ matrix.registry }}
+          digest_docker="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${{ matrix.registry }}/${digest_docker#sha256:}"
 
       - name: Upload digest
         uses: actions/upload-artifact@v3
@@ -114,6 +91,10 @@ jobs:
   # If we would push immediately above, the individual runners would overwrite each other's images
   # https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
   merge-and-deploy:
+    strategy:
+      fail-fast: false
+      matrix:
+        registry: [dockerhub, ghcr]
     runs-on: ubuntu-latest
     needs:
       - build-and-test
@@ -144,29 +125,18 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           images: |
-            ${{ env.DOCKER_REGISTRY_IMAGE }}
-            ${{ env.GITHUB_REGISTRY_IMAGE }}
+            ${{ env[matrix.registry] }}
           flavor: |
             latest=false
           tags: |
             v6-alpine-play
 
       - name: Create manifest list and push (Docker Hub)
-        working-directory: /tmp/digests/dockerhub
+        working-directory: /tmp/digests/${{ matrix.registry }}
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.DOCKER_REGISTRY_IMAGE }}@sha256:%s ' *)
+            $(printf '${{ env[matrix.registry] }}@sha256:%s ' *)
 
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ${{ env.DOCKER_REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
-
-      - name: Create manifest list and push (Github Container Registry)
-        working-directory: /tmp/digests/ghcr
-        run: |
-          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.GITHUB_REGISTRY_IMAGE }}@sha256:%s ' *)
-
-      - name: Inspect image
-        run: |
-          docker buildx imagetools inspect ${{ env.GITHUB_REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
+          docker buildx imagetools inspect ${{ env[matrix.registry] }}:${{ steps.meta.outputs.version }}
