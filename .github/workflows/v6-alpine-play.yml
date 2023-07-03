@@ -1,4 +1,4 @@
-name: Build & Publish
+name: Build and Publish (Alpine)
 on:
   schedule:
     - cron: "0 5 * * *"
