@@ -29,7 +29,9 @@ RUN apk add --no-cache git \
                        dhcpcd \
                        openrc \
                        ncurses \
-                       newt
+                       newt \
+                       nano \
+                       less
 
 # download a the main repos from github
 RUN git clone --branch development-v6 https://github.com/pi-hole/AdminLTE.git /var/www/html/admin
