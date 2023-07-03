@@ -144,7 +144,7 @@ jobs:
           tags: |
             v6-alpine-play
 
-      - name: Create manifest list and push
+      - name: Create manifest list and push (Docker Hub)
         working-directory: /tmp/digests/dockerhub
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
@@ -154,7 +154,7 @@ jobs:
         run: |
           docker buildx imagetools inspect ${{ env.DOCKER_REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
 
-      - name: Create manifest list and push
+      - name: Create manifest list and push (Github Container Registry)
         working-directory: /tmp/digests/ghcr
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
