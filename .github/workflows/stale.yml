@@ -23,14 +23,17 @@ jobs:
         days-before-stale: 30
         days-before-close: 5
         stale-issue-message: 'This issue is stale because it has been open 30 days with no activity. Please comment or update this issue or it will be closed in 5 days.'
-        stale-issue-label: $stale_label
-        exempt-issue-labels: 'pinned, Fixed in next release, bug, never-stale, documentation, investigating'
+        stale-issue-label: '${{ env.stale_label }}'
+        exempt-issue-labels: 'pinned, Fixed in next release, bug, never-stale, documentation, investigating, v6-tracking'
         exempt-all-issue-assignees: true
         operations-per-run: 300
         close-issue-reason: 'not_planned'
 
-  remove_stale: # trigger "stale" removal immediately when stale issues are commented on
-    if: github.event_name == 'issue_comment'
+  remove_stale:
+    # trigger "stale" removal immediately when stale issues are commented on
+    # we need to explicitly check that the trigger does not run on comment on a PR as
+    # 'issue_comment' triggers on issues AND PR comments
+    if: github.event_name == 'issue_comment' && ${{ !github.event.issue.pull_request }}
     permissions:
       contents: read #  for actions/checkout
       issues: write #  to edit issues label
@@ -39,7 +42,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3.4.0
       - name: Remove 'stale' label
-        run: gh issue edit ${{ github.event.issue.number }} --remove-label $stale_label
+        run: gh issue edit ${{ github.event.issue.number }} --remove-label ${{ env.stale_label }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
