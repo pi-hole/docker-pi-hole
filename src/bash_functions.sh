@@ -16,7 +16,7 @@
 # Example getFTLConfigValue dns.piholePTR
 #######################
 getFTLConfigValue(){
-  pihole-FTL --config -q "${1}"
+   pihole-FTL --config -q "${1}"
 }
 
 #######################
@@ -124,7 +124,7 @@ apply_FTL_Configs_From_Env(){
 
         # Special handing for the value if the name is dns.upstreams
         if [ "$name" == "dns.upstreams" ]; then
-            value="[\"${value//;/\",\"}\"]"
+            value='["'${value//;/\",\"}'"]'
         fi
 
         if [ "$name" == "webserver.api.password" ]; then
@@ -133,7 +133,7 @@ apply_FTL_Configs_From_Env(){
             masked_value=$value
         fi
 
-        if $(sudo -u pihole pihole-FTL --config "${name}" "${value}" > /ftlconfoutput); then
+        if pihole-FTL --config "${name}" "${value}" > /ftlconfoutput; then
             echo "  ${TICK} Applied pihole-FTL setting $name=$masked_value"
         else
             echo "  ${CROSS} Error Applying pihole-FTL setting $name=$masked_value"

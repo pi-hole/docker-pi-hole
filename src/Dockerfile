@@ -6,29 +6,29 @@ ARG TARGETPLATFORM
 # download a repo from github
 # TODO - probably remove a lot of these
 RUN apk add --no-cache git \
-                       bash \
-                       curl \
-                       bind-tools \
-                       nmap-ncat \
-                       psmisc \
-                       sudo \
-                       unzip \
-                       wget \
-                       libidn \
-                       nettle \
-                       libcap \
-                       openresolv \
-                       iproute2-ss \
-                       jq \
-                       coreutils \
-                       dialog \
-                       newt \
-                       procps \
-                       dhcpcd \
-                       openrc \
-                       ncurses \
-                       nano \
-                       less
+    bash \
+    curl \
+    bind-tools \
+    nmap-ncat \
+    psmisc \
+    sudo \
+    unzip \
+    wget \
+    libidn \
+    nettle \
+    libcap \
+    openresolv \
+    iproute2-ss \
+    jq \
+    coreutils \
+    dialog \
+    newt \
+    procps \
+    dhcpcd \
+    openrc \
+    ncurses \
+    nano \
+    less
 
 # download a the main repos from github
 RUN git clone --branch development-v6 https://github.com/pi-hole/AdminLTE.git /var/www/html/admin
@@ -36,12 +36,12 @@ RUN git clone --branch development-v6 https://github.com/pi-hole/pi-hole.git /et
 
 # Download the latest version of pihole-FTL for alpine:
 # Probably need this to be built for different FTLARCHs
-RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then FTLARCH=amd64; \
-    elif [ "$TARGETPLATFORM" = "linux/386" ]; then FTLARCH=386; \
-    elif [ "$TARGETPLATFORM" = "linux/arm/v6" ]; then FTLARCH=armv6; \
-    elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then FTLARCH=armv7; \
+RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
+    elif [ "$TARGETPLATFORM" = "linux/386" ];      then FTLARCH=386; \
+    elif [ "$TARGETPLATFORM" = "linux/arm/v6" ];   then FTLARCH=armv6; \
+    elif [ "$TARGETPLATFORM" = "linux/arm/v7" ];   then FTLARCH=armv7; \
     elif [ "$TARGETPLATFORM" = "linux/arm64/v8" ]; then FTLARCH=armv64; \
-    elif [ "$TARGETPLATFORM" = "linux/riscv64" ]; then FTLARCH=riscv64; \
+    elif [ "$TARGETPLATFORM" = "linux/riscv64" ];  then FTLARCH=riscv64; \
     else FTLARCH=amd64; fi \
     && curl -sSL "https://ftl.pi-hole.net/development-v6/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL && \
     chmod +x /usr/bin/pihole-FTL
@@ -71,8 +71,6 @@ ADD bash_functions.sh /usr/bin/bash_functions.sh
 ADD start.sh /usr/bin/start.sh
 
 RUN chmod +x /usr/bin/start.sh
-
-
 
 HEALTHCHECK CMD dig +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
 
