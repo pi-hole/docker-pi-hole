@@ -64,9 +64,7 @@ fi
 rm -f /dev/shm/FTL-* 2> /dev/null
 rm -f /run/pihole/FTL.sock
 
-# Start FTL. TODO: We need to either mock the service file or update the pihole script in the main repo to restart FTL if no init system is present
-sh /opt/pihole/pihole-FTL-prestart.sh
-capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
+
 
 # Start crond for scheduled scripts (logrotate, pihole flush, gravity update etc)
 # crond
@@ -82,6 +80,10 @@ sed -i "s/59 17/$((1 + RANDOM % 58)) $((12 + RANDOM % 8))/" /crontab.txt
 pihole -g
 
 pihole updatechecker
+
+# Start FTL. TODO: We need to either mock the service file or update the pihole script in the main repo to restart FTL if no init system is present
+sh /opt/pihole/pihole-FTL-prestart.sh
+capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
 
 tail -f /var/log/pihole-FTL.log
 
