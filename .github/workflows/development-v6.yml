@@ -1,10 +1,10 @@
-name: Build and Publish (Alpine)
+name: Build and Publish (development-v6)
 on:
   schedule:
     - cron: "0 5 * * *"
   push:
     branches:
-      - v6-alpine-play
+      - development-v6
 
 env:
   dockerhub: ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole
@@ -91,6 +91,7 @@ jobs:
   # If we would push immediately above, the individual runners would overwrite each other's images
   # https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
   merge-and-deploy:
+    if: github.event_name != 'pull_request'
     strategy:
       fail-fast: false
       matrix:
@@ -131,7 +132,7 @@ jobs:
           tags: |
             v6-alpine-play
 
-      - name: Create manifest list and push (Docker Hub)
+      - name: Create manifest list and push (${{ matrix.registry }})
         working-directory: /tmp/digests/${{ matrix.registry }}
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
