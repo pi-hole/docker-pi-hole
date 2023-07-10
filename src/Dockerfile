@@ -3,9 +3,8 @@ FROM alpine:${CONTAINER}
 # https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 ARG TARGETPLATFORM
 
-# download a repo from github
-# TODO - probably remove a lot of these
-RUN apk add --no-cache git \
+RUN apk add --no-cache \
+    git \
     bash \
     curl \
     bind-tools \
@@ -14,21 +13,11 @@ RUN apk add --no-cache git \
     sudo \
     unzip \
     wget \
-    libidn \
-    nettle \
     libcap \
-    openresolv \
     iproute2-ss \
     jq \
     coreutils \
-    dialog \
-    newt \
-    procps \
-    dhcpcd \
-    openrc \
-    ncurses \
-    nano \
-    less
+    procps
 
 # download a the main repos from github
 RUN git clone --branch development-v6 https://github.com/pi-hole/AdminLTE.git /var/www/html/admin
