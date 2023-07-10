@@ -30,7 +30,7 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
         with:
-          ref: v6-alpine-play
+          ref: development-v6
 
       - name: Docker meta (Docker Hub and GitHub Container Registry)
         id: meta
@@ -42,7 +42,7 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            v6-alpine-play
+            development-v6
 
       - name: Login to DockerHub and GitHub Container Registry
         uses: ./.github/actions/login-repo
@@ -130,7 +130,7 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            v6-alpine-play
+            development-v6
 
       - name: Create manifest list and push (${{ matrix.registry }})
         working-directory: /tmp/digests/${{ matrix.registry }}
