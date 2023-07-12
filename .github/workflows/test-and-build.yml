@@ -46,6 +46,7 @@ jobs:
             development-v6
 
       - name: Login to DockerHub and GitHub Container Registry
+        if: github.event_name != 'pull_request'
         uses: ./.github/actions/login-repo
         with:
           docker_username: ${{ secrets.DOCKERHUB_USER }}
@@ -72,7 +73,7 @@ jobs:
           push: true
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
-            type=image,name=${{ env[matrix.registry] }},push-by-digest=true,name-canonical=true,push=true
+            type=image,name=${{ env[matrix.registry] }},push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' }}
 
       - name: Export digests
         run: |
