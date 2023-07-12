@@ -70,7 +70,6 @@ jobs:
           build-args: |
             PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}
             CONTAINER=${{ matrix.container }}
-          push: true
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
             type=image,name=${{ env[matrix.registry] }},push-by-digest=${{ github.event_name != 'pull_request' }},name-canonical=true,push=${{ github.event_name != 'pull_request' }}
