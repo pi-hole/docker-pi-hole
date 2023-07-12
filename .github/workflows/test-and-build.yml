@@ -73,7 +73,7 @@ jobs:
           push: true
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
-            type=image,name=${{ env[matrix.registry] }},push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' }}
+            type=image,name=${{ env[matrix.registry] }},push-by-digest=${{ github.event_name != 'pull_request' }},name-canonical=true,push=${{ github.event_name != 'pull_request' }}
 
       - name: Export digests
         run: |
