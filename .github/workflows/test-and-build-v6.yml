@@ -103,6 +103,8 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
+        with:
+          ref: development-v6
 
       - name: Download digests
         uses: actions/download-artifact@v3
