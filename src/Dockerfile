@@ -48,7 +48,7 @@ RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
 
 
 ADD https://ftl.pi-hole.net/macvendor.db /macvendor.db
-ADD crontab.txt /crontab.txt
+COPY crontab.txt /crontab.txt
 
 RUN cd /etc/.pihole && \
     install -Dm755 -d /opt/pihole && \
@@ -67,8 +67,8 @@ ENV FTL_CMD=no-daemon
 RUN addgroup -S pihole && adduser -S pihole -G pihole
 # RUN groupadd pihole && useradd -r --no-user-group -g pihole -s /usr/sbin/nologin pihole
 
-ADD bash_functions.sh /usr/bin/bash_functions.sh
-ADD start.sh /usr/bin/start.sh
+COPY bash_functions.sh /usr/bin/bash_functions.sh
+COPY start.sh /usr/bin/start.sh
 
 RUN chmod +x /usr/bin/start.sh
 
