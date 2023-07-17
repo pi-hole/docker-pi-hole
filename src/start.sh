@@ -82,7 +82,17 @@ sed -i "s/59 17/$((1 + RANDOM % 58)) $((12 + RANDOM % 8))/" /crontab.txt
 
 /usr/sbin/crond
 
-pihole -g
+gravityDBfile=$(getFTLConfigValue files.gravity)
+
+if [ -z "$SKIPGRAVITYONBOOT" ] || [ ! -f "${gravityDBfile}" ]; then
+    if [ -n "$SKIPGRAVITYONBOOT" ];then
+        echo "  SKIPGRAVITYONBOOT is set, however ${gravityDBfile} does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate."
+        echo "  Ignoring SKIPGRAVITYONBOOT on this occaision."
+    fi
+    pihole -g
+else
+    echo "  Skipping Gravity Database Update."
+fi
 
 pihole updatechecker
 
