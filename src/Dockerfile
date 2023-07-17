@@ -38,6 +38,7 @@ RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
 
 ADD https://ftl.pi-hole.net/macvendor.db /macvendor.db
 COPY crontab.txt /crontab.txt
+COPY pihole.sudo /etc/sudoers.d/pihole
 
 RUN cd /etc/.pihole && \
     install -Dm755 -d /opt/pihole && \

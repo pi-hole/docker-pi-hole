@@ -1,0 +1,1 @@
+pihole ALL = NOPASSWD: /usr/local/bin/pihole"
