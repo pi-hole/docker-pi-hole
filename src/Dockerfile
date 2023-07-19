@@ -20,8 +20,8 @@ RUN apk add --no-cache \
     procps
 
 # download a the main repos from github
-RUN git clone --branch development-v6 https://github.com/pi-hole/AdminLTE.git /var/www/html/admin && \
-    git clone --branch development-v6 https://github.com/pi-hole/pi-hole.git /etc/.pihole
+RUN git clone --depth 1 --single-branch --branch development-v6 https://github.com/pi-hole/AdminLTE.git /var/www/html/admin && \
+    git clone --depth 1 --single-branch --branch development-v6 https://github.com/pi-hole/pi-hole.git /etc/.pihole
 
 # Download the latest version of pihole-FTL for alpine:
 # Probably need this to be built for different FTLARCHs
