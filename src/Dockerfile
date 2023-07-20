@@ -17,7 +17,8 @@ RUN apk add --no-cache \
     iproute2-ss \
     jq \
     coreutils \
-    procps
+    procps \
+    ncurses
 
 # download a the main repos from github
 RUN git clone --depth 1 --single-branch --branch development-v6 https://github.com/pi-hole/AdminLTE.git /var/www/html/admin && \
