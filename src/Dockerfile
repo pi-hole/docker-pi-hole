@@ -20,9 +20,13 @@ RUN apk add --no-cache \
     procps \
     ncurses
 
+ARG WEB_BRANCH="development-v6"
+ARG CORE_BRANCH="development-v6"
+ARG FTL_BRANCH="development-v6"
+
 # download a the main repos from github
-RUN git clone --depth 1 --single-branch --branch development-v6 https://github.com/pi-hole/AdminLTE.git /var/www/html/admin && \
-    git clone --depth 1 --single-branch --branch development-v6 https://github.com/pi-hole/pi-hole.git /etc/.pihole
+RUN git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.com/pi-hole/AdminLTE.git /var/www/html/admin && \
+    git clone --depth 1 --single-branch --branch ${CORE_BRANCH} https://github.com/pi-hole/pi-hole.git /etc/.pihole
 
 # Download the latest version of pihole-FTL for alpine:
 # Probably need this to be built for different FTLARCHs
@@ -33,7 +37,7 @@ RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     elif [ "$TARGETPLATFORM" = "linux/arm64/v8" ]; then FTLARCH=armv64; \
     elif [ "$TARGETPLATFORM" = "linux/riscv64" ];  then FTLARCH=riscv64; \
     else FTLARCH=amd64; fi \
-    && curl -sSL "https://ftl.pi-hole.net/development-v6/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL && \
+    && curl -sSL "https://ftl.pi-hole.net/${FTL_BRANCH}/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL && \
     chmod +x /usr/bin/pihole-FTL
 
 
