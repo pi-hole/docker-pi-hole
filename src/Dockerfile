@@ -20,6 +20,9 @@ RUN apk add --no-cache \
     procps \
     ncurses
 
+ARG PIHOLE_DOCKER_TAG="unknown"
+RUN echo "${PIHOLE_DOCKER_TAG}" > /pihole.docker.tag
+
 ARG WEB_BRANCH="development-v6"
 ARG CORE_BRANCH="development-v6"
 ARG FTL_BRANCH="development-v6"
