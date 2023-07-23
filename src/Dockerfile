@@ -27,7 +27,8 @@ RUN apk add --no-cache \
     coreutils \
     procps \
     ncurses \
-    binutils
+    binutils \
+    tzdata
 
 ADD https://ftl.pi-hole.net/macvendor.db /macvendor.db
 COPY crontab.txt /crontab.txt
