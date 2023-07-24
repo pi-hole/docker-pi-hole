@@ -8,9 +8,10 @@ fi
 GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD | sed "s/\//-/g")
 GIT_TAG=$(git describe --tags --exact-match 2> /dev/null || true)
 GIT_TAG="${GIT_TAG:-$GIT_BRANCH}"
+PLATFORM="${PLATFORM:-linux/amd64}"
 
 # generate and build dockerfile
-docker build --tag image_pipenv --file test/Dockerfile test/
+docker buildx build --load --platform=${PLATFORM} --tag image_pipenv --file test/Dockerfile test/
 docker run --rm \
     --volume /var/run/docker.sock:/var/run/docker.sock \
     --volume "$(pwd):/$(pwd)" \

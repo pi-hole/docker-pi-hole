@@ -1,17 +1,11 @@
-FROM python:3.10-slim-bullseye
+FROM python:3.10-alpine3.18
 
 # Only works for docker CLIENT (bind mounted socket)
-COPY --from=docker:20.10.17 /usr/local/bin/docker /usr/local/bin/
+COPY --from=docker:24-cli /usr/local/bin/docker /usr/local/bin/
 
-ARG packages
-RUN apt-get update && \
-    apt-get install -y python3-dev curl gcc make \
-        libffi-dev libssl-dev ${packages} \
-    && rm -rf /var/lib/apt/lists/* \
+RUN apk add --no-cache \
+    curl \
     && pip3 install --no-cache-dir -U pip pipenv
-
-RUN curl -L https://github.com/docker/compose/releases/download/2.10.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && \
-    chmod +x /usr/local/bin/docker-compose
 
 COPY ./cmd.sh /usr/local/bin/
 COPY Pipfile* /root/
