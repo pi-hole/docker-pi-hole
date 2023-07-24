@@ -2,7 +2,7 @@
 set -ex
 
 if [[ "$1" == "enter" ]]; then
-    enter="-it --entrypoint=bash"
+    enter="-it --entrypoint=sh"
 fi
 
 GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD | sed "s/\//-/g")
