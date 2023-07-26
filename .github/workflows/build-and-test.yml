@@ -1,0 +1,30 @@
+name: Build and Test (development-v6)
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Official docker images for docker are only available for amd64 and arm64
+        # TODO: Look at: https://github.com/docker-library/official-images#architectures-other-than-amd64
+        # Is testing on all platforms really necessary?
+        platform: [linux/amd64, linux/arm64/v8]
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v3
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+      with:
+        platforms: ${{ matrix.platform}}
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Run Tests
+      run: |
+        echo "Building image to test"
+        PLATFORM=${{ matrix.platform}} ./build-and-test.sh
