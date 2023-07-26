@@ -9,6 +9,8 @@ fi
 # shellcheck source=/dev/null
 . /usr/bin/bash_functions.sh
 
+modifyUser pihole ${PIHOLE_UID}
+modifyGroup pihole ${PIHOLE_GID}
 
 # shellcheck source=/dev/null
 # SKIP_INSTALL=true . /etc/.pihole/automated\ install/basic-install.sh

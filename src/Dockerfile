@@ -27,6 +27,7 @@ RUN apk add --no-cache \
     coreutils \
     procps \
     ncurses \
+    shadow \
     binutils \
     tzdata
 

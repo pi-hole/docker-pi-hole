@@ -198,6 +198,30 @@ setup_web_password() {
     fi
 }
 
+modifyUser()
+{
+  declare username=${1:-} newId=${2:-}
+  [[ -z ${username} || -z ${newId} ]] && return
+
+  local currentId=$(id -u ${username})
+  [[ ${currentId} -eq ${newId} ]] && return
+
+  echo "  [i] Changing ID for user: ${username} (${currentId} => ${newId})"
+  usermod -o -u ${newId} ${username}
+}
+
+modifyGroup()
+{
+  declare groupname=${1:-} newId=${2:-}
+  [[ -z ${groupname} || -z ${newId} ]] && return
+
+  local currentId=$(id -g ${groupname})
+  [[ ${currentId} -eq ${newId} ]] && return
+
+  echo "  [i] Changing ID for group: ${groupname} (${currentId} => ${newId})"
+  groupmod -o -g ${newId} ${groupname}
+}
+
 # setup_blocklists() {
 #     # Exit/return early without setting up adlists with defaults for any of the following conditions:
 #     # 1. skip_setup_blocklists env is set
