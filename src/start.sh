@@ -24,6 +24,25 @@ echo "  [i] Starting docker specific checks & setup for docker pihole/pihole"
 
 # Initial checks
 # ===========================
+
+# If PIHOLE_UID is set, modify the pihole user's id to match
+if [ -n "${PIHOLE_UID}" ]; then
+    currentId=$(id -u ${username})
+    [[ ${currentId} -eq ${PIHOLE_UID} ]] && return
+
+    echo "  [i] Changing ID for user: pihole (${currentId} => ${PIHOLE_UID})"
+    usermod -o -u ${PIHOLE_UID} pihole
+fi
+
+# If PIHOLE_GID is set, modify the pihole group's id to match
+if [ -n "${PIHOLE_GID}" ]; then
+    currentId=$(id -g pihole)
+    [[ ${currentId} -eq ${PIHOLE_GID} ]] && return
+
+    echo "  [i] Changing ID for group: pihole (${currentId} => ${PIHOLE_GID})"
+    groupmod -o -g ${PIHOLE_GID} pihole
+fi
+
 fix_capabilities
 # validate_env || exit 1
 ensure_basic_configuration
