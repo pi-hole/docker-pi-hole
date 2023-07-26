@@ -4,7 +4,6 @@ if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
     set -x ;
 fi
 
-
 # The below functions are all contained in bash_functions.sh
 # shellcheck source=/dev/null
 . /usr/bin/bash_functions.sh
@@ -27,20 +26,20 @@ echo "  [i] Starting docker specific checks & setup for docker pihole/pihole"
 
 # If PIHOLE_UID is set, modify the pihole user's id to match
 if [ -n "${PIHOLE_UID}" ]; then
-    currentId=$(id -u ${username})
-    [[ ${currentId} -eq ${PIHOLE_UID} ]] && return
-
+  currentId=$(id -u ${username})
+  if [[ ${currentId} -ne ${PIHOLE_UID} ]]; then
     echo "  [i] Changing ID for user: pihole (${currentId} => ${PIHOLE_UID})"
     usermod -o -u ${PIHOLE_UID} pihole
+  fi
 fi
 
 # If PIHOLE_GID is set, modify the pihole group's id to match
 if [ -n "${PIHOLE_GID}" ]; then
-    currentId=$(id -g pihole)
-    [[ ${currentId} -eq ${PIHOLE_GID} ]] && return
-
+  currentId=$(id -g pihole)
+  if [[ ${currentId} -ne ${PIHOLE_GID} ]]; then
     echo "  [i] Changing ID for group: pihole (${currentId} => ${PIHOLE_GID})"
     groupmod -o -g ${PIHOLE_GID} pihole
+  fi
 fi
 
 fix_capabilities
