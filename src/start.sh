@@ -30,6 +30,8 @@ if [ -n "${PIHOLE_UID}" ]; then
   if [[ ${currentId} -ne ${PIHOLE_UID} ]]; then
     echo "  [i] Changing ID for user: pihole (${currentId} => ${PIHOLE_UID})"
     usermod -o -u ${PIHOLE_UID} pihole
+  else
+   echo "  [i] ID for user pihole is already ${PIHOLE_UID}, no need to change"
   fi
 fi
 
@@ -39,6 +41,8 @@ if [ -n "${PIHOLE_GID}" ]; then
   if [[ ${currentId} -ne ${PIHOLE_GID} ]]; then
     echo "  [i] Changing ID for group: pihole (${currentId} => ${PIHOLE_GID})"
     groupmod -o -g ${PIHOLE_GID} pihole
+  else
+   echo "  [i] ID for group pihole is already ${PIHOLE_GID}, no need to change"
   fi
 fi
 
