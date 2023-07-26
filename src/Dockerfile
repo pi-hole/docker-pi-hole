@@ -29,7 +29,8 @@ RUN apk add --no-cache \
     ncurses \
     binutils \
     tzdata \
-    shadow
+    shadow \
+    tini
 
 ADD https://ftl.pi-hole.net/macvendor.db /macvendor.db
 COPY crontab.txt /crontab.txt
@@ -68,4 +69,5 @@ COPY --chmod=0755 start.sh /usr/bin/start.sh
 
 HEALTHCHECK CMD dig +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
 
-ENTRYPOINT [ "start.sh" ]
+ENTRYPOINT [ "tini", "--" ]
+CMD [ "/usr/bin/start.sh" ]
