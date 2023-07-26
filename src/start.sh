@@ -26,7 +26,7 @@ echo "  [i] Starting docker specific checks & setup for docker pihole/pihole"
 
 # If PIHOLE_UID is set, modify the pihole user's id to match
 if [ -n "${PIHOLE_UID}" ]; then
-  currentId=$(id -u ${username})
+  currentId=$(id -u pihole)
   if [[ ${currentId} -ne ${PIHOLE_UID} ]]; then
     echo "  [i] Changing ID for user: pihole (${currentId} => ${PIHOLE_UID})"
     usermod -o -u ${PIHOLE_UID} pihole
@@ -104,16 +104,24 @@ sed -i "s/59 17/$((1 + RANDOM % 58)) $((12 + RANDOM % 8))/" /crontab.txt
 
 /usr/sbin/crond
 
+#migrate Database if needed:
 gravityDBfile=$(getFTLConfigValue files.gravity)
-
-if [ -z "$SKIPGRAVITYONBOOT" ] || [ ! -f "${gravityDBfile}" ]; then
-    if [ -n "$SKIPGRAVITYONBOOT" ];then
-        echo "  SKIPGRAVITYONBOOT is set, however ${gravityDBfile} does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate."
-        echo "  Ignoring SKIPGRAVITYONBOOT on this occaision."
-    fi
-    pihole -g
-else
+if [ -n "${SKIPGRAVITYONBOOT}" ]; then
+  if [ -f "${gravityDBfile}" ]; then
+    #skip set + file =>update if needed
     echo "  Skipping Gravity Database Update."
+    source /etc/.pihole/advanced/Scripts/database_migration/gravity-db.sh
+    upgrade_gravityDB "${gravityDBfile}" "/etc/pihole"
+  else
+    #skip set + nofile => pihole -g (install error)
+    echo "  SKIPGRAVITYONBOOT is set, however ${gravityDBfile} does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate."
+    echo "  Ignoring SKIPGRAVITYONBOOT on this occasion."
+    pihole -g
+  fi
+else
+  #skip not set + no file => error => create file
+  #skip not set + file => update db + lists
+  pihole -g
 fi
 
 pihole updatechecker
