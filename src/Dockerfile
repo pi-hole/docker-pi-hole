@@ -25,7 +25,7 @@ RUN apk add --no-cache \
     iproute2-ss \
     jq \
     coreutils \
-    procps \
+    procps-ng \
     ncurses \
     binutils \
     tzdata \
