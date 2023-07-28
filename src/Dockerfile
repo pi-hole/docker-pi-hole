@@ -12,24 +12,24 @@ ENV DNSMASQ_USER=pihole
 ENV FTL_CMD=no-daemon
 
 RUN apk add --no-cache \
-    git \
     bash \
-    curl \
     bind-tools \
-    nmap-ncat \
-    psmisc \
-    sudo \
-    unzip \
-    wget \
-    libcap \
+    binutils \
+    coreutils \
+    curl \
+    git \ 
     iproute2-ss \
     jq \
-    coreutils \
-    procps-ng \
+    libcap \
     ncurses \
-    binutils \
+    nmap-ncat \
+    procps-ng \
+    psmisc \
+    shadow \
+    sudo \
     tzdata \
-    shadow
+    unzip \
+    wget
 
 ADD https://ftl.pi-hole.net/macvendor.db /macvendor.db
 COPY crontab.txt /crontab.txt
