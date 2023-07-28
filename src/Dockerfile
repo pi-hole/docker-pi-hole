@@ -28,6 +28,7 @@ RUN apk add --no-cache \
     psmisc \
     shadow \
     sudo \
+    tini \
     tzdata \
     unzip \
     wget
@@ -71,4 +72,4 @@ COPY --chmod=0755 start.sh /usr/bin/start.sh
 
 HEALTHCHECK CMD dig +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
 
-ENTRYPOINT [ "start.sh" ]
+ENTRYPOINT ["/bin/tini", "--", "start.sh"]
