@@ -17,7 +17,7 @@ RUN apk add --no-cache \
     binutils \
     coreutils \
     curl \
-    git \ 
+    git \
     iproute2-ss \
     jq \
     libcap \
@@ -54,7 +54,6 @@ RUN cd /etc/.pihole && \
     install -Dm755 -d /opt/pihole && \
     install -Dm755 -t /opt/pihole gravity.sh && \
     install -Dm755 -t /opt/pihole ./advanced/Scripts/*.sh && \
-    install -Dm755 -t /opt/pihole ./automated\ install/uninstall.sh && \
     install -Dm755 -t /opt/pihole ./advanced/Scripts/COL_TABLE && \
     install -Dm755 -t /usr/local/bin pihole && \
     install -Dm644 ./advanced/bash-completion/pihole /etc/bash_completion.d/pihole && \
