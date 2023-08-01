@@ -35,8 +35,7 @@ ADD https://ftl.pi-hole.net/macvendor.db /macvendor.db
 COPY crontab.txt /crontab.txt
 
 # Add PADD to the container, too.
-ADD https://raw.githubusercontent.com/pi-hole/PADD/PADD_FTLv6/padd.sh /usr/local/bin/padd
-RUN chmod +x /usr/local/bin/padd
+ADD --chmod=0755 https://raw.githubusercontent.com/pi-hole/PADD/PADD_FTLv6/padd.sh /usr/local/bin/padd
 
 # download a the main repos from github
 RUN git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.com/pi-hole/AdminLTE.git /var/www/html/admin && \
