@@ -87,7 +87,6 @@ if [ "${INSTALL_DEV_TOOLS:-0}" -gt 0 ] ; then
     apk add --no-cache nano less
 fi
 
-
 # Remove possible leftovers from previous pihole-FTL processes
 rm -f /dev/shm/FTL-* 2> /dev/null
 rm -f /run/pihole/FTL.sock
