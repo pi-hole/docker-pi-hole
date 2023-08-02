@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # If user has set QUERY_LOGGING Env Var, copy it out to _OVERRIDE,
 # else it will get overridden itself when we source basic-install.sh
@@ -59,7 +59,7 @@ ensure_basic_configuration() {
     # set -e
 
     # If FTLCONF_files_macvendor is not set
-    if [[ -z "${FTLCONF_files_macvendor:-}" ]]; then
+    if [ -z "${FTLCONF_files_macvendor:-}" ]; then
         # User is not passing in a custom location - so force FTL to use the file we moved to / during the build
         setFTLConfigValue "files.macvendor" "/macvendor.db"
         chown pihole:pihole /macvendor.db
@@ -72,23 +72,24 @@ fix_capabilities() {
     # Current: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=ep
     # FTL can also use CAP_NET_ADMIN and CAP_SYS_NICE. If we try to set them when they haven't been explicitly enabled, FTL will not start. Test for them first:
     echo "  [i] Setting capabilities on pihole-FTL where possible"
-    capsh --has-p=cap_chown 2>/dev/null && CAP_STR+=',CAP_CHOWN'
-    capsh --has-p=cap_net_bind_service 2>/dev/null && CAP_STR+=',CAP_NET_BIND_SERVICE'
-    capsh --has-p=cap_net_raw 2>/dev/null && CAP_STR+=',CAP_NET_RAW'
-    capsh --has-p=cap_net_admin 2>/dev/null && CAP_STR+=',CAP_NET_ADMIN' || DHCP_READY='false'
-    capsh --has-p=cap_sys_nice 2>/dev/null && CAP_STR+=',CAP_SYS_NICE'
+    capsh --has-p=cap_chown 2>/dev/null && CAP_STR="${CAP_STR},CAP_CHOWN"
+    capsh --has-p=cap_net_bind_service 2>/dev/null && CAP_STR="${CAP_STR},CAP_NET_BIND_SERVICE"
+    capsh --has-p=cap_net_raw 2>/dev/null && CAP_STR="${CAP_STR},CAP_NET_RAW"
+    capsh --has-p=cap_net_admin 2>/dev/null && CAP_STR="${CAP_STR},CAP_NET_ADMIN" || DHCP_READY='false'
+    capsh --has-p=cap_sys_nice 2>/dev/null && CAP_STR="${CAP_STR},CAP_SYS_NICE"
 
-    if [[ ${CAP_STR} ]]; then
+    if [ "${CAP_STR}" ]; then
         # We have the (some of) the above caps available to us - apply them to pihole-FTL
         echo "  [i] Applying the following caps to pihole-FTL:"
-        IFS=',' read -ra CAPS <<< "${CAP_STR:1}"
+        IFS=',' read -r CAPS <<< "$(printf "%s" "$CAP_STR" | cut -c 1 )"
         for i in "${CAPS[@]}"; do
             echo "        * ${i}"
         done
 
-        setcap ${CAP_STR:1}+ep "$(which pihole-FTL)" || ret=$?
+        setcap "$(printf "%s" "$CAP_STR" | cut -c 1 )"+ep "$(which pihole-FTL)" || ret=$?
 
-        if [[ $DHCP_READY == false ]] && [[ $FTLCONF_dhcp_active == true ]]; then
+        export DHCP_ACTIVE=false
+        if [ "$DHCP_READY" = false ] && [ "$FTLCONF_dhcp_active" = true ]; then
             # DHCP is requested but NET_ADMIN is not available.
             echo "ERROR: DHCP requested but NET_ADMIN is not available. DHCP will not be started."
             echo "      Please add cap_net_admin to the container's capabilities or disable DHCP."
@@ -96,7 +97,7 @@ fix_capabilities() {
             setFTLConfigValue dhcp.active false
         fi
 
-        if [[ $ret -ne 0 && "${DNSMASQ_USER:-pihole}" != "root" ]]; then
+        if [ "$ret" -ne 0 ] && [ "${DNSMASQ_USER:-pihole}" != "root" ]; then
             echo "  [!] ERROR: Unable to set capabilities for pihole-FTL. Cannot run as non-root."
             echo "            If you are seeing this error, please set the environment variable 'DNSMASQ_USER' to the value 'root'"
             exit 1
@@ -116,18 +117,18 @@ apply_FTL_Configs_From_Env(){
     # setting defined here: https://docs.pi-hole.net/ftldns/configfile/
     echo ""
     echo "==========Applying settings from environment variables=========="
-    source /opt/pihole/COL_TABLE
+    . /opt/pihole/COL_TABLE
     declare -px | grep FTLCONF_ | sed -E 's/declare -x FTLCONF_([^=]+)=\"(|.+)\"/\1 \2/' | while read -r name value
     do
         # Replace underscores with dots in the name to match pihole-FTL expectiations
-        name="${name//_/.}"
+        name="$(sed 's/_/./g')"
 
         # Special handing for the value if the name is dns.upstreams
-        if [ "$name" == "dns.upstreams" ]; then
-            value='["'${value//;/\",\"}'"]'
+        if [ "$name" = "dns.upstreams" ]; then
+            value='["'$(sed 's/;/\",\"/g')'"]'
         fi
 
-        if [ "$name" == "webserver.api.password" ]; then
+        if [ "$name" = "webserver.api.password" ]; then
             masked_value=$(printf "%${#value}s" | tr " " "*")
         else
             masked_value=$value
@@ -145,7 +146,7 @@ apply_FTL_Configs_From_Env(){
 }
 
 setup_FTL_query_logging(){
-    if [ "${QUERY_LOGGING_OVERRIDE}" == "false" ]; then
+    if [ "${QUERY_LOGGING_OVERRIDE}" = "false" ]; then
         echo "  [i] Disabling Query Logging"
         setFTLConfigValue dns.queryLogging "${QUERY_LOGGING_OVERRIDE}"
     else
@@ -161,7 +162,7 @@ load_web_password_secret() {
    # If WEBPASSWORD is not set at all, attempt to read password from WEBPASSWORD_FILE,
    # allowing secrets to be passed via docker secrets
    if [ -z "${WEBPASSWORD+x}" ] && [ -n "${WEBPASSWORD_FILE}" ] && [ -r "${WEBPASSWORD_FILE}" ]; then
-     WEBPASSWORD=$(<"${WEBPASSWORD_FILE}")
+     WEBPASSWORD=$(cat "${WEBPASSWORD_FILE}")
    fi;
 }
 
@@ -170,7 +171,7 @@ setup_web_password() {
         # ENV WEBPASSWORD_OVERRIDE is not set
 
         # Exit if password is already set (TODO: Revisit this. Maybe make setting password in environment variable mandatory?)
-        if [[ $(pihole-FTL --config webserver.api.pwhash) != '""' ]]; then
+        if [ "$(pihole-FTL --config webserver.api.pwhash)" != '""' ]; then
             return
         fi
         # Generate new random password
@@ -185,7 +186,7 @@ setup_web_password() {
     # Explicitly turn off bash printing when working with secrets
     { set +x; } 2>/dev/null
 
-    if [[ "$WEBPASSWORD" == "" ]] ; then
+    if [ "$WEBPASSWORD" = "" ] ; then
         echo "" | pihole -a -p
     else
         pihole -a -p "$WEBPASSWORD" "$WEBPASSWORD"
