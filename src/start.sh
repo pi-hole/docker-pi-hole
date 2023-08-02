@@ -87,9 +87,6 @@ if [ "${INSTALL_DEV_TOOLS:-0}" -gt 0 ] ; then
     apk add --no-cache nano less
 fi
 
-# Add an alias for padd to the root user's bashrc
-port="${FTLCONF_webserver_port%%,*}"
-echo "alias padd='padd --port ${port:-8080} --secret ${FTLCONF_webserver_api_password}'" > /root/.bashrc
 
 # Remove possible leftovers from previous pihole-FTL processes
 rm -f /dev/shm/FTL-* 2> /dev/null
