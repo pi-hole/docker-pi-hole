@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/sh -e
 
 if [ "${PH_VERBOSE:-0}" -gt 0 ] ; then
     set -x ;
@@ -26,10 +26,10 @@ echo "  [i] Starting docker specific checks & setup for docker pihole/pihole"
 
 # If PIHOLE_UID is set, modify the pihole user's id to match
 if [ -n "${PIHOLE_UID}" ]; then
-  currentId=$(id -u ${username})
-  if [[ ${currentId} -ne ${PIHOLE_UID} ]]; then
-    echo "  [i] Changing ID for user: pihole (${currentId} => ${PIHOLE_UID})"
-    usermod -o -u ${PIHOLE_UID} pihole
+  currentId=$(id -u "${username}")
+  if  [ "${currentId}" -ne "${PIHOLE_UID}" ]; then
+    echo "  [i] Changing ID for user: pihole (${currentId} => '${PIHOLE_UID}')"
+    usermod -o -u "${PIHOLE_UID}" pihole
   else
    echo "  [i] ID for user pihole is already ${PIHOLE_UID}, no need to change"
   fi
@@ -38,9 +38,9 @@ fi
 # If PIHOLE_GID is set, modify the pihole group's id to match
 if [ -n "${PIHOLE_GID}" ]; then
   currentId=$(id -g pihole)
-  if [[ ${currentId} -ne ${PIHOLE_GID} ]]; then
-    echo "  [i] Changing ID for group: pihole (${currentId} => ${PIHOLE_GID})"
-    groupmod -o -g ${PIHOLE_GID} pihole
+  if [ "${currentId}" -ne "${PIHOLE_GID}" ]; then
+    echo "  [i] Changing ID for group: pihole (${currentId} => '${PIHOLE_GID}')"
+    groupmod -o -g "${PIHOLE_GID}" pihole
   else
    echo "  [i] ID for group pihole is already ${PIHOLE_GID}, no need to change"
   fi
@@ -120,7 +120,7 @@ pihole updatechecker
 
 # Start FTL. TODO: We need to either mock the service file or update the pihole script in the main repo to restart FTL if no init system is present
 sh /opt/pihole/pihole-FTL-prestart.sh
-capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
+capsh --user="$DNSMASQ_USER" --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
 
 tail -f /var/log/pihole-FTL.log
 
