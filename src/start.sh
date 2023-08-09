@@ -110,6 +110,7 @@ if [ -n "${SKIPGRAVITYONBOOT}" ]; then
   if [ -f "${gravityDBfile}" ]; then
     #skip set + file =>update if needed
     echo "  Skipping Gravity Database Update."
+    # TODO: Revist this path if we move to a multistage build
     source /etc/.pihole/advanced/Scripts/database_migration/gravity-db.sh
     upgrade_gravityDB "${gravityDBfile}" "/etc/pihole"
   else
