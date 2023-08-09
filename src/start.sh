@@ -147,6 +147,12 @@ stop() {
     sleep 0.5
   done
 
+  # If we are running pytest, keep the container alive for a little longer
+  # to allow the tests to complete
+  if [[ ${PYTEST} ]]; then
+    sleep 10
+  fi
+
   exit
 }
 

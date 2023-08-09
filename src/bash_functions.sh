@@ -52,9 +52,12 @@ ensure_basic_configuration() {
     # chown pihole:root "${PI_HOLE_BIN_DIR}/pihole"
 
     mkdir -p /etc/pihole
-    if [[ ! -f /etc/pihole/adlists.list ]]; then
-        echo "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" > /etc/pihole/adlists.list
+    if [[ -z "${PYTEST}" ]]; then
+        if [[ ! -f /etc/pihole/adlists.list ]]; then
+            echo "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" >/etc/pihole/adlists.list
+        fi
     fi
+
     chown -R pihole:pihole /etc/pihole
 
 
