@@ -16,7 +16,7 @@ updates:
       interval: "weekly"
       day: saturday
       time: "10:00"
-    target-branch: development-v6
+    target-branch: dev
     reviewers:
       - "pi-hole/docker-maintainers"
   # Maintain dependencies for GitHub Actions development-v6
