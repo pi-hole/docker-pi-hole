@@ -12,7 +12,7 @@ ARG PADD_BRANCH="PADD_FTLv6"
 ENV DNSMASQ_USER=pihole
 ENV FTL_CMD=no-daemon
 
-RUN apk add --no-cache \
+RUN apk add --update --no-cache \
     bash \
     bind-tools \
     binutils \
