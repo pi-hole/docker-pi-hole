@@ -98,24 +98,26 @@ start() {
 
   /usr/sbin/crond
 
-#migrate Database if needed:
+  #migrate Database if needed:
   gravityDBfile=$(getFTLConfigValue files.gravity)
-  if [ -n "${SKIPGRAVITYONBOOT}" ]; then
-    if [ -f "${gravityDBfile}" ]; then
-      #skip set + file =>update if needed
-      echo "  Skipping Gravity Database Update."
-      # TODO: Revisit this path if we move to a multistage build
-      source /etc/.pihole/advanced/Scripts/database_migration/gravity-db.sh
-      upgrade_gravityDB "${gravityDBfile}" "/etc/pihole"
-    else
-      #skip set + nofile => pihole -g (install error)
+
+  if [ ! -f "${gravityDBfile}" ]; then
+    if [ -n "${SKIPGRAVITYONBOOT}" ]; then
       echo "  SKIPGRAVITYONBOOT is set, however ${gravityDBfile} does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate."
       echo "  Ignoring SKIPGRAVITYONBOOT on this occasion."
-      pihole -g
+      unset SKIPGRAVITYONBOOT
     fi
-    else
-        echo "  Skipping Gravity Database Update."
-    fi
+  else
+    # TODO: Revisit this path if we move to a multistage build
+    source /etc/.pihole/advanced/Scripts/database_migration/gravity-db.sh
+    upgrade_gravityDB "${gravityDBfile}" "/etc/pihole"
+  fi
+
+  if [ -n "${SKIPGRAVITYONBOOT}" ]; then
+    echo "  Skipping Gravity Database Update."
+  else
+    pihole -g
+  fi
 
   pihole updatechecker
 
