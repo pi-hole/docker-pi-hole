@@ -36,18 +36,13 @@ def run_and_stream_command_output():
 
 
 @pytest.fixture()
-def args_volumes():
-    return "-v /dev/null:/etc/pihole/adlists.list"
-
-
-@pytest.fixture()
 def args_env():
     return '-e TZ="Europe/London"'
 
 
 @pytest.fixture()
-def args(args_volumes, args_env):
-    return "{} {}".format(args_volumes, args_env)
+def args(args_env):
+    return "{}".format(args_env)
 
 
 @pytest.fixture()
