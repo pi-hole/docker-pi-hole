@@ -28,7 +28,7 @@ jobs:
             container: edge
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Docker meta (Docker Hub and GitHub Container Registry)
         id: meta
@@ -97,7 +97,7 @@ jobs:
       - build
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download digests
         uses: actions/download-artifact@v3
