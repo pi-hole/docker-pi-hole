@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run Tests
         run: |
           echo "Building image to test"
@@ -29,11 +29,11 @@ jobs:
       -
         name: Checkout
         if: github.event_name != 'schedule'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       -
         name: Checkout dev branch if we are building nightly
         if: github.event_name == 'schedule'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: dev
       -
