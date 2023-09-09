@@ -29,7 +29,7 @@ jobs:
             container: edge
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: development-v6
 
@@ -102,7 +102,7 @@ jobs:
       - build-and-test
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: development-v6
 
