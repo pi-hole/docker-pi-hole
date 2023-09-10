@@ -2,6 +2,9 @@
 
 # https://github.com/pi-hole/docker-pi-hole/blob/master/README.md
 
+# You can customize where to store persistent data by setting the `PIHOLE_BASE` environment
+# variable when invoking `docker_run.sh` (e.g. `PIHOLE_BASE=/opt/pihole-storage ./docker_run.sh`).
+#  If `PIHOLE_BASE` is not set, files are stored in your current directory when you invoke the script.
 PIHOLE_BASE="${PIHOLE_BASE:-$(pwd)}"
 [[ -d "$PIHOLE_BASE" ]] || mkdir -p "$PIHOLE_BASE" || { echo "Couldn't create storage directory: $PIHOLE_BASE"; exit 1; }
 
@@ -16,9 +19,6 @@ docker run -d \
     --dns=127.0.0.1 --dns=1.1.1.1 \
     --restart=unless-stopped \
     --hostname pi.hole \
-    -e VIRTUAL_HOST="pi.hole" \
-    -e PROXY_LOCATION="pi.hole" \
-    -e FTLCONF_LOCAL_IPV4="127.0.0.1" \
     pihole/pihole:latest
 
 printf 'Starting up pihole container '
