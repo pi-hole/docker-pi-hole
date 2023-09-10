@@ -127,7 +127,7 @@ start() {
   capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
 
   if [ "${TAIL_FTL_LOG:-1}" -eq 1 ]; then
-    tail -f /var/log/pihole-FTL.log &
+    tail -f /var/log/pihole/FTL.log &
   else
     echo "  [i] FTL log output is disabled. Remove the Environment variable TAIL_FTL_LOG, or set it to 1 to enable FTL log output."
   fi
