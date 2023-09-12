@@ -17,9 +17,9 @@ services:
       # WEBPASSWORD: 'set a secure password here or it will be random'
     # Volumes store your data between container upgrades
     volumes:
-      - './etc-pihole:/etc/pihole'
-      - './etc-dnsmasq.d:/etc/dnsmasq.d'
+      - './etc-pihole:/etc/pihole:z' # Adding `:z` for Red Hat base distribution with an SELinux enforcing policy
+      - './etc-dnsmasq.d:/etc/dnsmasq.d:z'
     #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
     cap_add:
-      - NET_ADMIN
-    restart: unless-stopped # Recommended but not required (DHCP needs NET_ADMIN)  
+      - NET_ADMIN # Required if you are using Pi-hole as your DHCP server, else not needed
+    restart: unless-stopped
