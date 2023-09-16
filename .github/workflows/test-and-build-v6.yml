@@ -35,7 +35,7 @@ jobs:
 
       - name: Docker meta (Docker Hub and GitHub Container Registry)
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           images: |
@@ -125,7 +125,7 @@ jobs:
 
       - name: Docker meta (Docker Hub and GitHub Container Registry)
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           images: |
