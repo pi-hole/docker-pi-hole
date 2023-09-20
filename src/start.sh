@@ -114,7 +114,7 @@ start() {
   fi
 
   if [ -n "${SKIPGRAVITYONBOOT}" ]; then
-    echo "  Skipping Gravity Database Update."
+    echo "  [i] Skipping Gravity Database Update."
   else
     pihole -g
   fi
@@ -126,7 +126,11 @@ start() {
   sh /opt/pihole/pihole-FTL-prestart.sh
   capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
 
-  tail -f /var/log/pihole-FTL.log &
+  if [ "${TAIL_FTL_LOG:-1}" -eq 1 ]; then
+    tail -f /var/log/pihole/FTL.log &
+  else
+    echo "  [i] FTL log output is disabled. Remove the Environment variable TAIL_FTL_LOG, or set it to 1 to enable FTL log output."
+  fi
 
   # https://stackoverflow.com/a/49511035
   wait $!
