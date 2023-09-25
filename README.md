@@ -112,7 +112,7 @@ There are other environment variables if you want to customize various things in
 ### Experimental Variables
 | Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
-|Left Blank for future expansion| | | |
+| `ADDITIONAL_PACKAGES`| unset | Space separated list of APKs | HERE BE DRAGONS. Mostly for development purposes, this just makes it easier for those of us that always like to have whatever additional tools we need inside the container for debugging |
 
 
 To use these env vars in docker run format style them like: `-e DNS1=1.1.1.1`

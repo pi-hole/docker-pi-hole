@@ -78,9 +78,19 @@ start() {
   echo "  [i] pihole-FTL ($FTL_CMD) will be started as ${DNSMASQ_USER}"
   echo ""
 
-  # Install editors inside container if requested
-  if [ "${INSTALL_DEV_TOOLS:-0}" -gt 0 ]; then
-    apk add --no-cache nano less
+  # Install additional packages inside the container if requested
+  if [ -n "${ADDITIONAL_PACKAGES}" ]; then
+    echo "  [i] Fetching APK repository metadata."
+    if ! apk update; then
+      echo "  [i] Failed to fetch APK repository metadata."
+    else
+      echo "  [i] Installing additional packages: ${ADDITIONAL_PACKAGES}."
+      # shellcheck disable=SC2086
+      if ! apk add --no-cache ${ADDITIONAL_PACKAGES}; then
+        echo "  [i] Failed to install additional packages."
+      fi
+    fi
+    echo ""
   fi
 
   # Remove possible leftovers from previous pihole-FTL processes
