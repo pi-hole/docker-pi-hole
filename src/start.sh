@@ -84,7 +84,7 @@ start() {
     if ! apk update; then
       echo "  [i] Failed to fetch APK repository metadata."
     else
-      echo "  [i] Installing additional packages."
+      echo "  [i] Installing additional packages: ${ADDITIONAL_PACKAGES}."
       # shellcheck disable=SC2086
       if ! apk add --no-cache ${ADDITIONAL_PACKAGES}; then
         echo "  [i] Failed to install additional packages."
