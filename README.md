@@ -209,9 +209,14 @@ To reconfigure Pi-hole you'll either need to use an existing container environme
 
 ### Building an image with alternative component branches
 
-Occaisionally you may need to try an alternative branch of one of the components (`core`,`web`,`ftl`). On bare metal you would run, for example, `pihole checkout core custombranchname`, however in Docker world we have disabled this command as it can cause unpredictable results.
+Occasionally you may need to try an alternative branch of one of the components (`core`,`web`,`ftl`). On bare metal you would run, for example, `pihole checkout core custombranchname`, however in Docker world we have disabled this command as it can cause unpredictable results.
 
 The preferred method is to clone this repository and rebuild the image with the custom branch name passed in as an arg, e.g `docker buildx build src/. --tag pihole_custom --build-arg CORE_BRANCH=custombranchname --no-cache`, and then redeploy your stack with this new image (In this case you should have a local image named `pihole_custom`, but you can call it whatever you want)
+
+Valid args are:
+ - `CORE_BRANCH`
+ - `WEB_BRANCH`
+ - `FTL_BRANCH`
 
 ### Pi-hole features
 
