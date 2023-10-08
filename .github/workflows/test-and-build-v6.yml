@@ -1,11 +1,14 @@
 name: Build and Publish (development-v6-nightly)
 on:
+  workflow_dispatch:
   schedule:
     - cron: "0 5 * * *"
   push:
     branches:
       - development-v6
   pull_request:
+    branches:    
+      - development-v6
 
 env:
   dockerhub: ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole
