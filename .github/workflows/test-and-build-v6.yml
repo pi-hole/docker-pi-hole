@@ -7,6 +7,8 @@ on:
     branches:
       - development-v6
   pull_request:
+    branches:    
+      - development-v6
 
 env:
   dockerhub: ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole
