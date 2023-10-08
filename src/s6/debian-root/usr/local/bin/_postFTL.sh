@@ -16,7 +16,7 @@ fi
 if [ -z "$SKIPGRAVITYONBOOT" ] || [ ! -f "${gravityDBfile}" ]; then
     if [ -n "$SKIPGRAVITYONBOOT" ];then
         echo "  SKIPGRAVITYONBOOT is set, however ${gravityDBfile} does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate."
-        echo "  Ignoring SKIPGRAVITYONBOOT on this occaision."
+        echo "  Ignoring SKIPGRAVITYONBOOT on this occasion."
     fi
     pihole -g
 else
