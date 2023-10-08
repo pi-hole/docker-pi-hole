@@ -235,7 +235,7 @@ The Date-based (including incremented "Patch" versions) do not relate to any kin
 | `2022.04.1`         | Second release in a given month                                                                                                            |
 | `dev`               | Similar to `latest`, but for the development branch (pushed occasionally)                                                                  |
 | `*beta`             | Early beta releases of upcoming versions - here be dragons                                                                                 |
-| `nightly`           | Like `dev` but pushed every night and pulls from the latest `development` branches of the core Pi-hole components (Pi-hole, AdminLTE, FTL) |
+| `nightly`           | Like `dev` but pushed every night and pulls from the latest `development` branches of the core Pi-hole components (Pi-hole, web, FTL)      |
 
 ## Upgrading, Persistence, and Customizations
 
