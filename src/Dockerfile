@@ -40,7 +40,7 @@ COPY crontab.txt /crontab.txt
 ADD --chmod=0755 https://raw.githubusercontent.com/pi-hole/PADD/${PADD_BRANCH}/padd.sh /usr/local/bin/padd
 
 # download a the main repos from github
-RUN git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.com/pi-hole/AdminLTE.git /var/www/html/admin && \
+RUN git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.com/pi-hole/web.git /var/www/html/admin && \
     git clone --depth 1 --single-branch --branch ${CORE_BRANCH} https://github.com/pi-hole/pi-hole.git /etc/.pihole ;\
     # Download the latest version of pihole-FTL for alpine:
     if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
