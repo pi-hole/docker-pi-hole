@@ -288,3 +288,20 @@ def test_setup_lighttpd_bind(
         assert "server.bind" not in config.stdout
     else:
         assert f'server.bind		 = "{expected_bind}"' in config.stdout
+
+@pytest.mark.parametrize(
+    "test_args,expected_stdout",
+    [
+        ('-e "DHCP_ACTIVE=true"', "ERROR: Won't enable DHCP"),
+        ('-e "DHCP_ACTIVE=false"', "Disabling DHCP server"),
+        (
+            '-e "DHCP_ACTIVE=true" -e "DHCP_START=192.168.1.2" -e "DHCP_END=192.168.1.99" -e "DHCP_ROUTER=192.168.1.1"',
+            "Enabling DHCP server",
+        ),
+    ],
+)
+def test_env_dhcp(docker, args_env, test_args, expected_stdout):
+    """Ensure behaviour of DHCP_ACTIVE is correct"""
+    function = docker.run(". bash_functions.sh ; setup_FTL_dhcp")
+
+    assert expected_stdout in function.stdout
