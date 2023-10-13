@@ -1,0 +1,109 @@
+#!/usr/bin/env sh
+# This script patches all service commands into the appropriate s6- commands
+# pi-hole upstream scripts need a 'service' interface. why not systemd? docker said so.
+
+# Source utils.sh for getFTLPIDFile(), getFTLPID()
+PI_HOLE_SCRIPT_DIR="/opt/pihole"
+utilsfile="${PI_HOLE_SCRIPT_DIR}/utils.sh"
+# shellcheck disable=SC1090
+. "${utilsfile}"
+
+is_running() {
+  if [ -d "/proc/${FTL_PID}" ]; then
+    return 0
+  fi
+  return 1
+}
+
+cleanup() {
+    # Run post-stop script, which does cleanup among runtime files
+    sh "${PI_HOLE_SCRIPT_DIR}/pihole-FTL-poststop.sh"
+}
+
+# Start the service
+start() {
+  if is_running; then
+    echo "pihole-FTL is already running"
+  else
+    # Run pre-start script, which pre-creates all expected files with correct permissions
+    sh "${PI_HOLE_SCRIPT_DIR}/pihole-FTL-prestart.sh"
+    capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
+
+    rc=$?
+    # Cleanup if startup failed
+    if [ "${rc}" != 0 ]; then
+        cleanup
+        exit $rc
+    fi
+    echo
+  fi
+}
+
+# Stop the service
+stop() {
+  if is_running; then
+    kill "${FTL_PID}"
+    for i in 1 2 3 4 5; do
+      if ! is_running; then
+        break
+      fi
+
+      printf "."
+      sleep 1
+    done
+    echo
+
+    if is_running; then
+      echo "Not stopped; may still be shutting down or shutdown may have failed, killing now"
+      kill -9 "${FTL_PID}"
+    else
+      echo "Stopped"
+    fi
+  else
+    echo "Not running"
+  fi
+  cleanup
+  echo
+}
+
+# Indicate the service status
+status() {
+  if is_running; then
+    echo "[ ok ] pihole-FTL is running"
+    exit 0
+  else
+    echo "[    ] pihole-FTL is not running"
+    exit 1
+  fi
+}
+
+# Get FTL's PID file path
+FTL_PID_FILE="$(getFTLPIDFile)"
+
+# Get FTL's current PID
+FTL_PID="$(getFTLPID "${FTL_PID_FILE}")"
+
+if [ "$1" != "pihole-FTL" ]; then
+  # do something
+  echo "Service Wrapper only used for pihole-FTL in this docker container"
+  exit 1
+fi
+
+
+case "$2" in
+  stop)
+        stop
+        ;;
+  status)
+        status
+        ;;
+  start|restart|reload|condrestart)
+        stop
+        start
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart|reload|status}"
+        exit 1
+esac
+
+exit 0

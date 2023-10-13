@@ -131,10 +131,8 @@ start() {
 
   pihole updatechecker
 
-  # Start pihole-FTL
-
-  sh /opt/pihole/pihole-FTL-prestart.sh
-  capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
+  # Start pihole-FTL using the service-wrapper at /usr/local/bin/service
+  service pihole-FTL start
 
   if [ "${TAIL_FTL_LOG:-1}" -eq 1 ]; then
     tail -f /var/log/pihole/FTL.log &
@@ -152,14 +150,8 @@ start() {
 }
 
 stop() {
-  # Ensure pihole-FTL shuts down cleanly on SIGTERM/SIGINT
-  ftl_pid=$(pgrep pihole-FTL)
-  killall --signal 15 pihole-FTL
-
-  # Wait for pihole-FTL to exit
-  while test -d /proc/"${ftl_pid}"; do
-    sleep 0.5
-  done
+  # Stop pihole-FTL using the service-wrapper at /usr/local/bin/service
+  service pihole-FTL stop
 
   # If we are running pytest, keep the container alive for a little longer
   # to allow the tests to complete

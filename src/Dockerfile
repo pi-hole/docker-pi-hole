@@ -69,6 +69,7 @@ RUN cd /etc/.pihole && \
 
 COPY --chmod=0755 bash_functions.sh /usr/bin/bash_functions.sh
 COPY --chmod=0755 start.sh /usr/bin/start.sh
+COPY --chmod=0755 service /usr/local/bin/service
 
 HEALTHCHECK CMD dig +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
 
