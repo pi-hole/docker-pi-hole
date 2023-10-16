@@ -127,11 +127,33 @@ apply_FTL_Configs_From_Env(){
         # Replace underscores with dots in the name to match pihole-FTL expectiations
         name="${name//_/.}"
 
-        # Special handing for the value if the name is dns.upstreams
-        if [ "$name" == "dns.upstreams" ]; then
-            value='["'${value//;/\",\"}'"]'
-        fi
 
+        # Special handling for some FTL Config values
+        case "$name" in
+            # Convert the semicolon separated list to a JSON array
+            "dns.upstreams")
+                value='["'${value//;/\",\"}'"]'
+                ;;
+            # The following config names have an underscore in them,
+            # so we need to re-convert the dot back to an underscore
+            "webserver.tls.rev.proxy")
+                name="webserver.tls.rev_proxy"
+                ;;
+            "webserver.api.totp.secret")
+                name="webserver.api.totp_secret"
+                ;;
+            "webserver.api.allow.destructive")
+                name="webserver.api.allow_destructive"
+                ;;
+            "misc.delay.startup")
+                name="misc.delay_startup"
+                ;;
+            "misc.dnsmasq.lines")
+                name="misc.dnsmasq_lines"
+                ;;
+        esac
+
+        # Mask the value if it is a password, else display the value as is
         if [ "$name" == "webserver.api.password" ]; then
             masked_value=$(printf "%${#value}s" | tr " " "*")
         else
