@@ -122,11 +122,10 @@ apply_FTL_Configs_From_Env(){
     echo ""
     echo "==========Applying settings from environment variables=========="
     source /opt/pihole/COL_TABLE
-    declare -px | grep FTLCONF_ | sed -E 's/declare -x FTLCONF_([^=]+)=\"(|.+)\"/\1 \2/' | while read -r name value
-    do
-        # Replace underscores with dots in the name to match pihole-FTL expectiations
-        name="${name//_/.}"
 
+    # Loop through all environment variables that start with "FTLCONF_"
+    printenv | grep "^FTLCONF_" | sed -n 's/^FTLCONF_\([^=]*\)=\(.*\)/\1 \2/p' | while read -r name value
+    do
         # Special handing for the value if the name is dns.upstreams
         if [ "$name" == "dns.upstreams" ]; then
             value='["'${value//;/\",\"}'"]'
