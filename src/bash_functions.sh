@@ -113,64 +113,6 @@ fix_capabilities() {
     fi
 }
 
-
-
-apply_FTL_Configs_From_Env(){
-    # Get all exported environment variables starting with FTLCONF_ as a prefix and call the setFTLConfigValue
-    # function with the environment variable's suffix as the key. This allows applying any pihole-FTL.conf
-    # setting defined here: https://docs.pi-hole.net/ftldns/configfile/
-    echo ""
-    echo "==========Applying settings from environment variables=========="
-    source /opt/pihole/COL_TABLE
-    declare -px | grep FTLCONF_ | sed -E 's/declare -x FTLCONF_([^=]+)=\"(|.+)\"/\1 \2/' | while read -r name value
-    do
-        # Replace underscores with dots in the name to match pihole-FTL expectiations
-        name="${name//_/.}"
-
-
-        # Special handling for some FTL Config values
-        case "$name" in
-            # Convert the semicolon separated list to a JSON array
-            "dns.upstreams")
-                value='["'${value//;/\",\"}'"]'
-                ;;
-            # The following config names have an underscore in them,
-            # so we need to re-convert the dot back to an underscore
-            "webserver.tls.rev.proxy")
-                name="webserver.tls.rev_proxy"
-                ;;
-            "webserver.api.totp.secret")
-                name="webserver.api.totp_secret"
-                ;;
-            "webserver.api.allow.destructive")
-                name="webserver.api.allow_destructive"
-                ;;
-            "misc.delay.startup")
-                name="misc.delay_startup"
-                ;;
-            "misc.dnsmasq.lines")
-                name="misc.dnsmasq_lines"
-                ;;
-        esac
-
-        # Mask the value if it is a password, else display the value as is
-        if [ "$name" == "webserver.api.password" ]; then
-            masked_value=$(printf "%${#value}s" | tr " " "*")
-        else
-            masked_value=$value
-        fi
-
-        if pihole-FTL --config "${name}" "${value}" > /ftlconfoutput; then
-            echo "  ${TICK} Applied pihole-FTL setting $name=$masked_value"
-        else
-            echo "  ${CROSS} Error Applying pihole-FTL setting $name=$masked_value"
-            echo "  ${INFO}   $(cat /ftlconfoutput)"
-        fi
-    done
-    echo "================================================================"
-    echo ""
-}
-
 setup_FTL_query_logging(){
     if [ "${QUERY_LOGGING_OVERRIDE}" == "false" ]; then
         echo "  [i] Disabling Query Logging"
@@ -180,9 +122,7 @@ setup_FTL_query_logging(){
         echo "  [i] Enabling Query Logging"
         setFTLConfigValue dns.queryLogging true
     fi
-
 }
-
 
 load_web_password_secret() {
    # If WEBPASSWORD is not set at all, attempt to read password from WEBPASSWORD_FILE,

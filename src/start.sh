@@ -53,8 +53,6 @@ start() {
   # validate_env || exit 1
   ensure_basic_configuration
 
-  apply_FTL_Configs_From_Env
-
   # Web interface setup
   # ===========================
   # load_web_password_secret
