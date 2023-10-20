@@ -1,22 +1,42 @@
-import os
 import pytest
-import re
-
-CMD_APPLY_FTL_CONFIG_FROM_ENV = ". bash_functions.sh ; apply_FTL_Configs_From_Env"
 
 
 @pytest.mark.parametrize("test_args", ['-e "FTLCONF_webserver_port=999"'])
 def test_ftlconf_webserver_port(docker):
-    func = docker.run(CMD_APPLY_FTL_CONFIG_FROM_ENV)
-    assert "Applied pihole-FTL setting webserver.port=999" in func.stdout
+    func = docker.run("pihole-FTL --config webserver.port")
+    assert "999" in func.stdout
 
 
 @pytest.mark.parametrize(
-    "test_args", ['-e "FTLCONF_dns_upstreams=1.1.1.1;8.8.8.8#1234"']
+    "test_args", ['-e "FTLCONF_dns_upstreams=1.2.3.4,5.6.7.8#1234"']
 )
 def test_ftlconf_dns_upstreams(docker):
-    func = docker.run(CMD_APPLY_FTL_CONFIG_FROM_ENV)
+    func = docker.run("pihole-FTL --config dns.upstreams")
+    assert "[ 1.2.3.4, 5.6.7.8#1234 ]" in func.stdout
+
+
+CMD_SETUP_WEB_PASSWORD = ". bash_functions.sh ; setup_web_password"
+
+
+@pytest.mark.parametrize("test_args", ['-e "FTLCONF_ENV_ONLY=false"'])
+def test_random_password_assigned_fresh_start(docker):
+    func = docker.run(CMD_SETUP_WEB_PASSWORD)
+    assert "assigning random password:" in func.stdout
+    assert "New password set" in func.stdout
+
+
+@pytest.mark.parametrize(
+    "test_args", ['-e "FTLCONF_webserver_api_password=1234567890"']
+)
+def test_password_set_by_envvar(docker):
+    func = docker.run(CMD_SETUP_WEB_PASSWORD)
+    assert "Assigning password defined by Environment Variable" in func.stdout
+
+
+@pytest.mark.parametrize("test_args", ['-e "FTLCONF_ENV_ONLY=true"'])
+def test_password_envonly_true(docker):
+    func = docker.run(CMD_SETUP_WEB_PASSWORD)
     assert (
-        'Applied pihole-FTL setting dns.upstreams=["1.1.1.1","8.8.8.8#1234"]'
+        "No password supplied via FTLCONF_webserver_api_password, but FTLCONF_ENV_ONLY is set to true, using default (none)"
         in func.stdout
     )
