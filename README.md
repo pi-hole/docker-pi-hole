@@ -1,5 +1,7 @@
 # Docker Pi-hole
 
+[![Build Status](https://github.com/pi-hole/docker-pi-hole/workflows/Test%20&%20Build/badge.svg)](https://github.com/pi-hole/docker-pi-hole/actions?query=workflow%3A%22Test+%26+Build%22) [![Docker Stars](https://img.shields.io/docker/stars/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole) [![Docker Pulls](https://img.shields.io/docker/pulls/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole)
+
 <p align="center">
 <a href="https://pi-hole.net"><img src="https://pi-hole.github.io/graphics/Vortex/Vortex_with_text.png" width="150" height="255" alt="Pi-hole"></a><br/>
 </p>
@@ -19,10 +21,11 @@
 
 ## Quick Start
 
-1. Copy docker-compose.yml.example to docker-compose.yml and update as needed. See example below:
-[Docker-compose](https://docs.docker.com/compose/install/) example:
+Using [Docker-compose](https://docs.docker.com/compose/install/):
 
-```yaml
+1. Copy the below docker compose example and update as needed
+
+```yml
 version: "3"
 
 # More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
@@ -53,31 +56,11 @@ services:
 2. Run `docker compose up -d` to build and start pi-hole (Syntax may be `docker-compose` on older systems)
 3. If using Docker's default `bridge` network setting, set the environment variable `FTLCONF_dns_listeningMode` to `all`
 
-[Here is an equivalent docker run script](https://github.com/pi-hole/docker-pi-hole/blob/master/examples/docker_run.sh).
+nb. Volumes are recommended for persisting data across container re-creations for updating images.
 
-## Overview
+### Automatic Ad List Updates
 
-A [Docker](https://www.docker.com/what-docker) project to make a lightweight x86 and ARM container with [Pi-hole](https://pi-hole.net) functionality.
-
-1) Install Docker. [Docker-compose](https://docs.docker.com/compose/install/) is also recommended.
-2) Use the above quick start example, customize if desired.
-3) Enjoy!
-
-[![Build Status](https://github.com/pi-hole/docker-pi-hole/workflows/Test%20&%20Build/badge.svg)](https://github.com/pi-hole/docker-pi-hole/actions?query=workflow%3A%22Test+%26+Build%22) [![Docker Stars](https://img.shields.io/docker/stars/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole) [![Docker Pulls](https://img.shields.io/docker/pulls/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole)
-
-## Running Pi-hole Docker
-
-This container uses 2 popular ports, port 53 and port 80, so **may conflict with existing applications ports**.  If you have no other services or docker containers using port 53/80 (if you do, keep reading below for a reverse proxy example), the minimum arguments required to run this container are in the script [docker_run.sh](https://github.com/pi-hole/docker-pi-hole/blob/master/examples/docker_run.sh)
-
-If you're using a Red Hat based distribution with an SELinux Enforcing policy add `:z` to line with volumes like so:
-
-```
-    -v "$(pwd)/etc-pihole:/etc/pihole:z" \
-```
-
-Volumes are recommended for persisting data across container re-creations for updating images.
-
-**Automatic Ad List Updates** - `cron` is baked into the container and will grab the newest versions of your lists and flush your logs. This happens once per week in the small hours of Sunday morning.
+`cron` is baked into the container and will grab the newest versions of your lists and flush your logs. This happens once per week in the small hours of Sunday morning.
 
 ## Running DHCP from Docker Pi-Hole
 
@@ -139,9 +122,8 @@ Here is a rundown of other arguments for your docker-compose / docker run.
 - Port conflicts?  Stop your server's existing DNS / Web services.
   - Don't forget to stop your services from auto-starting again after you reboot
   - Ubuntu users see below for more detailed information
-- You can map other ports to Pi-hole port 80 using docker's port forwarding like this `-p 8080:80` if you are using the default blocking mode. If you are using the legacy IP blocking mode, you should not remap this port.
-  - [Here is an example of running with nginxproxy/nginx-proxy](https://github.com/pi-hole/docker-pi-hole/blob/master/examples/docker-compose-nginx-proxy.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with Pi-hole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in nginxproxy/nginx-proxy and you need to set the matching `VIRTUAL_HOST` for the Pi-hole's container.  Please read nginxproxy/nginx-proxy readme for more info if you have trouble.
 - Docker's default network mode `bridge` isolates the container from the host's network. This is a more secure setting, but requires setting the Pi-hole DNS option for _Interface listening behavior_ to "Listen on all interfaces, permit all origins".
+- If you're using a Red Hat based distribution with an SELinux Enforcing policy add `:z` to line with volumes
 
 ### Installing on Ubuntu or Fedora
 
@@ -235,7 +217,7 @@ We install all pihole utilities so the the built in [pihole commands](https://di
 
 ### Customizations
 
-The webserver and DNS service inside the container can be customized if necessary.  Any configuration files you volume mount into `/etc/dnsmasq.d/` will be loaded by dnsmasq when the container starts or restarts or if you need to modify the Pi-hole config it is located at `/etc/dnsmasq.d/01-pihole.conf`.  The docker start scripts runs a config test prior to starting so it will tell you about any errors in the docker log.
+The webserver and DNS service inside the container can be customized if necessary.  Any configuration files you volume mount into `/etc/dnsmasq.d/` will be loaded by dnsmasq when the container starts or restarts.
 
 ## Note on Capabilities
 

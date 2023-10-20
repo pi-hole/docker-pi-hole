@@ -22,7 +22,7 @@ services:
 
   # More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
   pihole:
-    depends_on: 
+    depends_on:
       - caddy
     container_name: pihole
     #dns:  # Optional. Specify desired upstream DNS servers here.
@@ -37,17 +37,15 @@ services:
       # Following are NOT proxied through Caddy, bound to host net instead:
       - "53:53/udp"
       - "53:53/tcp"
-      - "853:853/tcp" # DNS-over-TLS 
+      - "853:853/tcp" # DNS-over-TLS
       #- "67:67/udp" # DHCP, if desired. If not bound to host net you need an mDNS proxy service configured somewhere on host net.
         # ref: https://docs.pi-hole.net/docker/DHCP/
     environment:
       TZ: 'America/New_York' # Supported TZ database names: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#Time_Zone_abbreviations
-      WEBPASSWORD: 'password' # Only used on first boot, change with pihole cli then comment out here.
+      FTLCONF_webserver_api_password: 'password'
     volumes:
       - './etc-pihole:/etc/pihole'
       - './etc-dnsmasq.d:/etc/dnsmasq.d'
-      - './etc-lighttpd/external.conf:/etc/lighttpd/external.conf'  # Recommend leave as bind mount for easier editing.
-        # ref for why you may need to change this file: https://docs.pi-hole.net/guides/webserver/caddy/#modifying-lighttpd-configuration
     #cap_add:  # Uncomment if using Pi-hole as DHCP server
       # https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
       #- NET_ADMIN # ONLY required if you are using Pi-hole as your DHCP server, else remove for better security
