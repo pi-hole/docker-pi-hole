@@ -12,9 +12,6 @@ start() {
   # shellcheck source=/dev/null
   . /usr/bin/bash_functions.sh
 
-  # shellcheck source=/dev/null
-  # SKIP_INSTALL=true . /etc/.pihole/automated\ install/basic-install.sh
-
   echo "  [i] Starting docker specific checks & setup for docker pihole/pihole"
 
   # TODO:
@@ -49,32 +46,10 @@ start() {
     fi
   fi
 
-  fix_capabilities
-  # validate_env || exit 1
   ensure_basic_configuration
+  setup_web_password
 
-  # Web interface setup
-  # ===========================
-  # load_web_password_secret
-  # setup_web_password
-
-  # Misc Setup
-  # ===========================
-  # setup_blocklists
-
-  # FTL setup
-  # ===========================
-
-  # setup_FTL_User
-  # setup_FTL_query_logging
-
-  [ -f /.piholeFirstBoot ] && rm /.piholeFirstBoot
-
-  echo "  [i] Docker start setup complete"
-  echo ""
-
-  echo "  [i] pihole-FTL ($FTL_CMD) will be started as ${DNSMASQ_USER}"
-  echo ""
+  # [ -f /.piholeFirstBoot ] && rm /.piholeFirstBoot
 
   # Install additional packages inside the container if requested
   if [ -n "${ADDITIONAL_PACKAGES}" ]; then
@@ -96,8 +71,6 @@ start() {
   rm -f /run/pihole/FTL.sock
 
   # Start crond for scheduled scripts (logrotate, pihole flush, gravity update etc)
-  # crond
-
   # Randomize gravity update time
   sed -i "s/59 1 /$((1 + RANDOM % 58)) $((3 + RANDOM % 2))/" /crontab.txt
   # Randomize update checker time
@@ -129,8 +102,15 @@ start() {
 
   pihole updatechecker
 
+  echo "  [i] Docker start setup complete"
+  echo ""
+
+  echo "  [i] pihole-FTL ($FTL_CMD) will be started as ${DNSMASQ_USER}"
+  echo ""
+
   # Start pihole-FTL
 
+  fix_capabilities
   sh /opt/pihole/pihole-FTL-prestart.sh
   capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
 

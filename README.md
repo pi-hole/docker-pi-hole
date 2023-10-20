@@ -5,11 +5,11 @@
 </p>
 <!-- Delete above HTML and insert markdown for dockerhub : ![Pi-hole](https://pi-hole.github.io/graphics/Vortex/Vortex_with_text.png) -->
 
-
 ## Upgrade Notes
-## !!! THIS VERSION CONTAINS BREAKING CHANGES !!!
 
-### v[ChangeMeBeforeTagging] has been entirely redesigned from the ground up and contains many breaking changes. Environment variable names have changed, script locations may have changed. Please read the the Readme carefully before proceeding.
+## !!! THIS VERSION CONTAINS BREAKING CHANGES
+
+### v[ChangeMeBeforeTagging] has been entirely redesigned from the ground up and contains many breaking changes. Environment variable names have changed, script locations may have changed. Please read the the Readme carefully before proceeding
 
 ---
 
@@ -36,9 +36,10 @@ services:
       - "53:53/udp"
       - "67:67/udp" # Only required if you are using Pi-hole as your DHCP server
       - "80:80/tcp"
+      - "443:443/tcp" # By default, FTL will generate a self-signed certificate
     environment:
       TZ: 'America/Chicago'
-      # WEBPASSWORD: 'set a secure password here or it will be random'
+      # FTLCONF_webserver_api_password: 'set a secure password here or it will be random'
     # Volumes store your data between container upgrades
     volumes:
       - './etc-pihole:/etc/pihole'
@@ -48,6 +49,7 @@ services:
       - NET_ADMIN # Required if you are using Pi-hole as your DHCP server, else not needed
     restart: unless-stopped
 ```
+
 2. Run `docker compose up -d` to build and start pi-hole (Syntax may be `docker-compose` on older systems)
 3. If using Docker's default `bridge` network setting, set the environment variable `FTLCONF_dns_listeningMode` to `all`
 
@@ -81,42 +83,42 @@ Volumes are recommended for persisting data across container re-creations for up
 
 There are multiple different ways to run DHCP from within your Docker Pi-hole container but it is slightly more advanced and one size does not fit all. DHCP and Docker's multiple network modes are covered in detail on our docs site: [Docker DHCP and Network Modes](https://docs.pi-hole.net/docker/DHCP/)
 
-## Environment Variables
+## Configuration
 
-There are other environment variables if you want to customize various things inside the docker container:
+It is recommended that you use environment variables to configure the Pi-hole docker container (more details below), however if you are persisting your `/etc/pihole` directory, you may also set them via the web interface or by directly editing `pihole.toml`
 
-### Recommended Variables
+### Web interface password
+
+To set a specific password for the web interface, use the environment variable `FTLCONF_webserver_api_password`. If this variable is not detected, and you have not already set one via `pihole setpassword` in the container, then a random password will be assigned on startup, this will be printed to the log. Run `docker logs pihole | grep random` to find it.
+
+To explicitly set no password, set `FTLCONF_webserver_api_password: ''`
+
+### Recommended Environment Variables
 
 | Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
 | `TZ` | UTC | `<Timezone>` | Set your [timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) to make sure logs rotate at local midnight instead of at UTC midnight.
-| `FTLCONF_webserver_api_password` | random | `<Admin password>` | http://pi.hole/admin password. Run `docker logs pihole \| grep random` to find your random pass.
-| `FTLCONF_dns_upstreams` |  `8.8.8.8;8.8.4.4` | IPs delimited by `;` | Upstream DNS server(s) for Pi-hole to forward queries to, separated by a semicolon <br/> (supports non-standard ports with `#[port number]`) e.g `127.0.0.1#5053;8.8.8.8;8.8.4.4` <br/> (supports [Docker service names and links](https://docs.docker.com/compose/networking/) instead of IPs) e.g `upstream0;upstream1` where `upstream0` and `upstream1` are the service names of or links to docker services <br/> Note: The existence of this environment variable assumes this as the _sole_ management of upstream DNS. Upstream DNS added via the web interface will be overwritten on container restart/recreation |
+| `FTLCONF_webserver_api_password` | random | `<Admin password>` | <http://pi.hole/admin> password. Run `docker logs pihole \| grep random` to find your random pass.
+| `FTLCONF_dns_upstreams` |  `8.8.8.8,8.8.4.4` | IPs delimited by `,` | Upstream DNS server(s) for Pi-hole to forward queries to, separated by a semicolon <br/> (supports non-standard ports with `#[port number]`) e.g `127.0.0.1#5053,8.8.8.8,8.8.4.4` <br/> (supports [Docker service names and links](https://docs.docker.com/compose/networking/) instead of IPs) e.g `upstream0,upstream1` where `upstream0` and `upstream1` are the service names of or links to docker services <br/> Note: The existence of this environment variable assumes this as the _sole_ management of upstream DNS. Upstream DNS added via the web interface will be overwritten on container restart/recreation |
 
 ### Optional Variables
 
 | Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
 | `TAIL_FTL_LOG` | unset | `<unset\|1>` | Whether or not to output the FTL log when running the. Useful for debugging/watching what FTL is doing.
+| `SKIPGRAVITYONBOOT` | unset | `<unset\|1>` | Use this option to skip updating the Gravity Database when booting up the container.  By default this environment variable is not set so the Gravity Database will be updated when the container starts up.  Setting this environment variable to 1 (or anything) will cause the Gravity Database to not be updated when container starts up.
+| `FTLCONF_[SETTING]` | unset | As per documentation | Customize pihole-FTL.conf with settings described in the <!!!Add Link To New API docs here before release!!!>. Replace `.` with `_`, e.g for `dns.dnssec=true` use `FTLCONF_dns_dnssec: 'true'`|
+| `PIHOLE_UID` | `100` | Number | Overrides image's default pihole user id to match a host user id<br/>**IMPORTANT**: id must not already be in use inside the container! |
+| `PIHOLE_GID` | `101` | Number | Overrides image's default pihole group id to match a host group id<br/>**IMPORTANT**: id must not already be in use inside the container!|
 
 ### Advanced Variables
+
 | Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
-| `SKIPGRAVITYONBOOT` | unset | `<unset\|1>` | Use this option to skip updating the Gravity Database when booting up the container.  By default this environment variable is not set so the Gravity Database will be updated when the container starts up.  Setting this environment variable to 1 (or anything) will cause the Gravity Database to not be updated when container starts up.
 | `FTL_CMD` | `no-daemon` | `no-daemon -- <dnsmasq option>` | Customize the options with which dnsmasq gets started. e.g. `no-daemon -- --dns-forward-max 300` to increase max. number of concurrent dns queries on high load setups. |
-| `FTLCONF_[SETTING]` | unset | As per documentation | Customize pihole-FTL.conf with settings described in the <!!!Add Link To New API docs here before release!!!>. Replace `.` with `_`, e.g for `dns.dnssec=true` use `FTLCONF_dns_dnssec: 'true'`|
 |`FTLCONF_ENV_ONLY`|unset|`<true\|false>`|If set to true, FTL will use default values for all config values unless explicitly set as an environment variable|
-| `PIHOLE_UID` | `999` | Number | Overrides image's default pihole user id to match a host user id<br/>**IMPORTANT**: id must not already be in use inside the container! |
-| `PIHOLE_GID` | `999` | Number | Overrides image's default pihole group id to match a host group id<br/>**IMPORTANT**: id must not already be in use inside the container!|
 | `DNSMASQ_USER` | unset | `<pihole\|root>` | Allows changing the user that FTLDNS runs as. Default: `pihole`, some systems such as Synology NAS may require you to change this to `root` (See [#963](https://github.com/pi-hole/docker-pi-hole/issues/963)) |
-
-### Experimental Variables
-| Variable | Default | Value | Description |
-| -------- | ------- | ----- | ---------- |
 | `ADDITIONAL_PACKAGES`| unset | Space separated list of APKs | HERE BE DRAGONS. Mostly for development purposes, this just makes it easier for those of us that always like to have whatever additional tools we need inside the container for debugging |
-
-
-To use these env vars in docker run format style them like: `-e DNS1=1.1.1.1`
 
 Here is a rundown of other arguments for your docker-compose / docker run.
 
@@ -125,25 +127,24 @@ Here is a rundown of other arguments for your docker-compose / docker run.
 | `-p <port>:<port>` **Recommended** | Ports to expose (53, 80, 67), the bare minimum ports required for Pi-holes HTTP and DNS services
 | `--restart=unless-stopped`<br/> **Recommended** | Automatically (re)start your Pi-hole on boot or in the event of a crash
 | `-v $(pwd)/etc-pihole:/etc/pihole`<br/> **Recommended** | Volumes for your Pi-hole configs help persist changes across docker image updates
-| `--net=host`<br/> *Optional* | Alternative to `-p <port>:<port>` arguments (Cannot be used at same time as -p) if you don't run any other web application. DHCP runs best with --net=host, otherwise your router must support dhcp-relay settings.
-| `--cap-add=NET_ADMIN`<br/> *Recommended* | Commonly added capability for DHCP, see [Note on Capabilities](#note-on-capabilities) below for other capabilities.
-| `--dns=127.0.0.1`<br/> *Optional* | Sets your container's resolve settings to localhost so it can resolve DHCP hostnames from Pi-hole's DNSMasq, may fix resolution errors on container restart.
-| `--dns=1.1.1.1`<br/> *Optional* | Sets a backup server of your choosing in case DNSMasq has problems starting
-| `--env-file .env` <br/> *Optional* | File to store environment variables for docker replacing `-e key=value` settings. Here for convenience
+| `--net=host`<br/> _Optional_ | Alternative to `-p <port>:<port>` arguments (Cannot be used at same time as -p) if you don't run any other web application. DHCP runs best with --net=host, otherwise your router must support dhcp-relay settings.
+| `--cap-add=NET_ADMIN`<br/> _Recommended_ | Commonly added capability for DHCP, see [Note on Capabilities](#note-on-capabilities) below for other capabilities.
+| `--dns=127.0.0.1`<br/> _Optional_ | Sets your container's resolve settings to localhost so it can resolve DHCP hostnames from Pi-hole's DNSMasq, may fix resolution errors on container restart.
+| `--dns=1.1.1.1`<br/> _Optional_ | Sets a backup server of your choosing in case DNSMasq has problems starting
+| `--env-file .env` <br/> _Optional_ | File to store environment variables for docker replacing `-e key=value` settings. Here for convenience
 
 ## Tips and Tricks
 
-* A good way to test things are working right is by loading this page: [http://pi.hole/admin/](http://pi.hole/admin/)
-* [How do I set or reset the Web interface Password?](https://discourse.pi-hole.net/t/how-do-i-set-or-reset-the-web-interface-password/1328)
-  * `docker exec -it pihole_container_name pihole -a -p` - then enter your password into the prompt
-* Port conflicts?  Stop your server's existing DNS / Web services.
-  * Don't forget to stop your services from auto-starting again after you reboot
-  * Ubuntu users see below for more detailed information
-* You can map other ports to Pi-hole port 80 using docker's port forwarding like this `-p 8080:80` if you are using the default blocking mode. If you are using the legacy IP blocking mode, you should not remap this port.
-  * [Here is an example of running with nginxproxy/nginx-proxy](https://github.com/pi-hole/docker-pi-hole/blob/master/examples/docker-compose-nginx-proxy.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with Pi-hole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in nginxproxy/nginx-proxy and you need to set the matching `VIRTUAL_HOST` for the Pi-hole's container.  Please read nginxproxy/nginx-proxy readme for more info if you have trouble.
-* Docker's default network mode `bridge` isolates the container from the host's network. This is a more secure setting, but requires setting the Pi-hole DNS option for *Interface listening behavior* to "Listen on all interfaces, permit all origins".
+- A good way to test things are working right is by loading this page: [http://pi.hole/admin/](http://pi.hole/admin/)
+- Port conflicts?  Stop your server's existing DNS / Web services.
+  - Don't forget to stop your services from auto-starting again after you reboot
+  - Ubuntu users see below for more detailed information
+- You can map other ports to Pi-hole port 80 using docker's port forwarding like this `-p 8080:80` if you are using the default blocking mode. If you are using the legacy IP blocking mode, you should not remap this port.
+  - [Here is an example of running with nginxproxy/nginx-proxy](https://github.com/pi-hole/docker-pi-hole/blob/master/examples/docker-compose-nginx-proxy.yml) (an nginx auto-configuring docker reverse proxy for docker) on my port 80 with Pi-hole on another port.  Pi-hole needs to be `DEFAULT_HOST` env in nginxproxy/nginx-proxy and you need to set the matching `VIRTUAL_HOST` for the Pi-hole's container.  Please read nginxproxy/nginx-proxy readme for more info if you have trouble.
+- Docker's default network mode `bridge` isolates the container from the host's network. This is a more secure setting, but requires setting the Pi-hole DNS option for _Interface listening behavior_ to "Listen on all interfaces, permit all origins".
 
 ### Installing on Ubuntu or Fedora
+
 Modern releases of Ubuntu (17.10+) and Fedora (33+) include [`systemd-resolved`](http://manpages.ubuntu.com/manpages/bionic/man8/systemd-resolved.service.8.html) which is configured by default to implement a caching DNS stub resolver. This will prevent pi-hole from listening on port 53.
 The stub resolver should be disabled with: `sudo sed -r -i.orig 's/#?DNSStubListener=yes/DNSStubListener=no/g' /etc/systemd/resolved.conf`
 
@@ -153,6 +154,7 @@ After making these changes, you should restart systemd-resolved using `systemctl
 
 Once pi-hole is installed, you'll want to configure your clients to use it ([see here](https://discourse.pi-hole.net/t/how-do-i-configure-my-devices-to-use-pi-hole-as-their-dns-server/245)). If you used the symlink above, your docker host will either use whatever is served by DHCP, or whatever static setting you've configured. If you want to explicitly set your docker host's nameservers you can edit the netplan(s) found at `/etc/netplan`, then run `sudo netplan apply`.
 Example netplan:
+
 ```yaml
 network:
     ethernets:
@@ -170,6 +172,7 @@ Note that it is also possible to disable `systemd-resolved` entirely. However, t
 Users of older Ubuntu releases (circa 17.04) will need to disable dnsmasq.
 
 ## Installing on Dokku
+
 @Rikj000 has produced a guide to assist users [installing Pi-hole on Dokku](https://github.com/Rikj000/Pihole-Dokku-Installation)
 
 ## Docker tags and versioning
@@ -196,12 +199,12 @@ The standard Pi-hole customization abilities apply to this docker, but with dock
 Do not attempt to upgrade (`pihole -up`) or reconfigure (`pihole -r`).  New images will be released for upgrades, upgrading by replacing your old container with a fresh upgraded image is the 'docker way'.  Long-living docker containers are not the docker way since they aim to be portable and reproducible, why not re-create them often!  Just to prove you can.
 
 0. Read the release notes for both this Docker release and the Pi-hole release
-    * This will help you avoid common problems due to any known issues with upgrading or newly required arguments or variables
-    * We will try to put common break/fixes at the top of this readme too
+    - This will help you avoid common problems due to any known issues with upgrading or newly required arguments or variables
+    - We will try to put common break/fixes at the top of this readme too
 1. Download the latest version of the image: `docker pull pihole/pihole`
 2. Throw away your container: `docker rm -f pihole`
-    * **Warning** When removing your pihole container you may be stuck without DNS until step 3; **docker pull** before **docker rm -f** to avoid DNS interruption **OR** always have a fallback DNS server configured in DHCP to avoid this problem altogether.
-    * If you care about your data (logs/customizations), make sure you have it volume-mapped or it will be deleted in this step.
+    - **Warning** When removing your pihole container you may be stuck without DNS until step 3; **docker pull** before **docker rm -f** to avoid DNS interruption **OR** always have a fallback DNS server configured in DHCP to avoid this problem altogether.
+    - If you care about your data (logs/customizations), make sure you have it volume-mapped or it will be deleted in this step.
 3. Start your container with the newer base image: `docker run <args> pihole/pihole` (`<args>` being your preferred run volumes and env vars)
 
 Why is this style of upgrading good?  A couple reasons: Everyone is starting from the same base image which has been tested to known it works.  No worrying about upgrading from A to B, B to C, or A to C is required when rolling out updates, it reduces complexity, and simply allows a 'fresh start' every time while preserving customizations with volumes.  Basically I'm encouraging [phoenix server](https://www.google.com/?q=phoenix+servers) principles for your containers.
@@ -215,9 +218,10 @@ Occasionally you may need to try an alternative branch of one of the components 
 The preferred method is to clone this repository and rebuild the image with the custom branch name passed in as an arg, e.g `docker buildx build src/. --tag pihole_custom --build-arg CORE_BRANCH=custombranchname --no-cache`, and then redeploy your stack with this new image (In this case you should have a local image named `pihole_custom`, but you can call it whatever you want)
 
 Valid args are:
- - `CORE_BRANCH`
- - `WEB_BRANCH`
- - `FTL_BRANCH`
+
+- `CORE_BRANCH`
+- `WEB_BRANCH`
+- `FTL_BRANCH`
 
 ### Pi-hole features
 
@@ -225,9 +229,9 @@ Here are some relevant wiki pages from [Pi-hole's documentation](https://github.
 
 We install all pihole utilities so the the built in [pihole commands](https://discourse.pi-hole.net/t/the-pihole-command-with-examples/738) will work via `docker exec <container> <command>` like so:
 
-* `docker exec pihole_container_name pihole updateGravity`
-* `docker exec pihole_container_name pihole -w spclient.wg.spotify.com`
-* `docker exec pihole_container_name pihole -wild example.com`
+- `docker exec pihole_container_name pihole updateGravity`
+- `docker exec pihole_container_name pihole -w spclient.wg.spotify.com`
+- `docker exec pihole_container_name pihole -wild example.com`
 
 ### Customizations
 
@@ -236,6 +240,7 @@ The webserver and DNS service inside the container can be customized if necessar
 ## Note on Capabilities
 
 DNSMasq / [FTLDNS](https://docs.pi-hole.net/ftldns/in-depth/#linux-capabilities) expects to have the following capabilities available:
+
 - `CAP_NET_BIND_SERVICE`: Allows FTLDNS binding to TCP/UDP sockets below 1024 (specifically DNS service on port 53)
 - `CAP_NET_RAW`: use raw and packet sockets (needed for handling DHCPv6 requests, and verifying that an IP is not in use before leasing it)
 - `CAP_NET_ADMIN`: modify routing tables and other network-related operations (in particular inserting an entry in the neighbor table to answer DHCP requests using unicast packets)
@@ -246,18 +251,18 @@ This image automatically grants those capabilities, if available, to the FTLDNS 
 By default, docker does not include the `NET_ADMIN` capability for non-privileged containers, and it is recommended to explicitly add it to the container using `--cap-add=NET_ADMIN`.\
 However, if DHCP and IPv6 Router Advertisements are not in use, it should be safe to skip it. For the most paranoid, it should even be possible to explicitly drop the `NET_RAW` capability to prevent FTLDNS from automatically gaining it.
 
-
 ## Note on Watchtower
 
 We have noticed that a lot of people use Watchtower to keep their Pi-hole containers up to date. For the same reason we don't provide an auto-update feature on a bare metal install, you _should not_ have a system automatically update your Pi-hole container. Especially unattended. As much as we try to ensure nothing will go wrong, sometimes things do go wrong - and you need to set aside time to _manually_ pull and update to the version of the container you wish to run. The upgrade process should be along the lines of:
 
- - **Important**: Read the release notes. Sometimes you will need to make changes other than just updating the image
- - Pull the new image
- - Stop and _remove_ the running Pi-hole container
-   - If you care about your data (logs/customizations), make sure you have it volume-mapped or it will be deleted in this step.
- - Recreate the container using the new image
+- **Important**: Read the release notes. Sometimes you will need to make changes other than just updating the image
+- Pull the new image
+- Stop and _remove_ the running Pi-hole container
+  - If you care about your data (logs/customizations), make sure you have it volume-mapped or it will be deleted in this step.
+- Recreate the container using the new image
 
 Pi-hole is an integral part of your network, don't let it fall over because of an unattended update in the middle of the night.
+
 # User Feedback
 
 Please report issues on the [GitHub project](https://github.com/pi-hole/docker-pi-hole) when you suspect something docker related.  Pi-hole or general docker questions are best answered on our [user forums](https://discourse.pi-hole.net/c/bugs-problems-issues/docker/30).
