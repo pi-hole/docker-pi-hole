@@ -70,6 +70,11 @@ RUN cd /etc/.pihole && \
 COPY --chmod=0755 bash_functions.sh /usr/bin/bash_functions.sh
 COPY --chmod=0755 start.sh /usr/bin/start.sh
 
+# Overwrite pihole-FTL binary from src directory if it exists
+# Useful for testing local builds of pihole-FTL prior to the CI build completing
+# See: https://stackoverflow.com/a/46801962
+COPY --chmod=0755 pihole-FT[L] /usr/bin/pihole-FTL
+
 HEALTHCHECK CMD dig +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
 
 ENTRYPOINT ["/sbin/tini", "--", "start.sh"]
