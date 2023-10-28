@@ -72,7 +72,7 @@ setup_web_password() {
         fi
 
         # Exit if password is already set in config file
-        if [[ -n $(pihole-FTL --config webserver.api.pwhash) ]]; then
+        if [[ $(pihole-FTL --config webserver.api.pwhash) = \$BALLOON-SHA256* ]]; then
             echo "  [i] Password already set in config file"
             return
         fi
