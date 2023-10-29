@@ -20,6 +20,7 @@ RUN apk add --no-cache \
     curl \
     git \
     iproute2-ss \
+    idn2-utils \
     jq \
     libcap \
     ncurses \
