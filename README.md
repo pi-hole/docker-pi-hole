@@ -89,7 +89,6 @@ To explicitly set no password, set `FTLCONF_webserver_api_password: ''`
 | Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
 | `TAIL_FTL_LOG` | unset | `<unset\|1>` | Whether or not to output the FTL log when running the. Useful for debugging/watching what FTL is doing.
-| `SKIPGRAVITYONBOOT` | unset | `<unset\|1>` | Use this option to skip updating the Gravity Database when booting up the container.  By default this environment variable is not set so the Gravity Database will be updated when the container starts up.  Setting this environment variable to 1 (or anything) will cause the Gravity Database to not be updated when container starts up.
 | `FTLCONF_[SETTING]` | unset | As per documentation | Customize pihole.toml with settings described in the <!!!Add Link To New API docs here before release!!!>. Replace `.` with `_`, e.g for `dns.dnssec=true` use `FTLCONF_dns_dnssec: 'true'`<br/> Array type configs should be delimited with `;`|
 | `PIHOLE_UID` | `100` | Number | Overrides image's default pihole user id to match a host user id<br/>**IMPORTANT**: id must not already be in use inside the container! |
 | `PIHOLE_GID` | `101` | Number | Overrides image's default pihole group id to match a host group id<br/>**IMPORTANT**: id must not already be in use inside the container!|
