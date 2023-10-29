@@ -8,7 +8,7 @@ def test_ftlconf_webserver_port(docker):
 
 
 @pytest.mark.parametrize(
-    "test_args", ['-e "FTLCONF_dns_upstreams=1.2.3.4,5.6.7.8#1234"']
+    "test_args", ['-e "FTLCONF_dns_upstreams=1.2.3.4;5.6.7.8#1234"']
 )
 def test_ftlconf_dns_upstreams(docker):
     func = docker.run("pihole-FTL --config dns.upstreams")
