@@ -4,6 +4,14 @@ if [ "${PH_VERBOSE:-0}" -gt 0 ]; then
   set -x
 fi
 
+# Undocumented environment variable to allow easy injection of arbitrary commands.
+# HERE BE DRAGONS!
+# Example use case: If mounting the web repo from the host, we need to run `git config --global --add safe.directory /var/www/html/admin`
+#                   in order for the updatechecker to work
+if [ -n "${ADDITIONAL_COMMAND}" ]; then
+  eval "${ADDITIONAL_COMMAND}"
+fi
+
 trap stop TERM INT QUIT HUP ERR
 
 start() {
