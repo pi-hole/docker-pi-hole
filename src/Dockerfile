@@ -40,22 +40,23 @@ COPY crontab.txt /crontab.txt
 # Add PADD to the container, too.
 ADD --chmod=0755 https://raw.githubusercontent.com/pi-hole/PADD/${PADD_BRANCH}/padd.sh /usr/local/bin/padd
 
-# download a the main repos from github
-RUN git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.com/pi-hole/web.git /var/www/html/admin && \
-    git clone --depth 1 --single-branch --branch ${CORE_BRANCH} https://github.com/pi-hole/pi-hole.git /etc/.pihole ;\
-    # Download the latest version of pihole-FTL for alpine:
-    if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
+
+# Download the latest version of pihole-FTL for alpine:
+RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     elif [ "$TARGETPLATFORM" = "linux/386" ];      then FTLARCH=386; \
     elif [ "$TARGETPLATFORM" = "linux/arm/v6" ];   then FTLARCH=armv6; \
     elif [ "$TARGETPLATFORM" = "linux/arm/v7" ];   then FTLARCH=armv7; \
     # Note for the future, "linux/arm6/v8" is not a valid value for TARGETPLATFORM, despite the CI platform name being that.
     elif [ "$TARGETPLATFORM" = "linux/arm64" ];    then FTLARCH=arm64; \
     elif [ "$TARGETPLATFORM" = "linux/riscv64" ];  then FTLARCH=riscv64; \
-    else echo "Unknown Platform!" && exit 1; fi \
+    else echo "FTL Not available for this platform" && exit 1; fi \
     && echo "Arch: ${TARGETPLATFORM}, FTLARCH: ${FTLARCH}" \
     && curl -sSL "https://ftl.pi-hole.net/${FTL_BRANCH}/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL \
     && chmod +x /usr/bin/pihole-FTL \
-    && readelf -h /usr/bin/pihole-FTL || cat /usr/bin/pihole-FTL
+    && readelf -h /usr/bin/pihole-FTL || cat /usr/bin/pihole-FTL \
+    # download a the main repos from github
+    && git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.com/pi-hole/web.git /var/www/html/admin \
+    && git clone --depth 1 --single-branch --branch ${CORE_BRANCH} https://github.com/pi-hole/pi-hole.git /etc/.pihole
 
 RUN cd /etc/.pihole && \
     install -Dm755 -d /opt/pihole && \
