@@ -43,7 +43,6 @@ ensure_basic_configuration() {
     touch /var/log/pihole/FTL.log /var/log/pihole/pihole.log
     chown -R pihole:pihole /var/run/pihole /var/log/pihole
 
-    mkdir -p /etc/pihole
     if [[ -z "${PYTEST}" ]]; then
         if [[ ! -f /etc/pihole/adlists.list ]]; then
             echo "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" >/etc/pihole/adlists.list
