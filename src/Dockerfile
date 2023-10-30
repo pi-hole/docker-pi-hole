@@ -51,7 +51,7 @@ RUN git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.co
     # Note for the future, "linux/arm6/v8" is not a valid value for TARGETPLATFORM, despite the CI platform name being that.
     elif [ "$TARGETPLATFORM" = "linux/arm64" ];    then FTLARCH=arm64; \
     elif [ "$TARGETPLATFORM" = "linux/riscv64" ];  then FTLARCH=riscv64; \
-    else FTLARCH=amd64; fi \
+    else echo "Unknown Platform!" && exit 1; fi \
     && echo "Arch: ${TARGETPLATFORM}, FTLARCH: ${FTLARCH}" \
     && curl -sSL "https://ftl.pi-hole.net/${FTL_BRANCH}/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL \
     && chmod +x /usr/bin/pihole-FTL \
