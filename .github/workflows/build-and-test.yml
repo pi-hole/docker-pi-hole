@@ -11,7 +11,7 @@ jobs:
         # Official docker images for docker are only available for amd64 and arm64
         # TODO: Look at: https://github.com/docker-library/official-images#architectures-other-than-amd64
         # Is testing on all platforms really necessary?
-        platform: [linux/amd64, linux/arm64/v8]
+        platform: [linux/amd64, linux/arm64]
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v4
