@@ -61,6 +61,8 @@ RUN cd /etc/.pihole && \
     install -Dm755 -t /opt/pihole gravity.sh && \
     install -Dm755 -t /opt/pihole ./advanced/Scripts/*.sh && \
     install -Dm755 -t /opt/pihole ./advanced/Scripts/COL_TABLE && \
+    install -Dm755 -d /etc/pihole && \
+    install -Dm755 -t /etc/pihole ./advanced/Templates/logrotate && \
     install -Dm755 -t /usr/local/bin pihole && \
     install -Dm644 ./advanced/bash-completion/pihole /etc/bash_completion.d/pihole && \
     install -T -m 0755 ./advanced/Templates/pihole-FTL-prestart.sh /opt/pihole/pihole-FTL-prestart.sh && \
