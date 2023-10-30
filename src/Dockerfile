@@ -47,7 +47,8 @@ RUN git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.co
     elif [ "$TARGETPLATFORM" = "linux/386" ];      then FTLARCH=386; \
     elif [ "$TARGETPLATFORM" = "linux/arm/v6" ];   then FTLARCH=armv6; \
     elif [ "$TARGETPLATFORM" = "linux/arm/v7" ];   then FTLARCH=armv7; \
-    elif [ "$TARGETPLATFORM" = "linux/arm64/v8" ];    then FTLARCH=arm64; \
+    # Note for the future, "linux/arm6/v8" is not a valid value for TARGETPLATFORM, despite the CI platform name being that.
+    elif [ "$TARGETPLATFORM" = "linux/arm64" ];    then FTLARCH=arm64; \
     elif [ "$TARGETPLATFORM" = "linux/riscv64" ];  then FTLARCH=riscv64; \
     else FTLARCH=amd64; fi \
     && echo "Arch: ${TARGETPLATFORM}, FTLARCH: ${FTLARCH}" \
