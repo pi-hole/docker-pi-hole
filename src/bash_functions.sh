@@ -36,14 +36,10 @@ setFTLConfigValue() {
 ensure_basic_configuration() {
     echo "  [i] Ensuring basic configuration by re-running select functions from basic-install.sh"
 
-    # TODO:
-    # installLogrotate || true #installLogRotate can return 2 or 3, but we are still OK to continue in that case
-
     mkdir -p /var/run/pihole /var/log/pihole
     touch /var/log/pihole/FTL.log /var/log/pihole/pihole.log
     chown -R pihole:pihole /var/run/pihole /var/log/pihole
 
-    mkdir -p /etc/pihole
     if [[ -z "${PYTEST}" ]]; then
         if [[ ! -f /etc/pihole/adlists.list ]]; then
             echo "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" >/etc/pihole/adlists.list
