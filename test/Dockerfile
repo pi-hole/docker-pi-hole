@@ -4,7 +4,7 @@ COPY --from=docker:20.10.17 /usr/local/bin/docker /usr/local/bin/
 
 ARG packages
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip python3-dev pipenv curl gcc make \
+    apt-get --no-install-recommends install -y python3 python3-pip python3-dev pipenv curl gcc make \
         libffi-dev libssl-dev ${packages} \
     && rm -rf /var/lib/apt/lists/*
 
