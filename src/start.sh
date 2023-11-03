@@ -83,21 +83,12 @@ start() {
   gravityDBfile=$(getFTLConfigValue files.gravity)
 
   if [ ! -f "${gravityDBfile}" ]; then
-    if [ -n "${SKIPGRAVITYONBOOT}" ]; then
-      echo "  SKIPGRAVITYONBOOT is set, however ${gravityDBfile} does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate."
-      echo "  Ignoring SKIPGRAVITYONBOOT on this occasion."
-      unset SKIPGRAVITYONBOOT
-    fi
+    echo "  [i] ${gravityDBfile} does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate."
+    pihole -g
   else
     # TODO: Revisit this path if we move to a multistage build
     source /etc/.pihole/advanced/Scripts/database_migration/gravity-db.sh
     upgrade_gravityDB "${gravityDBfile}" "/etc/pihole"
-  fi
-
-  if [ -n "${SKIPGRAVITYONBOOT}" ]; then
-    echo "  [i] Skipping Gravity Database Update."
-  else
-    pihole -g
   fi
 
   pihole updatechecker
