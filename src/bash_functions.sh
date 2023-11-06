@@ -40,6 +40,7 @@ ensure_basic_configuration() {
     touch /var/log/pihole/FTL.log /var/log/pihole/pihole.log
     chown -R pihole:pihole /var/run/pihole /var/log/pihole
 
+
     if [[ -z "${PYTEST}" ]]; then
         if [[ ! -f /etc/pihole/adlists.list ]]; then
             echo "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" >/etc/pihole/adlists.list
@@ -54,6 +55,11 @@ ensure_basic_configuration() {
         setFTLConfigValue "files.macvendor" "/macvendor.db"
         chown pihole:pihole /macvendor.db
     fi
+
+    # Install the logrotate config file - this is done already in Dockerfile
+    # but if a user has mounted a volume over /etc/pihole, it will have been lost
+    # pihole-FTL-prestart.sh will set the ownership of the file to root:root
+    install -Dm644 -t /etc/pihole /etc/.pihole/advanced/Templates/logrotate
 }
 
 setup_web_password() {
