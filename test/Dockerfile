@@ -1,4 +1,7 @@
-FROM docker:24.0.4-cli-alpine3.18
+ARG alpine_version="3.18"
+ARG docker_version="24.0.7"
+
+FROM docker:${docker_version}-cli-alpine${alpine_version}
 
 COPY --chmod=0755 ./cmd.sh /usr/local/bin/cmd.sh
 COPY --chmod=0755 ./entrypoint.sh /usr/local/bin/entrypoint.sh
