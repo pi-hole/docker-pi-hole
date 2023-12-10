@@ -288,3 +288,48 @@ def test_setup_lighttpd_bind(
         assert "server.bind" not in config.stdout
     else:
         assert f'server.bind		 = "{expected_bind}"' in config.stdout
+
+@pytest.fixture(autouse=True)
+def run_around_test_setup_web_theme(docker):
+    """Fixture to execute around test_setup_web_theme"""
+    docker.run("touch /var/www/html/admin/style/themes/{badtheme,bad.theme.css,goodtheme.css}")
+
+    yield
+
+    docker.run("rm /var/www/html/admin/style/themes/{badtheme,bad.theme.css,goodtheme.css}")
+
+@pytest.mark.parametrize(
+    "args_env,test_theme,expected_success",
+    [
+        ("-e WEBTHEME=asd", "asd", False),
+        ("-e WEBTHEME=default-light", "default-light", True),
+        #("-e WEBTHEME=", "", False), # the tested function does nothing in this case
+        ("-e WEBTHEME=default-dark", "default-dark", True),
+        ("-e WEBTHEME=efault-dark", "efault-dark", False),
+        ("-e WEBTHEME=efault-dar", "efault-dar", False),
+        ("-e WEBTHEME=default-dar", "default-dar", False),
+        ("-e WEBTHEME=xdefault-dark", "xdefault-dark", False),
+        ("-e WEBTHEME=xdefault-darkx", "xdefault-darkx", False),
+        ("-e WEBTHEME=default-darkx", "default-darkx", False),
+        ("-e WEBTHEME=badtheme", "badtheme", False), # the theme file does not have the right extension
+        ("-e WEBTHEME=badtheme.css", "badtheme.css", False), # hacking attempt ?
+        ("-e WEBTHEME=bad.theme", "bad.theme", False), # invalid name - has dot
+        ("-e WEBTHEME=goodtheme", "goodtheme", True),
+        ("-e WEBTHEME=goodtheme.css", "goodtheme.css", False), # hacking attempt ?
+        ("-e WEBTHEME=+", "+", False),
+        ("-e WEBTHEME=.", ".", False),
+    ],
+)
+def test_setup_web_theme(
+    docker, args_env, test_theme, expected_success
+):
+    """Web theme name validation works"""
+    DEFAULT_THEME = "default-light"
+    function = docker.run(". /usr/local/bin/bash_functions.sh ; setup_web_theme")
+
+    if expected_success:
+        assert f'  [i] setting web theme based on webtheme variable, using value {test_theme}' in function.stdout.lower()
+        assert docker.run(_grep(f'^WEBTHEME={test_theme}$', SETUPVARS_LOC)).rc == 0
+    else:
+        assert f'  [!] invalid theme name supplied: {test_theme}, falling back to {DEFAULT_THEME}.' in function.stdout.lower()
+        assert docker.run(_grep(f'^WEBTHEME={DEFAULT_THEME}$', SETUPVARS_LOC)).rc == 0
