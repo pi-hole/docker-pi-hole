@@ -29,11 +29,11 @@ services:
         ipv4_address: 172.10.0.1
     hostname: pihole-server # This set the hostname on the container
     extra_hosts:
-      - Unbound:172.10.0.2 # This is usefull if you want to know what host is which instead of ip adress, this one is preconfigurated for Unbound.
+      - Unbound:172.10.0.2 # This is useful if you want to know what host is which instead of ip address, this one is preconfigurated for Unbound.
 
   unbound:
 ### You can choose between one of the image to be pulled for Unbound.
-### By default and for conveniance the image is from @Klutchell, and preconfigured for it.
+### By default and for convenience the image is from @Klutchell, and preconfigured for it.
 
     image: klutchell/unbound:latest       # This image is a Distroless as it base.   More info at: https://github.com/klutchell/unbound-docker
 #    image: alpinelinux/unbound:latest    # This image is an Alpine as it base.
