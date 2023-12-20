@@ -1,0 +1,59 @@
+version: "3"
+
+services:
+  # More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    depends_on:
+      - unbound
+    restart: unless-stopped
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp" # Only required if you are using Pi-hole as your DHCP server
+      - "80:80/tcp"
+      - "443:443/tcp" # By default, FTL will generate a self-signed certificate
+    environment:
+      TZ: 'America/Chicago'
+      FTLCONF_dns_upstreams: 172.10.0.2#5335 # This set the ip and port directly for Unbound
+    # FTLCONF_webserver_api_password: 'set a secure password here or it will be random'
+    # Volumes store your data between container upgrades
+    volumes:
+      - ./etc-pihole:/etc/pihole
+    cap_add:
+      - NET_ADMIN # Required if you are using Pi-hole as your DHCP server, else not needed
+    # https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    networks:
+      pihole-backend:
+        ipv4_address: 172.10.0.1
+    hostname: pihole-server # This set the hostname on the container
+    extra_hosts:
+      - Unbound:172.10.0.2 # This is usefull if you want to know what host is which instead of ip adress, this one is preconfigurated for Unbound.
+
+  unbound:
+### You can choose between one of the image to be pulled for Unbound.
+### By default and for conveniance the image is from @Klutchell, and preconfigured for it.
+
+    image: klutchell/unbound:latest       # This image is a Distroless as it base.   More info at: https://github.com/klutchell/unbound-docker
+#    image: alpinelinux/unbound:latest    # This image is an Alpine as it base.
+#    image: mvance/unbound:latest         # This image is a Debian as it base.       More info at: https://github.com/MatthewVance/unbound-docker
+    container_name: unbound
+    restart: unless-stopped
+    volumes:
+      - ./unbound.conf:/etc/unbound/unbound.conf # Path for @Klutchell and Alpine image.
+#      - ./unbound.conf:/opt/unbound/etc/unbound/ # Path for @Mvance image.
+      - ./root.hints:/etc/unbound/root.hints # Use this path if you manually downloaded it. (wget https://www.internic.net/domain/named.root -qO- | tee ./root.hints)
+#      - /usr/share/dns/root.hints:/etc/unbound/root.hints # Please install the dns-root-data package from your Debian base system. For other distro please find the appropriate path for your root.hint file.
+    networks:
+      pihole-backend:
+        ipv4_address: 172.10.0.2
+
+# Pi-Hole Backend network
+networks:
+  pihole-backend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.10.0.0/29
+          gateway: 172.10.0.6
