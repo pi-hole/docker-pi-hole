@@ -18,14 +18,14 @@ jobs:
       matrix:
         registry: [dockerhub, ghcr]
         platform: [linux/amd64, linux/386, linux/arm/v6, linux/arm/v7, linux/arm64]
-        container: [3.18]
+        alpine_version: [3.19]
         include:
           - registry: dockerhub
             platform: linux/riscv64
-            container: edge
+            alpine_version: edge
           - registry: ghcr
             platform: linux/riscv64
-            container: edge
+            alpine_version: edge
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -65,7 +65,7 @@ jobs:
           platforms: ${{ matrix.platform }}
           build-args: |
             PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}
-            CONTAINER=${{ matrix.container }}
+            alpine_version=${{ matrix.alpine_version }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
             type=image,name=${{ env[matrix.registry] }},push-by-digest=true,name-canonical=true,push=true
