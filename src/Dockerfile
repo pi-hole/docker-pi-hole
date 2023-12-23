@@ -40,7 +40,6 @@ COPY crontab.txt /crontab.txt
 # Add PADD to the container, too.
 ADD --chmod=0755 https://raw.githubusercontent.com/pi-hole/PADD/${PADD_BRANCH}/padd.sh /usr/local/bin/padd
 
-
 # Download the latest version of pihole-FTL for alpine:
 RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     elif [ "$TARGETPLATFORM" = "linux/386" ];      then FTLARCH=386; \
@@ -53,9 +52,10 @@ RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     && echo "Arch: ${TARGETPLATFORM}, FTLARCH: ${FTLARCH}" \
     && curl -sSL "https://ftl.pi-hole.net/${FTL_BRANCH}/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL \
     && chmod +x /usr/bin/pihole-FTL \
-    && readelf -h /usr/bin/pihole-FTL || cat /usr/bin/pihole-FTL \
-    # download a the main repos from github
-    && git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.com/pi-hole/web.git /var/www/html/admin \
+    && readelf -h /usr/bin/pihole-FTL || cat /usr/bin/pihole-FTL
+
+# download a the main repos from github
+RUN git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.com/pi-hole/web.git /var/www/html/admin \
     && git clone --depth 1 --single-branch --branch ${CORE_BRANCH} https://github.com/pi-hole/pi-hole.git /etc/.pihole
 
 RUN cd /etc/.pihole && \
