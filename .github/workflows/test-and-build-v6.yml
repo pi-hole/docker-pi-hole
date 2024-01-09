@@ -1,13 +1,9 @@
-name: Build and Publish (development-v6-nightly)
+name: Build and Publish (development-v6)
 on:
-  workflow_dispatch:
   schedule:
     - cron: "0 5 * * *"
   push:
     branches:
-      - development-v6
-  pull_request:
-    branches:    
       - development-v6
 
 env:
@@ -15,41 +11,42 @@ env:
   ghcr: ghcr.io/${{ github.repository_owner }}/pihole
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        registry: [dockerhub, ghcr]
-        platform: [linux/amd64, linux/386, linux/arm/v6, linux/arm/v7, linux/arm64/v8]
-        container: [3.18]
+        platform: [linux/amd64, linux/386, linux/arm/v6, linux/arm/v7, linux/arm64]
+        alpine_version: [3.19]
         include:
-          - registry: dockerhub
-            platform: linux/riscv64
-            container: edge
-          - registry: ghcr
-            platform: linux/riscv64
-            container: edge
+          - platform: linux/riscv64
+            alpine_version: edge
+          
     steps:
+      - name: Prepare name for digest up/download
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
           ref: development-v6
 
-      - name: Docker meta (Docker Hub and GitHub Container Registry)
+      - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           images: |
-            ${{ env[matrix.registry] }}
+            ${{ env.dockerhub }}
+            ${{ env.ghcr }}            
           flavor: |
             latest=false
           tags: |
             development-v6
 
       - name: Login to DockerHub and GitHub Container Registry
-        if: github.event_name != 'pull_request'
         uses: ./.github/actions/login-repo
         with:
           docker_username: ${{ secrets.DOCKERHUB_USER }}
@@ -60,11 +57,12 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: all
+          platforms: ${{ matrix.platform}}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build container and push by digest (${{ matrix.registry }})
+      - name: Build container and push by digest
         id: build
         uses: docker/build-push-action@v5
         with:
@@ -72,21 +70,21 @@ jobs:
           platforms: ${{ matrix.platform }}
           build-args: |
             PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}
-            CONTAINER=${{ matrix.container }}
+            alpine_version=${{ matrix.alpine_version }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
-            type=image,name=${{ env[matrix.registry] }},push-by-digest=${{ github.event_name != 'pull_request' }},name-canonical=true,push=${{ github.event_name != 'pull_request' }}
+            type=image,name=${{ env.dockerhub }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digests
         run: |
-          mkdir -p /tmp/digests/${{ matrix.registry }}
+          mkdir -p /tmp/digests
           digest_docker="${{ steps.build.outputs.digest }}"
-          touch "/tmp/digests/${{ matrix.registry }}/${digest_docker#sha256:}"
+          touch "/tmp/digests/${digest_docker#sha256:}"
 
       - name: Upload digest
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: digests
+          name: digests-${{ env.PLATFORM_PAIR }}
           path: /tmp/digests/*
           if-no-files-found: error
           retention-days: 1
@@ -95,14 +93,9 @@ jobs:
   # If we would push immediately above, the individual runners would overwrite each other's images
   # https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
   merge-and-deploy:
-    if: github.event_name != 'pull_request'
-    strategy:
-      fail-fast: false
-      matrix:
-        registry: [dockerhub, ghcr]
     runs-on: ubuntu-latest
     needs:
-      - build-and-test
+      - build
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -110,13 +103,27 @@ jobs:
           ref: development-v6
 
       - name: Download digests
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: digests
           path: /tmp/digests
-
+          pattern: digests-*
+          merge-multiple: true
+      
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          images: |
+            ${{ env.dockerhub }}
+            ${{ env.ghcr }}
+          flavor: |
+            latest=false
+          tags: |
+            development-v6
 
       - name: Login to DockerHub and GitHub Container Registry
         uses: ./.github/actions/login-repo
@@ -126,24 +133,15 @@ jobs:
           ghcr_username: ${{ github.repository_owner }}
           ghcr_password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Docker meta (Docker Hub and GitHub Container Registry)
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          images: |
-            ${{ env[matrix.registry] }}
-          flavor: |
-            latest=false
-          tags: |
-            development-v6
-
-      - name: Create manifest list and push (${{ matrix.registry }})
-        working-directory: /tmp/digests/${{ matrix.registry }}
+      - name: Create manifest list and push (DockerHub and GitHub Container Registry)
+        working-directory: /tmp/digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env[matrix.registry] }}@sha256:%s ' *)
+            $(printf '${{ env.dockerhub }}@sha256:%s ' *)
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.ghcr }}@sha256:%s ' *)
 
-      - name: Inspect image
+      - name: Inspect images
         run: |
-          docker buildx imagetools inspect ${{ env[matrix.registry] }}:${{ steps.meta.outputs.version }}
+          docker buildx imagetools inspect ${{ env.dockerhub }}:${{ steps.meta.outputs.version }}
+          docker buildx imagetools inspect ${{ env.ghcr }}:${{ steps.meta.outputs.version }}
