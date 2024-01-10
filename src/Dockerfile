@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 ARG alpine_version="3.19"
 FROM alpine:${alpine_version}
 # https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
