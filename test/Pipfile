@@ -9,7 +9,7 @@ verify_ssl = true
 pytest = "==7.4.4"
 pytest-xdist = "==3.5.0"
 pytest-testinfra = "==10.0.0"
-black = "==24.1.0"
+black = "==24.1.1"
 
 [requires]
 python_version = "3"
