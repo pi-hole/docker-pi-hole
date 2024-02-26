@@ -416,19 +416,16 @@ setup_web_port() {
 }
 
 setup_web_theme(){
-    # Parse the WEBTHEME variable, if it exists, and set the selected theme if it is one of the supported values.
-    # If an invalid theme name was supplied, setup WEBTHEME to use the default-light theme.
+    # Parse the WEBTHEME variable, if it exists, and set the selected theme if it is one of the supported values (i.e. it is one of the existing theme
+    # file names and passes a regexp sanity check). If an invalid theme name was supplied, setup WEBTHEME to use the default-light theme.
     if [ -n "${WEBTHEME}" ]; then
-        case "${WEBTHEME}" in
-        "default-dark" | "default-darker" | "default-light" | "default-auto" | "high-contrast" | "high-contrast-dark" | "lcars")
-            echo "  [i] Setting Web Theme based on WEBTHEME variable, using value ${WEBTHEME}"
-            change_setting "WEBTHEME" "${WEBTHEME}"
-            ;;
-        *)
-            echo "  [!] Invalid theme name supplied: ${WEBTHEME}, falling back to default-light."
-            change_setting "WEBTHEME" "default-light"
-            ;;
-        esac
+      if grep -qf <(find /var/www/html/admin/style/themes/ -type f -printf '%f\n' | sed -ne 's/^\([a-zA-Z0-9_-]\+\)\.css$/\1/gp') -xF - <<< "${WEBTHEME}"; then
+        echo "  [i] Setting Web Theme based on WEBTHEME variable, using value ${WEBTHEME}"
+        change_setting "WEBTHEME" "${WEBTHEME}"
+      else
+        echo "  [!] Invalid theme name supplied: ${WEBTHEME}, falling back to default-light."
+        change_setting "WEBTHEME" "default-light"
+      fi
     fi
 }
 
