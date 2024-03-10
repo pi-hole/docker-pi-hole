@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# If user has set QUERY_LOGGING Env Var, copy it out to _OVERRIDE,
-# else it will get overridden itself when we source basic-install.sh
-[ -n "${QUERY_LOGGING}" ] && export QUERY_LOGGING_OVERRIDE="${QUERY_LOGGING}"
-
 # Some of the bash_functions use utilities from Pi-hole's utils.sh
 # shellcheck disable=SC2154
 # shellcheck source=/dev/null
@@ -34,12 +30,16 @@ setFTLConfigValue() {
 
 # shellcheck disable=SC2034
 ensure_basic_configuration() {
+    # Force a check of pihole-FTL --config, this will read any environment variables and set them in the config file
+    # suppress the output as we don't need to see the default values.
+    getFTLConfigValue >/dev/null
+
+    echo ""
     echo "  [i] Ensuring basic configuration by re-running select functions from basic-install.sh"
 
     mkdir -p /var/run/pihole /var/log/pihole
     touch /var/log/pihole/FTL.log /var/log/pihole/pihole.log
     chown -R pihole:pihole /var/run/pihole /var/log/pihole
-
 
     if [[ -z "${PYTEST}" ]]; then
         if [[ ! -f /etc/pihole/adlists.list ]]; then
@@ -49,6 +49,11 @@ ensure_basic_configuration() {
 
     chown -R pihole:pihole /etc/pihole
 
+    # Install the logrotate config file - this is done already in Dockerfile
+    # but if a user has mounted a volume over /etc/pihole, it will have been lost
+    # pihole-FTL-prestart.sh will set the ownership of the file to root:root
+    install -Dm644 -t /etc/pihole /etc/.pihole/advanced/Templates/logrotate
+
     # If FTLCONF_files_macvendor is not set
     if [[ -z "${FTLCONF_files_macvendor:-}" ]]; then
         # User is not passing in a custom location - so force FTL to use the file we moved to / during the build
@@ -56,42 +61,37 @@ ensure_basic_configuration() {
         chown pihole:pihole /macvendor.db
     fi
 
-    # Install the logrotate config file - this is done already in Dockerfile
-    # but if a user has mounted a volume over /etc/pihole, it will have been lost
-    # pihole-FTL-prestart.sh will set the ownership of the file to root:root
-    install -Dm644 -t /etc/pihole /etc/.pihole/advanced/Templates/logrotate
-}
+    # If getFTLConfigValue "dns.upstreams" returns [], exit the container. We need upstream servers to function!
+    if [[ $(getFTLConfigValue "dns.upstreams") == "[]" ]]; then
+        echo ""
+        echo "  [X] No DNS upstream servers are set!"
+        echo "  [i] Recommended: Set the upstream DNS servers in the environment variable FTLCONF_dns_upstream"
+        echo ""
+        exit 1
+    fi
 
-setup_web_password() {
-    echo "  [i] Checking web password"
-    # If the web password variable is not set...
+    # If FTLCONF_webserver_api_password is not set
     if [ -z "${FTLCONF_webserver_api_password+x}" ]; then
-        # is the variable FTLCONF_ENV_ONLY set to true?
-        if [ "${FTLCONF_ENV_ONLY}" == "true" ]; then
-            echo "  [i] No password supplied via FTLCONF_webserver_api_password, but FTLCONF_ENV_ONLY is set to true, using default (none)"
-            # If so, return - the password will be set to FTL's default (no password)
-            return
-        fi
-
-        # Exit if password is already set in config file
+        # Is this already set to something other than blank (default) in FTL's config file? (maybe in a volume mount)
         if [[ $(pihole-FTL --config webserver.api.pwhash) = \$BALLOON-SHA256* ]]; then
             echo "  [i] Password already set in config file"
             return
-        fi
+        else
+            # If we are here, the password is set in neither the environment nor the config file
+            # We will generate a random password.
+            RANDOMPASSWORD=$(tr -dc _A-Z-a-z-0-9 </dev/urandom | head -c 8)
+            echo "  [i] No password set in environment or config file, assigning random password: $RANDOMPASSWORD"
 
-        # If we have got here, we will now generate a random passwor
-        RANDOMPASSWORD=$(tr -dc _A-Z-a-z-0-9 </dev/urandom | head -c 8)
-        echo "  [i] No password set in environment or config file, assigning random password: $RANDOMPASSWORD"
+            # Explicitly turn off bash printing when working with secrets
+            { set +x; } 2>/dev/null
 
-        # Explicitly turn off bash printing when working with secrets
-        { set +x; } 2>/dev/null
+            pihole-FTL --config webserver.api.password "$RANDOMPASSWORD" >/dev/null
 
-        pihole setpassword "$RANDOMPASSWORD"
-
-        # To avoid printing this if conditional in bash debug, turn off  debug above..
-        # then re-enable debug if necessary (more code but cleaner printed output)
-        if [ "${PH_VERBOSE:-0}" -gt 0 ]; then
-            set -x
+            # To avoid printing this if conditional in bash debug, turn off  debug above..
+            # then re-enable debug if necessary (more code but cleaner printed output)
+            if [ "${PH_VERBOSE:-0}" -gt 0 ]; then
+                set -x
+            fi
         fi
     else
         echo "  [i] Assigning password defined by Environment Variable"
