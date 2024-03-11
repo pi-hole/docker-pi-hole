@@ -70,6 +70,10 @@ ensure_basic_configuration() {
         exit 1
     fi
 
+    setup_web_password
+}
+
+setup_web_password() {
     # If FTLCONF_webserver_api_password is not set
     if [ -z "${FTLCONF_webserver_api_password+x}" ]; then
         # Is this already set to something other than blank (default) in FTL's config file? (maybe in a volume mount)

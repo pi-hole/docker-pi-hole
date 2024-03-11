@@ -41,7 +41,7 @@ services:
       - "53:53/udp"
       # Default HTTP Port
       - "80:80/tcp"
-      # Default HTTPs Port. FTL Will generate a self-signed certificate
+      # Default HTTPs Port. FTL will generate a self-signed certificate
       - "443:443/tcp"
       # Uncomment the below if using Pi-hole as your DHCP Server
       #- "67:67/udp"      
@@ -80,7 +80,9 @@ There are multiple different ways to run DHCP from within your Docker Pi-hole co
 
 ## Configuration
 
-It is recommended that you use environment variables to configure the Pi-hole docker container (more details below), however if you are persisting your `/etc/pihole` directory, you may also set them via the web interface or by directly editing `pihole.toml`
+It is recommended that you use environment variables to configure the Pi-hole docker container (more details below), however if you are persisting your `/etc/pihole` directory, you may choose instead to set them via the web interface or by directly editing `pihole.toml`. 
+
+**Please Note**: Settings that are set via environment variables effectively become read-only, meaning that you will not be able to change them in the web interface or CLI. This is to ensure a "single source of truth" on the config.
 
 ### Web interface password
 
@@ -217,7 +219,7 @@ Valid args are:
 
 ### Pi-hole features
 
-Here are some relevant wiki pages from [Pi-hole's documentation](https://github.com/pi-hole/pi-hole/blob/master/README.md#get-help-or-connect-with-us-on-the-web).  The web interface or command line tools can be used to implement changes to pihole.
+Here are some relevant wiki pages from [Pi-hole's documentation](https://docs.pi-hole.net). 
 
 We install all pihole utilities so the the built in [pihole commands](https://discourse.pi-hole.net/t/the-pihole-command-with-examples/738) will work via `docker exec <container> <command>` like so:
 

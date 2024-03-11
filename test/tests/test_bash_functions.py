@@ -18,11 +18,9 @@ def test_ftlconf_dns_upstreams(docker):
 CMD_SETUP_WEB_PASSWORD = ". bash_functions.sh ; setup_web_password"
 
 
-@pytest.mark.parametrize("test_args", ['-e "FTLCONF_ENV_ONLY=false"'])
 def test_random_password_assigned_fresh_start(docker):
     func = docker.run(CMD_SETUP_WEB_PASSWORD)
     assert "assigning random password:" in func.stdout
-    assert "New password set" in func.stdout
 
 
 @pytest.mark.parametrize(
@@ -31,12 +29,3 @@ def test_random_password_assigned_fresh_start(docker):
 def test_password_set_by_envvar(docker):
     func = docker.run(CMD_SETUP_WEB_PASSWORD)
     assert "Assigning password defined by Environment Variable" in func.stdout
-
-
-@pytest.mark.parametrize("test_args", ['-e "FTLCONF_ENV_ONLY=true"'])
-def test_password_envonly_true(docker):
-    func = docker.run(CMD_SETUP_WEB_PASSWORD)
-    assert (
-        "No password supplied via FTLCONF_webserver_api_password, but FTLCONF_ENV_ONLY is set to true, using default (none)"
-        in func.stdout
-    )
