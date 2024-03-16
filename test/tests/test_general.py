@@ -13,10 +13,8 @@ def test_pihole_gid_env_var(docker):
     assert "456" in func.stdout
 
 
-# We immediately remove the adlists.list file so that gravity does not attempt to download a default list
-# Wait 5 seconds for gravity to finish, then kill the start.sh script
-# Finally, tail the FTL log to see if it shuts down cleanly
-@pytest.mark.parametrize("test_args", ['-e "PH_VERBOSE=1"'])
+# Wait 5 seconds for startup, then kill the start.sh script
+# Finally, tail the FTL log to see if it has been shut down cleanly
 def test_pihole_ftl_clean_shutdown(docker):
     func = docker.run(
         """

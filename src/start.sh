@@ -14,13 +14,7 @@ start() {
 
   echo "  [i] Starting docker specific checks & setup for docker pihole/pihole"
 
-  # TODO:
-  #if [ ! -f /.piholeFirstBoot ] ; then
-  #    echo "   [i] Not first container startup so not running docker's setup, re-create container to run setup again"
-  #else
-  #    regular_setup_functions
-  #fi
-
+  # ===========================
   # Initial checks
   # ===========================
 
@@ -47,9 +41,6 @@ start() {
   fi
 
   ensure_basic_configuration
-  setup_web_password
-
-  # [ -f /.piholeFirstBoot ] && rm /.piholeFirstBoot
 
   # Install additional packages inside the container if requested
   if [ -n "${ADDITIONAL_PACKAGES}" ]; then

@@ -37,7 +37,7 @@ def run_and_stream_command_output():
 
 @pytest.fixture()
 def args_env():
-    return '-e TZ="Europe/London" -e FTLCONF_ENV_ONLY=true'
+    return '-e TZ="Europe/London" -e FTLCONF_dns_upstreams="8.8.8.8"'
 
 
 @pytest.fixture()

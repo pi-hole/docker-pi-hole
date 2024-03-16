@@ -25,6 +25,8 @@ Using [Docker-compose](https://docs.docker.com/compose/install/):
 
 1. Copy the below docker compose example and update as needed
 
+
+
 ```yml
 version: "3"
 
@@ -32,24 +34,34 @@ version: "3"
 services:
   pihole:
     container_name: pihole
-    image: pihole/pihole:latest
-    # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
+    image: pihole/pihole:latest    
     ports:
+      # DNS Ports
       - "53:53/tcp"
       - "53:53/udp"
-      - "67:67/udp" # Only required if you are using Pi-hole as your DHCP server
+      # Default HTTP Port
       - "80:80/tcp"
-      - "443:443/tcp" # By default, FTL will generate a self-signed certificate
+      # Default HTTPs Port. FTL will generate a self-signed certificate
+      - "443:443/tcp"
+      # Uncomment the below if using Pi-hole as your DHCP Server
+      #- "67:67/udp"      
     environment:
-      TZ: 'America/Chicago'
-      # FTLCONF_webserver_api_password: 'set a secure password here or it will be random'
+      # Set the appropriate timezone for your location (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), e.g:
+      TZ: 'Europe/London'
+      # Set a password to access the web interface. Not setting one will result in a random password being assigned
+      FTLCONF_webserver_api_password: 'correct horse battery staple'
+      # Configure DNS upstream servers, e.g:
+      FTLCONF_dns_upstreams: '8.8.8.8, 8.8.4.4'
     # Volumes store your data between container upgrades
     volumes:
+      # For persisting Pi-hole's databases and common configuration file
       - './etc-pihole:/etc/pihole'
-     # - './etc-dnsmasq.d:/etc/dnsmasq.d' # Only needed if you have some custom configs for dnsmasq
-    # https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+      # Uncomment the below if you have custom dnsmasq config files that you want to persist. Not needed for most.
+      #- './etc-dnsmasq.d:/etc/dnsmasq.d'    
     cap_add:
-      - NET_ADMIN # Required if you are using Pi-hole as your DHCP server, else not needed
+      # See https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+      # Required if you are using Pi-hole as your DHCP server, else not needed
+      - NET_ADMIN 
     restart: unless-stopped
 ```
 
@@ -68,11 +80,13 @@ There are multiple different ways to run DHCP from within your Docker Pi-hole co
 
 ## Configuration
 
-It is recommended that you use environment variables to configure the Pi-hole docker container (more details below), however if you are persisting your `/etc/pihole` directory, you may also set them via the web interface or by directly editing `pihole.toml`
+It is recommended that you use environment variables to configure the Pi-hole docker container (more details below), however if you are persisting your `/etc/pihole` directory, you may choose instead to set them via the web interface or by directly editing `pihole.toml`. 
+
+**Please Note**: Settings that are set via environment variables effectively become read-only, meaning that you will not be able to change them in the web interface or CLI. This is to ensure a "single source of truth" on the config.
 
 ### Web interface password
 
-To set a specific password for the web interface, use the environment variable `FTLCONF_webserver_api_password`. If this variable is not detected, and you have not already set one via `pihole setpassword` in the container, then a random password will be assigned on startup, this will be printed to the log. Run `docker logs pihole | grep random` to find it.
+To set a specific password for the web interface, use the environment variable `FTLCONF_webserver_api_password`. If this variable is not detected, and you have not already set one via `pihole setpassword` / `pihole-FTL --config webserver.api.password` inside the container, then a random password will be assigned on startup, this will be printed to the log. Run `docker logs pihole | grep random password` to find it.
 
 To explicitly set no password, set `FTLCONF_webserver_api_password: ''`
 
@@ -98,7 +112,7 @@ To explicitly set no password, set `FTLCONF_webserver_api_password: ''`
 | Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
 | `FTL_CMD` | `no-daemon` | `no-daemon -- <dnsmasq option>` | Customize the options with which dnsmasq gets started. e.g. `no-daemon -- --dns-forward-max 300` to increase max. number of concurrent dns queries on high load setups. |
-|`FTLCONF_ENV_ONLY`|unset|`<true\|false>`|If set to true, FTL will use default values for all config values unless explicitly set as an environment variable|
+| `FTLCONF_ENV_ONLY`|unset|`<true\|false>`|If set to true, FTL will use default values for all config values unless explicitly set as an environment variable|
 | `DNSMASQ_USER` | unset | `<pihole\|root>` | Allows changing the user that FTLDNS runs as. Default: `pihole`, some systems such as Synology NAS may require you to change this to `root` (See [#963](https://github.com/pi-hole/docker-pi-hole/issues/963)) |
 | `ADDITIONAL_PACKAGES`| unset | Space separated list of APKs | HERE BE DRAGONS. Mostly for development purposes, this just makes it easier for those of us that always like to have whatever additional tools we need inside the container for debugging |
 
@@ -111,8 +125,7 @@ Here is a rundown of other arguments for your docker-compose / docker run.
 | `-v $(pwd)/etc-pihole:/etc/pihole`<br/> **Recommended** | Volumes for your Pi-hole configs help persist changes across docker image updates
 | `--net=host`<br/> _Optional_ | Alternative to `-p <port>:<port>` arguments (Cannot be used at same time as -p) if you don't run any other web application. DHCP runs best with --net=host, otherwise your router must support dhcp-relay settings.
 | `--cap-add=NET_ADMIN`<br/> _Recommended_ | Commonly added capability for DHCP, see [Note on Capabilities](#note-on-capabilities) below for other capabilities.
-| `--dns=127.0.0.1`<br/> _Optional_ | Sets your container's resolve settings to localhost so it can resolve DHCP hostnames from Pi-hole's DNSMasq, may fix resolution errors on container restart.
-| `--dns=1.1.1.1`<br/> _Optional_ | Sets a backup server of your choosing in case DNSMasq has problems starting
+| `--dns=n.n.n.n`<br/> _Optional_ | Explicitly set container's DNS server. It is **_not recommended_** to set this to `localhost`/`127.0.0.1`.
 | `--env-file .env` <br/> _Optional_ | File to store environment variables for docker replacing `-e key=value` settings. Here for convenience
 
 ## Tips and Tricks
@@ -165,7 +178,7 @@ The Date-based (including incremented "Patch" versions) do not relate to any kin
 | tag                 | description
 |---------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
 | `latest`            | Always latest release                                                                                                                      |
-| `2022.04`           | Date-based release                                                                                                                         |
+| `2022.04.0`         | Date-based release                                                                                                                         |
 | `2022.04.1`         | Second release in a given month                                                                                                            |
 | `dev`               | Similar to `latest`, but for the development branch (pushed occasionally)                                                                  |
 | `*beta`             | Early beta releases of upcoming versions - here be dragons                                                                                 |
@@ -184,7 +197,7 @@ Do not attempt to upgrade (`pihole -up`) or reconfigure (`pihole -r`).  New imag
     - We will try to put common break/fixes at the top of this readme too
 1. Download the latest version of the image: `docker pull pihole/pihole`
 2. Throw away your container: `docker rm -f pihole`
-    - **Warning** When removing your pihole container you may be stuck without DNS until step 3; **docker pull** before **docker rm -f** to avoid DNS interruption **OR** always have a fallback DNS server configured in DHCP to avoid this problem altogether.
+    - **Warning** When removing your pihole container you may be stuck without DNS until step 3; **docker pull** before **docker rm -f** to avoid DNS interruption.
     - If you care about your data (logs/customizations), make sure you have it volume-mapped or it will be deleted in this step.
 3. Start your container with the newer base image: `docker run <args> pihole/pihole` (`<args>` being your preferred run volumes and env vars)
 
@@ -206,7 +219,7 @@ Valid args are:
 
 ### Pi-hole features
 
-Here are some relevant wiki pages from [Pi-hole's documentation](https://github.com/pi-hole/pi-hole/blob/master/README.md#get-help-or-connect-with-us-on-the-web).  The web interface or command line tools can be used to implement changes to pihole.
+Here are some relevant wiki pages from [Pi-hole's documentation](https://docs.pi-hole.net). 
 
 We install all pihole utilities so the the built in [pihole commands](https://discourse.pi-hole.net/t/the-pihole-command-with-examples/738) will work via `docker exec <container> <command>` like so:
 
@@ -216,11 +229,11 @@ We install all pihole utilities so the the built in [pihole commands](https://di
 
 ### Customizations
 
-The webserver and DNS service inside the container can be customized if necessary.  Any configuration files you volume mount into `/etc/dnsmasq.d/` will be loaded by dnsmasq when the container starts or restarts.
+The webserver and DNS service inside the container can be customized if necessary.  Any configuration files you volume mount into `/etc/dnsmasq.d/` will be loaded by pihole-FTL when the container starts or restarts.
 
 ## Note on Capabilities
 
-DNSMasq / [FTLDNS](https://docs.pi-hole.net/ftldns/in-depth/#linux-capabilities) expects to have the following capabilities available:
+[FTLDNS](https://docs.pi-hole.net/ftldns/in-depth/#linux-capabilities) expects to have the following capabilities available:
 
 - `CAP_NET_BIND_SERVICE`: Allows FTLDNS binding to TCP/UDP sockets below 1024 (specifically DNS service on port 53)
 - `CAP_NET_RAW`: use raw and packet sockets (needed for handling DHCPv6 requests, and verifying that an IP is not in use before leasing it)
