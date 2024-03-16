@@ -205,17 +205,31 @@ Why is this style of upgrading good?  A couple reasons: Everyone is starting fro
 
 To reconfigure Pi-hole you'll either need to use an existing container environment variables or if there is no a variable for what you need, use the web UI or CLI commands.
 
-### Building an image with alternative component branches
+### Building the image locally
 
 Occasionally you may need to try an alternative branch of one of the components (`core`,`web`,`ftl`). On bare metal you would run, for example, `pihole checkout core custombranchname`, however in Docker world we have disabled this command as it can cause unpredictable results.
 
-The preferred method is to clone this repository and rebuild the image with the custom branch name passed in as an arg, e.g `docker buildx build src/. --tag pihole_custom --build-arg CORE_BRANCH=custombranchname --no-cache`, and then redeploy your stack with this new image (In this case you should have a local image named `pihole_custom`, but you can call it whatever you want)
+The preferred method is to clone this repository and build the image locally with `./build.sh`
 
-Valid args are:
+#### Usage:
+```
+./build.sh [-l] [-f <ftl_branch>] [-c <core_branch>] [-w <web_branch>] [-t <tag>] [use_cache]
+```
 
-- `CORE_BRANCH`
-- `WEB_BRANCH`
-- `FTL_BRANCH`
+#### Options:
+
+- `-f <branch>` /  `--ftlbranch <branch>`: Specify FTL branch (cannot be used in conjunction with `-l`)
+- `-c <branch>` / `--corebranch <branch>`: Specify Core branch
+- `-w <branch>` / `--webbranch <branch>`: Specify Web branch
+- `-t <tag>` / `--tag <tag>`: Specify Docker image tag (default: `pihole`)
+- `-l` / `--local`: Use locally built FTL binary (requires `src/pihole-FTL` file)
+- `use_cache`: Enable caching (by default `--no-cache` is used)
+
+If no options are specified, the following command will be executed:
+
+```
+docker buildx build src/. --tag pihole --no-cache
+```
 
 ### Pi-hole features
 
