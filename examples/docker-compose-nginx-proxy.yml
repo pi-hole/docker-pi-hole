@@ -1,5 +1,3 @@
-version: "3"
-
 # https://github.com/pi-hole/docker-pi-hole/blob/master/README.md
 
 services:
