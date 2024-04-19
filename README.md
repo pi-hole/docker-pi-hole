@@ -28,8 +28,6 @@ Using [Docker-compose](https://docs.docker.com/compose/install/):
 
 
 ```yml
-version: "3"
-
 # More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
 services:
   pihole:
