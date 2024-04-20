@@ -65,7 +65,7 @@ ensure_basic_configuration() {
     if [[ $(getFTLConfigValue "dns.upstreams") == "[]" ]]; then
         echo ""
         echo "  [X] No DNS upstream servers are set!"
-        echo "  [i] Recommended: Set the upstream DNS servers in the environment variable FTLCONF_dns_upstream"
+        echo "  [i] Recommended: Set the upstream DNS servers in the environment variable FTLCONF_dns_upstreams"
         echo ""
         exit 1
     fi
