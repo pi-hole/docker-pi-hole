@@ -21,6 +21,8 @@ RUN apk add --no-cache \
     coreutils \
     curl \
     git \
+    # Install grep to avoid issues in pihole -w/b with the default busybox grep
+    grep \
     iproute2-ss \
     jq \
     libcap \
@@ -34,7 +36,7 @@ RUN apk add --no-cache \
     tini \
     tzdata \
     unzip \
-    wget
+    wget 
 
 ADD https://ftl.pi-hole.net/macvendor.db /macvendor.db
 COPY crontab.txt /crontab.txt
