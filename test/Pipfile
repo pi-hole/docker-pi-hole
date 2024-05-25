@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-pytest = "==8.2.0"
+pytest = "==8.2.1"
 pytest-xdist = "==3.6.1"
 pytest-testinfra = "==10.1.0"
 black = "==24.4.2"
