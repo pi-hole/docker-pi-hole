@@ -17,7 +17,7 @@ usage() {
 }
 
 # Set default values
-DOCKER_BUILD_CMD="docker buildx build src/. --tag pihole --no-cache"
+DOCKER_BUILD_CMD="docker buildx build src/. --tag pihole --load --no-cache"
 FTL_FLAG=false
 
 # Parse command line arguments
