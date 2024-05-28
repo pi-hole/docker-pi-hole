@@ -12,7 +12,7 @@ usage() {
     echo "  use_cache                    Enable caching (by default --no-cache is used)"
     echo ""
     echo "If no options are specified, the following command will be executed:"
-    echo "  docker buildx build src/. --tag pihole --no-cache"
+    echo "  docker buildx build src/. --tag pihole --load --no-cache"
     exit 1
 }
 
