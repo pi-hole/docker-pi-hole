@@ -6,10 +6,10 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-pytest = "==8.0.0"
-pytest-xdist = "==3.5.0"
-pytest-testinfra = "==10.0.0"
-black = "==24.3.0"
+pytest = "==8.2.1"
+pytest-xdist = "==3.6.1"
+pytest-testinfra = "==10.1.0"
+black = "==24.4.2"
 
 [requires]
 python_version = "3"

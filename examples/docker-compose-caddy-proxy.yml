@@ -1,5 +1,3 @@
-version: "3"
-
 services:
 
   # Caddy example derived from Caddy's own example at https://hub.docker.com/_/caddy
