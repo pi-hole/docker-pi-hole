@@ -80,7 +80,7 @@ There are multiple different ways to run DHCP from within your Docker Pi-hole co
 
 It is recommended that you use environment variables to configure the Pi-hole docker container (more details below), however if you are persisting your `/etc/pihole` directory, you may choose instead to set them via the web interface or by directly editing `pihole.toml`. 
 
-**Please Note**: Settings that are set via environment variables effectively become read-only, meaning that you will not be able to change them in the web interface or CLI. This is to ensure a "single source of truth" on the config.
+**Please Note**: Settings that are set via environment variables effectively become read-only, meaning that you will not be able to change them in the web interface or CLI. This is to ensure a "single source of truth" on the config. If you later unset an environment variable, then FTL will revert to the default value for that setting.
 
 ### Web interface password
 
@@ -110,7 +110,6 @@ To explicitly set no password, set `FTLCONF_webserver_api_password: ''`
 | Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
 | `FTL_CMD` | `no-daemon` | `no-daemon -- <dnsmasq option>` | Customize the options with which dnsmasq gets started. e.g. `no-daemon -- --dns-forward-max 300` to increase max. number of concurrent dns queries on high load setups. |
-| `FTLCONF_ENV_ONLY`|unset|`<true\|false>`|If set to true, FTL will use default values for all config values unless explicitly set as an environment variable|
 | `DNSMASQ_USER` | unset | `<pihole\|root>` | Allows changing the user that FTLDNS runs as. Default: `pihole`, some systems such as Synology NAS may require you to change this to `root` (See [#963](https://github.com/pi-hole/docker-pi-hole/issues/963)) |
 | `ADDITIONAL_PACKAGES`| unset | Space separated list of APKs | HERE BE DRAGONS. Mostly for development purposes, this just makes it easier for those of us that always like to have whatever additional tools we need inside the container for debugging |
 
