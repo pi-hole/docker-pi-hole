@@ -80,7 +80,7 @@ There are multiple different ways to run DHCP from within your Docker Pi-hole co
 
 It is recommended that you use environment variables to configure the Pi-hole docker container (more details below), however if you are persisting your `/etc/pihole` directory, you may choose instead to set them via the web interface or by directly editing `pihole.toml`. 
 
-**Please Note**: Settings that are set via environment variables effectively become read-only, meaning that you will not be able to change them in the web interface or CLI. This is to ensure a "single source of truth" on the config.
+**Please Note**: Settings that are set via environment variables effectively become read-only, meaning that you will not be able to change them in the web interface or CLI. This is to ensure a "single source of truth" on the config. If you later unset an environment variable, then FTL will revert to the default value for that setting.
 
 ### Web interface password
 
