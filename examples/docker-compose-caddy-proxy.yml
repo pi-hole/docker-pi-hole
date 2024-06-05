@@ -37,7 +37,7 @@ services:
       # Set a password to access the web interface. Not setting one will result in a random password being assigned
       FTLCONF_webserver_api_password: 'correct horse battery staple'
       # Configure DNS upstream servers, e.g:
-      FTLCONF_dns_upstreams: '8.8.8.8, 8.8.4.4'
+      FTLCONF_dns_upstreams: '8.8.8.8;8.8.4.4'
     # Volumes store your data between container upgrades
     volumes:
       # For persisting Pi-hole's databases and common configuration file
