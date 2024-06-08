@@ -251,6 +251,7 @@ The webserver and DNS service inside the container can be customized if necessar
 - `CAP_NET_ADMIN`: modify routing tables and other network-related operations (in particular inserting an entry in the neighbor table to answer DHCP requests using unicast packets)
 - `CAP_SYS_NICE`: FTL sets itself as an important process to get some more processing time if the latter is running low
 - `CAP_CHOWN`: we need to be able to change ownership of log files and databases in case FTL is started as a different user than `pihole`
+- `CAP_SYS_TIME`: FTL needs to be able to set the system time to update it using the Network Time Protocol (NTP) in the background
 
 This image automatically grants those capabilities, if available, to the FTLDNS process, even when run as non-root.\
 By default, docker does not include the `NET_ADMIN` capability for non-privileged containers, and it is recommended to explicitly add it to the container using `--cap-add=NET_ADMIN`.\
