@@ -164,7 +164,7 @@ Users of older Ubuntu releases (circa 17.04) will need to disable dnsmasq.
 
 ## Installing on Dokku
 
-@Rikj000 has produced a guide to assist users [installing Pi-hole on Dokku](https://github.com/Rikj000/Pihole-Dokku-Installation)
+[@Rikj000](https://github.com/Rikj000/) has produced a guide to assist users [installing Pi-hole on Dokku](https://github.com/Rikj000/Pihole-Dokku-Installation)
 
 ## Docker tags and versioning
 
