@@ -17,9 +17,15 @@ detect_arch() {
     S6_ARCH="armhf";;
   armv7l)
     S6_ARCH="armhf";;
-  i386)
-    S6_ARCH="i686";;
-esac
+  x86_64)
+    # arch returns x86_64 on linux/i386, causing the wrong s6-overlay to be downloaded
+    # fallback to dpkg to check the architecture and download the i686 s6-overlay if necessary
+    # see https://github.com/pi-hole/docker-pi-hole/issues/1524 for more information
+    ARCH_CHECK=$(dpkg --print-architecture)
+    if [ "$ARCH_CHECK" == "i386" ]; then
+      S6_ARCH="i686"
+    fi    
+  esac
 }
 
 
