@@ -8,6 +8,9 @@ fi
 # shellcheck source=/dev/null
 . /usr/local/bin/bash_functions.sh
 
+# Experimental feature to allow for declarative adlists in kubernetes
+. /usr/local/bin/configmap_adlists.sh
+
 # shellcheck source=/dev/null
 SKIP_INSTALL=true . /etc/.pihole/automated\ install/basic-install.sh
 
@@ -44,6 +47,7 @@ setup_lighttpd_bind
 # Misc Setup
 # ===========================
 installCron
+[[ -n "${CONFIGMAP_ADLISTS}" && "${CONFIGMAP_ADLISTS}" == "true" ]] && echo "  [i] Using configMap for adlists" && configMap_adlists
 setup_blocklists
 
 # FTL setup
