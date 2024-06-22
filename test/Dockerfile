@@ -18,5 +18,5 @@ RUN apk add --no-cache \
     # Tests fall over without it. Investigate later.
     && sed -i 's|/bin/sh|/bin/bash|g' /usr/lib/python3.11/site-packages/testinfra/backend/docker.py
 
-ENTRYPOINT entrypoint.sh
-CMD cmd.sh
+ENTRYPOINT ["/bin/sh","-c","entrypoint.sh"]
+CMD ["/bin/sh","-c","cmd.sh"]
