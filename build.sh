@@ -7,6 +7,7 @@ usage() {
     echo "  -f, --ftlbranch <branch>     Specify FTL branch (cannot be used in conjunction with -l)"
     echo "  -c, --corebranch <branch>    Specify Core branch"
     echo "  -w, --webbranch <branch>     Specify Web branch"
+    echo "  -p, --paddbranch <branch>    Specify PADD branch"
     echo "  -t, --tag <tag>              Specify Docker image tag (default: pihole)"
     echo "  -l, --local                  Use locally built FTL binary (requires src/pihole-FTL file)"
     echo "  use_cache                    Enable caching (by default --no-cache is used)"
@@ -58,6 +59,12 @@ while [[ $# -gt 0 ]]; do
     -w | --webbranch)
         WEB_BRANCH="$2"
         DOCKER_BUILD_CMD+=" --build-arg WEB_BRANCH=$WEB_BRANCH"
+        shift
+        shift
+        ;;
+    -p | --paddbranch)
+        PADD_BRANCH="$2"
+        DOCKER_BUILD_CMD+=" --build-arg PADD_BRANCH=$PADD_BRANCH"
         shift
         shift
         ;;

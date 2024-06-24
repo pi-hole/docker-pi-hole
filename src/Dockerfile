@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG FTL_SOURCE=remote
 ARG alpine_version="3.19" 
-FROM alpine:${alpine_version} as base
+FROM alpine:${alpine_version} AS base
 # https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 
 ARG TARGETPLATFORM
@@ -69,7 +69,7 @@ COPY --chmod=0755 start.sh /usr/bin/start.sh
 
 ## Buildkit can do some fancy stuff and we can use it to either download FTL from ftl.pi-hole.net or use a local copy
 
-FROM base as remote-ftl-install
+FROM base AS remote-ftl-install
 # Default stage if FTL_SOURCE is not explicitly set to "local"
 # Download the latest version of pihole-FTL for the correct architecture
 RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
@@ -85,12 +85,12 @@ RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     && chmod +x /usr/bin/pihole-FTL \
     && readelf -h /usr/bin/pihole-FTL || cat /usr/bin/pihole-FTL
 
-FROM base as local-ftl-install
+FROM base AS local-ftl-install
 # pihole-FTL must be built from source and copied to the build directory first!
 COPY --chmod=0755 pihole-FTL /usr/bin/pihole-FTL
 
 # Use the appropriate FTL Install stage based on the FTL_SOURCE build-arg
-FROM ${FTL_SOURCE}-ftl-install as final
+FROM ${FTL_SOURCE}-ftl-install AS final
 
 HEALTHCHECK CMD dig +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
 

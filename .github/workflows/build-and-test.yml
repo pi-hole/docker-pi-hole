@@ -19,7 +19,7 @@ jobs:
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
       with:
-        platforms: ${{ matrix.platform}}
+        platforms: ${{ matrix.platform }}
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -27,4 +27,4 @@ jobs:
     - name: Run Tests
       run: |
         echo "Building image to test"
-        PLATFORM=${{ matrix.platform}} ./build-and-test.sh
+        PLATFORM=${{ matrix.platform }} ./build-and-test.sh

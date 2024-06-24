@@ -2,7 +2,8 @@
 set -ex
 
 if [[ "$1" == "enter" ]]; then
-    enter="-it --entrypoint=sh"
+    enter="-it"
+    cmd="sh"
 fi
 
 GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD | sed "s/\//-/g")
@@ -20,4 +21,4 @@ docker run --rm \
     --env GIT_TAG="${GIT_TAG}" \
     --env PY_COLORS=1 \
     --env TARGETPLATFORM="${PLATFORM}" \
-    ${enter} image_pipenv
+    ${enter} image_pipenv ${cmd}
