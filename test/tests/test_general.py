@@ -14,14 +14,14 @@ def test_pihole_gid_env_var(docker):
 
 
 # Wait 5 seconds for startup, then kill the start.sh script
-# Finally, tail the FTL log to see if it has been shut down cleanly
+# Finally, grep the FTL log to see if it has been shut down cleanly
 def test_pihole_ftl_clean_shutdown(docker):
     func = docker.run(
         """
         sleep 5
         killall --signal 15 start.sh
         sleep 5
-        tail -f /var/log/pihole-FTL.log
+        grep 'jmpret\|terminated' /var/log/pihole/FTL.log
     """
     )
     assert "INFO: Shutting down... // exit code 0 // jmpret 0" in func.stdout
