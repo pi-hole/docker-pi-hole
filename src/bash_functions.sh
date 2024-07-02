@@ -61,7 +61,7 @@ ensure_basic_configuration() {
         chown pihole:pihole /macvendor.db
     fi
 
-    # If getFTLConfigValue "dns.upstreams" returns [], exit the container. We need upstream servers to function!
+    # If getFTLConfigValue "dns.upstreams" returns [], default to Google's DNS server
     if [[ $(getFTLConfigValue "dns.upstreams") == "[]" ]]; then                
         echo "  [i] No DNS upstream set in environment or config file, defaulting to Google DNS"        
         setFTLConfigValue "dns.upstreams" "[\"8.8.8.8\", \"8.8.4.4\"]"        
