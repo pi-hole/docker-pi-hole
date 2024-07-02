@@ -47,9 +47,7 @@ services:
       # Set the appropriate timezone for your location (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), e.g:
       TZ: 'Europe/London'
       # Set a password to access the web interface. Not setting one will result in a random password being assigned
-      FTLCONF_webserver_api_password: 'correct horse battery staple'
-      # Configure DNS upstream servers, e.g:
-      FTLCONF_dns_upstreams: '8.8.8.8;8.8.4.4'
+      FTLCONF_webserver_api_password: 'correct horse battery staple'     
     # Volumes store your data between container upgrades
     volumes:
       # For persisting Pi-hole's databases and common configuration file
