@@ -8,4 +8,4 @@ docker images pihole:${GIT_TAG}
 python -m black ./test/tests/
 
 # TODO: Add junitxml output and have something consume it
-py.test -vv -n auto ./test/tests/
+COLUMNS=120 py.test -vv -n auto ./test/tests/
