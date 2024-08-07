@@ -13,9 +13,8 @@ RUN apk add --no-cache \
     curl \
     && pip3 install --break-system-packages --no-cache-dir -U pip  \
     && pip3 install --break-system-packages --no-cache-dir -r requirements.txt \
-    # Not 100% sure what this line does, but it's always been in the Dockerfile (aside from pointing at a different file)
-    # Tests fall over without it. Investigate later.
-    && sed -i 's|/bin/sh|/bin/bash|g' /usr/lib/python3.11/site-packages/testinfra/backend/docker.py
+    # Replace hardcoded /bin/sh with /bin/bash in testinfra docker backend
+    && sed -i 's|/bin/sh|/bin/bash|g' /usr/lib/python3.12/site-packages/testinfra/backend/docker.py
 
 SHELL ["/bin/sh", "-c"]
 CMD ["cmd.sh"]
