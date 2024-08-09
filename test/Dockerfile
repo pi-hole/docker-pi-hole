@@ -14,7 +14,9 @@ RUN apk add --no-cache \
     && pip3 install --break-system-packages --no-cache-dir -U pip  \
     && pip3 install --break-system-packages --no-cache-dir -r requirements.txt \
     # Replace hardcoded /bin/sh with /bin/bash in testinfra docker backend
-    && sed -i 's|/bin/sh|/bin/bash|g' /usr/lib/python3.12/site-packages/testinfra/backend/docker.py
+    # see https://github.com/pytest-dev/pytest-testinfra/issues/582 and similar issues
+    && pythonversion=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))') \
+    && sed -i 's|/bin/sh|/bin/bash|g' /usr/lib/python${pythonversion}/site-packages/testinfra/backend/docker.py
 
 SHELL ["/bin/sh", "-c"]
 CMD ["cmd.sh"]
