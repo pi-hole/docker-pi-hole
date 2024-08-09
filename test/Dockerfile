@@ -1,5 +1,5 @@
-ARG alpine_version="3.19"
-ARG docker_version="25.0.4"
+ARG alpine_version="3.20"
+ARG docker_version="27.1.1"
 
 FROM docker:${docker_version}-cli-alpine${alpine_version}
 
@@ -13,9 +13,10 @@ RUN apk add --no-cache \
     curl \
     && pip3 install --break-system-packages --no-cache-dir -U pip  \
     && pip3 install --break-system-packages --no-cache-dir -r requirements.txt \
-    # Not 100% sure what this line does, but it's always been in the Dockerfile (aside from pointing at a different file)
-    # Tests fall over without it. Investigate later.
-    && sed -i 's|/bin/sh|/bin/bash|g' /usr/lib/python3.11/site-packages/testinfra/backend/docker.py
+    # Replace hardcoded /bin/sh with /bin/bash in testinfra docker backend
+    # see https://github.com/pytest-dev/pytest-testinfra/issues/582 and similar issues
+    && pythonversion=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))') \
+    && sed -i 's|/bin/sh|/bin/bash|g' /usr/lib/python${pythonversion}/site-packages/testinfra/backend/docker.py
 
 SHELL ["/bin/sh", "-c"]
 CMD ["cmd.sh"]
