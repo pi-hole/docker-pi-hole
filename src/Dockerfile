@@ -86,7 +86,7 @@ RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     && readelf -h /usr/bin/pihole-FTL || cat /usr/bin/pihole-FTL
 
 FROM base AS local-ftl-install
-# pihole-FTL must be built from source and copied to the build directory first!
+# pihole-FTL must be built from source and copied to the src directory first!
 COPY --chmod=0755 pihole-FTL /usr/bin/pihole-FTL
 
 # Use the appropriate FTL Install stage based on the FTL_SOURCE build-arg
