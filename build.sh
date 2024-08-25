@@ -8,17 +8,17 @@ usage() {
     echo "  -c, --corebranch <branch>    Specify Core branch"
     echo "  -w, --webbranch <branch>     Specify Web branch"
     echo "  -p, --paddbranch <branch>    Specify PADD branch"
-    echo "  -t, --tag <tag>              Specify Docker image tag (default: pihole)"
+    echo "  -t, --tag <tag>              Specify Docker image tag (default: pihole:local)"
     echo "  -l, --local                  Use locally built FTL binary (requires src/pihole-FTL file)"
     echo "  use_cache                    Enable caching (by default --no-cache is used)"
     echo ""
     echo "If no options are specified, the following command will be executed:"
-    echo "  docker buildx build src/. --tag pihole --load --no-cache"
+    echo "  docker buildx build src/. --tag pihole:local --load --no-cache"
     exit 1
 }
 
 # Set default values
-DOCKER_BUILD_CMD="docker buildx build src/. --tag pihole --load --no-cache"
+DOCKER_BUILD_CMD="docker buildx build src/. --tag pihole:local --load --no-cache"
 FTL_FLAG=false
 
 # Parse command line arguments
@@ -70,7 +70,7 @@ while [[ $# -gt 0 ]]; do
         ;;
     -t | --tag)
         TAG="$2"
-        DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD/pihole/$TAG}
+        DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD/pihole:local/$TAG}
         shift
         shift
         ;;
