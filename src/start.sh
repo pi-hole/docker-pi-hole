@@ -8,107 +8,78 @@ trap stop TERM INT QUIT HUP ERR
 
 start() {
 
+  local v5_volume=0
+
+  # If the file /etc/pihole/setupVars.conf exists, but /etc/pihole/pihole.toml does not, then we are migrating v5->v6
+  # FTL Will handle the migration of the config files
+  if [[ -f /etc/pihole/setupVars.conf && ! -f /etc/pihole/pihole.toml ]]; then
+    echo "  [i] v5 files detected that have not yet been migrated to v6"
+    echo "  [i] Deferring additional configuration until after FTL has started"
+    echo "  [i] Note: It is normal to see \"Config file /etc/pihole/pihole.toml not available (r): No such file or directory\" in the logs at this point"
+    echo ""
+    v5_volume=1
+  fi
+
   # The below functions are all contained in bash_functions.sh
   # shellcheck source=/dev/null
   . /usr/bin/bash_functions.sh
-
-  echo "  [i] Starting docker specific checks & setup for docker pihole/pihole"
 
   # ===========================
   # Initial checks
   # ===========================
 
   # If PIHOLE_UID is set, modify the pihole user's id to match
-  if [ -n "${PIHOLE_UID}" ]; then
-    currentId=$(id -u pihole)
-    if [[ ${currentId} -ne ${PIHOLE_UID} ]]; then
-      echo "  [i] Changing ID for user: pihole (${currentId} => ${PIHOLE_UID})"
-      usermod -o -u ${PIHOLE_UID} pihole
-    else
-      echo "  [i] ID for user pihole is already ${PIHOLE_UID}, no need to change"
-    fi
-  fi
+  set_uid_gid
 
-  # If PIHOLE_GID is set, modify the pihole group's id to match
-  if [ -n "${PIHOLE_GID}" ]; then
-    currentId=$(id -g pihole)
-    if [[ ${currentId} -ne ${PIHOLE_GID} ]]; then
-      echo "  [i] Changing ID for group: pihole (${currentId} => ${PIHOLE_GID})"
-      groupmod -o -g ${PIHOLE_GID} pihole
-    else
-      echo "  [i] ID for group pihole is already ${PIHOLE_GID}, no need to change"
-    fi
+  # Only run the next step if we are not migrating from v5 to v6
+  if [[ ${v5_volume} -eq 0 ]]; then
+    # Configure FTL with any environment variables if needed
+    echo "  [i] Starting FTL configuration"
+    ftl_config
   fi
-
-  ensure_basic_configuration
 
   # Install additional packages inside the container if requested
-  if [ -n "${ADDITIONAL_PACKAGES}" ]; then
-    echo "  [i] Fetching APK repository metadata."
-    if ! apk update; then
-      echo "  [i] Failed to fetch APK repository metadata."
-    else
-      echo "  [i] Installing additional packages: ${ADDITIONAL_PACKAGES}."
-      # shellcheck disable=SC2086
-      if ! apk add --no-cache ${ADDITIONAL_PACKAGES}; then
-        echo "  [i] Failed to install additional packages."
-      fi
-    fi
-    echo ""
-  fi
-
-  # Remove possible leftovers from previous pihole-FTL processes
-  rm -f /dev/shm/FTL-* 2>/dev/null
-  rm -f /run/pihole/FTL.sock
+  install_additional_packages
 
   # Start crond for scheduled scripts (logrotate, pihole flush, gravity update etc)
-  # Randomize gravity update time
-  sed -i "s/59 1 /$((1 + RANDOM % 58)) $((3 + RANDOM % 2))/" /crontab.txt
-  # Randomize update checker time
-  sed -i "s/59 17/$((1 + RANDOM % 58)) $((12 + RANDOM % 8))/" /crontab.txt
-  /usr/bin/crontab /crontab.txt
+  start_cron
 
-  /usr/sbin/crond
+  # Install the logrotate config file
+  install_logrotate
 
-  #migrate Database if needed:
-  gravityDBfile=$(getFTLConfigValue files.gravity)
+  #migrate Gravity Database if needed:
+  migrate_gravity
 
-  if [ ! -f "${gravityDBfile}" ]; then
-    echo "  [i] ${gravityDBfile} does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate."
-    pihole -g
-  else
-    # TODO: Revisit this path if we move to a multistage build
-    source /etc/.pihole/advanced/Scripts/database_migration/gravity-db.sh
-    upgrade_gravityDB "${gravityDBfile}" "/etc/pihole"
+  # Start pihole-FTL  
+  start_ftl
+
+  # Give FTL a couple of seconds to start up
+  sleep 2
+
+  # If we are migrating from v5 to v6, we now need to run the basic configuration step that we deferred earlier
+  # This is because pihole-FTL needs to migrate the config files before we can perform the basic configuration checks
+  if [[ ${v5_volume} -eq 1 ]]; then
+    echo "  [i] Starting deferred FTL Configuration"
+    ftl_config
+    echo ""    
   fi
 
   pihole updatechecker
-
-  echo "  [i] Docker start setup complete"
+  pihole -v
   echo ""
-
-  echo "  [i] pihole-FTL ($FTL_CMD) will be started as ${DNSMASQ_USER}"
-  echo ""
-
-  # Start pihole-FTL
-
-  fix_capabilities
-  sh /opt/pihole/pihole-FTL-prestart.sh
-  capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
 
   if [ "${TAIL_FTL_LOG:-1}" -eq 1 ]; then
-    tail -f /var/log/pihole/FTL.log &
+    # Start tailing the FTL log from the most recent "FTL Started" message
+    # Get the line number
+    startFrom=$(grep -n '########## FTL started' /var/log/pihole/FTL.log  | tail -1 | cut -d: -f1)
+    # Start the tail from the line number
+    tail -f -n +${startFrom} /var/log/pihole/FTL.log &
   else
     echo "  [i] FTL log output is disabled. Remove the Environment variable TAIL_FTL_LOG, or set it to 1 to enable FTL log output."
   fi
 
   # https://stackoverflow.com/a/49511035
   wait $!
-  # Notes on above:
-  # - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env
-  # - /var/log/pihole/pihole*.log has FTL's output that no-daemon would normally print in FG too
-  #   prevent duplicating it in docker logs by sending to dev null
-
 }
 
 stop() {
