@@ -1,4 +1,4 @@
-name: Build and Test (development-v6)
+name: Build Image and Test
 on:
   pull_request:
 

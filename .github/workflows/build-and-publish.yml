@@ -1,10 +1,8 @@
-name: Build and Publish (development-v6)
+name: Build Image and Publish
 on:
   schedule:
     - cron: "0 5 * * *"
-  push:
-    branches:
-      - development-v6
+
 
 env:
   dockerhub: ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole
