@@ -1,4 +1,0 @@
-#!/command/with-contenv bash
-
-s6-echo "Stopping cron"
-killall --signal 9 cron
