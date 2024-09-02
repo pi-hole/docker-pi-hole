@@ -36,18 +36,13 @@ def run_and_stream_command_output():
 
 
 @pytest.fixture()
-def args_volumes():
-    return "-v /dev/null:/etc/pihole/adlists.list"
-
-
-@pytest.fixture()
 def args_env():
-    return '-e FTLCONF_LOCAL_IPV4="127.0.0.1"'
+    return '-e TZ="Europe/London" -e FTLCONF_dns_upstreams="8.8.8.8"'
 
 
 @pytest.fixture()
-def args(args_volumes, args_env):
-    return "{} {}".format(args_volumes, args_env)
+def args(args_env):
+    return "{}".format(args_env)
 
 
 @pytest.fixture()
@@ -87,33 +82,6 @@ def docker(request, test_args, args, image, cmd, entrypoint):
     return docker_generic(request, test_args, args, image, cmd, entrypoint)
 
 
-@pytest.fixture(scope="module")
-def docker_persist(
-    request,
-    persist_test_args,
-    persist_args,
-    persist_image,
-    persist_cmd,
-    persist_entrypoint,
-    dig,
-):
-    """
-    Persistent Docker container for multiple tests, instead of stopping container after one test
-    Uses DUP'd module scoped fixtures because smaller scoped fixtures won't mix with module scope
-    """
-    persistent_container = docker_generic(
-        request,
-        persist_test_args,
-        persist_args,
-        persist_image,
-        persist_cmd,
-        persist_entrypoint,
-    )
-    """ attach a dig container for lookups """
-    persistent_container.dig = dig(persistent_container.id)
-    return persistent_container
-
-
 @pytest.fixture
 def entrypoint():
     return ""
@@ -129,12 +97,6 @@ def tag(version):
     return "{}".format(version)
 
 
-@pytest.fixture
-def webserver(tag):
-    """TODO: this is obvious without alpine+nginx as the alternative, remove fixture, hard code lighttpd in tests?"""
-    return "lighttpd"
-
-
 @pytest.fixture()
 def image(tag):
     image = "pihole"
@@ -144,64 +106,6 @@ def image(tag):
 @pytest.fixture()
 def cmd():
     return TAIL_DEV_NULL
-
-
-@pytest.fixture(scope="module")
-def persist_version():
-    return version
-
-
-@pytest.fixture(scope="module")
-def persist_args_dns():
-    return "--dns 127.0.0.1 --dns 1.1.1.1"
-
-
-@pytest.fixture(scope="module")
-def persist_args_volumes():
-    return "-v /dev/null:/etc/pihole/adlists.list"
-
-
-@pytest.fixture(scope="module")
-def persist_args_env():
-    return '-e ServerIP="127.0.0.1"'
-
-
-@pytest.fixture(scope="module")
-def persist_args(persist_args_volumes, persist_args_env):
-    return "{} {}".format(persist_args_volumes, persist_args_env)
-
-
-@pytest.fixture(scope="module")
-def persist_test_args():
-    """test override fixture to provide arguments separate from our core args"""
-    return ""
-
-
-@pytest.fixture(scope="module")
-def persist_tag(persist_version):
-    return "{}".format(persist_version)
-
-
-@pytest.fixture(scope="module")
-def persist_webserver(persist_tag):
-    """TODO: this is obvious without alpine+nginx as the alternative, remove fixture, hard code lighttpd in tests?"""
-    return "lighttpd"
-
-
-@pytest.fixture(scope="module")
-def persist_image(persist_tag):
-    image = "pihole"
-    return "{}:{}".format(image, persist_tag)
-
-
-@pytest.fixture(scope="module")
-def persist_cmd():
-    return TAIL_DEV_NULL
-
-
-@pytest.fixture(scope="module")
-def persist_entrypoint():
-    return ""
 
 
 @pytest.fixture
@@ -225,26 +129,3 @@ def slow():
                 return
 
     return _slow
-
-
-@pytest.fixture(scope="module")
-def dig():
-    """separate container to link to pi-hole and perform lookups"""
-    """ a docker pull is faster than running an install of dnsutils """
-
-    def _dig(docker_id):
-        args = "--link {}:test_pihole".format(docker_id)
-        image = "azukiapp/dig"
-        cmd = TAIL_DEV_NULL
-        dig_container = docker_generic(request, "", args, image, cmd, "")
-        return dig_container
-
-    return _dig
-
-
-@pytest.fixture
-def running_pihole(docker_persist, slow, persist_webserver):
-    """Persist a fully started docker-pi-hole to help speed up subsequent tests"""
-    slow(lambda: docker_persist.run("pgrep pihole-FTL").rc == 0)
-    slow(lambda: docker_persist.run("pgrep lighttpd").rc == 0)
-    return docker_persist

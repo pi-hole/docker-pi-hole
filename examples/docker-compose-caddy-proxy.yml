@@ -5,50 +5,47 @@ services:
     container_name: caddy
     image: caddy:latest
     networks:
-      - caddy-net  # Network exclusively for Caddy-proxied containers
+      - caddy-net # Network exclusively for Caddy-proxied containers
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
-      - "443:443/udp"  # QUIC protocol support: https://www.chromium.org/quic/
+      - "443:443/udp" # QUIC protocol support: https://www.chromium.org/quic/
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile  # config file on host in same directory as docker-compose.yml for easy editing.
+      - ./Caddyfile:/etc/caddy/Caddyfile # config file on host in same directory as docker-compose.yml for easy editing.
       #- $PWD/site:/srv  # Only use if you are serving a website behind caddy
-      - caddy_data:/data  # Use docker volumes here bc no need to access these files from host
-      - caddy_config:/config  # Use docker volumes here bc no need to access these files from host
-
+      - caddy_data:/data # Use docker volumes here bc no need to access these files from host
+      - caddy_config:/config # Use docker volumes here bc no need to access these files from host
 
   # More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
   pihole:
-    depends_on: 
+    depends_on:
       - caddy
     container_name: pihole
-    #dns:  # Optional. Specify desired upstream DNS servers here.
-    #  - 127.0.0.1
-    #  - 9.9.9.9
-    #  - 149.112.112.112
     image: pihole/pihole:latest
-    networks:
-      - caddy-net  # Need to plug into caddy net to access proxy
     ports:
       - "8081:80/tcp" # Pi-hole web admin interface, proxied through Caddy (configure port in Caddyfile)
       # Following are NOT proxied through Caddy, bound to host net instead:
       - "53:53/udp"
       - "53:53/tcp"
-      - "853:853/tcp" # DNS-over-TLS 
+      - "853:853/tcp" # DNS-over-TLS
       #- "67:67/udp" # DHCP, if desired. If not bound to host net you need an mDNS proxy service configured somewhere on host net.
         # ref: https://docs.pi-hole.net/docker/DHCP/
     environment:
-      TZ: 'America/New_York' # Supported TZ database names: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#Time_Zone_abbreviations
-      WEBPASSWORD: 'password' # Only used on first boot, change with pihole cli then comment out here.
+      # Set the appropriate timezone for your location (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), e.g:
+      TZ: 'Europe/London'
+      # Set a password to access the web interface. Not setting one will result in a random password being assigned
+      FTLCONF_webserver_api_password: 'correct horse battery staple'     
+    # Volumes store your data between container upgrades
     volumes:
+      # For persisting Pi-hole's databases and common configuration file
       - './etc-pihole:/etc/pihole'
-      - './etc-dnsmasq.d:/etc/dnsmasq.d'
-      - './etc-lighttpd/external.conf:/etc/lighttpd/external.conf'  # Recommend leave as bind mount for easier editing.
-        # ref for why you may need to change this file: https://docs.pi-hole.net/guides/webserver/caddy/#modifying-lighttpd-configuration
-    #cap_add:  # Uncomment if using Pi-hole as DHCP server
-      # https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
-      #- NET_ADMIN # ONLY required if you are using Pi-hole as your DHCP server, else remove for better security
+      # Uncomment the below if you have custom dnsmasq config files that you want to persist. Not needed for most.
+      #- './etc-dnsmasq.d:/etc/dnsmasq.d'    
+    cap_add:
+      # See https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+      # Required if you are using Pi-hole as your DHCP server, else not needed
+      - NET_ADMIN
     restart: unless-stopped
 
 # ref: https://hub.docker.com/_/caddy
@@ -60,5 +57,5 @@ networks:
 # ref: https://hub.docker.com/_/caddy
 volumes:
   caddy_data:
-    external: true  # May need to create volume with 'docker volume create caddy_data'
+    external: true # May need to create volume with 'docker volume create caddy_data'
   caddy_config:
