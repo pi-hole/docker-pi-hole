@@ -4,7 +4,7 @@ on:
     - cron: "0 5 * * *"
   push:
     branches:
-      - dev
+      - development
   release:
     types: [published]
 
@@ -12,6 +12,7 @@ on:
 env:
   dockerhub: ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole
   ghcr: ghcr.io/${{ github.repository_owner }}/pihole
+  components_branch: ${{ startsWith(github.ref, 'refs/tags/') && 'master' || 'development' }}  
 
 jobs:
   build:
@@ -39,7 +40,7 @@ jobs:
         if: github.event_name == 'schedule'
         uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: development
 
       - name: Docker meta
         id: meta
@@ -80,7 +81,11 @@ jobs:
           platforms: ${{ matrix.platform }}
           build-args: |
             PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}
-            alpine_version=${{ matrix.alpine_version }}
+            alpine_version=${{ matrix.alpine_version }}            
+            FTL_BRANCH=${{ env.components_branch }}
+            CORE_BRANCH=${{ env.components_branch }}
+            WEB_BRANCH=${{ env.components_branch }}            
+            PADD_BRANCH=${{ env.components_branch }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
             type=image,name=${{ env.dockerhub }},push-by-digest=true,name-canonical=true,push=true
@@ -108,7 +113,14 @@ jobs:
       - build
     steps:
       - name: Checkout Repo
+        if: github.event_name != 'schedule'
         uses: actions/checkout@v4
+
+      - name: Checkout dev branch if scheduled
+        if: github.event_name == 'schedule'
+        uses: actions/checkout@v4
+        with:
+          ref: development
 
       - name: Download digests
         uses: actions/download-artifact@v4
