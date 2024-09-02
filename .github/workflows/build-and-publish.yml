@@ -1,14 +1,18 @@
-name: Build and Publish (development-v6)
+name: Build Image and Publish
 on:
   schedule:
     - cron: "0 5 * * *"
   push:
     branches:
-      - development-v6
+      - development
+  release:
+    types: [published]
+
 
 env:
   dockerhub: ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole
   ghcr: ghcr.io/${{ github.repository_owner }}/pihole
+  components_branch: ${{ startsWith(github.ref, 'refs/tags/') && 'master' || 'development' }}  
 
 jobs:
   build:
@@ -29,7 +33,14 @@ jobs:
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
 
       - name: Checkout Repo
+        if: github.event_name != 'schedule'
         uses: actions/checkout@v4
+
+      - name: Checkout dev branch if scheduled
+        if: github.event_name == 'schedule'
+        uses: actions/checkout@v4
+        with:
+          ref: development
 
       - name: Docker meta
         id: meta
@@ -40,9 +51,11 @@ jobs:
             ${{ env.dockerhub }}
             ${{ env.ghcr }}            
           flavor: |
-            latest=false
+            latest=${{ startsWith(github.ref, 'refs/tags/') }}
           tags: |
-            development-v6
+            type=schedule,pattern=nightly
+            type=ref,event=branch,enable=${{ github.event_name != 'schedule' }}
+            type=ref,event=tag
 
       - name: Login to DockerHub and GitHub Container Registry
         uses: ./.github/actions/login-repo
@@ -68,7 +81,11 @@ jobs:
           platforms: ${{ matrix.platform }}
           build-args: |
             PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}
-            alpine_version=${{ matrix.alpine_version }}
+            alpine_version=${{ matrix.alpine_version }}            
+            FTL_BRANCH=${{ env.components_branch }}
+            CORE_BRANCH=${{ env.components_branch }}
+            WEB_BRANCH=${{ env.components_branch }}            
+            PADD_BRANCH=${{ env.components_branch }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
             type=image,name=${{ env.dockerhub }},push-by-digest=true,name-canonical=true,push=true
@@ -96,7 +113,14 @@ jobs:
       - build
     steps:
       - name: Checkout Repo
+        if: github.event_name != 'schedule'
         uses: actions/checkout@v4
+
+      - name: Checkout dev branch if scheduled
+        if: github.event_name == 'schedule'
+        uses: actions/checkout@v4
+        with:
+          ref: development
 
       - name: Download digests
         uses: actions/download-artifact@v4
@@ -117,9 +141,11 @@ jobs:
             ${{ env.dockerhub }}
             ${{ env.ghcr }}
           flavor: |
-            latest=false
+            latest=${{ startsWith(github.ref, 'refs/tags/') }}
           tags: |
-            development-v6
+            type=schedule,pattern=nightly
+            type=ref,event=branch,enable=${{ github.event_name != 'schedule' }}
+            type=ref,event=tag
 
       - name: Login to DockerHub and GitHub Container Registry
         uses: ./.github/actions/login-repo

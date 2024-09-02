@@ -5,11 +5,11 @@ FROM alpine:${alpine_version} AS base
 # https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 
 ARG TARGETPLATFORM
-ARG WEB_BRANCH="development-v6"
-ARG CORE_BRANCH="development-v6"
-ARG FTL_BRANCH="development-v6"
+ARG WEB_BRANCH="development"
+ARG CORE_BRANCH="development"
+ARG FTL_BRANCH="development"
 ARG PIHOLE_DOCKER_TAG="dev-localbuild"
-ARG PADD_BRANCH="PADD_FTLv6"
+ARG PADD_BRANCH="development"
 
 ENV DNSMASQ_USER=pihole
 ENV FTL_CMD=no-daemon
