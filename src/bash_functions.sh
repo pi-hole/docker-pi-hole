@@ -147,6 +147,29 @@ ftl_config() {
     setup_web_password
 }
 
+migrate_dnsmasq_d_contents() {
+    # Previously, Pi-hole created a number of files in /etc/dnsmasq.d
+    # During migration, their content is copied into the new single source of
+    # truth file /etc/pihole/pihole.toml and the old files are moved away to
+    # avoid conflicts with other services on this system
+    echo "  [i] Migrating dnsmasq configuration files"
+    V6_CONF_MIGRATION_DIR="/etc/pihole/migration_backup_v6"
+    # Create target directory and make it owned by pihole:pihole
+    mkdir -p "${V6_CONF_MIGRATION_DIR}"
+    chown pihole:pihole "${V6_CONF_MIGRATION_DIR}"
+
+    # Move all conf files originally created by Pi-hole into this directory
+    # - 01-pihole.conf
+    # - 02-pihole-dhcp.conf
+    # - 04-pihole-static-dhcp.conf
+    # - 05-pihole-custom-cname.conf
+    # - 06-rfc6761.conf
+
+    mv /etc/dnsmasq.d/0{1,2,4,5}-pihole*.conf "${V6_CONF_MIGRATION_DIR}/" 2>/dev/null || true
+    mv /etc/dnsmasq.d/06-rfc6761.conf "${V6_CONF_MIGRATION_DIR}/" 2>/dev/null || true
+    echo ""
+}
+
 setup_web_password() {
     # If FTLCONF_webserver_api_password is not set
     if [ -z "${FTLCONF_webserver_api_password+x}" ]; then
