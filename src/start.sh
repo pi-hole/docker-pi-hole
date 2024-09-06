@@ -10,6 +10,10 @@ start() {
 
   local v5_volume=0
 
+  # The below functions are all contained in bash_functions.sh
+  # shellcheck source=/dev/null
+  . /usr/bin/bash_functions.sh
+
   # If the file /etc/pihole/setupVars.conf exists, but /etc/pihole/pihole.toml does not, then we are migrating v5->v6
   # FTL Will handle the migration of the config files
   if [[ -f /etc/pihole/setupVars.conf && ! -f /etc/pihole/pihole.toml ]]; then
@@ -17,12 +21,11 @@ start() {
     echo "  [i] Deferring additional configuration until after FTL has started"
     echo "  [i] Note: It is normal to see \"Config file /etc/pihole/pihole.toml not available (r): No such file or directory\" in the logs at this point"
     echo ""
+    # We need to migrate the dnsmasq.d contents so that FTL can read them in properly
+    migrate_dnsmasq_d_contents
     v5_volume=1
-  fi
 
-  # The below functions are all contained in bash_functions.sh
-  # shellcheck source=/dev/null
-  . /usr/bin/bash_functions.sh
+  fi
 
   # ===========================
   # Initial checks
@@ -50,7 +53,7 @@ start() {
   #migrate Gravity Database if needed:
   migrate_gravity
 
-  # Start pihole-FTL  
+  # Start pihole-FTL
   start_ftl
 
   # Give FTL a couple of seconds to start up
@@ -61,7 +64,7 @@ start() {
   if [[ ${v5_volume} -eq 1 ]]; then
     echo "  [i] Starting deferred FTL Configuration"
     ftl_config
-    echo ""    
+    echo ""
   fi
 
   pihole updatechecker
@@ -71,7 +74,7 @@ start() {
   if [ "${TAIL_FTL_LOG:-1}" -eq 1 ]; then
     # Start tailing the FTL log from the most recent "FTL Started" message
     # Get the line number
-    startFrom=$(grep -n '########## FTL started' /var/log/pihole/FTL.log  | tail -1 | cut -d: -f1)
+    startFrom=$(grep -n '########## FTL started' /var/log/pihole/FTL.log | tail -1 | cut -d: -f1)
     # Start the tail from the line number
     tail -f -n +${startFrom} /var/log/pihole/FTL.log &
   else
