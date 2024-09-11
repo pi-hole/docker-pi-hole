@@ -22,6 +22,34 @@ TAG="pihole:local"
 DOCKER_BUILD_CMD="docker buildx build src/. --tag ${TAG} --load --no-cache"
 FTL_FLAG=false
 
+# Check if buildx is installed
+docker buildx version >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: Docker buildx is required to build this image. For installation instructions, see:"
+    echo "       https://github.com/docker/buildx#installing"
+    exit 1
+fi
+
+# Function to check if a custom branch entered by the user is valid
+check_branch_exists() {
+    local repo=$1
+    local branch=$2
+    local url
+
+    if [ "$repo" == "ftl" ]; then
+        # Special case for FTL - we check for the binary instead of just the branch - in case it is not yet built.
+        url="https://ftl.pi-hole.net/${branch}/pihole-FTL-amd64"
+    else
+        url="https://github.com/pi-hole/${repo}/blob/${branch}/README.md"
+    fi
+
+    local http_code=$(curl -sI "$url" -o /dev/null -w "%{http_code}")
+    if [ $http_code -ne 200 ]; then
+        echo "Error: $repo branch '$branch' not found. Exiting."
+        exit 1
+    fi
+}
+
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -47,24 +75,28 @@ while [[ $# -gt 0 ]]; do
         fi
         FTL_FLAG=true
         FTL_BRANCH="$2"
+        check_branch_exists "ftl" "$FTL_BRANCH"
         DOCKER_BUILD_CMD+=" --build-arg FTL_BRANCH=$FTL_BRANCH"
         shift
         shift
         ;;
     -c | --corebranch)
         CORE_BRANCH="$2"
+        check_branch_exists "pi-hole" "$CORE_BRANCH"
         DOCKER_BUILD_CMD+=" --build-arg CORE_BRANCH=$CORE_BRANCH"
         shift
         shift
         ;;
     -w | --webbranch)
         WEB_BRANCH="$2"
+        check_branch_exists "web" "$WEB_BRANCH"
         DOCKER_BUILD_CMD+=" --build-arg WEB_BRANCH=$WEB_BRANCH"
         shift
         shift
         ;;
     -p | --paddbranch)
         PADD_BRANCH="$2"
+        check_branch_exists "padd" "$PADD_BRANCH"
         DOCKER_BUILD_CMD+=" --build-arg PADD_BRANCH=$PADD_BRANCH"
         shift
         shift
