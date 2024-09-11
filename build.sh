@@ -18,7 +18,8 @@ usage() {
 }
 
 # Set default values
-DOCKER_BUILD_CMD="docker buildx build src/. --tag pihole:local --load --no-cache"
+TAG="pihole:local"
+DOCKER_BUILD_CMD="docker buildx build src/. --tag ${TAG} --load --no-cache"
 FTL_FLAG=false
 
 # Parse command line arguments
@@ -69,8 +70,9 @@ while [[ $# -gt 0 ]]; do
         shift
         ;;
     -t | --tag)
-        TAG="$2"
-        DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD/pihole:local/$TAG}
+        CUSTOM_TAG="$2"
+        DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD/$TAG/$CUSTOM_TAG}
+        TAG=$CUSTOM_TAG
         shift
         shift
         ;;
@@ -88,3 +90,16 @@ done
 # Execute the docker build command
 echo "Executing command: $DOCKER_BUILD_CMD"
 eval $DOCKER_BUILD_CMD
+
+# Check exit code of previous command
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    echo "!! ERROR: Docker build failed, please review logs above !!"
+    echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    exit 1
+else
+    echo ""
+    echo "Successfully built Docker image with tag '$TAG'"
+    docker images $TAG
+fi

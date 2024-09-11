@@ -83,11 +83,12 @@ RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     && echo "Arch: ${TARGETPLATFORM}, FTLARCH: ${FTLARCH}" \
     && curl -sSL "https://ftl.pi-hole.net/${FTL_BRANCH}/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL \
     && chmod +x /usr/bin/pihole-FTL \
-    && readelf -h /usr/bin/pihole-FTL || cat /usr/bin/pihole-FTL
+    && readelf -h /usr/bin/pihole-FTL || (echo "Error with downloaded FTL binary" && exit 1)
 
 FROM base AS local-ftl-install
 # pihole-FTL must be built from source and copied to the src directory first!
 COPY --chmod=0755 pihole-FTL /usr/bin/pihole-FTL
+RUN  readelf -h /usr/bin/pihole-FTL || (echo "Error with local FTL binary" && exit 1)
 
 # Use the appropriate FTL Install stage based on the FTL_SOURCE build-arg
 FROM ${FTL_SOURCE}-ftl-install AS final
