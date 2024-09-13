@@ -9,9 +9,12 @@
 
 ## Upgrade Notes
 
-## !!! THIS VERSION CONTAINS BREAKING CHANGES
-
-### v[ChangeMeBeforeTagging] has been entirely redesigned from the ground up and contains many breaking changes. Environment variable names have changed, script locations may have changed. Please read the the Readme carefully before proceeding
+> [!CAUTION]
+>
+> ## !!! THIS VERSION CONTAINS BREAKING CHANGES
+> **v6 has been entirely redesigned from the ground up and contains many breaking changes.**
+>
+> Environment variable names have changed, script locations may have changed.<br>Please read the README carefully before proceeding.
 
 ---
 
