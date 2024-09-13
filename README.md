@@ -2,9 +2,23 @@
 
 [![Build Status](https://github.com/pi-hole/docker-pi-hole/workflows/Test%20&%20Build/badge.svg)](https://github.com/pi-hole/docker-pi-hole/actions?query=workflow%3A%22Test+%26+Build%22) [![Docker Stars](https://img.shields.io/docker/stars/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole) [![Docker Pulls](https://img.shields.io/docker/pulls/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole)
 
-<p align="center">
-<a href="https://pi-hole.net"><img src="https://pi-hole.github.io/graphics/Vortex/Vortex_with_text.png" width="150" height="255" alt="Pi-hole"></a><br/>
-</p>
+<div align="center">
+  <a href="https://pi-hole.net/">
+    <img src="https://pi-hole.github.io/graphics/Vortex/vortex_with_text.svg" width="144" height="256" alt="Pi-hole website">
+  </a>
+  <br>
+  <strong>Network-wide ad blocking via your own Linux hardware</strong>
+  <br>
+  <br>
+  <div align="center">
+    <a href="https://pi-hole.net/">Pi-hole website</a> |
+    <a href="https://docs.pi-hole.net/">Documentation</a> |
+    <a href="https://discourse.pi-hole.net/">Discourse Forum</a> |
+    <a href="https://pi-hole.net/donate">Donate</a>
+  </div>
+  <br>
+  <br>
+</div>
 <!-- Delete above HTML and insert markdown for dockerhub : ![Pi-hole](https://pi-hole.github.io/graphics/Vortex/Vortex_with_text.png) -->
 
 ## Upgrade Notes
