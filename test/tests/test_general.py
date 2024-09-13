@@ -21,8 +21,8 @@ def test_pihole_ftl_clean_shutdown(docker):
         sleep 5
         killall --signal 15 start.sh
         sleep 5
-        grep 'jmpret\|terminated' /var/log/pihole/FTL.log
+        grep 'terminated' /var/log/pihole/FTL.log
     """
     )
-    assert "INFO: Shutting down... // exit code 0 // jmpret 0" in func.stdout
     assert "INFO: ########## FTL terminated after" in func.stdout
+    assert "(code 0)" in func.stdout
