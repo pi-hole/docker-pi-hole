@@ -98,7 +98,7 @@ To explicitly set no password, set `FTLCONF_webserver_api_password: ''`
 
 | Variable | Default | Value | Description |
 | -------- | ------- | ----- | ---------- |
-| `TAIL_FTL_LOG` | unset | `<unset\|1>` | Whether or not to output the FTL log when running the container. Useful for debugging/watching what FTL is doing.
+| `TAIL_FTL_LOG` | `1` | `<0\|1>` | Whether or not to output the FTL log when running the container. Can be disabled by setting the value to 0 |
 | `FTLCONF_[SETTING]` | unset | As per documentation | Customize pihole.toml with settings described in the <!!!Add Link To New API docs here before release!!!>. Replace `.` with `_`, e.g for `dns.dnssec=true` use `FTLCONF_dns_dnssec: 'true'`<br/> Array type configs should be delimited with `;`|
 | `PIHOLE_UID` | `100` | Number | Overrides image's default pihole user id to match a host user id<br/>**IMPORTANT**: id must not already be in use inside the container! |
 | `PIHOLE_GID` | `101` | Number | Overrides image's default pihole group id to match a host group id<br/>**IMPORTANT**: id must not already be in use inside the container!|
