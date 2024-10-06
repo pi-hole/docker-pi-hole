@@ -202,24 +202,24 @@ setup_web_password() {
 start_ftl() {
 
     echo "  [i] pihole-FTL pre-start checks"
-    echo ""
 
     # Remove possible leftovers from previous pihole-FTL processes
     rm -f /dev/shm/FTL-* 2>/dev/null
     rm -f /run/pihole/FTL.sock
 
-    # Is /var/run/pihole used anymore? Or is this just a hangover from old container version
-    # /var/log sorted by running pihole-FTL-prestart.sh
-    # mkdir -p /var/run/pihole /var/log/pihole
-    # touch /var/log/pihole/FTL.log /var/log/pihole/pihole.log
-    # chown -R pihole:pihole /var/run/pihole /var/log/pihole /etc/pihole
-
     fix_capabilities
     sh /opt/pihole/pihole-FTL-prestart.sh
 
     echo "  [i] Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
-    capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
     echo ""
+
+    capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null"
+    ftl_exit_code=$?
+    # Store the exit code so that we can exit the container with the same code from start.sh
+    echo $ftl_exit_code >/pihole-FTL.exit
+
+    # pihole-FTL has exited, so we should stop the rest of the container
+    killall --signal 15 start.sh
 
     # Notes on above:
     # - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env
