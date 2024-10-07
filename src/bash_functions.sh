@@ -199,34 +199,6 @@ setup_web_password() {
     fi
 }
 
-start_ftl() {
-
-    echo "  [i] pihole-FTL pre-start checks"
-
-    # Remove possible leftovers from previous pihole-FTL processes
-    rm -f /dev/shm/FTL-* 2>/dev/null
-    rm -f /run/pihole/FTL.sock
-
-    fix_capabilities
-    sh /opt/pihole/pihole-FTL-prestart.sh
-
-    echo "  [i] Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
-    echo ""
-
-    capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null"
-    ftl_exit_code=$?
-    # Store the exit code so that we can exit the container with the same code from start.sh
-    echo $ftl_exit_code >/pihole-FTL.exit
-
-    # pihole-FTL has exited, so we should stop the rest of the container
-    killall --signal 15 start.sh
-
-    # Notes on above:
-    # - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env
-    # - /var/log/pihole/pihole*.log has FTL's output that no-daemon would normally print in FG too
-    #   prevent duplicating it in docker logs by sending to dev null
-}
-
 fix_capabilities() {
     # Testing on Docker 20.10.14 with no caps set shows the following caps available to the container:
     # Current: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=ep

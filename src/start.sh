@@ -53,11 +53,31 @@ start() {
   #migrate Gravity Database if needed:
   migrate_gravity
 
-  # Start pihole-FTL in the background
-  start_ftl &
+  echo "  [i] pihole-FTL pre-start checks"
+  # Remove possible leftovers from previous pihole-FTL processes
+  rm -f /dev/shm/FTL-* 2>/dev/null
+  rm -f /run/pihole/FTL.sock
+
+  fix_capabilities
+  sh /opt/pihole/pihole-FTL-prestart.sh
+
+  echo "  [i] Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
+  echo ""
+
+  capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
+  # Notes on above:
+  # - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env
+  # - /var/log/pihole/pihole*.log has FTL's output that no-daemon would normally print in FG too
+  #   prevent duplicating it in docker logs by sending to dev null
+  ftl_pid=$!
 
   # Wait until the log file exists before continuing
   while [ ! -f /var/log/pihole/FTL.log ]; do
+    sleep 0.5
+  done
+
+  #  Wait until the FTL log contains the "FTL started" message before continuing
+  while ! grep -q '########## FTL started' /var/log/pihole/FTL.log; do
     sleep 0.5
   done
 
@@ -83,11 +103,13 @@ start() {
     echo "  [i] FTL log output is disabled. Remove the Environment variable TAIL_FTL_LOG, or set it to 1 to enable FTL log output."
   fi
 
-  # https://stackoverflow.com/a/49511035
-  wait $!
+  # Wait for the ftl process to finish and handle its return
+  wait $ftl_pid
+  stop $?
 }
 
 stop() {
+  local FTL_EXIT_CODE=$1
 
   # Only attempt to close pihole-FTL if it is running, it may already have crashed
   if pgrep pihole-FTL >/dev/null; then
@@ -104,14 +126,12 @@ stop() {
     while test -d /proc/"${ftl_pid}"; do
       sleep 0.5
     done
+    # Return from this function, it will be called again once FTL finishes
+    return
   fi
 
   # Wait for a few seconds to allow the FTL log tail to catch up before exiting the container
-  sleep 2  
-
-  # read the FTL exit code from the file created in the `start_ftl` function
-  FTL_EXIT_CODE=$(cat /pihole-FTL.exit)
-  rm /pihole-FTL.exit
+  sleep 2
 
   # ensure the exit code is an integer, if not set it to 1
   if ! [[ "${FTL_EXIT_CODE}" =~ ^[0-9]+$ ]]; then
