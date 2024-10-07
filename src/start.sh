@@ -145,8 +145,8 @@ stop() {
   echo "      https://docs.docker.com/engine/containers/start-containers-automatically/#use-a-restart-policy"
   echo ""
 
-  # # If we are running pytest, keep the container alive for a little longer
-  # # to allow the tests to complete
+  # If we are running pytest, keep the container alive for a little longer
+  # to allow the tests to complete
   if [[ ${PYTEST} ]]; then
     sleep 10
   fi
