@@ -6,6 +6,9 @@ fi
 
 trap stop TERM INT QUIT HUP ERR
 
+CAPSH_PID=""
+TRAP_TRIGGERED=0
+
 start() {
 
   local v5_volume=0
@@ -69,7 +72,9 @@ start() {
   # - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env
   # - /var/log/pihole/pihole*.log has FTL's output that no-daemon would normally print in FG too
   #   prevent duplicating it in docker logs by sending to dev null
-  ftl_pid=$!
+
+  # We need the PID of the capsh process so that we can wait for it to finish
+  CAPSH_PID=$!
 
   # Wait until the log file exists before continuing
   while [ ! -f /var/log/pihole/FTL.log ]; do
@@ -103,31 +108,33 @@ start() {
     echo "  [i] FTL log output is disabled. Remove the Environment variable TAIL_FTL_LOG, or set it to 1 to enable FTL log output."
   fi
 
-  # Wait for the ftl process to finish and handle its return
-  wait $ftl_pid
-  stop $?
+  # Wait for the capsh process (which spawned FTL) to finish
+  wait $CAPSH_PID
+  FTL_EXIT_CODE=$?
+  
+  
+  # If we are here, then FTL has exited.
+  # If the trap was triggered, then stop will have already been called
+  if [ $TRAP_TRIGGERED -eq 0 ]; then
+    # Pass the exit code through to the stop function
+    stop $FTL_EXIT_CODE
+  fi
 }
 
 stop() {
   local FTL_EXIT_CODE=$1
 
-  # Only attempt to close pihole-FTL if it is running, it may already have crashed
-  if pgrep pihole-FTL >/dev/null; then
+  # if we have nothing in FTL_EXIT_CODE, then have been called by the trap. Close FTL and wait for the CAPSH_PID to finish
+  if [ -z "${FTL_EXIT_CODE}" ]; then
+    TRAP_TRIGGERED=1
     echo ""
     echo "  [i] Container stop requested..."
     echo "  [i] pihole-FTL is running - Attempting to shut it down cleanly"
     echo ""
-    # Ensure pihole-FTL shuts down cleanly on SIGTERM/SIGINT
-    ftl_pid=$(pgrep pihole-FTL)
-
     killall --signal 15 pihole-FTL
 
-    # Wait for pihole-FTL to exit
-    while test -d /proc/"${ftl_pid}"; do
-      sleep 0.5
-    done
-    # Return from this function, it will be called again once FTL finishes
-    return
+    wait $CAPSH_PID
+    FTL_EXIT_CODE=$?
   fi
 
   # Wait for a few seconds to allow the FTL log tail to catch up before exiting the container
