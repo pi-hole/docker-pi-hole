@@ -1,10 +1,13 @@
-#!/bin/bash -e
+#!/bin/bash
 
 if [ "${PH_VERBOSE:-0}" -gt 0 ]; then
   set -x
 fi
 
 trap stop TERM INT QUIT HUP ERR
+
+CAPSH_PID=""
+TRAP_TRIGGERED=0
 
 start() {
 
@@ -53,11 +56,35 @@ start() {
   #migrate Gravity Database if needed:
   migrate_gravity
 
-  # Start pihole-FTL
-  start_ftl
+  echo "  [i] pihole-FTL pre-start checks"
+  # Remove possible leftovers from previous pihole-FTL processes
+  rm -f /dev/shm/FTL-* 2>/dev/null
+  rm -f /run/pihole/FTL.sock
 
-  # Give FTL a couple of seconds to start up
-  sleep 2
+  fix_capabilities
+  sh /opt/pihole/pihole-FTL-prestart.sh
+
+  echo "  [i] Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
+  echo ""
+
+  capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
+  # Notes on above:
+  # - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env
+  # - /var/log/pihole/pihole*.log has FTL's output that no-daemon would normally print in FG too
+  #   prevent duplicating it in docker logs by sending to dev null
+
+  # We need the PID of the capsh process so that we can wait for it to finish
+  CAPSH_PID=$!
+
+  # Wait until the log file exists before continuing
+  while [ ! -f /var/log/pihole/FTL.log ]; do
+    sleep 0.5
+  done
+
+  #  Wait until the FTL log contains the "FTL started" message before continuing
+  while ! grep -q '########## FTL started' /var/log/pihole/FTL.log; do
+    sleep 0.5
+  done
 
   # If we are migrating from v5 to v6, we now need to run the basic configuration step that we deferred earlier
   # This is because pihole-FTL needs to migrate the config files before we can perform the basic configuration checks
@@ -75,25 +102,55 @@ start() {
     # Start tailing the FTL log from the most recent "FTL Started" message
     # Get the line number
     startFrom=$(grep -n '########## FTL started' /var/log/pihole/FTL.log | tail -1 | cut -d: -f1)
-    # Start the tail from the line number
-    tail -f -n +${startFrom} /var/log/pihole/FTL.log &
+    # Start the tail from the line number and background it
+    tail --follow=name -n +${startFrom} /var/log/pihole/FTL.log &
   else
     echo "  [i] FTL log output is disabled. Remove the Environment variable TAIL_FTL_LOG, or set it to 1 to enable FTL log output."
   fi
 
-  # https://stackoverflow.com/a/49511035
-  wait $!
+  # Wait for the capsh process (which spawned FTL) to finish
+  wait $CAPSH_PID
+  FTL_EXIT_CODE=$?
+  
+  
+  # If we are here, then FTL has exited.
+  # If the trap was triggered, then stop will have already been called
+  if [ $TRAP_TRIGGERED -eq 0 ]; then
+    # Pass the exit code through to the stop function
+    stop $FTL_EXIT_CODE
+  fi
 }
 
 stop() {
-  # Ensure pihole-FTL shuts down cleanly on SIGTERM/SIGINT
-  ftl_pid=$(pgrep pihole-FTL)
-  killall --signal 15 pihole-FTL
+  local FTL_EXIT_CODE=$1
 
-  # Wait for pihole-FTL to exit
-  while test -d /proc/"${ftl_pid}"; do
-    sleep 0.5
-  done
+  # if we have nothing in FTL_EXIT_CODE, then have been called by the trap. Close FTL and wait for the CAPSH_PID to finish
+  if [ -z "${FTL_EXIT_CODE}" ]; then
+    TRAP_TRIGGERED=1
+    echo ""
+    echo "  [i] Container stop requested..."
+    echo "  [i] pihole-FTL is running - Attempting to shut it down cleanly"
+    echo ""
+    killall --signal 15 pihole-FTL
+
+    wait $CAPSH_PID
+    FTL_EXIT_CODE=$?
+  fi
+
+  # Wait for a few seconds to allow the FTL log tail to catch up before exiting the container
+  sleep 2
+
+  # ensure the exit code is an integer, if not set it to 1
+  if ! [[ "${FTL_EXIT_CODE}" =~ ^[0-9]+$ ]]; then
+    FTL_EXIT_CODE=1
+  fi
+
+  echo ""
+  echo "  [i] pihole-FTL exited with status $FTL_EXIT_CODE"
+  echo ""
+  echo "  [i] Container will now stop or restart depending on your restart policy"
+  echo "      https://docs.docker.com/engine/containers/start-containers-automatically/#use-a-restart-policy"
+  echo ""
 
   # If we are running pytest, keep the container alive for a little longer
   # to allow the tests to complete
@@ -101,7 +158,8 @@ stop() {
     sleep 10
   fi
 
-  exit
+  exit ${FTL_EXIT_CODE}
+
 }
 
 start
