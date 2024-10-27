@@ -53,7 +53,7 @@ RUN cd /etc/.pihole && \
     install -Dm755 -t /opt/pihole ./advanced/Scripts/*.sh && \
     install -Dm755 -t /opt/pihole ./advanced/Scripts/COL_TABLE && \
     install -Dm755 -d /etc/pihole && \
-    install -Dm644 -t /etc/pihole ./advanced/Templates/logrotate && \
+    install -Dm600 -t /etc/pihole ./advanced/Templates/logrotate && \
     install -Dm755 -d /var/log/pihole && \
     install -Dm755 -d /var/lib/logrotate && \
     install -Dm755 -t /usr/local/bin pihole && \
