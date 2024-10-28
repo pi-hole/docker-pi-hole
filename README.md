@@ -26,9 +26,14 @@
 > [!CAUTION]
 >
 > ## !!! THIS VERSION CONTAINS BREAKING CHANGES
-> **v6 has been entirely redesigned from the ground up and contains many breaking changes.**
 >
-> Environment variable names have changed, script locations may have changed.<br>Please read the README carefully before proceeding.
+> **Pi-hole v6 has been entirely redesigned from the ground up and contains many breaking changes.**
+>
+> Environment variable names have changed, script locations may have changed.
+>
+> If you are using volumes to persist your configuration, be careful.<br>Replacing any `v5` image *(`2024.07.0` and earlier)* with a `v6` image will result in updated configuration files. **These changes are irreversible**.
+>
+> Please read the README carefully before proceeding.
 
 ---
 
