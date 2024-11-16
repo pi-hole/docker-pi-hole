@@ -209,7 +209,7 @@ echo 'DNSStubListener=no' | sudo tee -a /etc/systemd/resolved.conf.d/10-pihole.c
 sudo systemctl restart systemd-resolved
 ```
 
-Note that by default in Fedora, /etc/resolv.conf already points to /run/systemd/resolve/resolv.conf, so DNS resolution continues to work even when the stub listener is disabled.
+Note that by default in Fedora, `/etc/resolv.conf` already points to `/run/systemd/resolve/resolv.conf`, so DNS resolution continues to work even when the stub listener is disabled.
 
 ## Installing on Dokku
 
