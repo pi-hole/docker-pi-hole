@@ -195,7 +195,6 @@ Users of older Ubuntu releases (circa 17.04) will need to disable dnsmasq.
 
 ## Installing on Fedora
 Modern releases of Fedora (33+) include systemd-resolved, which is configured by default to implement a caching DNS stub resolver. This may conflict with Pi-hole's DNS server by preventing it from listening on port 53. To avoid this conflict, you need to disable the DNS stub resolver.
-Disable the DNS Stub Resolver
 
 Run the following commands to free port 53 and allow pihole to run:
 1. Ensure the directory /etc/systemd/resolved.conf.d exists.
