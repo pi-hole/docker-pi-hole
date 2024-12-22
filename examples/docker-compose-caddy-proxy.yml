@@ -28,7 +28,6 @@ services:
       # Following are NOT proxied through Caddy, bound to host net instead:
       - "53:53/udp"
       - "53:53/tcp"
-      - "853:853/tcp" # DNS-over-TLS
       #- "67:67/udp" # DHCP, if desired. If not bound to host net you need an mDNS proxy service configured somewhere on host net.
         # ref: https://docs.pi-hole.net/docker/DHCP/
     environment:
