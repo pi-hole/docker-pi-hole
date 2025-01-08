@@ -136,6 +136,8 @@ There are other environment variables if you want to customize various things in
 | `CUSTOM_CACHE_SIZE` | `10000` | Number | Set the cache size for dnsmasq. Useful for increasing the default cache size or to set it to 0. Note that when `DNSSEC` is "true", then this setting is ignored.
 | `FTL_CMD` | `no-daemon` | `no-daemon -- <dnsmasq option>` | Customize the options with which dnsmasq gets started. e.g. `no-daemon -- --dns-forward-max 300` to increase max. number of concurrent dns queries on high load setups. |
 | `FTLCONF_[SETTING]` | unset | As per documentation | Customize pihole-FTL.conf with settings described in the [FTLDNS Configuration page](https://docs.pi-hole.net/ftldns/configfile/). For example, to customize LOCAL_IPV4, ensure you have the `FTLCONF_LOCAL_IPV4` environment variable set.
+| `FTLCONF_RATE_LIMIT` | `1000/60` | queries/seconds| Control FTL's query rate-limiting. Rate-limited queries are answered with a REFUSED reply and not further processed by FTL [About per-client rate limiting](https://docs.pi-hole.net/ftldns/configfile/#rate_limit).
+
 
 ### Experimental Variables
 | Variable | Default | Value | Description |
