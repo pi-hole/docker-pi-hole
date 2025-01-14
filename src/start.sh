@@ -87,7 +87,10 @@ start() {
   # fi
 
   pihole updatechecker
-  pihole -v
+  local versionsOutput
+  versionsOutput=$(pihole -v)
+  echo "  [i] Version info:"
+  printf "%b" "${versionsOutput}\\n" | sed 's/^/      /' 
   echo ""
 
   if [ "${TAIL_FTL_LOG:-1}" -eq 1 ]; then

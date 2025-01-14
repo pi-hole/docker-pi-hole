@@ -116,10 +116,12 @@ migrate_gravity() {
         echo "  [i] Gravity will now be run to create the database"
         pihole -g
     else
-        echo "  [i] Existing gravity database found"
+        echo "  [i] Existing gravity database found - schema will be upgraded if necessary"
         # source the migration script and run the upgrade function
         source /etc/.pihole/advanced/Scripts/database_migration/gravity-db.sh
-        upgrade_gravityDB "${gravityDBfile}" "/etc/pihole"
+        local upgradeOutput
+        upgradeOutput=$(upgrade_gravityDB "${gravityDBfile}" "/etc/pihole")
+        printf "%b" "${upgradeOutput}\\n" | sed 's/^/     /'
     fi
     echo ""
 }
@@ -179,7 +181,8 @@ migrate_v5_configs() {
 
     # Print the output of the FTL migration prefacing every line with six
     # spaces for alignment with other container output. Replace the first line to match the style of the other messages
-    printf "%b" "${FTLoutput}" | sed 's/^/      /' | sed 's/      Migrating config to Pi-hole v6.0 format/  [i] Migrating config to Pi-hole v6.0 format/'
+    # We supress the message about environment variables as these will be set on FTL's first real start
+    printf "%b" "${FTLoutput}\\n" | sed 's/^/      /' | sed 's/      Migrating config to Pi-hole v6.0 format/  [i] Migrating config to Pi-hole v6.0 format/' | sed 's/- 0 entries are forced through environment//'
 
     # Print a blank line for separation
     echo ""
