@@ -147,7 +147,7 @@ ftl_config() {
     setup_web_password
 }
 
-migrate_dnsmasq_d_contents() {
+migrate_v5_configs() {
     # Previously, Pi-hole created a number of files in /etc/dnsmasq.d
     # During migration, their content is copied into the new single source of
     # truth file /etc/pihole/pihole.toml and the old files are moved away to
@@ -167,6 +167,21 @@ migrate_dnsmasq_d_contents() {
 
     mv /etc/dnsmasq.d/0{1,2,4,5}-pihole*.conf "${V6_CONF_MIGRATION_DIR}/" 2>/dev/null || true
     mv /etc/dnsmasq.d/06-rfc6761.conf "${V6_CONF_MIGRATION_DIR}/" 2>/dev/null || true
+    echo ""
+
+    # Finally, after everything is in place, we can create the new config file
+    # /etc/pihole/pihole.toml
+    # This file will be created with the default settings unless the user has
+    # changed settings via setupVars.conf or the other dnsmasq files moved above
+    # During migration, setupVars.conf is moved to /etc/pihole/migration_backup_v6
+    local FTLoutput
+    FTLoutput=$(pihole-FTL migrate v6)
+
+    # Print the output of the FTL migration prefacing every line with six
+    # spaces for alignment with other container output. Replace the first line to match the style of the other messages
+    printf "%b" "${FTLoutput}" | sed 's/^/      /' | sed 's/      Migrating config to Pi-hole v6.0 format/  [i] Migrating config to Pi-hole v6.0 format/'
+
+    # Print a blank line for separation
     echo ""
 }
 
