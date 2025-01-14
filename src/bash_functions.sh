@@ -181,7 +181,7 @@ migrate_v5_configs() {
 
     # Print the output of the FTL migration prefacing every line with six
     # spaces for alignment with other container output. Replace the first line to match the style of the other messages
-    # We supress the message about environment variables as these will be set on FTL's first real start
+    # We suppress the message about environment variables as these will be set on FTL's first real start
     printf "%b" "${FTLoutput}\\n" | sed 's/^/      /' | sed 's/      Migrating config to Pi-hole v6.0 format/  [i] Migrating config to Pi-hole v6.0 format/' | sed 's/- 0 entries are forced through environment//'
 
     # Print a blank line for separation
