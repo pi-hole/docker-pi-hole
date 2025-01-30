@@ -77,15 +77,7 @@ start() {
   while ! grep -q '########## FTL started' /var/log/pihole/FTL.log; do
     sleep 0.5
   done
-
-  # If we are migrating from v5 to v6, we now need to run the basic configuration step that we deferred earlier
-  # This is because pihole-FTL needs to migrate the config files before we can perform the basic configuration checks
-  # if [[ ${v5_volume} -eq 1 ]]; then
-  #   echo "  [i] Starting deferred FTL Configuration"
-  #   ftl_config
-  #   echo ""
-  # fi
-
+  
   pihole updatechecker
   local versionsOutput
   versionsOutput=$(pihole -v)
