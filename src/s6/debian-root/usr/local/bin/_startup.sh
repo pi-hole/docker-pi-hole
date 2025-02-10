@@ -49,7 +49,7 @@ setup_blocklists
 # FTL setup
 # ===========================
 setup_FTL_upstream_DNS
-[[ -n "${DHCP_ACTIVE}" && ${DHCP_ACTIVE} == "true" ]] && echo "Setting DHCP server" && setup_FTL_dhcp
+setup_FTL_dhcp
 apply_FTL_Configs_From_Env
 setup_FTL_User
 setup_FTL_Interface

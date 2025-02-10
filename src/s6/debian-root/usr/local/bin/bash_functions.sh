@@ -212,18 +212,35 @@ apply_FTL_Configs_From_Env(){
 }
 
 setup_FTL_dhcp() {
-  if [ -z "${DHCP_START}" ] || [ -z "${DHCP_END}" ] || [ -z "${DHCP_ROUTER}" ]; then
-    echo "  [!] ERROR: Won't enable DHCP server because mandatory Environment variables are missing: DHCP_START, DHCP_END and/or DHCP_ROUTER"
-    change_setting "DHCP_ACTIVE" "false"
+  if [ -z "${DHCP_ACTIVE}" ]; then
+    return
+  fi
+
+  if [ "${DHCP_ACTIVE}" == "true" ]; then
+    echo "  [i] Enabling DHCP server"
+
+    if [ -z "${DHCP_START}" ] || [ -z "${DHCP_END}" ] || [ -z "${DHCP_ROUTER}" ]; then
+      echo "  [!] ERROR: Won't enable DHCP server because mandatory environment variables are missing: DHCP_START, DHCP_END and/or DHCP_ROUTER"
+      change_setting "DHCP_ACTIVE" "false"
+    else
+      change_setting "DHCP_ACTIVE" "${DHCP_ACTIVE}"
+      change_setting "DHCP_START" "${DHCP_START}"
+      change_setting "DHCP_END" "${DHCP_END}"
+      change_setting "DHCP_ROUTER" "${DHCP_ROUTER}"
+      [ -n "${DHCP_LEASETIME}" ] && change_setting "DHCP_LEASETIME" "${DHCP_LEASETIME}"
+      [ -n "${PIHOLE_DOMAIN}" ] && change_setting "PIHOLE_DOMAIN" "${PIHOLE_DOMAIN}"
+      [ -n "${DHCP_IPv6}" ] && change_setting "DHCP_IPv6" "${DHCP_IPv6}"
+      [ -n "${DHCP_rapid_commit}" ] && change_setting "DHCP_rapid_commit" "${DHCP_rapid_commit}"
+    fi
   else
-    change_setting "DHCP_ACTIVE" "${DHCP_ACTIVE}"
-    change_setting "DHCP_START" "${DHCP_START}"
-    change_setting "DHCP_END" "${DHCP_END}"
-    change_setting "DHCP_ROUTER" "${DHCP_ROUTER}"
-    change_setting "DHCP_LEASETIME" "${DHCP_LEASETIME}"
-    change_setting "PIHOLE_DOMAIN" "${PIHOLE_DOMAIN}"
-    change_setting "DHCP_IPv6" "${DHCP_IPv6}"
-    change_setting "DHCP_rapid_commit" "${DHCP_rapid_commit}"
+    removeKey "${setupVars}" "DHCP_ACTIVE"
+    removeKey "${setupVars}" "DHCP_START"
+    removeKey "${setupVars}" "DHCP_END"
+    removeKey "${setupVars}" "DHCP_ROUTER"
+    removeKey "${setupVars}" "DHCP_LEASETIME"
+    removeKey "${setupVars}" "PIHOLE_DOMAIN"
+    removeKey "${setupVars}" "DHCP_IPv6"
+    removeKey "${setupVars}" "DHCP_rapid_commit"
   fi
 }
 
