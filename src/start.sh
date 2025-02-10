@@ -67,7 +67,7 @@ start() {
   echo "  [i] Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
   echo ""
 
-  capsh --user=$DNSMASQ_USER --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
+  capsh --user="${DNSMASQ_USER}" --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
   # Notes on above:
   # - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env
   # - /var/log/pihole/pihole*.log has FTL's output that no-daemon would normally print in FG too
@@ -103,7 +103,7 @@ start() {
     # Get the line number
     startFrom=$(grep -n '########## FTL started' /var/log/pihole/FTL.log | tail -1 | cut -d: -f1)
     # Start the tail from the line number and background it
-    tail --follow=name -n +${startFrom} /var/log/pihole/FTL.log &
+    tail --follow=name -n +"${startFrom}" /var/log/pihole/FTL.log &
   else
     echo "  [i] FTL log output is disabled. Remove the Environment variable TAIL_FTL_LOG, or set it to 1 to enable FTL log output."
   fi
@@ -158,7 +158,7 @@ stop() {
     sleep 10
   fi
 
-  exit ${FTL_EXIT_CODE}
+  exit "${FTL_EXIT_CODE}"
 
 }
 

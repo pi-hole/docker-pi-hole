@@ -43,8 +43,9 @@ check_branch_exists() {
         url="https://github.com/pi-hole/${repo}/blob/${branch}/README.md"
     fi
 
-    local http_code=$(curl -sI "$url" -o /dev/null -w "%{http_code}")
-    if [ $http_code -ne 200 ]; then
+    local http_code
+    http_code=$(curl -sI "$url" -o /dev/null -w "%{http_code}")
+    if [ "${http_code}" -ne 200 ]; then
         echo "Error: $repo branch '$branch' not found. Exiting."
         exit 1
     fi
@@ -121,7 +122,7 @@ done
 
 # Execute the docker build command
 echo "Executing command: $DOCKER_BUILD_CMD"
-eval $DOCKER_BUILD_CMD
+eval "${DOCKER_BUILD_CMD}"
 
 # Check exit code of previous command
 if [ $? -ne 0 ]; then
@@ -133,5 +134,5 @@ if [ $? -ne 0 ]; then
 else
     echo ""
     echo "Successfully built Docker image with tag '$TAG'"
-    docker images $TAG
+    docker images "${TAG}"
 fi

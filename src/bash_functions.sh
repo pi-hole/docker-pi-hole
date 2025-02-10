@@ -38,7 +38,7 @@ set_uid_gid() {
     if [ -n "${PIHOLE_UID}" ]; then
         if [[ ${currentUid} -ne ${PIHOLE_UID} ]]; then
             echo "  [i] Changing ID for user: pihole (${currentUid} => ${PIHOLE_UID})"
-            usermod -o -u ${PIHOLE_UID} pihole
+            usermod -o -u "${PIHOLE_UID}" pihole
         else
             echo "  [i] ID for user pihole is already ${PIHOLE_UID}, no need to change"
         fi
@@ -52,7 +52,7 @@ set_uid_gid() {
     if [ -n "${PIHOLE_GID}" ]; then
         if [[ ${currentGid} -ne ${PIHOLE_GID} ]]; then
             echo "  [i] Changing ID for group: pihole (${currentGid} => ${PIHOLE_GID})"
-            groupmod -o -g ${PIHOLE_GID} pihole
+            groupmod -o -g "${PIHOLE_GID}" pihole
         else
             echo "  [i] ID for group pihole is already ${PIHOLE_GID}, no need to change"
         fi
@@ -219,13 +219,12 @@ fix_capabilities() {
             echo "        * ${i}"
         done
 
-        setcap ${CAP_STR:1}+ep "$(which pihole-FTL)" || ret=$?
+        setcap "${CAP_STR:1}"+ep "$(which pihole-FTL)" || ret=$?
 
         if [[ $DHCP_READY == false ]] && [[ $FTLCONF_dhcp_active == true ]]; then
             # DHCP is requested but NET_ADMIN is not available.
             echo "ERROR: DHCP requested but NET_ADMIN is not available. DHCP will not be started."
             echo "      Please add cap_net_admin to the container's capabilities or disable DHCP."
-            DHCP_ACTIVE='false'
             setFTLConfigValue dhcp.active false
         fi
 
