@@ -11,6 +11,9 @@ ARG FTL_BRANCH="development"
 ARG PIHOLE_DOCKER_TAG="dev-localbuild"
 ARG PADD_BRANCH="development"
 
+ARG PIHOLE_UID=1000
+ARG PIHOLE_GID=1000
+
 ENV DNSMASQ_USER=pihole
 ENV FTL_CMD=no-daemon
 
@@ -70,7 +73,7 @@ RUN cd /etc/.pihole && \
     install -Dm644 ./advanced/bash-completion/pihole /etc/bash_completion.d/pihole && \
     install -T -m 0755 ./advanced/Templates/pihole-FTL-prestart.sh /opt/pihole/pihole-FTL-prestart.sh && \
     install -T -m 0755 ./advanced/Templates/pihole-FTL-poststop.sh /opt/pihole/pihole-FTL-poststop.sh && \
-    addgroup -S pihole && adduser -S pihole -G pihole && \
+    addgroup -S pihole -g ${PIHOLE_GID} && adduser -S pihole -G pihole -u ${PIHOLE_UID} && \
     echo "${PIHOLE_DOCKER_TAG}" > /pihole.docker.tag
 
 COPY --chmod=0755 bash_functions.sh /usr/bin/bash_functions.sh
