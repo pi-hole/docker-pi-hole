@@ -1,0 +1,35 @@
+name: Login to container registries
+description: Login to container registries Docker Hub and GitHub Container Registry
+
+inputs:
+  # Actions cannot access secrets so pass them in as inputs
+  docker_username:
+    required: true
+    description: The username to use to login to Docker Hub
+  docker_password:
+    required: true
+    description: The password to use to login to Docker Hub
+  ghcr_username:
+    required: true
+    description: The username to use to login to GitHub Container Registry
+  ghcr_password:
+    required: true
+    description: The password to use to login to GitHub Container Registry
+
+runs:
+  using: "composite"
+  steps:
+    -
+      name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        registry: docker.io
+        username: ${{ inputs.docker_username }}
+        password: ${{ inputs.docker_password }}
+    -
+      name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ inputs.ghcr_username }}
+        password: ${{ inputs.ghcr_password }}

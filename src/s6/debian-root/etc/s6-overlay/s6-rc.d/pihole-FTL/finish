@@ -1,4 +1,0 @@
-#!/command/with-contenv bash
-
-s6-echo "Stopping pihole-FTL"
-killall --signal 15 pihole-FTL

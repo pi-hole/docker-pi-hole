@@ -1,8 +1,0 @@
-#!/command/with-contenv bash
-
-s6-echo "Stopping lighttpd-error-log"
-pid=$(ps -C cat -o pid=,args= |grep -oP "([0-9]+).+error\.log" |cut -f1 -d" ")
-if [[ -n ${pid} ]]; then
-  kill -9 ${pid}
-fi
-s6-echo "Stopped lighttpd-error-log"

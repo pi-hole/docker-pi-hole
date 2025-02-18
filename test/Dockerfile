@@ -1,24 +1,22 @@
-FROM debian:bookworm-slim
-# Only works for docker CLIENT (bind mounted socket)
-COPY --from=docker:20.10.17 /usr/local/bin/docker /usr/local/bin/
+ARG alpine_version="3.20"
+ARG docker_version="27.1.1"
 
-ARG packages
-RUN apt-get update && \
-    apt-get --no-install-recommends install -y python3 python3-pip python3-dev pipenv curl gcc make \
-        libffi-dev libssl-dev ${packages} \
-    && rm -rf /var/lib/apt/lists/*
+FROM docker:${docker_version}-cli-alpine${alpine_version}
 
-RUN curl --proto "=https" -L https://github.com/docker/compose/releases/download/2.10.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && \
-    chmod +x /usr/local/bin/docker-compose
-
-COPY ./cmd.sh /usr/local/bin/
-COPY Pipfile* /root/
+COPY --chmod=0755 ./cmd.sh /usr/local/bin/cmd.sh
+COPY requirements.txt /root/
 WORKDIR /root
 
-RUN pipenv -v install --system \
-    && sed -i 's|/bin/sh|/bin/bash|g' /usr/local/lib/python3.11/dist-packages/testinfra/backend/docker.py
+RUN apk add --no-cache \
+    python3-dev \
+    py3-pip \
+    curl \
+    && pip3 install --break-system-packages --no-cache-dir -U pip  \
+    && pip3 install --break-system-packages --no-cache-dir -r requirements.txt \
+    # Replace hardcoded /bin/sh with /bin/bash in testinfra docker backend
+    # see https://github.com/pytest-dev/pytest-testinfra/issues/582 and similar issues
+    && pythonversion=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))') \
+    && sed -i 's|/bin/sh|/bin/bash|g' /usr/lib/python${pythonversion}/site-packages/testinfra/backend/docker.py
 
-RUN echo "set -ex && cmd.sh && \$@" > /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-ENTRYPOINT entrypoint.sh
-CMD cmd.sh
+SHELL ["/bin/sh", "-c"]
+CMD ["cmd.sh"]

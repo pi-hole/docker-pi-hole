@@ -1,2 +1,0 @@
-#!/command/execlineb
-foreground { bash -e /usr/local/bin/_uid-gid-changer.sh }

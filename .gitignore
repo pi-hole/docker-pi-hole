@@ -16,3 +16,6 @@ var-log/
 
 # WIP/test stuff
 doco.yml
+
+# Ignore FTL Binary if it exists
+src/pihole-FTL

@@ -1,0 +1,32 @@
+name: Build Image and Test
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Official docker images for docker are only available for amd64 and arm64
+        # TODO: Look at: https://github.com/docker-library/official-images#architectures-other-than-amd64
+        # Is testing on all platforms really necessary?
+        # Disabled arm64 tests for the time being, something is wrong with the test config and the volumes are getting shared between the test containers on different architectures
+        #platform: [linux/amd64, linux/arm64]
+        platform: [linux/amd64]
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v4
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: ${{ matrix.platform }}
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Run Tests
+      run: |
+        echo "Building image to test"
+        PLATFORM=${{ matrix.platform }} ./build-and-test.sh
