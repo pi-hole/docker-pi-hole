@@ -96,7 +96,8 @@ RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     && if [ "${FTL_BRANCH}" = "master" ]; then URL="https://github.com/pi-hole/ftl/releases/latest/download"; else URL="https://ftl.pi-hole.net/${FTL_BRANCH}"; fi \    
     && curl -sSL "${URL}/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL \
     && chmod +x /usr/bin/pihole-FTL \
-    && readelf -h /usr/bin/pihole-FTL || (echo "Error with downloaded FTL binary" && exit 1)
+    && readelf -h /usr/bin/pihole-FTL || (echo "Error with downloaded FTL binary" && exit 1) \
+    && /usr/bin/pihole-FTL  -vv
 
 FROM base AS local-ftl-install
 # pihole-FTL must be built from source and copied to the src directory first!
