@@ -12,7 +12,7 @@ def test_pihole_gid_env_var(docker):
     func = docker.run("id -g pihole")
     assert "456" in func.stdout
 
-def test_pihole_FTL_version(docker):
+def test_pihole_ftl_version(docker):
     func = docker.run("pihole-FTL -vv")
     assert func.rc == 0
     assert "Version:" in func.stdout
