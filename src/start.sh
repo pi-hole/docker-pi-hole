@@ -21,13 +21,8 @@ start() {
   # FTL Will handle the migration of the config files
   if [[ -f /etc/pihole/setupVars.conf && ! -f /etc/pihole/pihole.toml ]]; then
     echo "  [i] v5 files detected that have not yet been migrated to v6"
-    echo "  [i] Deferring additional configuration until after FTL has started"
-    echo "  [i] Note: It is normal to see \"Config file /etc/pihole/pihole.toml not available (r): No such file or directory\" in the logs at this point"
     echo ""
-    # We need to migrate the dnsmasq.d contents so that FTL can read them in properly
-    migrate_dnsmasq_d_contents
-    v5_volume=1
-
+    migrate_v5_configs
   fi
 
   # ===========================
@@ -37,12 +32,9 @@ start() {
   # If PIHOLE_UID is set, modify the pihole user's id to match
   set_uid_gid
 
-  # Only run the next step if we are not migrating from v5 to v6
-  if [[ ${v5_volume} -eq 0 ]]; then
-    # Configure FTL with any environment variables if needed
-    echo "  [i] Starting FTL configuration"
-    ftl_config
-  fi
+  # Configure FTL with any environment variables if needed
+  echo "  [i] Starting FTL configuration"
+  ftl_config
 
   # Install additional packages inside the container if requested
   install_additional_packages
@@ -85,17 +77,12 @@ start() {
   while ! grep -q '########## FTL started' /var/log/pihole/FTL.log; do
     sleep 0.5
   done
-
-  # If we are migrating from v5 to v6, we now need to run the basic configuration step that we deferred earlier
-  # This is because pihole-FTL needs to migrate the config files before we can perform the basic configuration checks
-  if [[ ${v5_volume} -eq 1 ]]; then
-    echo "  [i] Starting deferred FTL Configuration"
-    ftl_config
-    echo ""
-  fi
-
+  
   pihole updatechecker
-  pihole -v
+  local versionsOutput
+  versionsOutput=$(pihole -v)
+  echo "  [i] Version info:"
+  printf "%b" "${versionsOutput}\\n" | sed 's/^/      /' 
   echo ""
 
   if [ "${TAIL_FTL_LOG:-1}" -eq 1 ]; then

@@ -116,10 +116,12 @@ migrate_gravity() {
         echo "  [i] Gravity will now be run to create the database"
         pihole -g
     else
-        echo "  [i] Existing gravity database found"
+        echo "  [i] Existing gravity database found - schema will be upgraded if necessary"
         # source the migration script and run the upgrade function
         source /etc/.pihole/advanced/Scripts/database_migration/gravity-db.sh
-        upgrade_gravityDB "${gravityDBfile}" "/etc/pihole"
+        local upgradeOutput
+        upgradeOutput=$(upgrade_gravityDB "${gravityDBfile}" "/etc/pihole")
+        printf "%b" "${upgradeOutput}\\n" | sed 's/^/     /'
     fi
     echo ""
 }
@@ -147,7 +149,7 @@ ftl_config() {
     setup_web_password
 }
 
-migrate_dnsmasq_d_contents() {
+migrate_v5_configs() {
     # Previously, Pi-hole created a number of files in /etc/dnsmasq.d
     # During migration, their content is copied into the new single source of
     # truth file /etc/pihole/pihole.toml and the old files are moved away to
@@ -167,6 +169,22 @@ migrate_dnsmasq_d_contents() {
 
     mv /etc/dnsmasq.d/0{1,2,4,5}-pihole*.conf "${V6_CONF_MIGRATION_DIR}/" 2>/dev/null || true
     mv /etc/dnsmasq.d/06-rfc6761.conf "${V6_CONF_MIGRATION_DIR}/" 2>/dev/null || true
+    echo ""
+
+    # Finally, after everything is in place, we can create the new config file
+    # /etc/pihole/pihole.toml
+    # This file will be created with the default settings unless the user has
+    # changed settings via setupVars.conf or the other dnsmasq files moved above
+    # During migration, setupVars.conf is moved to /etc/pihole/migration_backup_v6
+    local FTLoutput
+    FTLoutput=$(pihole-FTL migrate v6)
+
+    # Print the output of the FTL migration prefacing every line with six
+    # spaces for alignment with other container output. Replace the first line to match the style of the other messages
+    # We suppress the message about environment variables as these will be set on FTL's first real start
+    printf "%b" "${FTLoutput}\\n" | sed 's/^/      /' | sed 's/      Migrating config to Pi-hole v6.0 format/  [i] Migrating config to Pi-hole v6.0 format/' | sed 's/- 0 entries are forced through environment//'
+
+    # Print a blank line for separation
     echo ""
 }
 
