@@ -12,6 +12,10 @@ def test_pihole_gid_env_var(docker):
     func = docker.run("id -g pihole")
     assert "456" in func.stdout
 
+def test_pihole_FTL_version(docker):
+    func = docker.run("pihole-FTL -vv")
+    assert func.rc == 0
+    assert "Version:" in func.stdout
 
 # Wait 5 seconds for startup, then kill the start.sh script
 # Finally, grep the FTL log to see if it has been shut down cleanly
