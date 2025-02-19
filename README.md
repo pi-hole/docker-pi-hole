@@ -25,7 +25,7 @@
 
 > [!CAUTION]
 >
-> ## !!! THIS VERSION CONTAINS BREAKING CHANGES
+> ## !!! THE LATEST VERSION CONTAINS BREAKING CHANGES
 >
 > **Pi-hole v6 has been entirely redesigned from the ground up and contains many breaking changes.**
 >
@@ -34,6 +34,8 @@
 > If you are using volumes to persist your configuration, be careful.<br>Replacing any `v5` image *(`2024.07.0` and earlier)* with a `v6` image will result in updated configuration files. **These changes are irreversible**.
 >
 > Please read the README carefully before proceeding.
+>
+> https://docs.pi-hole.net/docker/
 
 ---
 
