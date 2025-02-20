@@ -252,7 +252,7 @@ The preferred method is to clone this repository and build the image locally wit
 
 #### Usage:
 ```
-./build.sh [-l] [-f <ftl_branch>] [-c <core_branch>] [-w <web_branch>] [-t <tag>] [use_cache]
+./build.sh [-l] [-f <ftl_branch>] [-c <core_branch>] [-w <web_branch>] [-p <padd_branch>] [-t <tag>] [use_cache]
 ```
 
 #### Options:
@@ -260,6 +260,7 @@ The preferred method is to clone this repository and build the image locally wit
 - `-f <branch>` /  `--ftlbranch <branch>`: Specify FTL branch (cannot be used in conjunction with `-l`)
 - `-c <branch>` / `--corebranch <branch>`: Specify Core branch
 - `-w <branch>` / `--webbranch <branch>`: Specify Web branch
+- `-p <branch>` / `--paddbranch <branch>`: Specify PADD branch
 - `-t <tag>` / `--tag <tag>`: Specify Docker image tag (default: `pihole:local`)
 - `-l` / `--local`: Use locally built FTL binary (requires `src/pihole-FTL` file)
 - `use_cache`: Enable caching (by default `--no-cache` is used)
