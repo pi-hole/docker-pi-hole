@@ -78,7 +78,7 @@ services:
     volumes:
       # For persisting Pi-hole's databases and common configuration file
       - './etc-pihole:/etc/pihole'
-      # Uncomment the below if you have custom dnsmasq config files that you want to persist. Not needed for most starting fresh with Pi-hole v6. If you're upgrading from v5 you and have used this directory before, you should keep it enabled for the first v6 container start to allow for a complete migration. It can be removed afterwards
+      # Uncomment the below if you have custom dnsmasq config files that you want to persist. Not needed for most starting fresh with Pi-hole v6. If you're upgrading from v5 you and have used this directory before, you should keep it enabled for the first v6 container start to allow for a complete migration. It can be removed afterwards. Needs environment variable FTLCONF_misc_etc_dnsmasq_d: 'true'
       #- './etc-dnsmasq.d:/etc/dnsmasq.d'
     cap_add:
       # See https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
@@ -142,6 +142,7 @@ To explicitly set no password, set `FTLCONF_webserver_api_password: ''`.
 | `FTL_CMD` | `no-daemon` | `no-daemon -- <dnsmasq option>` | Customize dnsmasq startup options. e.g. `no-daemon -- --dns-forward-max 300` to increase max. number of concurrent dns queries on high load setups. |
 | `DNSMASQ_USER` | unset | `<pihole\|root>` | Allows changing the user that FTLDNS runs as. Default: `pihole`, some systems such as Synology NAS may require you to change this to `root`.<br><br>(See [#963](https://github.com/pi-hole/docker-pi-hole/issues/963)) |
 | `ADDITIONAL_PACKAGES`| unset | Space separated list of APKs | HERE BE DRAGONS. Mostly for development purposes, this just makes it easier for those of us that always like to have whatever additional tools we need inside the container for debugging. |
+| `FTLCONF_misc_etc_dnsmasq_d`| false | `true\|false` | Load custom user configuration files from `/etc/dnsmasq.d/` |
 
 Here is a rundown of other arguments for your docker-compose / docker run.
 
