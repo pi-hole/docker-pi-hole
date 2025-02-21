@@ -79,6 +79,11 @@ RUN cd /etc/.pihole && \
 COPY --chmod=0755 bash_functions.sh /usr/bin/bash_functions.sh
 COPY --chmod=0755 start.sh /usr/bin/start.sh
 
+EXPOSE 53 53/udp
+EXPOSE 67/udp
+EXPOSE 80
+EXPOSE 443
+
 ## Buildkit can do some fancy stuff and we can use it to either download FTL from ftl.pi-hole.net or use a local copy
 
 FROM base AS remote-ftl-install
