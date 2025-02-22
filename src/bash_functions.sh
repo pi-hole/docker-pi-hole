@@ -145,6 +145,19 @@ ftl_config() {
         echo "  [i] No DNS upstream set in environment or config file, defaulting to Google DNS"
         setFTLConfigValue "dns.upstreams" "[\"8.8.8.8\", \"8.8.4.4\"]"
     fi
+    
+    # If the function getFTLConfigValue("webserver.paths.webhome") returns a value different from "/admin/",
+    # Then, move the directory "/var/www/html/admin" to the new location.
+    if WEBHOME=$(getFTLConfigValue "webserver.paths.webhome") && [[ "$WEBHOME" != "/admin/" ]]; then
+        # Remove leading slash if present
+        WEBHOME="${WEBHOME#/}" 
+        
+        # Move the existing admin directory to the new location
+        if [ -d "/var/www/html/admin" ]; then
+            echo "Moving /var/www/html/admin to /var/www/html/$WEBHOME"
+            mv /var/www/html/admin "/var/www/html/$WEBHOME"
+        fi
+    fi
 
     setup_web_password
 }
