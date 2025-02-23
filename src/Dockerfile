@@ -112,6 +112,6 @@ RUN  readelf -h /usr/bin/pihole-FTL || (echo "Error with local FTL binary" && ex
 # Use the appropriate FTL Install stage based on the FTL_SOURCE build-arg
 FROM ${FTL_SOURCE}-ftl-install AS final
 
-HEALTHCHECK CMD dig -p ${FTLCONF_dns_port:-53} +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
+HEALTHCHECK CMD dig -p $(pihole-FTL --config dns.port) +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
 
 ENTRYPOINT ["start.sh"]
