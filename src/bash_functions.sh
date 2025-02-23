@@ -189,6 +189,11 @@ migrate_v5_configs() {
 }
 
 setup_web_password() {
+    if [ -z "${FTLCONF_webserver_api_password+x}" ] && [ -n ${WEBPASSWORD_FILE} ] && [ -r ${WEBPASSWORD_FILE} ]; then
+        echo "  [i] Setting FTLCONF_webserver_api_password from file"
+        export FTLCONF_webserver_api_password=$(<"${WEBPASSWORD_FILE}")
+    fi
+
     # If FTLCONF_webserver_api_password is not set
     if [ -z "${FTLCONF_webserver_api_password+x}" ]; then
         # Is this already set to something other than blank (default) in FTL's config file? (maybe in a volume mount)
