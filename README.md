@@ -170,9 +170,9 @@ Here is a rundown of other arguments for your docker-compose / docker run.
 - Docker's default network mode `bridge` isolates the container from the host's network. This is a more secure setting, but requires setting the Pi-hole DNS option for _Interface listening behavior_ to "Listen on all interfaces, permit all origins".
 - If you're using a Red Hat based distribution with an SELinux Enforcing policy, add `:z` to line with volumes.
 
-### Installing on Ubuntu or Fedora
+## Installing on Ubuntu or Debian
 
-Modern releases of Ubuntu (17.10+) and Fedora (33+) include [`systemd-resolved`](http://manpages.ubuntu.com/manpages/bionic/man8/systemd-resolved.service.8.html) which is configured by default to implement a caching DNS stub resolver. This will prevent pi-hole from listening on port 53.
+Modern releases of Ubuntu (17.10+) and Debian (12+) include [`systemd-resolved`](http://manpages.ubuntu.com/manpages/bionic/man8/systemd-resolved.service.8.html) which is configured by default to implement a caching DNS stub resolver. This will prevent pi-hole from listening on port 53.
 The stub resolver should be disabled with: `sudo sed -r -i.orig 's/#?DNSStubListener=yes/DNSStubListener=no/g' /etc/systemd/resolved.conf`.
 
 This will not change the nameserver settings, which point to the stub resolver thus preventing DNS resolution. Change the `/etc/resolv.conf` symlink to point to `/run/systemd/resolve/resolv.conf`, which is automatically updated to follow the system's [`netplan`](https://netplan.io/):
@@ -200,6 +200,23 @@ It also disables the functionality of netplan since systemd-resolved is used as 
 If you choose to disable the service, you will need to manually set the nameservers, for example by creating a new `/etc/resolv.conf`.
 
 Users of older Ubuntu releases (circa 17.04) will need to disable dnsmasq.
+
+## Installing on Fedora
+Modern releases of Fedora (33+) include systemd-resolved, which is configured by default to implement a caching DNS stub resolver. This may conflict with Pi-hole's DNS server by preventing it from listening on port 53. To avoid this conflict, you need to disable the DNS stub resolver.
+
+Run the following commands to free port 53 and allow pihole to run:
+1. Ensure the directory /etc/systemd/resolved.conf.d exists.
+2. Create a configuration file (/etc/systemd/resolved.conf.d/10-pihole.conf) to override the default settings.
+3. Add the DNSStubListener=no directive, which disables the local DNS stub listener.
+4. Restart `systemd-resolved` to apply the new configuration.
+```
+[ -d /etc/systemd/resolved.conf.d ] || sudo mkdir /etc/systemd/resolved.conf.d
+echo '[Resolve]' | sudo tee /etc/systemd/resolved.conf.d/10-pihole.conf
+echo 'DNSStubListener=no' | sudo tee -a /etc/systemd/resolved.conf.d/10-pihole.conf
+sudo systemctl restart systemd-resolved
+```
+
+Note that by default in Fedora, `/etc/resolv.conf` already points to `/run/systemd/resolve/resolv.conf`, so DNS resolution continues to work even when the stub listener is disabled.
 
 ## Installing on Dokku
 
