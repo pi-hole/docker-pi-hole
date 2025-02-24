@@ -36,6 +36,7 @@ RUN apk add --no-cache \
     psmisc \
     shadow \
     sudo \
+    tini \
     tzdata \
     unzip \
     wget
@@ -114,4 +115,6 @@ FROM ${FTL_SOURCE}-ftl-install AS final
 
 HEALTHCHECK CMD dig +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
 
-ENTRYPOINT ["start.sh"]
+ENTRYPOINT ["/sbin/tini", "--"]
+
+CMD ["start.sh"]
