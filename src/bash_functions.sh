@@ -156,6 +156,8 @@ ftl_config() {
         if [ -d "/var/www/html/admin" ]; then
             echo "Moving /var/www/html/admin to /var/www/html/$WEBHOME"
             mv /var/www/html/admin "/var/www/html/$WEBHOME"
+            # Link to hardcoded scripts detects path
+            ln -s "/var/www/html/$WEBHOME" /var/www/html/admin
         fi
     fi
 
