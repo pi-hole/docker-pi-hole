@@ -74,6 +74,8 @@ services:
       TZ: 'Europe/London'
       # Set a password to access the web interface. Not setting one will result in a random password being assigned
       FTLCONF_webserver_api_password: 'correct horse battery staple'
+      # If using Docker's default `bridge` network setting the dns listening mode should be set to 'all'
+      FTLCONF_dns_listeningMode: 'all'
     # Volumes store your data between container upgrades
     volumes:
       # For persisting Pi-hole's databases and common configuration file
@@ -92,7 +94,6 @@ services:
 ```
 
 2. Run `docker compose up -d` to build and start pi-hole (Syntax may be `docker-compose` on older systems).
-3. If using Docker's default `bridge` network setting, set the environment variable `FTLCONF_dns_listeningMode` to `all`.
 
 > [!NOTE]
 > Volumes are recommended for persisting data across container re-creations for updating images.
