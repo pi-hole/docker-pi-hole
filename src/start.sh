@@ -11,8 +11,6 @@ TRAP_TRIGGERED=0
 
 start() {
 
-  local v5_volume=0
-
   # The below functions are all contained in bash_functions.sh
   # shellcheck source=/dev/null
   . /usr/bin/bash_functions.sh
