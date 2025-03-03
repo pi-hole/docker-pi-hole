@@ -45,6 +45,9 @@ start() {
   # Install the logrotate config file
   install_logrotate
 
+  # Run custom initialization scripts (new addition)
+  run_custom_init_scripts || echo "  [!] Error running custom init scripts, continuing with startup"
+
   #migrate Gravity Database if needed:
   migrate_gravity
 

@@ -258,3 +258,49 @@ fix_capabilities() {
     fi
     echo ""
 }
+
+# New function to run custom initialization scripts
+run_custom_init_scripts() {
+  local custom_init_dir="/custom-cont-init.d"
+  
+  # Check if the directory exists
+  if [ ! -d "$custom_init_dir" ]; then
+    echo "  [i] Custom init directory $custom_init_dir does not exist, skipping"
+    return 0
+  fi
+  
+  echo "  [i] Checking for custom initialization scripts in $custom_init_dir"
+  
+  # Find all executable scripts or make them executable
+  find "$custom_init_dir" -type f | sort | while read -r script; do
+    # Check if file is already executable
+    if [ ! -x "$script" ]; then
+      echo "  [i] Making $script executable"
+      chmod +x "$script" 2>/dev/null || {
+        echo "  [!] Failed to make $script executable, skipping"
+        continue
+      }
+    fi
+    
+    # Extract the filename
+    filename=$(basename "$script")
+    
+    # Check if the filename starts with a number
+    if [[ "$filename" =~ ^[0-9]+ ]]; then
+      echo "  [i] Running custom init script: $script"
+      # Run the script in background with output redirected to docker logs
+      # Use 'exec' to run in a subshell and avoid blocking
+      sleep 10
+      (exec "$script" 2>&1 | sed "s/^/[Custom Init: $filename] /") &
+      
+      # Store the PID in case we want to track it later
+      local script_pid=$!
+      echo "  [i] Started $script with PID $script_pid"
+    else
+      echo "  [i] Skipping $script, filename doesn't start with a number"
+    fi
+  done
+  
+  echo "  [i] Finished processing custom initialization scripts"
+  return 0
+}
