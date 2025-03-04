@@ -140,7 +140,7 @@ To explicitly set no password, set `FTLCONF_webserver_api_password: ''`.
 | `FTLCONF_[SETTING]` | unset | As per documentation | Customize pihole.toml with settings described in the [API Documentation](https://docs.pi-hole.net/api).<br><br>Replace `.` with `_`, e.g for `dns.dnssec=true` use `FTLCONF_dns_dnssec: 'true'`.<br/>Array type configs should be delimited with `;`.|
 | `PIHOLE_UID` | `1000` | Number | Overrides image's default pihole user id to match a host user id.<br/>**IMPORTANT**: id must not already be in use inside the container!|
 | `PIHOLE_GID` | `1000` | Number | Overrides image's default pihole group id to match a host group id.<br/>**IMPORTANT**: id must not already be in use inside the container!|
-| `WEBPASSWORD_FILE` | unset| `<Docker secret path>` | Set an Admin password using [Docker secrets](https://docs.docker.com/engine/swarm/secrets/). If `FTLCONF_webserver_api_password` is set, `WEBPASSWORD_FILE` is ignored. If `FTLCONF_webserver_api_password` is empty, and `WEBPASSWORD_FILE` is set to a valid readable file path, then `FTLCONF_webserver_api_password` will be set to the contents of `WEBPASSWORD_FILE`. |
+| `WEBPASSWORD_FILE` | unset| `<Docker secret file>` | Set an Admin password using [Docker secrets](https://docs.docker.com/engine/swarm/secrets/). If `FTLCONF_webserver_api_password` is set, `WEBPASSWORD_FILE` is ignored. If `FTLCONF_webserver_api_password` is empty, and `WEBPASSWORD_FILE` is set to a valid readable file, then `FTLCONF_webserver_api_password` will be set to the contents of `WEBPASSWORD_FILE`. |
 
 ### Advanced Variables
 
