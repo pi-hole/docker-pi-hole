@@ -1,5 +1,5 @@
-ARG alpine_version="3.20"
-ARG docker_version="27.1.1"
+ARG alpine_version="3.21"
+ARG docker_version="28.0.0"
 
 FROM docker:${docker_version}-cli-alpine${alpine_version}
 
