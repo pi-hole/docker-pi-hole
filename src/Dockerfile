@@ -82,6 +82,7 @@ COPY --chmod=0755 start.sh /usr/bin/start.sh
 EXPOSE 53 53/udp
 EXPOSE 67/udp
 EXPOSE 80
+EXPOSE 123/udp
 EXPOSE 443
 
 ## Buildkit can do some fancy stuff and we can use it to either download FTL from ftl.pi-hole.net or use a local copy
@@ -98,7 +99,7 @@ RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     elif [ "$TARGETPLATFORM" = "linux/riscv64" ];  then FTLARCH=riscv64; \
     else FTLARCH=amd64; fi \
     && echo "Arch: ${TARGETPLATFORM}, FTLARCH: ${FTLARCH}" \
-    && if [ "${FTL_BRANCH}" = "master" ]; then URL="https://github.com/pi-hole/ftl/releases/latest/download"; else URL="https://ftl.pi-hole.net/${FTL_BRANCH}"; fi \    
+    && if [ "${FTL_BRANCH}" = "master" ]; then URL="https://github.com/pi-hole/ftl/releases/latest/download"; else URL="https://ftl.pi-hole.net/${FTL_BRANCH}"; fi \
     && curl -sSL "${URL}/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL \
     && chmod +x /usr/bin/pihole-FTL \
     && readelf -h /usr/bin/pihole-FTL || (echo "Error with downloaded FTL binary" && exit 1) \
@@ -112,6 +113,6 @@ RUN  readelf -h /usr/bin/pihole-FTL || (echo "Error with local FTL binary" && ex
 # Use the appropriate FTL Install stage based on the FTL_SOURCE build-arg
 FROM ${FTL_SOURCE}-ftl-install AS final
 
-HEALTHCHECK CMD dig +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
+HEALTHCHECK CMD dig -p $(pihole-FTL --config dns.port) +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
 
 ENTRYPOINT ["start.sh"]
