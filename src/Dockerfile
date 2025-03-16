@@ -41,6 +41,15 @@ RUN apk add --no-cache \
     unzip \
     wget
 
+# Fix alpine bash issue
+RUN ln -sf /bin/busybox      /usr/local/bin/test         && \
+    ln -sf /bin/busybox      /usr/local/bin/[            && \
+    echo "enable -n test" >> /etc/bash_noninteractive.sh && \
+    echo "enable -n ["    >> /etc/bash_noninteractive.sh && \
+    chmod +x                 /etc/bash_noninteractive.sh && \
+    cat /etc/bash_noninteractive.sh >> /etc/bash/bashrc
+ENV BASH_ENV=/etc/bash_noninteractive.sh
+
 # For nightly images, we install gdb and screen for ease of debugging (this is
 # not included in the default image to keep it small), and also prepare the
 # system for a core dump. Furthermore, we already add the required signal
