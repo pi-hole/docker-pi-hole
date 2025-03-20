@@ -123,7 +123,10 @@ To set a specific password for the web interface, use the environment variable `
 
 If this variable is not detected and you have not already set one via `pihole setpassword` / `pihole-FTL --config webserver.api.password` inside the container, then a random password will be assigned on startup. This will be printed to the log. Run `docker logs pihole | grep random password` to find it.
 
-To explicitly set no password, set `FTLCONF_webserver_api_password: ''`.
+> [!NOTE]
+> To _explicitly_ set no password, set `FTLCONF_webserver_api_password: ''`
+>
+> Using `pihole setpassword` for the purpose of setting an empty password will not persist between container restarts
 
 ### Recommended Environment Variables
 
