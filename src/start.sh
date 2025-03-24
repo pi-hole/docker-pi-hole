@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ ! -x /bin/sh ]; then
+  echo "Executable test for /bin/sh failed. Your Docker version is too old to run Alpine 3.14+ and Pi-hole. You must upgrade Docker.";
+  exit 1;
+fi
+
 if [ "${PH_VERBOSE:-0}" -gt 0 ]; then
   set -x
 fi
