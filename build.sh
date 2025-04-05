@@ -4,12 +4,12 @@
 usage() {
     echo "Usage: $0 [-l] [-f <ftl_branch>] [-c <core_branch>] [-w <web_branch>] [-t <tag>] [use_cache]"
     echo "Options:"
-    echo "  -f, --ftlbranch <branch>     Specify FTL branch (cannot be used in conjunction with -l)"
+    echo "  -f, --ftlbranch <branch>     Specify FTL branch"
     echo "  -c, --corebranch <branch>    Specify Core branch"
     echo "  -w, --webbranch <branch>     Specify Web branch"
     echo "  -p, --paddbranch <branch>    Specify PADD branch"
     echo "  -t, --tag <tag>              Specify Docker image tag (default: pihole:local)"
-    echo "  -l, --local                  Use locally built FTL binary (requires src/pihole-FTL file)"
+    echo "  -l, --local                  Clones the FTL repository and builds the binary locally"
     echo "  use_cache                    Enable caching (by default --no-cache is used)"
     echo ""
     echo "If no options are specified, the following command will be executed:"
@@ -20,11 +20,9 @@ usage() {
 # Set default values
 TAG="pihole:local"
 DOCKER_BUILD_CMD="docker buildx build src/. --tag ${TAG} --load --no-cache"
-FTL_FLAG=false
 
 # Check if buildx is installed
-docker buildx version >/dev/null 2>&1
-if [ $? -ne 0 ]; then
+if ! docker buildx version >/dev/null 2>&1; then
     echo "Error: Docker buildx is required to build this image. For installation instructions, see:"
     echo "       https://github.com/docker/buildx#installing"
     exit 1
@@ -56,25 +54,11 @@ while [[ $# -gt 0 ]]; do
     key="$1"
 
     case $key in
-    -l | --local)
-        if [ ! -f "src/pihole-FTL" ]; then
-            echo "File 'src/pihole-FTL' not found. Exiting."
-            exit 1
-        fi
-        if [ "$FTL_FLAG" = true ]; then
-            echo "Error: Both -l and -f cannot be used together."
-            usage
-        fi
-        FTL_FLAG=true
+    -l | --local)       
         DOCKER_BUILD_CMD+=" --build-arg FTL_SOURCE=local"
         shift
         ;;
-    -f | --ftlbranch)
-        if [ "$FTL_FLAG" = true ]; then
-            echo "Error: Both -l and -f cannot be used together."
-            usage
-        fi
-        FTL_FLAG=true
+    -f | --ftlbranch)        
         FTL_BRANCH="$2"
         check_branch_exists "ftl" "$FTL_BRANCH"
         DOCKER_BUILD_CMD+=" --build-arg FTL_BRANCH=$FTL_BRANCH"
@@ -122,10 +106,8 @@ done
 
 # Execute the docker build command
 echo "Executing command: $DOCKER_BUILD_CMD"
-eval "${DOCKER_BUILD_CMD}"
-
-# Check exit code of previous command
-if [ $? -ne 0 ]; then
+# Execute the docker build command and check its exit status
+if ! eval "${DOCKER_BUILD_CMD}"; then
     echo ""
     echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     echo "!! ERROR: Docker build failed, please review logs above !!"
