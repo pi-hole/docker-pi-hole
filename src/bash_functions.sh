@@ -234,6 +234,13 @@ fix_capabilities() {
     capsh --has-p=cap_sys_nice 2>/dev/null && CAP_STR+=',CAP_SYS_NICE'
     capsh --has-p=cap_sys_time 2>/dev/null && CAP_STR+=',CAP_SYS_TIME'
 
+    if [[ $DHCP_READY == false ]] && [[ $FTLCONF_dhcp_active == true ]]; then
+        # DHCP is requested but NET_ADMIN is not available.
+        echo "ERROR: DHCP requested but NET_ADMIN is not available. DHCP will not be started."
+        echo "      Please add cap_net_admin to the container's capabilities or disable DHCP."
+        setFTLConfigValue dhcp.active false
+    fi
+
     if [[ ${CAP_STR} ]]; then
         # We have the (some of) the above caps available to us - apply them to pihole-FTL
         echo "  [i] Applying the following caps to pihole-FTL:"
@@ -243,13 +250,6 @@ fix_capabilities() {
         done
 
         setcap "${CAP_STR:1}"+ep "$(which pihole-FTL)" || ret=$?
-
-        if [[ $DHCP_READY == false ]] && [[ $FTLCONF_dhcp_active == true ]]; then
-            # DHCP is requested but NET_ADMIN is not available.
-            echo "ERROR: DHCP requested but NET_ADMIN is not available. DHCP will not be started."
-            echo "      Please add cap_net_admin to the container's capabilities or disable DHCP."
-            setFTLConfigValue dhcp.active false
-        fi
 
         if [[ $ret -ne 0 && "${DNSMASQ_USER:-pihole}" != "root" ]]; then
             echo "  [!] ERROR: Unable to set capabilities for pihole-FTL. Cannot run as non-root."
