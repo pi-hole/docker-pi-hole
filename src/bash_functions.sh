@@ -257,9 +257,9 @@ fix_capabilities() {
             exit 1
         fi
     else
-        echo "  [!] ERROR: Unable to set capabilities for pihole-FTL."
+        echo "  [!] WARNING: No capabilities for pihole-FTL available."
+        echo "            Not all functions may work as expected."
         echo "            Please ensure that the container has the required capabilities."
-        exit 1
     fi
     echo ""
 }
