@@ -261,7 +261,7 @@ fix_capabilities() {
         fi
     else
         echo "  [!] WARNING: No capabilities for pihole-FTL available."
-        echo "            Not all functions may work as expected."
+        echo "           Pi-hole functions may not work as expected."
         echo "            Please ensure that the container has the required capabilities."
     fi
     echo ""
