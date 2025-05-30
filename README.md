@@ -25,7 +25,7 @@
 
 > [!CAUTION]
 >
-> ## !!! VERSJONS SINCE 2025.02.0 CONTAIN BREAKING CHANGES IF UPGRADING FROM 2024.07.0 OR OLDER
+> ## !!! VERSIONS SINCE 2025.02.0 CONTAIN BREAKING CHANGES IF UPGRADING FROM 2024.07.0 OR OLDER
 >
 > **Pi-hole v6 has been entirely redesigned from the ground up and contains many breaking changes.**
 >
