@@ -11,6 +11,10 @@ ARG FTL_BRANCH="development"
 ARG PIHOLE_DOCKER_TAG="dev-localbuild"
 ARG PADD_BRANCH="development"
 
+ARG CORE_FORK="pi-hole"
+ARG WEB_FORK="pi-hole"
+ARG PADD_FORK="pi-hole"
+
 ARG PIHOLE_UID=1000
 ARG PIHOLE_GID=1000
 
@@ -55,11 +59,11 @@ ADD https://ftl.pi-hole.net/macvendor.db /macvendor.db
 COPY crontab.txt /crontab.txt
 
 # Add PADD to the container, too.
-ADD --chmod=0755 https://raw.githubusercontent.com/pi-hole/PADD/${PADD_BRANCH}/padd.sh /usr/local/bin/padd
+ADD --chmod=0755 https://raw.githubusercontent.com/${PADD_FORK}/PADD/${PADD_BRANCH}/padd.sh /usr/local/bin/padd
 
 # download a the main repos from github
-RUN git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.com/pi-hole/web.git /var/www/html/admin && \
-    git clone --depth 1 --single-branch --branch ${CORE_BRANCH} https://github.com/pi-hole/pi-hole.git /etc/.pihole
+RUN git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.com/${WEB_FORK}/web.git /var/www/html/admin && \
+    git clone --depth 1 --single-branch --branch ${CORE_BRANCH} https://github.com/${CORE_FORK}/pi-hole.git /etc/.pihole
 
 RUN cd /etc/.pihole && \
     install -Dm755 -d /opt/pihole && \
