@@ -11,6 +11,10 @@ ARG FTL_BRANCH="development"
 ARG PIHOLE_DOCKER_TAG="dev-localbuild"
 ARG PADD_BRANCH="development"
 
+ARG CORE_FORK="pi-hole"
+ARG WEB_FORK="pi-hole"
+ARG PADD_FORK="pi-hole"
+
 ARG PIHOLE_UID=1000
 ARG PIHOLE_GID=1000
 
@@ -55,11 +59,11 @@ ADD https://ftl.pi-hole.net/macvendor.db /macvendor.db
 COPY crontab.txt /crontab.txt
 
 # Add PADD to the container, too.
-ADD --chmod=0755 https://raw.githubusercontent.com/pi-hole/PADD/${PADD_BRANCH}/padd.sh /usr/local/bin/padd
+ADD --chmod=0755 https://raw.githubusercontent.com/${PADD_FORK}/PADD/${PADD_BRANCH}/padd.sh /usr/local/bin/padd
 
 # download a the main repos from github
-RUN git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.com/pi-hole/web.git /var/www/html/admin && \
-    git clone --depth 1 --single-branch --branch ${CORE_BRANCH} https://github.com/pi-hole/pi-hole.git /etc/.pihole
+RUN git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.com/${WEB_FORK}/web.git /var/www/html/admin && \
+    git clone --depth 1 --single-branch --branch ${CORE_BRANCH} https://github.com/${CORE_FORK}/pi-hole.git /etc/.pihole
 
 RUN cd /etc/.pihole && \
     install -Dm755 -d /opt/pihole && \
@@ -97,7 +101,8 @@ RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     elif [ "$TARGETPLATFORM" = "linux/arm/v7" ];   then FTLARCH=armv7; \
     # Note for the future, "linux/arm6/v8" is not a valid value for TARGETPLATFORM, despite the CI platform name being that.
     elif [ "$TARGETPLATFORM" = "linux/arm64" ];    then FTLARCH=arm64; \
-    elif [ "$TARGETPLATFORM" = "linux/riscv64" ];  then FTLARCH=riscv64; \
+    # RISCV is currently not working on GHA, and so FTL is unavailable for this platform.
+    #elif [ "$TARGETPLATFORM" = "linux/riscv64" ];  then FTLARCH=riscv64; \
     else FTLARCH=amd64; fi \
     && echo "Arch: ${TARGETPLATFORM}, FTLARCH: ${FTLARCH}" \
     && if [ "${FTL_BRANCH}" = "master" ]; then URL="https://github.com/pi-hole/ftl/releases/latest/download"; else URL="https://ftl.pi-hole.net/${FTL_BRANCH}"; fi \

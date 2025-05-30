@@ -25,7 +25,7 @@
 
 > [!CAUTION]
 >
-> ## !!! THE LATEST VERSION CONTAINS BREAKING CHANGES
+> ## !!! VERSIONS SINCE 2025.02.0 CONTAIN BREAKING CHANGES IF UPGRADING FROM 2024.07.0 OR OLDER
 >
 > **Pi-hole v6 has been entirely redesigned from the ground up and contains many breaking changes.**
 >
@@ -173,6 +173,13 @@ Here is a rundown of other arguments for your docker-compose / docker run.
 - Port conflicts?  Stop your server's existing DNS / Web services.
   - Don't forget to stop your services from auto-starting again after you reboot.
   - Ubuntu users see below for more detailed information.
+  - If only ports 80 and/or 443 are in use, you have two options:
+    - Change the container's port mapping by adjusting the Docker `-p` flags or the `ports:` section in the compose file. For example, change `- "80:80/tcp"` to `- "8080:80/tcp"` to expose the container’s internal HTTP port 80 as 8080 on the host.
+    - Or, when running the container in `network_mode: host`, where port mappings are not available, change the ports used by the Pi-hole web server using the `FTLCONF_webserver_port` environment variable.<br>
+      Example:<br>
+      `FTLCONF_webserver_port: '8080o,[::]:8080o,8443os,[::]:8443os'`<br>
+      This makes the web interface available on HTTP port 8080 and HTTPS port 8443 for both IPv4 and IPv6.
+    - **Note:** This only applies to web interface ports (80 and 443). DNS (53), DHCP (67), and NTP (123) ports must still be handled via Docker port mappings or host networking.
 - Docker's default network mode `bridge` isolates the container from the host's network. This is a more secure setting, but requires setting the Pi-hole DNS option for _Interface listening behavior_ to "Listen on all interfaces, permit all origins".
 - If you're using a Red Hat based distribution with an SELinux Enforcing policy, add `:z` to line with volumes.
 

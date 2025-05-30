@@ -22,9 +22,10 @@ jobs:
       matrix:
         platform: [linux/amd64, linux/386, linux/arm/v6, linux/arm/v7, linux/arm64]
         alpine_version: [3.19]
-        include:
-          - platform: linux/riscv64
-            alpine_version: edge
+        # RISCV is currently not working on GHA, and so FTL is unavailable for this platform.
+        # include:
+        #   - platform: linux/riscv64
+        #     alpine_version: edge
           
     steps:
       - name: Prepare name for digest up/download
