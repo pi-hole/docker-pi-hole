@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1
 ARG FTL_SOURCE=remote
-ARG alpine_version="3.21"
-FROM alpine:${alpine_version} AS base
+FROM alpine:3.21 AS base
 # https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 
 ARG TARGETPLATFORM
