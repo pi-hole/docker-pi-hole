@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG FTL_SOURCE=remote
 # Pull Stable images
-FROM alpine:3.21 AS base-stable
+FROM alpine:3.22 AS base-stable
 FROM base-stable AS base-386
 FROM base-stable AS base-amd64
 FROM base-stable AS base-arm
