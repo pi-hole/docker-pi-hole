@@ -1,6 +1,16 @@
 # syntax=docker/dockerfile:1
 ARG FTL_SOURCE=remote
-FROM alpine:3.21 AS base
+# Pull Stable images
+FROM alpine:3.21 AS base-stable
+FROM base-stable AS base-386
+FROM base-stable AS base-amd64
+FROM base-stable AS base-arm
+FROM base-stable AS base-arm64
+# Pull Edge images
+FROM alpine:edge AS base-edge
+FROM base-edge   AS base-riscv64
+# Use the base image for the current architecture
+FROM base-${TARGETARCH} AS base
 # https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 
 ARG TARGETPLATFORM
