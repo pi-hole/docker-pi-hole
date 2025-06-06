@@ -1,7 +1,16 @@
 # syntax=docker/dockerfile:1
 ARG FTL_SOURCE=remote
-ARG alpine_version="3.21"
-FROM alpine:${alpine_version} AS base
+# Pull Stable images
+FROM alpine:3.22 AS base-stable
+FROM base-stable AS base-386
+FROM base-stable AS base-amd64
+FROM base-stable AS base-arm
+FROM base-stable AS base-arm64
+# Pull Edge images
+FROM alpine:edge AS base-edge
+FROM base-edge   AS base-riscv64
+# Use the base image for the current architecture
+FROM base-${TARGETARCH} AS base
 # https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 
 ARG TARGETPLATFORM
@@ -101,8 +110,7 @@ RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     elif [ "$TARGETPLATFORM" = "linux/arm/v7" ];   then FTLARCH=armv7; \
     # Note for the future, "linux/arm6/v8" is not a valid value for TARGETPLATFORM, despite the CI platform name being that.
     elif [ "$TARGETPLATFORM" = "linux/arm64" ];    then FTLARCH=arm64; \
-    # RISCV is currently not working on GHA, and so FTL is unavailable for this platform.
-    #elif [ "$TARGETPLATFORM" = "linux/riscv64" ];  then FTLARCH=riscv64; \
+    elif [ "$TARGETPLATFORM" = "linux/riscv64" ];  then FTLARCH=riscv64; \
     else FTLARCH=amd64; fi \
     && echo "Arch: ${TARGETPLATFORM}, FTLARCH: ${FTLARCH}" \
     && if [ "${FTL_BRANCH}" = "master" ]; then URL="https://github.com/pi-hole/ftl/releases/latest/download"; else URL="https://ftl.pi-hole.net/${FTL_BRANCH}"; fi \

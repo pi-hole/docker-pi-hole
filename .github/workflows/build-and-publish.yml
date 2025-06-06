@@ -20,11 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [linux/amd64, linux/386, linux/arm/v6, linux/arm/v7, linux/arm64]
-        alpine_version: [3.19]        
-        include:
-          - platform: linux/riscv64
-            alpine_version: edge
+        platform: [linux/amd64, linux/386, linux/arm/v6, linux/arm/v7, linux/arm64, linux/riscv64]
           
     steps:
       - name: Prepare name for digest up/download
@@ -80,8 +76,7 @@ jobs:
           context: ./src/
           platforms: ${{ matrix.platform }}
           build-args: |
-            PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}
-            alpine_version=${{ matrix.alpine_version }}            
+            PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}            
             FTL_BRANCH=${{ env.components_branch }}
             CORE_BRANCH=${{ env.components_branch }}
             WEB_BRANCH=${{ env.components_branch }}            
