@@ -2,7 +2,9 @@ version: 2
 updates:
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories: 
+      - "/"
+      - "/.github/actions/login-repo/"
     schedule:
       interval: "weekly"
       day: saturday
