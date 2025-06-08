@@ -4,7 +4,6 @@ updates:
   - package-ecosystem: "github-actions"
     directories: 
       - "/"
-      - "/.github/actions/login-repo/"
     schedule:
       interval: "weekly"
       day: saturday
