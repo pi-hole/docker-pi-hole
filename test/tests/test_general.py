@@ -1,15 +1,32 @@
 import pytest
+import os
 
 
-@pytest.mark.parametrize("test_args", ['-e "PIHOLE_UID=456"'])
+# Adding 5 seconds sleep to give the emulated architecture time to run
+@pytest.mark.parametrize("docker", ["PIHOLE_UID=456"], indirect=True)
 def test_pihole_uid_env_var(docker):
-    func = docker.run("id -u pihole")
+    func = docker.run("echo ${PIHOLE_UID}")
+    assert "456" in func.stdout
+    func = docker.run(
+        """
+        sleep 5
+        id -u pihole
+        """
+    )
     assert "456" in func.stdout
 
 
-@pytest.mark.parametrize("test_args", ['-e "PIHOLE_GID=456"'])
+# Adding 5 seconds sleep to give the emulated architecture time to run
+@pytest.mark.parametrize("docker", ["PIHOLE_GID=456"], indirect=True)
 def test_pihole_gid_env_var(docker):
-    func = docker.run("id -g pihole")
+    func = docker.run("echo ${PIHOLE_GID}")
+    assert "456" in func.stdout
+    func = docker.run(
+        """
+        sleep 5
+        id -g pihole
+        """
+    )
     assert "456" in func.stdout
 
 
@@ -17,6 +34,19 @@ def test_pihole_ftl_version(docker):
     func = docker.run("pihole-FTL -vv")
     assert func.rc == 0
     assert "Version:" in func.stdout
+
+
+@pytest.mark.skipif(
+    not os.environ.get("CIPLATFORM"),
+    reason="CIPLATFORM environment variable not set, running locally",
+)
+def test_pihole_ftl_architecture(docker):
+    func = docker.run("pihole-FTL -vv")
+    assert func.rc == 0
+    assert "Architecture:" in func.stdout
+    # Get the expected architecture from CIPLATFORM environment variable
+    platform = os.environ.get("CIPLATFORM")
+    assert platform in func.stdout
 
 
 # Wait 5 seconds for startup, then kill the start.sh script
