@@ -10,7 +10,9 @@ updates:
       time: "10:00"
     target-branch: development
   - package-ecosystem: "docker"
-    directory: "/src/"
+    directories: 
+      - "/src/"
+      - "/test/"
     schedule:
       interval: "weekly"
       day: saturday
