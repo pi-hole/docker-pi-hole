@@ -8,6 +8,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Not testing i386 and RISCV
+        # Currently there are no docker-cli images for these architectures
         include:
           - platform: linux/amd64
             runner: ubuntu-latest
