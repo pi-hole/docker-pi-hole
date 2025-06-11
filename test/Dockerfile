@@ -1,7 +1,14 @@
-ARG alpine_version="3.22"
-ARG docker_version="28.2.2"
+FROM alpine:3.22 AS base-cli
 
-FROM docker:${docker_version}-cli-alpine${alpine_version}
+RUN apk add --no-cache \
+    ca-certificates \
+    openssh-client \
+    git \
+    docker-cli \
+    docker-cli-buildx \
+    docker-cli-compose
+
+FROM base-cli
 
 COPY --chmod=0755 ./cmd.sh /usr/local/bin/cmd.sh
 COPY requirements.txt /root/
