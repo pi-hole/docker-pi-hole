@@ -14,6 +14,7 @@ PLATFORM="${PLATFORM:-linux/amd64}"
 # generate and build dockerfile
 docker buildx build --load --platform=${PLATFORM} --tag image_pipenv --file test/Dockerfile test/
 docker run --rm \
+    --platform=${PLATFORM} \
     --volume /var/run/docker.sock:/var/run/docker.sock \
     --volume "$(pwd):/$(pwd)" \
     --workdir "$(pwd)" \
