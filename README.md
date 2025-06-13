@@ -243,7 +243,7 @@ The standard Pi-hole customization abilities apply to this docker, but with dock
 
 Do not attempt to upgrade (`pihole -up`) or reconfigure (`pihole -r`).
 
-New images will be released for upgrades, upgrading by replacing your old container with a fresh upgraded image is the 'docker way'. Long-living docker containers are not the docker way since they aim to be portable and reproducible, why not re-create them often!  Just to prove you can.
+New images will be released for upgrades, upgrading by replacing your old container with a fresh upgraded image is the 'docker way'. Long-living docker containers are not the docker way since they aim to be portable and reproducible, why not re-create them often! **Just to prove you can.**
 
 0. Read the release notes for both this Docker release and the Pi-hole release
     - This will help you avoid common problems due to any known issues with upgrading or newly required arguments or variables
@@ -252,7 +252,7 @@ New images will be released for upgrades, upgrading by replacing your old contai
 2. Throw away your container: `docker rm -f pihole`
     - **Warning:** When removing your pihole container you may be stuck without DNS until step 3; **`docker pull`** before **`docker rm -f`** to avoid DNS interruption.
     - If you care about your data (logs/customizations), make sure you have it volume-mapped or it will be deleted in this step.
-3. Start your container with the newer base image: `docker run <args> pihole/pihole` (`<args>` being your preferred run volumes and env vars)
+3. Start your container with the newer base image: `docker run <args> pihole/pihole` (`<args>` being your preferred run volumes and env vars). **OR** `docker compose up -d` if you have a `docker-compose.yml` file.
 
 **Why is this style of upgrading good?**
 
