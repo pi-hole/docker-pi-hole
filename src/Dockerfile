@@ -40,7 +40,7 @@ RUN apk add --no-cache \
     git \
     # Install grep to avoid issues in pihole -w/b with the default busybox grep
     grep \
-    iproute2-ss \
+    iproute2 \
     jq \
     libcap \
     logrotate \
