@@ -186,10 +186,10 @@ Here is a rundown of other arguments for your docker-compose / docker run.
 ### Installing on Ubuntu or Fedora
 
 Modern releases of Ubuntu (17.10+) and Fedora (33+) include [`systemd-resolved`](http://manpages.ubuntu.com/manpages/bionic/man8/systemd-resolved.service.8.html) which is configured by default to implement a caching DNS stub resolver. This will prevent pi-hole from listening on port 53.
-The stub resolver should be disabled with: `sudo sed -r -i.orig 's/#?DNSStubListener=yes/DNSStubListener=no/g' /etc/systemd/resolved.conf`.
+The stub resolver should be disabled with: `sudo sh -c 'mkdir -p /etc/systemd/resolved.conf.d && printf "[Resolve]\nDNSStubListener=no\n" | tee /etc/systemd/resolved.conf.d/no-stub.conf'`.
 
-This will not change the nameserver settings, which point to the stub resolver thus preventing DNS resolution. Change the `/etc/resolv.conf` symlink to point to `/run/systemd/resolve/resolv.conf`, which is automatically updated to follow the system's [`netplan`](https://netplan.io/):
-`sudo sh -c 'rm /etc/resolv.conf && ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf'`.
+This will not change the nameserver settings, which point to the stub resolver thus preventing DNS resolution. Change the `/etc/resolv.conf` symlink to point to `/run/systemd/resolve/resolv.conf`, which is automatically updated to follow the ubuntu system's [`netplan`](https://netplan.io/) or fedora system's [`sysconfig`](https://docs.fedoraproject.org/en-US/fedora-coreos/sysconfig-network-configuration):
+`sudo sh -c 'rm -f /etc/resolv.conf && ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf'`.
 After making these changes, you should restart systemd-resolved using `systemctl restart systemd-resolved`.
 
 Once pi-hole is installed, you'll want to configure your clients to use it ([see here](https://discourse.pi-hole.net/t/how-do-i-configure-my-devices-to-use-pi-hole-as-their-dns-server/245)). If you used the symlink above, your docker host will either use whatever is served by DHCP, or whatever static setting you've configured. If you want to explicitly set your docker host's nameservers you can edit the netplan(s) found at `/etc/netplan`, then run `sudo netplan apply`.
@@ -207,6 +207,13 @@ network:
                 addresses: [127.0.0.1]
     version: 2
 ```
+
+For fedora users, you can run the following commands to edit the sysconfig(s) found at `/etc/NetworkManager/system-connections` via nmcli.
+
+Example sysconfig nmcli commands:
+1. `nmcli connection add type ethernet ifname ens160 con-name ens160-night autoconnect yes`
+2. `nmcli connection modify ens160-night ipv4.method auto ipv4.ignore-auto-dns yes ipv4.dns "127.0.0.1"`
+3. `nmcli connection up ens160-night`
 
 Note that it is also possible to disable `systemd-resolved` entirely. However, this can cause problems with name resolution in vpns ([see bug report](https://bugs.launchpad.net/network-manager/+bug/1624317)).\
 It also disables the functionality of netplan since systemd-resolved is used as the default renderer ([see `man netplan`](http://manpages.ubuntu.com/manpages/bionic/man5/netplan.5.html#description)).\
