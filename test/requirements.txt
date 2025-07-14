@@ -1,5 +1,6 @@
-pytest == 8.4.0
-pytest-xdist == 3.7.0
+pytest == 8.4.1
 pytest-testinfra == 10.2.2
-black == 25.1.0
 pytest-clarity == 1.0.1
+tox == 4.27.0
+# Not adding pytest-xdist as using pytest with n > 1 cores 
+# causes random issues with the emulated architectures

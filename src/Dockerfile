@@ -1,17 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG FTL_SOURCE=remote
 # Pull Stable images
-FROM alpine:3.22 AS base-stable
-FROM base-stable AS base-386
-FROM base-stable AS base-amd64
-FROM base-stable AS base-arm
-FROM base-stable AS base-arm64
-# Pull Edge images
-FROM alpine:edge AS base-edge
-FROM base-edge   AS base-riscv64
-# Use the base image for the current architecture
-FROM base-${TARGETARCH} AS base
-# https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
+FROM alpine:3.22 AS base
 
 ARG TARGETPLATFORM
 ARG WEB_BRANCH="development"
@@ -40,7 +30,7 @@ RUN apk add --no-cache \
     git \
     # Install grep to avoid issues in pihole -w/b with the default busybox grep
     grep \
-    iproute2-ss \
+    iproute2 \
     jq \
     libcap \
     logrotate \
