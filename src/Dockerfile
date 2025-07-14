@@ -60,9 +60,12 @@ COPY crontab.txt /crontab.txt
 # Add PADD to the container, too.
 ADD --chmod=0755 https://raw.githubusercontent.com/${PADD_FORK}/PADD/${PADD_BRANCH}/padd.sh /usr/local/bin/padd
 
-# download a the main repos from github
-RUN git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.com/${WEB_FORK}/web.git /var/www/html/admin && \
-    git clone --depth 1 --single-branch --branch ${CORE_BRANCH} https://github.com/${CORE_FORK}/pi-hole.git /etc/.pihole
+# download a the main repos from github 
+#if the branch is master we reset to the latest tag as sometimes the master branch contains meta changes that have not been tagged.                                        
+RUN git clone --depth 5 --single-branch --branch ${WEB_BRANCH} https://github.com/${WEB_FORK}/web.git /var/www/html/admin && \    
+    if [ "${WEB_BRANCH}" = "master" ]; then cd /var/www/html/admin && git reset --hard "$(git describe --tags --abbrev=0)"; fi && \
+    git clone --depth 5 --single-branch --branch ${CORE_BRANCH} https://github.com/${CORE_FORK}/pi-hole.git /etc/.pihole && \    
+    if [ "${CORE_BRANCH}" = "master" ]; then cd /etc/.pihole && git reset --hard "$(git describe --tags --abbrev=0)"; fi
 
 RUN cd /etc/.pihole && \
     install -Dm755 -d /opt/pihole && \
