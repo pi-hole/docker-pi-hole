@@ -35,7 +35,6 @@ RUN apk add --no-cache \
     libcap \
     logrotate \
     ncurses \
-    nmap-ncat \
     procps-ng \
     psmisc \
     shadow \
