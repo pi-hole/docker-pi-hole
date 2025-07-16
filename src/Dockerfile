@@ -61,11 +61,22 @@ COPY crontab.txt /crontab.txt
 ADD --chmod=0755 https://raw.githubusercontent.com/${PADD_FORK}/PADD/${PADD_BRANCH}/padd.sh /usr/local/bin/padd
 
 # download a the main repos from github 
-#if the branch is master we reset to the latest tag as sometimes the master branch contains meta changes that have not been tagged.                                        
-RUN git clone --depth 5 --single-branch --branch ${WEB_BRANCH} https://github.com/${WEB_FORK}/web.git /var/www/html/admin && \    
-    if [ "${WEB_BRANCH}" = "master" ]; then cd /var/www/html/admin && git reset --hard "$(git describe --tags --abbrev=0)"; fi && \
-    git clone --depth 5 --single-branch --branch ${CORE_BRANCH} https://github.com/${CORE_FORK}/pi-hole.git /etc/.pihole && \    
-    if [ "${CORE_BRANCH}" = "master" ]; then cd /etc/.pihole && git reset --hard "$(git describe --tags --abbrev=0)"; fi
+# if the branch is master we clone the latest as sometimes the master branch contains meta changes that have not been tagged
+# (we need to create a new "master" branch to avoid the "detached HEAD" state for the version check to work correctly)                                      
+RUN if [ "${WEB_BRANCH}" = "master" ]; then \
+        LATEST_TAG=$(git ls-remote --tags --sort="v:refname" https://github.com/${WEB_FORK}/web.git | tail -n1 | sed 's/.*\///; s/\^{}//') && \
+        git clone --branch ${LATEST_TAG} --single-branch --depth 1 https://github.com/${WEB_FORK}/web.git /var/www/html/admin && \
+        cd /var/www/html/admin && \
+        git checkout -b master; \
+     else git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.com/${WEB_FORK}/web.git /var/www/html/admin; fi
+
+RUN if [ "${CORE_BRANCH}" = "master" ]; then \
+        LATEST_TAG=$(git ls-remote --tags --sort="v:refname" https://github.com/${CORE_FORK}/pi-hole.git | tail -n1 | sed 's/.*\///; s/\^{}//') && \
+        git clone --branch ${LATEST_TAG} --single-branch --depth 1 https://github.com/${CORE_FORK}/pi-hole.git /etc/.pihole && \
+        cd /etc/.pihole && \
+        git checkout -b master; \
+     else git clone --depth 1 --single-branch --branch ${CORE_BRANCH} https://github.com/${CORE_FORK}/pi-hole.git /etc/.pihole; fi
+
 
 RUN cd /etc/.pihole && \
     install -Dm755 -d /opt/pihole && \
