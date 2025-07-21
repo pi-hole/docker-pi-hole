@@ -61,11 +61,25 @@ COPY crontab.txt /crontab.txt
 ADD --chmod=0755 https://raw.githubusercontent.com/${PADD_FORK}/PADD/${PADD_BRANCH}/padd.sh /usr/local/bin/padd
 
 # download a the main repos from github 
-#if the branch is master we reset to the latest tag as sometimes the master branch contains meta changes that have not been tagged.                                        
-RUN git clone --depth 5 --single-branch --branch ${WEB_BRANCH} https://github.com/${WEB_FORK}/web.git /var/www/html/admin && \    
-    if [ "${WEB_BRANCH}" = "master" ]; then cd /var/www/html/admin && git reset --hard "$(git describe --tags --abbrev=0)"; fi && \
-    git clone --depth 5 --single-branch --branch ${CORE_BRANCH} https://github.com/${CORE_FORK}/pi-hole.git /etc/.pihole && \    
-    if [ "${CORE_BRANCH}" = "master" ]; then cd /etc/.pihole && git reset --hard "$(git describe --tags --abbrev=0)"; fi
+# if the branch is master we clone the latest tag as sometimes the master branch contains meta changes that have not been tagged
+# (we need to create a new "master" branch to avoid the "detached HEAD" state for the version check to work correctly)                                      
+
+RUN clone_repo() { \
+        FORK="$1"; \
+        REPO="$2"; \
+        BRANCH="$3"; \
+        DEST="$4"; \
+        CLONE_BRANCH="$BRANCH"; \
+        if [ "$BRANCH" = "master" ]; then \
+            CLONE_BRANCH=$(curl -s https://api.github.com/repos/${FORK}/${REPO}/releases/latest | jq -r .tag_name); \
+        fi; \
+        git clone --branch "$CLONE_BRANCH" --single-branch --depth 1 "https://github.com/${FORK}/${REPO}.git" "$DEST"; \
+        cd "$DEST"; \
+        if [ "$BRANCH" = "master" ]; then git checkout -b master; fi; \
+    }; \
+    clone_repo "${WEB_FORK}" "web" "${WEB_BRANCH}" "/var/www/html/admin"; \
+    clone_repo "${CORE_FORK}" "pi-hole" "${CORE_BRANCH}" "/etc/.pihole"
+
 
 RUN cd /etc/.pihole && \
     install -Dm755 -d /opt/pihole && \
