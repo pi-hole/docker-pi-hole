@@ -61,21 +61,24 @@ COPY crontab.txt /crontab.txt
 ADD --chmod=0755 https://raw.githubusercontent.com/${PADD_FORK}/PADD/${PADD_BRANCH}/padd.sh /usr/local/bin/padd
 
 # download a the main repos from github 
-# if the branch is master we clone the latest as sometimes the master branch contains meta changes that have not been tagged
+# if the branch is master we clone the latest tag as sometimes the master branch contains meta changes that have not been tagged
 # (we need to create a new "master" branch to avoid the "detached HEAD" state for the version check to work correctly)                                      
-RUN if [ "${WEB_BRANCH}" = "master" ]; then \
-        LATEST_TAG=$(git ls-remote --tags --sort="v:refname" https://github.com/${WEB_FORK}/web.git | tail -n1 | sed 's/.*\///; s/\^{}//') && \
-        git clone --branch ${LATEST_TAG} --single-branch --depth 1 https://github.com/${WEB_FORK}/web.git /var/www/html/admin && \
-        cd /var/www/html/admin && \
-        git checkout -b master; \
-     else git clone --depth 1 --single-branch --branch ${WEB_BRANCH} https://github.com/${WEB_FORK}/web.git /var/www/html/admin; fi
 
-RUN if [ "${CORE_BRANCH}" = "master" ]; then \
-        LATEST_TAG=$(git ls-remote --tags --sort="v:refname" https://github.com/${CORE_FORK}/pi-hole.git | tail -n1 | sed 's/.*\///; s/\^{}//') && \
-        git clone --branch ${LATEST_TAG} --single-branch --depth 1 https://github.com/${CORE_FORK}/pi-hole.git /etc/.pihole && \
-        cd /etc/.pihole && \
-        git checkout -b master; \
-     else git clone --depth 1 --single-branch --branch ${CORE_BRANCH} https://github.com/${CORE_FORK}/pi-hole.git /etc/.pihole; fi
+RUN clone_repo() { \
+        REPO_FORK="$1"; \
+        REPO_NAME="$2"; \
+        BRANCH="$3"; \
+        DEST="$4"; \
+        CLONE_BRANCH="$BRANCH"; \
+        if [ "$BRANCH" = "master" ]; then \
+            CLONE_BRANCH=$(curl -s https://api.github.com/repos/${REPO_FORK}/${REPO_NAME}/releases/latest | jq -r .tag_name); \
+        fi; \
+        git clone --branch "$CLONE_BRANCH" --single-branch --depth 1 "https://github.com/${REPO_FORK}/${REPO_NAME}.git" "$DEST"; \
+        cd "$DEST"; \
+        if [ "$BRANCH" = "master" ]; then git checkout -b master; fi; \
+    }; \
+    clone_repo "${WEB_FORK}" "web" "${WEB_BRANCH}" "/var/www/html/admin"; \
+    clone_repo "${CORE_FORK}" "pi-hole" "${CORE_BRANCH}" "/etc/.pihole"
 
 
 RUN cd /etc/.pihole && \
