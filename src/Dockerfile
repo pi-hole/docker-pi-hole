@@ -65,15 +65,15 @@ ADD --chmod=0755 https://raw.githubusercontent.com/${PADD_FORK}/PADD/${PADD_BRAN
 # (we need to create a new "master" branch to avoid the "detached HEAD" state for the version check to work correctly)                                      
 
 RUN clone_repo() { \
-        REPO_FORK="$1"; \
-        REPO_NAME="$2"; \
+        FORK="$1"; \
+        REPO="$2"; \
         BRANCH="$3"; \
         DEST="$4"; \
         CLONE_BRANCH="$BRANCH"; \
         if [ "$BRANCH" = "master" ]; then \
-            CLONE_BRANCH=$(curl -s https://api.github.com/repos/${REPO_FORK}/${REPO_NAME}/releases/latest | jq -r .tag_name); \
+            CLONE_BRANCH=$(curl -s https://api.github.com/repos/${FORK}/${REPO}/releases/latest | jq -r .tag_name); \
         fi; \
-        git clone --branch "$CLONE_BRANCH" --single-branch --depth 1 "https://github.com/${REPO_FORK}/${REPO_NAME}.git" "$DEST"; \
+        git clone --branch "$CLONE_BRANCH" --single-branch --depth 1 "https://github.com/${FORK}/${REPO}.git" "$DEST"; \
         cd "$DEST"; \
         if [ "$BRANCH" = "master" ]; then git checkout -b master; fi; \
     }; \
