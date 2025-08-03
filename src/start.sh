@@ -52,9 +52,8 @@ start() {
   migrate_gravity
 
   echo "  [i] pihole-FTL pre-start checks"
-  # Remove possible leftovers from previous pihole-FTL processes
-  rm -f /dev/shm/FTL-* 2>/dev/null
-  rm -f /run/pihole/FTL.sock
+  # Run the post stop script to cleanup any remaining artifacts from a previous run
+  sh /opt/pihole/pihole-FTL-poststop.sh
 
   fix_capabilities
   sh /opt/pihole/pihole-FTL-prestart.sh
@@ -134,6 +133,8 @@ stop() {
   if ! [[ "${FTL_EXIT_CODE}" =~ ^[0-9]+$ ]]; then
     FTL_EXIT_CODE=1
   fi
+
+  sh /opt/pihole/pihole-FTL-poststop.sh
 
   echo ""
   echo "  [i] pihole-FTL exited with status $FTL_EXIT_CODE"
