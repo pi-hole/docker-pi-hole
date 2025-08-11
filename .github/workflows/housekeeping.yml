@@ -1,6 +1,8 @@
-name: housekeeping
+name: Remove untagged images from registry
 on:
-  workflow_dispatch:
+    workflow_dispatch:
+    schedule:
+        - cron: "0 0 * * *"
 
 jobs:
     housekeeping:
