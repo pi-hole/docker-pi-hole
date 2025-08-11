@@ -13,6 +13,8 @@ docker-compose.yml
 etc-dnsmasq.d/
 etc-pihole/
 var-log/
+.vscode/
+.pytest_cache/
 
 # WIP/test stuff
 doco.yml

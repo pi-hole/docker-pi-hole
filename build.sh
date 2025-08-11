@@ -5,7 +5,7 @@ usage() {
     echo "Usage: $0 [-l] [-f <ftl_branch>] [-c <core_branch>] [-w <web_branch>] [-t <tag>] [use_cache]"
     echo "Options:"
     echo "  -f,  --ftlbranch <branch>     Specify FTL branch (cannot be used in conjunction with -l)"
-    echo "  -c,  --corebranch <branch>    Specify Core branch"    
+    echo "  -c,  --corebranch <branch>    Specify Core branch"
     echo "  -w,  --webbranch <branch>     Specify Web branch"
     echo "  -p,  --paddbranch <branch>    Specify PADD branch"
     echo "  -t,  --tag <tag>              Specify Docker image tag (default: pihole:local)"
@@ -91,7 +91,7 @@ while [[ $# -gt 0 ]]; do
         DOCKER_BUILD_CMD+=" --build-arg CORE_BRANCH=$CORE_BRANCH"
         shift
         shift
-        ;;   
+        ;;
     -w | --webbranch)
         WEB_BRANCH="$2"
         check_branch_exists "web" "$WEB_BRANCH" "$WEB_FORK"

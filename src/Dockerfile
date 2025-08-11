@@ -59,9 +59,9 @@ COPY crontab.txt /crontab.txt
 # Add PADD to the container, too.
 ADD --chmod=0755 https://raw.githubusercontent.com/${PADD_FORK}/PADD/${PADD_BRANCH}/padd.sh /usr/local/bin/padd
 
-# download a the main repos from github 
+# download a the main repos from github
 # if the branch is master we clone the latest tag as sometimes the master branch contains meta changes that have not been tagged
-# (we need to create a new "master" branch to avoid the "detached HEAD" state for the version check to work correctly)                                      
+# (we need to create a new "master" branch to avoid the "detached HEAD" state for the version check to work correctly)
 
 RUN clone_repo() { \
         FORK="$1"; \
