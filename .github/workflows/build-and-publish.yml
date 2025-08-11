@@ -33,7 +33,7 @@ jobs:
             runner: ubuntu-24.04-arm
           - platform: linux/riscv64
             runner: ubuntu-24.04-arm
-          
+
     steps:
       - name: Prepare name for digest up/download
         run: |
@@ -57,7 +57,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           images: |
             ${{ env.dockerhub }}
-            ${{ env.ghcr }}            
+            ${{ env.ghcr }}
           flavor: |
             latest=${{ startsWith(github.ref, 'refs/tags/') }}
           tags: |
@@ -95,10 +95,10 @@ jobs:
           context: ./src/
           platforms: ${{ matrix.platform }}
           build-args: |
-            PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}            
+            PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}
             FTL_BRANCH=${{ env.components_branch }}
             CORE_BRANCH=${{ env.components_branch }}
-            WEB_BRANCH=${{ env.components_branch }}            
+            WEB_BRANCH=${{ env.components_branch }}
             PADD_BRANCH=${{ env.components_branch }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
@@ -142,7 +142,7 @@ jobs:
           path: /tmp/digests
           pattern: digests-*
           merge-multiple: true
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

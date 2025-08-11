@@ -12,31 +12,31 @@ assignees: ''
 
 <!-- IMPORTANT Complete the entire template please, the info gathered here is usually needed to debug issues anyway so it saves time in the long run. Incomplete/stock template issues may be closed -->
 
-<!-- pick ONE: Bug, 
-               Feature Request, 
-               Run Issue (running Pi-hole container failing), 
-               Build Issue (Building image failing) 
+<!-- pick ONE: Bug,
+               Feature Request,
+               Run Issue (running Pi-hole container failing),
+               Build Issue (Building image failing)
 Enter in line below: -->
-This is a: **FILL ME IN**  
+This is a: **FILL ME IN**
 
 
 ## Details
 <!-- Provide a more detailed introduction to the issue or feature, try not to duplicate info from lower sections by reviewing the entire template first -->
 
 ## Related Issues
-- [ ] I have searched this repository/Pi-hole forums for existing issues and pull requests that look similar 
+- [ ] I have searched this repository/Pi-hole forums for existing issues and pull requests that look similar
 <!-- Add links below! -->
 
 <!------- FEATURE REQUESTS CAN STOP FILLING IN TEMPLATE HERE -------->
 <!------- ISSUES SHOULD FILL OUT REMAINDER OF TEMPLATE -------->
 
-## How to reproduce the issue 
+## How to reproduce the issue
 
 1. Environment data
   * Operating System: **ENTER HERE** <!-- Debian, Ubuntu, Rasbian, etc -->
   * Hardware: <!-- PC, RasPi B/2B/3B/4B, Mac, Synology, QNAP, etc -->
   * Kernel Architecture: <!-- x86/amd64, ArmV7, ArmV8 32bit, ArmV8 64bit, etc -->
-  * Docker Install Info and version: 
+  * Docker Install Info and version:
     - Software source: <!-- official docker-ce, OS provided package, Hypriot -->
     - Supplimentary Software: <!-- synology, portainer, etc -->
   * Hardware architecture: <!-- ARMv7, x86 -->

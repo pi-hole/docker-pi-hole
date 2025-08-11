@@ -79,12 +79,12 @@ start() {
   while ! grep -q '########## FTL started' /var/log/pihole/FTL.log; do
     sleep 0.5
   done
-  
+
   pihole updatechecker
   local versionsOutput
   versionsOutput=$(pihole -v)
   echo "  [i] Version info:"
-  printf "%b" "${versionsOutput}\\n" | sed 's/^/      /' 
+  printf "%b" "${versionsOutput}\\n" | sed 's/^/      /'
   echo ""
 
   if [ "${TAIL_FTL_LOG:-1}" -eq 1 ]; then
@@ -100,8 +100,8 @@ start() {
   # Wait for the capsh process (which spawned FTL) to finish
   wait $CAPSH_PID
   FTL_EXIT_CODE=$?
-  
-  
+
+
   # If we are here, then FTL has exited.
   # If the trap was triggered, then stop will have already been called
   if [ $TRAP_TRIGGERED -eq 0 ]; then
