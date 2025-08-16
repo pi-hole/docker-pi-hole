@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Get editorconfig-checker
       uses: editorconfig-checker/action-editorconfig-checker@main # tag v1.0.0 is really out of date

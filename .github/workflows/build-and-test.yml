@@ -25,7 +25,7 @@ jobs:
       CI_ARCH: ${{ matrix.platform }}
     steps:
     - name: Checkout Repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
