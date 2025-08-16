@@ -42,11 +42,11 @@ jobs:
 
       - name: Checkout Repo
         if: github.event_name != 'schedule'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Checkout dev branch if scheduled
         if: github.event_name == 'schedule'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: development
 
@@ -128,11 +128,11 @@ jobs:
     steps:
       - name: Checkout Repo
         if: github.event_name != 'schedule'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Checkout dev branch if scheduled
         if: github.event_name == 'schedule'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: development
 
