@@ -25,13 +25,13 @@ jobs:
       CI_ARCH: ${{ matrix.platform }}
     steps:
     - name: Checkout Repo
-      uses: actions/checkout@v5
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0.0
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 #v3.6.0
 
     - name: Set up Python
-      uses: actions/setup-python@v5.6.0
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 #v5.6.0
       with:
         python-version: "3.13"
 
