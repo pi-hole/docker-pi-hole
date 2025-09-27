@@ -79,7 +79,7 @@ start() {
     # exit if we do not find it
     pihole-FTL wait-for '########## FTL started' /var/log/pihole/FTL.log 10 "0 > /dev/null"
     if [ $? -ne 0 ]; then
-        echo "  [✗] FTL did not start"
+        echo "  [✗] FTL did not start - stopping container"
         exit 1
     fi
 
