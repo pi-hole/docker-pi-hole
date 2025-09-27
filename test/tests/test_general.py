@@ -49,7 +49,7 @@ def test_pihole_ftl_architecture(docker):
     assert platform in func.stdout
 
 
-# Wait 5 seconds for startup, then stop the container gracefully
+# Wait for FTL to start up, then stop the container gracefully
 # Finally, check the container logs to see if FTL was shut down cleanly
 def test_pihole_ftl_clean_shutdown(docker):
     import subprocess
@@ -58,8 +58,23 @@ def test_pihole_ftl_clean_shutdown(docker):
     # Get the container ID from the docker fixture
     container_id = docker.backend.name
 
-    # Wait for startup
-    time.sleep(5)
+    # Wait for FTL to fully start up by checking logs
+    max_wait_time = 60  # Maximum wait time in seconds
+    start_time = time.time()
+    ftl_started = False
+
+    while time.time() - start_time < max_wait_time:
+        result = subprocess.run(
+            ["docker", "logs", container_id], capture_output=True, text=True
+        )
+
+        if "########## FTL started" in result.stdout:
+            ftl_started = True
+            break
+
+        time.sleep(1)  # Check every second
+
+    assert ftl_started, f"FTL did not start within {max_wait_time} seconds"
 
     # Stop the container gracefully (sends SIGTERM)
     subprocess.run(["docker", "stop", container_id], check=True)
