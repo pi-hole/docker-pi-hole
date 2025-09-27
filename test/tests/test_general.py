@@ -49,19 +49,29 @@ def test_pihole_ftl_architecture(docker):
     assert platform in func.stdout
 
 
-# Wait 5 seconds for startup, then kill the start.sh script
-# Finally, check the FTL log to see if it has been shut down cleanly
+# Wait 5 seconds for startup, then stop the container gracefully
+# Finally, check the container logs to see if FTL was shut down cleanly
 def test_pihole_ftl_clean_shutdown(docker):
-    func = docker.run(
-        """
-        sleep 5
-        killall --signal 15 start.sh
-        sleep 5
-        grep 'terminated' /var/log/pihole/FTL.log
-    """
+    import subprocess
+    import time
+
+    # Get the container ID from the docker fixture
+    container_id = docker.backend.name
+
+    # Wait for startup
+    time.sleep(5)
+
+    # Stop the container gracefully (sends SIGTERM)
+    subprocess.run(["docker", "stop", container_id], check=True)
+
+    # Get the container logs
+    result = subprocess.run(
+        ["docker", "logs", container_id], capture_output=True, text=True
     )
-    assert "INFO: ########## FTL terminated after" in func.stdout
-    assert "(code 0)" in func.stdout
+
+    # Check for clean shutdown messages in the logs
+    assert "INFO: ########## FTL terminated after" in result.stdout
+    assert "(code 0)" in result.stdout
 
 
 def test_cronfile_valid(docker):
