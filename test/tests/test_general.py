@@ -51,7 +51,7 @@ def test_pihole_ftl_architecture(docker):
 
 # Wait for FTL to start up, then stop the container gracefully
 # Finally, check the container logs to see if FTL was shut down cleanly
-def test_pihole_ftl_clean_shutdown(docker):
+def test_pihole_ftl_starts_and_shuts_down_cleanly(docker):
     import subprocess
     import time
 
