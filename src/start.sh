@@ -77,7 +77,7 @@ start() {
 
     # Wait until the FTL log contains the "FTL started" message before continuing, timeout after 10 seconds
     # exit if we do not find it
-    pihole-FTL wait-for '########## FTL started' /var/log/pihole/FTL.log 10 "0 > /dev/null"
+    pihole-FTL wait-for '########## FTL started' /var/log/pihole/FTL.log 10 0 > /dev/null
     if [ $? -ne 0 ]; then
         echo "  [✗] FTL did not start - stopping container"
         exit 1
@@ -145,12 +145,6 @@ stop() {
     echo "  [i] Container will now stop or restart depending on your restart policy"
     echo "      https://docs.docker.com/engine/containers/start-containers-automatically/#use-a-restart-policy"
     echo ""
-
-    # If we are running pytest, keep the container alive for a little longer
-    # to allow the tests to complete
-    if [[ ${PYTEST} ]]; then
-        sleep 10
-    fi
 
     exit "${FTL_EXIT_CODE}"
 
