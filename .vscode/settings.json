@@ -1,5 +1,0 @@
-{
-    "github-actions.workflows.pinned.workflows": [
-        ".github/workflows/v6-alpine-play.yml"
-    ]
-}

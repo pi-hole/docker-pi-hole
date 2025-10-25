@@ -34,13 +34,13 @@ services:
       # Set the appropriate timezone for your location (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), e.g:
       TZ: 'Europe/London'
       # Set a password to access the web interface. Not setting one will result in a random password being assigned
-      FTLCONF_webserver_api_password: 'correct horse battery staple'     
+      FTLCONF_webserver_api_password: 'correct horse battery staple'
     # Volumes store your data between container upgrades
     volumes:
       # For persisting Pi-hole's databases and common configuration file
       - './etc-pihole:/etc/pihole'
       # Uncomment the below if you have custom dnsmasq config files that you want to persist. Not needed for most.
-      #- './etc-dnsmasq.d:/etc/dnsmasq.d'    
+      #- './etc-dnsmasq.d:/etc/dnsmasq.d'
     cap_add:
       # See https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
       # Required if you are using Pi-hole as your DHCP server, else not needed

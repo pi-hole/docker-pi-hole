@@ -200,12 +200,11 @@ Release notes will always contain full details of changes in the container, incl
 
 | tag                 | description
 |---------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| `latest`            | Always latest release                                                                                                                      |
+| `latest`            | Always the latest release                                                                                                                  |
 | `2022.04.0`         | Date-based release                                                                                                                         |
 | `2022.04.1`         | Second release in a given month                                                                                                            |
-| `development`               | Similar to `latest`, but for the development branch (pushed occasionally)                                                                  |
 | `*beta`             | Early beta releases of upcoming versions - here be dragons                                                                                 |
-| `nightly`           | Like `development` but pushed every night and pulls from the latest `development` branches of the core Pi-hole components (Pi-hole, web, FTL)      |
+| `nightly`           | Built and pushed whenever there are changes on the `development` branch and additionally produced by the scheduled nightly job. These are the most experimental development images and may change frequently |
 
 ## Upgrading, Persistence, and Customizations
 
