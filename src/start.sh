@@ -80,10 +80,11 @@ start() {
 
     # Wait until the FTL log contains the "FTL started" message before continuing
     # exit if we do not find it
-    pihole-FTL wait-for '########## FTL started' /var/log/pihole/FTL.log "${FTL_START_TIMEOUT}" 0 > /dev/null
+    local wait_output
+    wait_output=$(pihole-FTL wait-for '########## FTL started' /var/log/pihole/FTL.log "${FTL_START_TIMEOUT}" 0)
     if [ $? -ne 0 ]; then
-        echo "  [✗] FTL did not start within ${FTL_START_TIMEOUT} seconds - stopping container"
-        echo "  [i] If this continues to happen, consider increasing the timeout by setting the FTL_START_TIMEOUT environment variable to a higher value (in seconds)."
+        echo "  [✗] ${wait_output}"
+        echo "  [✗] FTL did not start, stopping container"
         exit 1
     fi
 
