@@ -70,13 +70,16 @@ start() {
     # We need the PID of the capsh process so that we can wait for it to finish
     CAPSH_PID=$!
 
+    # Get the FTL log file path from the config
+    FTLlogFile=$(getFTLConfigValue files.log.ftl)
+
     # Wait until the log file exists before continuing
-    while [ ! -f /var/log/pihole/FTL.log ]; do
+    while [ ! -f "${FTLlogFile}" ]; do
         sleep 0.5
     done
 
     #  Wait until the FTL log contains the "FTL started" message before continuing
-    while ! grep -q '########## FTL started' /var/log/pihole/FTL.log; do
+    while ! grep -q '########## FTL started' "${FTLlogFile}"; do
         sleep 0.5
     done
 
