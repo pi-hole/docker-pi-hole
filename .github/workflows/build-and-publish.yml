@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - development
+      - experimental
   release:
     types: [published]
   pull_request:
@@ -52,7 +53,8 @@ jobs:
         ghcr.io/${{ github.repository_owner }}/pihole
       meta-tags: |
         type=schedule,pattern=nightly
-        type=raw,value=nightly,enable=${{ github.event_name == 'push' }}
+        type=raw,value=nightly,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/development' }}
+            type=raw,value=experimental,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/experimental' }}
         type=ref,event=tag
       meta-flavor: |
         latest=${{ startsWith(github.ref, 'refs/tags/') }}
