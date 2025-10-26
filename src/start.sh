@@ -70,18 +70,19 @@ start() {
     # We need the PID of the capsh process so that we can wait for it to finish
     CAPSH_PID=$!
 
+    # Get the FTL log file path from the config
+    FTLlogFile=$(getFTLConfigValue files.log.ftl)
+
     # Wait until the log file exists before continuing
-    while [ ! -f /var/log/pihole/FTL.log ]; do
+    while [ ! -f "${FTLlogFile}" ]; do
         sleep 0.5
     done
 
-    # Wait until the FTL log contains the "FTL started" message before continuing, timeout after 10 seconds
-    # exit if we do not find it
-    pihole-FTL wait-for '########## FTL started' /var/log/pihole/FTL.log 10 "0 > /dev/null"
-    if [ $? -ne 0 ]; then
-        echo "  [✗] FTL did not start - stopping container"
-        exit 1
-    fi
+    #  Wait until the FTL log contains the "FTL started" message before continuing
+    while ! grep -q '########## FTL started' "${FTLlogFile}"; do
+        sleep 0.5
+    done
+
 
     pihole updatechecker
     local versionsOutput
