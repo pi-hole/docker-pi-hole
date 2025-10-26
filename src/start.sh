@@ -20,6 +20,19 @@ start() {
     # shellcheck source=/dev/null
     . /usr/bin/bash_functions.sh
 
+    # Warn about experimental builds
+    if [ -f /pihole.docker.tag ] && grep -q "experimental" /pihole.docker.tag; then
+        echo ""
+        echo "  ⚠⚠⚠ WARNING ⚠⚠⚠"
+        echo "  [!] This is an EXPERIMENTAL build of Pi-hole Docker"
+        echo "  [!] This build may be unstable or contain breaking changes"
+        echo "  [!] Use only if you have been asked to by the Pi-hole team"
+        echo "  [!] Report any issues to: https://github.com/pi-hole/docker-pi-hole/issues"
+        echo "  ⚠⚠⚠ WARNING ⚠⚠⚠"
+        echo ""
+        sleep 5
+    fi
+
     # If the file /etc/pihole/setupVars.conf exists, but /etc/pihole/pihole.toml does not, then we are migrating v5->v6
     # FTL Will handle the migration of the config files
     if [[ -f /etc/pihole/setupVars.conf && ! -f /etc/pihole/pihole.toml ]]; then
