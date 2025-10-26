@@ -104,9 +104,11 @@ migrate_gravity() {
     echo "  [i] Gravity migration checks"
     gravityDBfile=$(getFTLConfigValue files.gravity)
 
-    if [[ ! -f /etc/pihole/adlists.list ]]; then
-        echo "  [i] No adlist file found, creating one with a default blocklist"
-        echo "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" >/etc/pihole/adlists.list
+    if [[ -z "${PYTEST}" ]]; then
+        if [[ ! -f /etc/pihole/adlists.list ]]; then
+            echo "  [i] No adlist file found, creating one with a default blocklist"
+            echo "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" >/etc/pihole/adlists.list
+        fi
     fi
 
     if [ ! -f "${gravityDBfile}" ]; then

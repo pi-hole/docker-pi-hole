@@ -45,6 +45,10 @@ def docker(request):
     for env_var in env_vars:
         cmd.extend(["-e", env_var])
 
+    # ensure PYTEST=1 is set
+    if not any("PYTEST=1" in arg for arg in cmd):
+        cmd.extend(["-e", "PYTEST=1"])
+
     # add default TZ if not already set
     if not any("TZ=" in arg for arg in cmd):
         cmd.extend(["-e", 'TZ="Europe/London"'])
