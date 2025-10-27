@@ -47,7 +47,7 @@ RUN apk add --no-cache \
 # not included in the default image to keep it small), and also prepare the
 # system for a core dump. Furthermore, we already add the required signal
 # instructions to the gdb config file
-RUN if [ "${PIHOLE_DOCKER_TAG}" = "nightly" ]; then \
+RUN if [ "${PIHOLE_DOCKER_TAG}" = "nightly" ] || [ "${PIHOLE_DOCKER_TAG}" = "experimental" ]; then \
     apk add --no-cache gdb screen && \
     echo "ulimit -c unlimited" >> /etc/profile && \
     echo "handle SIGHUP nostop SIGPIPE nostop SIGTERM nostop SIG32 nostop SIG33 nostop SIG34 nostop SIG35 nostop SIG36 nostop SIG37 nostop SIG38 nostop SIG39 nostop SIG40 nostop SIG41 nostop" > /root/.gdbinit; \
