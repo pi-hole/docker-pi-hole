@@ -58,6 +58,14 @@ start() {
     fix_capabilities
     sh /opt/pihole/pihole-FTL-prestart.sh
 
+    # Get the FTL log file path from the config
+    FTLlogFile=$(getFTLConfigValue files.log.ftl)
+
+    # Get the FTL log file line count before FTL starts
+    local startFrom
+    startFrom=$(grep -c "" "${FTLlogFile}")
+    startFrom=$((++i))
+
     echo "  [i] Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
     echo ""
 
@@ -70,13 +78,8 @@ start() {
     # We need the PID of the capsh process so that we can wait for it to finish
     CAPSH_PID=$!
 
-    # Get the FTL log file path from the config
-    FTLlogFile=$(getFTLConfigValue files.log.ftl)
-
-    #  Wait until the FTL log contains the "FTL started" message before continuing
-    while ! grep -q '########## FTL started' "${FTLlogFile}"; do
-        sleep 0.5
-    done
+    #  Wait until the "FTL started" message appears in the log file before continuing
+    (tail -F -n +"${startFrom}" -- "${FTLlogFile}" &) | grep -q '########## FTL started'
 
     pihole updatechecker
     local versionsOutput
