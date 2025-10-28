@@ -73,11 +73,6 @@ start() {
     # Get the FTL log file path from the config
     FTLlogFile=$(getFTLConfigValue files.log.ftl)
 
-    # Wait until the log file exists before continuing
-    while [ ! -f "${FTLlogFile}" ]; do
-        sleep 0.5
-    done
-
     #  Wait until the FTL log contains the "FTL started" message before continuing
     while ! grep -q '########## FTL started' "${FTLlogFile}"; do
         sleep 0.5
