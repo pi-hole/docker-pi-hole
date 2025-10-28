@@ -91,9 +91,9 @@ start() {
     if [ "${TAIL_FTL_LOG:-1}" -eq 1 ]; then
         # Start tailing the FTL log from the most recent "FTL Started" message
         # Get the line number
-        startFrom=$(grep -n '########## FTL started' "${FTLlogFile}" | tail -1 | cut -d: -f1)
+        startFrom=$(grep -n -- '########## FTL started' "${FTLlogFile}" | tail -1 | cut -d: -f1)
         # Start the tail from the line number and background it
-        tail --follow=name -n +"${startFrom}" "${FTLlogFile}" &
+        tail --follow=name -n +"${startFrom}" -- "${FTLlogFile}" &
     else
         echo "  [i] FTL log output is disabled. Remove the Environment variable TAIL_FTL_LOG, or set it to 1 to enable FTL log output."
     fi
