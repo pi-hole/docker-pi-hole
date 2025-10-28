@@ -64,7 +64,7 @@ start() {
     # Get the FTL log file line count before FTL starts
     local startFrom
     startFrom=$(grep -c "" "${FTLlogFile}")
-    startFrom=$((++i))
+    ((++startFrom))
 
     echo "  [i] Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
     echo ""
