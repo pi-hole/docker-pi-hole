@@ -58,6 +58,14 @@ start() {
     fix_capabilities
     sh /opt/pihole/pihole-FTL-prestart.sh
 
+    # Get the FTL log file path from the config
+    FTLlogFile=$(getFTLConfigValue files.log.ftl)
+
+    # Get the FTL log file line count before FTL starts
+    local startFrom
+    startFrom=$(grep -c "" "${FTLlogFile}")
+    ((++startFrom))
+
     echo "  [i] Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
     echo ""
 
@@ -70,18 +78,8 @@ start() {
     # We need the PID of the capsh process so that we can wait for it to finish
     CAPSH_PID=$!
 
-    # Get the FTL log file path from the config
-    FTLlogFile=$(getFTLConfigValue files.log.ftl)
-
-    # Wait until the log file exists before continuing
-    while [ ! -f "${FTLlogFile}" ]; do
-        sleep 0.5
-    done
-
-    #  Wait until the FTL log contains the "FTL started" message before continuing
-    while ! grep -q '########## FTL started' "${FTLlogFile}"; do
-        sleep 0.5
-    done
+    #  Wait until the "FTL started" message appears in the log file before continuing
+    (tail -F -n +"${startFrom}" -- "${FTLlogFile}" &) | grep -q '########## FTL started'
 
     pihole updatechecker
     local versionsOutput
@@ -93,9 +91,9 @@ start() {
     if [ "${TAIL_FTL_LOG:-1}" -eq 1 ]; then
         # Start tailing the FTL log from the most recent "FTL Started" message
         # Get the line number
-        startFrom=$(grep -n '########## FTL started' "${FTLlogFile}" | tail -1 | cut -d: -f1)
+        startFrom=$(grep -n -- '########## FTL started' "${FTLlogFile}" | tail -1 | cut -d: -f1)
         # Start the tail from the line number and background it
-        tail --follow=name -n +"${startFrom}" "${FTLlogFile}" &
+        tail --follow=name -n +"${startFrom}" -- "${FTLlogFile}" &
     else
         echo "  [i] FTL log output is disabled. Remove the Environment variable TAIL_FTL_LOG, or set it to 1 to enable FTL log output."
     fi
