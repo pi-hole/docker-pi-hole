@@ -58,6 +58,9 @@ start() {
     fix_capabilities
     sh /opt/pihole/pihole-FTL-prestart.sh
 
+    # Get the file size of the FTL log before starting FTL
+    logsize_before=$(stat -c%s /var/log/pihole/FTL.log)
+
     echo "  [i] Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
     echo ""
 
@@ -73,15 +76,15 @@ start() {
     # Get the FTL log file path from the config
     FTLlogFile=$(getFTLConfigValue files.log.ftl)
 
-    # Wait until the log file exists before continuing
-    while [ ! -f "${FTLlogFile}" ]; do
-        sleep 0.5
-    done
 
-    #  Wait until the FTL log contains the "FTL started" message before continuing
-    while ! grep -q '########## FTL started' "${FTLlogFile}"; do
-        sleep 0.5
-    done
+    # Wait until the FTL log contains the "FTL started" message before continuing
+    # exit if we do not find it
+    pihole-FTL wait-for '########## FTL started' "${FTLlogFile}" 30 "${logsize_before}" > /dev/null
+
+    if [ $? -ne 0 ]; then
+        echo "  [✗] FTL did not start within 30 seconds - stopping container"
+        exit 1
+    fi
 
     pihole updatechecker
     local versionsOutput
