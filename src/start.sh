@@ -63,8 +63,7 @@ start() {
 
     # Get the FTL log file line count before FTL starts
     local startFrom
-    startFrom=$(grep -c "" "${FTLlogFile}")
-    ((++startFrom))
+    startFrom=$(stat -c%s "${FTLlogFile}")
 
     echo "  [i] Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
     echo ""
@@ -79,7 +78,10 @@ start() {
     CAPSH_PID=$!
 
     #  Wait until the "FTL started" message appears in the log file before continuing
-    (tail -F -n +"${startFrom}" -- "${FTLlogFile}" &) | grep -q '########## FTL started'
+    if ! pihole-FTL wait-for '########## FTL started' "${FTLlogFile}" 30 "${startFrom}" > /dev/null; then
+        echo "  [✗] FTL did not start within 30 seconds - stopping container"
+        exit 1
+    fi
 
     pihole updatechecker
     local versionsOutput
