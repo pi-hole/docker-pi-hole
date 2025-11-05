@@ -31,10 +31,8 @@ jobs:
             runner: ubuntu-24.04-arm
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
-          # Drop this for the time being. bind-tools is failing to install on riscv64, and I don't have time to dig into it currently.exclude:
-          # It is unlikely that there are a lot of Pi-hole users on riscv64 architecture, let alone Docker users.
-          # - platform: linux/riscv64
-          #   runner: ubuntu-24.04-arm
+          - platform: linux/riscv64
+            runner: ubuntu-24.04-arm
 
     steps:
       - name: Prepare name for digest up/download
