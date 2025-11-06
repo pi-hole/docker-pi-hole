@@ -79,7 +79,7 @@ start() {
 
     # Wait for FTL to start by monitoring the FTL log file for the "FTL started" line
     if ! timeout 30 tail -F -c +$((startFrom + 1)) -- "${FTLlogFile}" | grep -q '########## FTL started'; then
-        echo "  [!] ERROR: FTL failed to start within 30 seconds, stopping container"
+        echo "  [!] ERROR: Did not find 'FTL started' message in ${FTLlogFile} in 30 seconds, stopping container"
         exit 1
     fi
 
