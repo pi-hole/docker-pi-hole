@@ -58,6 +58,13 @@ start() {
     fix_capabilities
     sh /opt/pihole/pihole-FTL-prestart.sh
 
+    # Get the FTL log file path from the config
+    FTLlogFile=$(getFTLConfigValue files.log.ftl)
+
+    # Get the EOF position of the FTL log file so that we can tail from there later.
+    local startFrom
+    startFrom=$(stat -c%s "${FTLlogFile}")
+
     echo "  [i] Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
     echo ""
 
@@ -70,18 +77,11 @@ start() {
     # We need the PID of the capsh process so that we can wait for it to finish
     CAPSH_PID=$!
 
-    # Get the FTL log file path from the config
-    FTLlogFile=$(getFTLConfigValue files.log.ftl)
-
-    # Wait until the log file exists before continuing
-    while [ ! -f "${FTLlogFile}" ]; do
-        sleep 0.5
-    done
-
-    #  Wait until the FTL log contains the "FTL started" message before continuing
-    while ! grep -q '########## FTL started' "${FTLlogFile}"; do
-        sleep 0.5
-    done
+    # Wait for FTL to start by monitoring the FTL log file for the "FTL started" line
+    if ! timeout 30 tail -F -c +$((startFrom + 1)) -- "${FTLlogFile}" | grep -q '########## FTL started'; then
+        echo "  [!] ERROR: FTL failed to start within 30 seconds, stopping container"
+        exit 1
+    fi
 
     pihole updatechecker
     local versionsOutput
@@ -91,11 +91,8 @@ start() {
     echo ""
 
     if [ "${TAIL_FTL_LOG:-1}" -eq 1 ]; then
-        # Start tailing the FTL log from the most recent "FTL Started" message
-        # Get the line number
-        startFrom=$(grep -n '########## FTL started' "${FTLlogFile}" | tail -1 | cut -d: -f1)
-        # Start the tail from the line number and background it
-        tail --follow=name -n +"${startFrom}" "${FTLlogFile}" &
+        # Start tailing the FTL log file from the EOF position we recorded on container start
+        tail -F -c +$((startFrom + 1)) -- "${FTLlogFile}" &
     else
         echo "  [i] FTL log output is disabled. Remove the Environment variable TAIL_FTL_LOG, or set it to 1 to enable FTL log output."
     fi
@@ -103,7 +100,6 @@ start() {
     # Wait for the capsh process (which spawned FTL) to finish
     wait $CAPSH_PID
     FTL_EXIT_CODE=$?
-
 
     # If we are here, then FTL has exited.
     # If the trap was triggered, then stop will have already been called
