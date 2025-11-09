@@ -106,7 +106,7 @@ EXPOSE 80
 EXPOSE 123/udp
 EXPOSE 443
 
-## Buildkit can do some fancy stuff and we can use it to either download FTL from ftl.pi-hole.net or use a local copy
+## Buildkit can do some fancy stuff and we can use it to either download FTL from ftl.pi-hole.net or build a local copy
 
 FROM base AS remote-ftl-install
 # Default stage if FTL_SOURCE is not explicitly set to "local"
@@ -126,10 +126,22 @@ RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     && readelf -h /usr/bin/pihole-FTL || (echo "Error with downloaded FTL binary" && exit 1) \
     && /usr/bin/pihole-FTL  -vv
 
+# This is only used if FTL_SOURCE is set to "local" (which will in turn use the local-ftl-install stage)
+FROM ghcr.io/pi-hole/ftl-build:v2.11 AS ftl-builder
+# Needs to be defaulted to something, but it will be overridden by the build-arg anyway
+ARG FTL_BRANCH="development"
+
+RUN git clone --depth 1 --single-branch --branch ${FTL_BRANCH} https://github.com/pi-hole/ftl.git /ftlbuild && \
+    cd /ftlbuild && \
+    rm src/args.c && \
+    ./build.sh &&\
+    # if the build fails, exit with and error code
+    if [ $? -ne 0 ]; then echo "FTL build failed" && exit 1; fi && \
+    # check if the binary is valid
+    readelf -h /ftlbuild/pihole-FTL || (echo "Error with built FTL binary" && exit 1)
+
 FROM base AS local-ftl-install
-# pihole-FTL must be built from source and copied to the src directory first!
-COPY --chmod=0755 pihole-FTL /usr/bin/pihole-FTL
-RUN  readelf -h /usr/bin/pihole-FTL || (echo "Error with local FTL binary" && exit 1)
+COPY --from=ftl-builder --chmod=0755 /ftlbuild/pihole-FTL /usr/bin/pihole-FTL
 
 # Use the appropriate FTL Install stage based on the FTL_SOURCE build-arg
 FROM ${FTL_SOURCE}-ftl-install AS final
