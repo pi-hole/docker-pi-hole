@@ -2,14 +2,13 @@ version: 2
 updates:
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
     schedule:
       interval: "weekly"
       day: saturday
       time: "10:00"
     target-branch: development
-    reviewers:
-      - "pi-hole/docker-maintainers"
   - package-ecosystem: "docker"
     directory: "/src/"
     schedule:
@@ -17,8 +16,6 @@ updates:
       day: saturday
       time: "10:00"
     target-branch: development
-    reviewers:
-      - "pi-hole/docker-maintainers"
   - package-ecosystem: pip
     directory: "/test"
     schedule:
@@ -27,5 +24,3 @@ updates:
       time: "10:00"
     open-pull-requests-limit: 10
     target-branch: development
-    reviewers:
-      - "pi-hole/docker-maintainers"

@@ -1,6 +1,6 @@
 # Docker Pi-hole
 
-[![Build Status](https://github.com/pi-hole/docker-pi-hole/workflows/Test%20&%20Build/badge.svg)](https://github.com/pi-hole/docker-pi-hole/actions?query=workflow%3A%22Test+%26+Build%22) [![Docker Stars](https://img.shields.io/docker/stars/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole) [![Docker Pulls](https://img.shields.io/docker/pulls/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole)
+[![Build Status](https://github.com/pi-hole/docker-pi-hole/workflows/Build%20Image%20and%20Test/badge.svg)](https://github.com/pi-hole/docker-pi-hole/actions?query=workflow%3A%22Build+Image+and+Test%22) [![Docker Stars](https://img.shields.io/docker/stars/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole) [![Docker Pulls](https://img.shields.io/docker/pulls/pihole/pihole.svg?maxAge=604800)](https://store.docker.com/community/images/pihole/pihole)
 
 <div align="center">
   <a href="https://pi-hole.net/">
@@ -25,11 +25,11 @@
 
 > [!CAUTION]
 >
-> ## !!! THE LATEST VERSION CONTAINS BREAKING CHANGES
+> ## !!! VERSIONS SINCE 2025.02.0 CONTAIN BREAKING CHANGES IF UPGRADING FROM 2024.07.0 OR OLDER
 >
 > **Pi-hole v6 has been entirely redesigned from the ground up and contains many breaking changes.**
 >
-> Environment variable names have changed, script locations may have changed.
+> [Environment variable names have changed](https://docs.pi-hole.net/docker/upgrading/v5-v6/), script locations may have changed.
 >
 > If you are using volumes to persist your configuration, be careful.<br>Replacing any `v5` image *(`2024.07.0` and earlier)* with a `v6` image will result in updated configuration files. **These changes are irreversible**.
 >
@@ -144,7 +144,7 @@ If this variable is not detected and you have not already set one via `pihole se
 | `FTLCONF_[SETTING]` | unset | As per documentation | Customize pihole.toml with settings described in the [API Documentation](https://docs.pi-hole.net/api).<br><br>Replace `.` with `_`, e.g for `dns.dnssec=true` use `FTLCONF_dns_dnssec: 'true'`.<br/>Array type configs should be delimited with `;`.|
 | `PIHOLE_UID` | `1000` | Number | Overrides image's default pihole user id to match a host user id.<br/>**IMPORTANT**: id must not already be in use inside the container!|
 | `PIHOLE_GID` | `1000` | Number | Overrides image's default pihole group id to match a host group id.<br/>**IMPORTANT**: id must not already be in use inside the container!|
-| `WEBPASSWORD_FILE` | unset| `<Docker secret file>` | Set an Admin password using [Docker secrets](https://docs.docker.com/engine/swarm/secrets/). If `FTLCONF_webserver_api_password` is set, `WEBPASSWORD_FILE` is ignored. If `FTLCONF_webserver_api_password` is empty, and `WEBPASSWORD_FILE` is set to a valid readable file, then `FTLCONF_webserver_api_password` will be set to the contents of `WEBPASSWORD_FILE`. |
+| `WEBPASSWORD_FILE` | unset| `<Docker secret file>` | Set an Admin password using Docker secrets with [Swarm](https://docs.docker.com/engine/swarm/secrets/) or [Compose](https://docs.docker.com/compose/how-tos/use-secrets/). If `FTLCONF_webserver_api_password` is set, `WEBPASSWORD_FILE` is ignored. If `FTLCONF_webserver_api_password` is empty, and `WEBPASSWORD_FILE` is set to a valid readable file, then `FTLCONF_webserver_api_password` will be set to the contents of `WEBPASSWORD_FILE`. See [WEBPASSWORD_FILE Example](https://docs.pi-hole.net/docker/configuration/#webpassword_file-example) for additional information.|
 
 ### Advanced Variables
 
@@ -173,39 +173,18 @@ Here is a rundown of other arguments for your docker-compose / docker run.
 - Port conflicts?  Stop your server's existing DNS / Web services.
   - Don't forget to stop your services from auto-starting again after you reboot.
   - Ubuntu users see below for more detailed information.
+  - If only ports 80 and/or 443 are in use, you have two options:
+    - Change the container's port mapping by adjusting the Docker `-p` flags or the `ports:` section in the compose file. For example, change `- "80:80/tcp"` to `- "8080:80/tcp"` to expose the container’s internal HTTP port 80 as 8080 on the host.
+    - Or, when running the container in `network_mode: host`, where port mappings are not available, change the ports used by the Pi-hole web server using the `FTLCONF_webserver_port` environment variable.<br>
+      Example:<br>
+      `FTLCONF_webserver_port: '8080o,[::]:8080o,8443os,[::]:8443os'`<br>
+      This makes the web interface available on HTTP port 8080 and HTTPS port 8443 for both IPv4 and IPv6.
+    - **Note:** This only applies to web interface ports (80 and 443). DNS (53), DHCP (67), and NTP (123) ports must still be handled via Docker port mappings or host networking.
 - Docker's default network mode `bridge` isolates the container from the host's network. This is a more secure setting, but requires setting the Pi-hole DNS option for _Interface listening behavior_ to "Listen on all interfaces, permit all origins".
 - If you're using a Red Hat based distribution with an SELinux Enforcing policy, add `:z` to line with volumes.
 
-### Installing on Ubuntu or Fedora
-
-Modern releases of Ubuntu (17.10+) and Fedora (33+) include [`systemd-resolved`](http://manpages.ubuntu.com/manpages/bionic/man8/systemd-resolved.service.8.html) which is configured by default to implement a caching DNS stub resolver. This will prevent pi-hole from listening on port 53.
-The stub resolver should be disabled with: `sudo sed -r -i.orig 's/#?DNSStubListener=yes/DNSStubListener=no/g' /etc/systemd/resolved.conf`.
-
-This will not change the nameserver settings, which point to the stub resolver thus preventing DNS resolution. Change the `/etc/resolv.conf` symlink to point to `/run/systemd/resolve/resolv.conf`, which is automatically updated to follow the system's [`netplan`](https://netplan.io/):
-`sudo sh -c 'rm /etc/resolv.conf && ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf'`.
-After making these changes, you should restart systemd-resolved using `systemctl restart systemd-resolved`.
-
-Once pi-hole is installed, you'll want to configure your clients to use it ([see here](https://discourse.pi-hole.net/t/how-do-i-configure-my-devices-to-use-pi-hole-as-their-dns-server/245)). If you used the symlink above, your docker host will either use whatever is served by DHCP, or whatever static setting you've configured. If you want to explicitly set your docker host's nameservers you can edit the netplan(s) found at `/etc/netplan`, then run `sudo netplan apply`.
-
-Example netplan:
-
-```yaml
-network:
-    ethernets:
-        ens160:
-            dhcp4: true
-            dhcp4-overrides:
-                use-dns: false
-            nameservers:
-                addresses: [127.0.0.1]
-    version: 2
-```
-
-Note that it is also possible to disable `systemd-resolved` entirely. However, this can cause problems with name resolution in vpns ([see bug report](https://bugs.launchpad.net/network-manager/+bug/1624317)).\
-It also disables the functionality of netplan since systemd-resolved is used as the default renderer ([see `man netplan`](http://manpages.ubuntu.com/manpages/bionic/man5/netplan.5.html#description)).\
-If you choose to disable the service, you will need to manually set the nameservers, for example by creating a new `/etc/resolv.conf`.
-
-Users of older Ubuntu releases (circa 17.04) will need to disable dnsmasq.
+> [!TIP]
+> All further tips and tricks can be found in the [Pi-hole documentation](https://docs.pi-hole.net/docker/tips-and-tricks/)
 
 ## Installing on Dokku
 
@@ -221,12 +200,11 @@ Release notes will always contain full details of changes in the container, incl
 
 | tag                 | description
 |---------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| `latest`            | Always latest release                                                                                                                      |
+| `latest`            | Always the latest release                                                                                                                  |
 | `2022.04.0`         | Date-based release                                                                                                                         |
 | `2022.04.1`         | Second release in a given month                                                                                                            |
-| `development`               | Similar to `latest`, but for the development branch (pushed occasionally)                                                                  |
 | `*beta`             | Early beta releases of upcoming versions - here be dragons                                                                                 |
-| `nightly`           | Like `development` but pushed every night and pulls from the latest `development` branches of the core Pi-hole components (Pi-hole, web, FTL)      |
+| `nightly`           | Built and pushed whenever there are changes on the `development` branch and additionally produced by the scheduled nightly job. These are the most experimental development images and may change frequently |
 
 ## Upgrading, Persistence, and Customizations
 
@@ -326,4 +304,4 @@ Pi-hole is an integral part of your network, don't let it fall over because of a
 
 # User Feedback
 
-Please report issues on the [GitHub project](https://github.com/pi-hole/docker-pi-hole) when you suspect something docker related.  Pi-hole or general docker questions are best answered on our [user forums](https://discourse.pi-hole.net/c/bugs-problems-issues/docker/30).
+Please report issues on the [GitHub project](https://github.com/pi-hole/docker-pi-hole) when you suspect something docker related.  Pi-hole or general docker questions are best answered on our [user forums](https://discourse.pi-hole.net/c/bugs-problems-issues/docker/30)

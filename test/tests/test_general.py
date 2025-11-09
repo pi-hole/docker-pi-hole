@@ -1,15 +1,32 @@
 import pytest
+import os
 
 
-@pytest.mark.parametrize("test_args", ['-e "PIHOLE_UID=456"'])
+# Adding 5 seconds sleep to give the emulated architecture time to run
+@pytest.mark.parametrize("docker", ["PIHOLE_UID=456"], indirect=True)
 def test_pihole_uid_env_var(docker):
-    func = docker.run("id -u pihole")
+    func = docker.run("echo ${PIHOLE_UID}")
+    assert "456" in func.stdout
+    func = docker.run(
+        """
+        sleep 5
+        id -u pihole
+        """
+    )
     assert "456" in func.stdout
 
 
-@pytest.mark.parametrize("test_args", ['-e "PIHOLE_GID=456"'])
+# Adding 5 seconds sleep to give the emulated architecture time to run
+@pytest.mark.parametrize("docker", ["PIHOLE_GID=456"], indirect=True)
 def test_pihole_gid_env_var(docker):
-    func = docker.run("id -g pihole")
+    func = docker.run("echo ${PIHOLE_GID}")
+    assert "456" in func.stdout
+    func = docker.run(
+        """
+        sleep 5
+        id -g pihole
+        """
+    )
     assert "456" in func.stdout
 
 
@@ -19,19 +36,57 @@ def test_pihole_ftl_version(docker):
     assert "Version:" in func.stdout
 
 
-# Wait 5 seconds for startup, then kill the start.sh script
-# Finally, grep the FTL log to see if it has been shut down cleanly
-def test_pihole_ftl_clean_shutdown(docker):
-    func = docker.run(
-        """
-        sleep 5
-        killall --signal 15 start.sh
-        sleep 5
-        grep 'terminated' /var/log/pihole/FTL.log
-    """
+@pytest.mark.skipif(
+    not os.environ.get("CIPLATFORM"),
+    reason="CIPLATFORM environment variable not set, running locally",
+)
+def test_pihole_ftl_architecture(docker):
+    func = docker.run("pihole-FTL -vv")
+    assert func.rc == 0
+    assert "Architecture:" in func.stdout
+    # Get the expected architecture from CIPLATFORM environment variable
+    platform = os.environ.get("CIPLATFORM")
+    assert platform in func.stdout
+
+
+# Wait for FTL to start up, then stop the container gracefully
+# Finally, check the container logs to see if FTL was shut down cleanly
+def test_pihole_ftl_starts_and_shuts_down_cleanly(docker):
+    import subprocess
+    import time
+
+    # Get the container ID from the docker fixture
+    container_id = docker.backend.name
+
+    # Wait for FTL to fully start up by checking logs
+    max_wait_time = 60  # Maximum wait time in seconds
+    start_time = time.time()
+    ftl_started = False
+
+    while time.time() - start_time < max_wait_time:
+        result = subprocess.run(
+            ["docker", "logs", container_id], capture_output=True, text=True
+        )
+
+        if "########## FTL started" in result.stdout:
+            ftl_started = True
+            break
+
+        time.sleep(1)  # Check every second
+
+    assert ftl_started, f"FTL did not start within {max_wait_time} seconds"
+
+    # Stop the container gracefully (sends SIGTERM)
+    subprocess.run(["docker", "stop", container_id], check=True)
+
+    # Get the container logs
+    result = subprocess.run(
+        ["docker", "logs", container_id], capture_output=True, text=True
     )
-    assert "INFO: ########## FTL terminated after" in func.stdout
-    assert "(code 0)" in func.stdout
+
+    # Check for clean shutdown messages in the logs
+    assert "INFO: ########## FTL terminated after" in result.stdout
+    assert "(code 0)" in result.stdout
 
 
 def test_cronfile_valid(docker):

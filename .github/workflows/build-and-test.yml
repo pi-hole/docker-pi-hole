@@ -3,30 +3,51 @@ on:
   pull_request:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  build-and-test:
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        # Official docker images for docker are only available for amd64 and arm64
-        # TODO: Look at: https://github.com/docker-library/official-images#architectures-other-than-amd64
-        # Is testing on all platforms really necessary?
-        # Disabled arm64 tests for the time being, something is wrong with the test config and the volumes are getting shared between the test containers on different architectures
-        #platform: [linux/amd64, linux/arm64]
-        platform: [linux/amd64]
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/386
+            runner: ubuntu-latest
+          - platform: linux/arm/v6
+            runner: ubuntu-24.04-arm
+          - platform: linux/arm/v7
+            runner: ubuntu-24.04-arm
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+          # Drop this for the time being. bind-tools is failing to install on riscv64, and I don't have time to dig into it currently.exclude:
+          # It is unlikely that there are a lot of Pi-hole users on riscv64 architecture, let alone Docker users.
+          # - platform: linux/riscv64
+          #   runner: ubuntu-24.04-arm
+    env:
+      CI_ARCH: ${{ matrix.platform }}
     steps:
     - name: Checkout Repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0.0
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 #v3.6.0
+
+    - name: Set up Python
+      uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c #v6.0.0
       with:
-        platforms: ${{ matrix.platform }}
+        python-version: "3.13"
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-
-    - name: Run Tests
+    - name: Run black formatter
       run: |
-        echo "Building image to test"
-        PLATFORM=${{ matrix.platform }} ./build-and-test.sh
+        pip install black
+        black --check --diff test/tests/
+
+    - name: Install wheel
+      run:  pip install wheel
+
+    - name: Install dependencies
+      run: pip install -r test/requirements.txt
+
+    - name: Test with tox
+      run: |
+        CIPLATFORM=${{ env.CI_ARCH }} tox -c test/tox.ini
