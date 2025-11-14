@@ -300,19 +300,7 @@ We have noticed that a lot of people use Watchtower to keep their Pi-hole contai
   - If you care about your data (logs/customizations), make sure you have it volume-mapped or it will be deleted in this step.
 - Recreate the container using the new image.
 
-If you wish to exclude the Pi-hole container from Watchtower's auto-update system you can update the Docker-compose in the following way:
-```yml
-services:
-  pihole:
-    container_name: pihole
-    image: pihole/pihole:latest
-    #---------------------------------------------------
-    # Rest of the previous Docker-compose configuration
-    #---------------------------------------------------
-    labels:
-          - "com.centurylinklabs.watchtower.enable=false"
-```
-This will result in Watchtower avoiding the update check on this container leaving it as it is without any interaction.
+If you wish to exclude the Pi-hole container from Watchtower's auto-update system take a look at [Full Exclude](https://containrrr.dev/watchtower/container-selection/#full_exclude) in Watchtower's docs.
 
 Pi-hole is an integral part of your network, don't let it fall over because of an unattended update in the middle of the night.
 
