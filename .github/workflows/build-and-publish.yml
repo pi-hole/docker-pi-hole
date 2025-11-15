@@ -105,7 +105,7 @@ jobs:
             PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}
             FTL_BRANCH=${{ env.components_branch }}
             CORE_BRANCH=${{ env.components_branch }}
-            WEB_BRANCH=${{ env.components_branch }}
+            WEB_BRANCH=luxon-earliest-query
             PADD_BRANCH=${{ env.components_branch }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
