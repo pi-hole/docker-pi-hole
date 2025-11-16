@@ -300,6 +300,8 @@ We have noticed that a lot of people use Watchtower to keep their Pi-hole contai
   - If you care about your data (logs/customizations), make sure you have it volume-mapped or it will be deleted in this step.
 - Recreate the container using the new image.
 
+To exclude the Pi-hole container from Watchtower's auto-update system take a look at [Full Exclude](https://containrrr.dev/watchtower/container-selection/#full_exclude) in Watchtower's docs.
+
 Pi-hole is an integral part of your network, don't let it fall over because of an unattended update in the middle of the night.
 
 # User Feedback
