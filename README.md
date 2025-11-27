@@ -41,11 +41,12 @@
 
 > [!NOTE]
 > **Using Watchtower?
-> See the [Note on Watchtower](#note-on-watchtower) at the bottom of this readme**.
+> See the <a href="#note-on-watchtower">Note on Watchtower</a> at the bottom of this readme.**
+
 
 > [!TIP]
-> Some users [have reported issues](https://github.com/pi-hole/docker-pi-hole/issues/963#issuecomment-1095602502) with using the `--privileged` flag on `2022.04` and above.
-> TL;DR, don't use that mode, and be [explicit with the permitted caps](https://github.com/pi-hole/docker-pi-hole#note-on-capabilities) (if needed) instead.
+> Some users <a href="https://github.com/pi-hole/docker-pi-hole/issues/963#issuecomment-1095602502">have reported issues</a> with using the `--privileged` flag on `2022.04` and above.
+> TL;DR, don't use that mode, and be <a href="https://github.com/pi-hole/docker-pi-hole#note-on-capabilities">explicit with the permitted caps</a> (if needed) instead.
 
 ## Quick Start
 
