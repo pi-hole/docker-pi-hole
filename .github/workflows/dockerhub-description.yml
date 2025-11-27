@@ -4,7 +4,7 @@ permissions:
 on:
   push:
     branches:
-      - master
+      - experimental
     paths:
       - README.md
       - .github/workflows/dockerhub-description.yml
@@ -21,3 +21,4 @@ jobs:
         password: ${{ secrets.DOCKERHUB_PASS }}
         repository: pihole/pihole
         short-description: ${{ github.event.repository.description }}
+        enable-url-completion: true
