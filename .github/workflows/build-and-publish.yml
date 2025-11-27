@@ -31,10 +31,8 @@ jobs:
             runner: ubuntu-24.04-arm
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
-          # Drop this for the time being. bind-tools is failing to install on riscv64, and I don't have time to dig into it currently.exclude:
-          # It is unlikely that there are a lot of Pi-hole users on riscv64 architecture, let alone Docker users.
-          # - platform: linux/riscv64
-          #   runner: ubuntu-24.04-arm
+          - platform: linux/riscv64
+            runner: ubuntu-24.04-arm
 
     steps:
       - name: Prepare name for digest up/download
@@ -45,19 +43,19 @@ jobs:
       - &checkout-repo
         name: Checkout Repo
         if: github.event_name != 'schedule'
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0.0
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
 
       - &checkout-dev
         name: Checkout dev branch if scheduled
         if: github.event_name == 'schedule'
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0.0
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
         with:
           ref: development
 
       - &docker-meta
         name: Docker meta
         id: meta
-        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f #v5.8.0
+        uses: docker/metadata-action@318604b99e75e41977312d83839a89be02ca4893 #v5.9.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           images: |
@@ -87,7 +85,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 #v3.6.0
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 #v3.7.0
         with:
           platforms: ${{ matrix.platform}}
 
