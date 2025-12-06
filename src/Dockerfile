@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG FTL_SOURCE=remote
 # Pull Stable images
-FROM alpine:3.22 AS base
+FROM alpine:3.23 AS base
 
 ARG TARGETPLATFORM
 ARG WEB_BRANCH="development"
