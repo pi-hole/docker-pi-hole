@@ -43,12 +43,12 @@ jobs:
       - &checkout-repo
         name: Checkout Repo
         if: github.event_name != 'schedule'
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #v6.0.1
 
       - &checkout-dev
         name: Checkout dev branch if scheduled
         if: github.event_name == 'schedule'
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #v6.0.1
         with:
           ref: development
 
