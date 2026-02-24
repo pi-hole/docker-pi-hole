@@ -7,12 +7,10 @@ import os
 def test_pihole_uid_env_var(docker):
     func = docker.run("echo ${PIHOLE_UID}")
     assert "456" in func.stdout
-    func = docker.run(
-        """
+    func = docker.run("""
         sleep 5
         id -u pihole
-        """
-    )
+        """)
     assert "456" in func.stdout
 
 
@@ -21,12 +19,10 @@ def test_pihole_uid_env_var(docker):
 def test_pihole_gid_env_var(docker):
     func = docker.run("echo ${PIHOLE_GID}")
     assert "456" in func.stdout
-    func = docker.run(
-        """
+    func = docker.run("""
         sleep 5
         id -g pihole
-        """
-    )
+        """)
     assert "456" in func.stdout
 
 
@@ -90,11 +86,9 @@ def test_pihole_ftl_starts_and_shuts_down_cleanly(docker):
 
 
 def test_cronfile_valid(docker):
-    func = docker.run(
-        """
+    func = docker.run("""
         /usr/bin/crontab /crontab.txt
         crond -d 8 -L /cron.log
         grep 'parse error' /cron.log
-    """
-    )
+    """)
     assert "parse error" not in func.stdout

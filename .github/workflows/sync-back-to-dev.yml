@@ -5,13 +5,17 @@ on:
     branches:
       - master
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   sync-branches:
     runs-on: ubuntu-latest
     name: Syncing branches
     steps:
       - name: Checkout
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
       - name: Opening pull request
         run: gh pr create -B development -H master --title 'Sync master back into development' --body 'Created by Github action' --label 'internal'
         env:

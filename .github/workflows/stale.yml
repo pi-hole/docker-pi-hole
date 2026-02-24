@@ -6,6 +6,10 @@ on:
   workflow_dispatch:
   issue_comment:
 
+permissions:
+  issues: write
+  pull-requests: write
+
 env:
   stale_label: stale
 
@@ -17,7 +21,7 @@ jobs:
       issues: write
 
     steps:
-    - uses: actions/stale@5f858e3efba33a5ca4407a664cc011ad407f2008 #v10.1.0
+    - uses: actions/stale@997185467fa4f803885201cee163a9f38240193d #v10.1.1
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         days-before-stale: 30
@@ -41,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
       - name: Remove 'stale' label
         run: gh issue edit ${{ github.event.issue.number }} --remove-label ${{ env.stale_label }}
         env:

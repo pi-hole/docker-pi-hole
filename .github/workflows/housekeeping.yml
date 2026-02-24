@@ -4,6 +4,9 @@ on:
     schedule:
         - cron: "0 0 * * *"
 
+permissions:
+  packages: write
+
 jobs:
     housekeeping:
         runs-on: ubuntu-latest

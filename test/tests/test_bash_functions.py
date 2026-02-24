@@ -6,12 +6,10 @@ import pytest
 def test_ftlconf_webserver_port(docker):
     func = docker.run("echo ${FTLCONF_webserver_port}")
     assert "999" in func.stdout
-    func = docker.run(
-        """
+    func = docker.run("""
         sleep 5
         pihole-FTL --config webserver.port
-        """
-    )
+        """)
     assert "999" in func.stdout
 
 
@@ -22,12 +20,10 @@ def test_ftlconf_webserver_port(docker):
 def test_ftlconf_dns_upstreams(docker):
     func = docker.run("echo ${FTLCONF_dns_upstreams}")
     assert "1.2.3.4;5.6.7.8#1234" in func.stdout
-    func = docker.run(
-        """
+    func = docker.run("""
         sleep 5
         pihole-FTL --config dns.upstreams
-        """
-    )
+        """)
     assert "[ 1.2.3.4, 5.6.7.8#1234 ]" in func.stdout
 
 
