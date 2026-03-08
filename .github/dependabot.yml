@@ -8,6 +8,10 @@ updates:
       interval: "weekly"
       day: saturday
       time: "10:00"
+    groups:
+      github_action-dependencies:
+        patterns:
+          - "*"
     target-branch: development
   - package-ecosystem: "docker"
     directory: "/src/"
@@ -24,3 +28,7 @@ updates:
       time: "10:00"
     open-pull-requests-limit: 10
     target-branch: development
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"
