@@ -95,10 +95,6 @@ jobs:
       - &setup-buildx
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd #v4.0.0
-        with:
-          # Buildx version 0.31.1 broke our publish workflow, this need to be revised when 0.32.0 is released
-          # https://github.com/docker/buildx/releases/tag/v0.31.1
-          version: v0.31.0
 
       - name: Build container and push by digest
         id: build
@@ -156,9 +152,9 @@ jobs:
       - name: Create manifest list and push (DockerHub and GitHub Container Registry)
         working-directory: /tmp/digests
         run: |
-          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+          docker buildx imagetools create $(jq -cr '.tags | map(select(startswith("${{ env.dockerhub }}")) | "-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.dockerhub }}@sha256:%s ' *)
-          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+          docker buildx imagetools create $(jq -cr '.tags | map(select(startswith("${{ env.ghcr }}")) | "-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.ghcr }}@sha256:%s ' *)
 
       - name: Inspect images
