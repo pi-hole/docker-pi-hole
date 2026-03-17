@@ -80,4 +80,9 @@ done
 
 # ---- Run BATS ---------------------------------------------------------------
 
-"$BATS" -p test_suite.bats
+# Use pretty formatter when stdout is a TTY; fall back to TAP in CI / pipes
+if [ -t 1 ]; then
+    "$BATS" --pretty test_suite.bats
+else
+    "$BATS" --formatter tap test_suite.bats
+fi
