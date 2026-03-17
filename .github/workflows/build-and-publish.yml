@@ -16,7 +16,39 @@ env:
   components_branch: ${{ github.event_name == 'release' && 'master' || 'development' }}
 
 jobs:
+  test:
+    if: github.event_name == 'pull_request'
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/386
+            runner: ubuntu-latest
+          - platform: linux/arm/v6
+            runner: ubuntu-24.04-arm
+          - platform: linux/arm/v7
+            runner: ubuntu-24.04-arm
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+          - platform: linux/riscv64
+            runner: ubuntu-24.04-arm
+    env:
+      CI_ARCH: ${{ matrix.platform }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a #v4.0.0
+
+      - name: Test
+        run: CIPLATFORM=${{ env.CI_ARCH }} bash test/run.sh
+
   build-prepare:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     outputs:
       components_branch: ${{ env.components_branch }}
@@ -25,6 +57,7 @@ jobs:
       - run: echo "Exposing env vars for reusable workflow"
 
   build:
+    if: github.event_name != 'pull_request'
     uses: docker/github-builder/.github/workflows/build.yml@v1
     needs:
       - build-prepare
@@ -45,7 +78,7 @@ jobs:
         WEB_BRANCH=${{ needs.build-prepare.outputs.components_branch }}
         PADD_BRANCH=${{ needs.build-prepare.outputs.components_branch }}
       platforms: linux/amd64,linux/386,linux/arm/v6,linux/arm/v7,linux/arm64,linux/riscv64
-      push: ${{ github.event_name != 'pull_request' }}
+      push: true
       set-meta-labels: true
       meta-images: |
         pihole/pihole
