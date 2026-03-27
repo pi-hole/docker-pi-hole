@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Usage function
 usage() {
@@ -48,7 +49,7 @@ check_branch_exists() {
     fi
 
     local http_code
-    http_code=$(curl -sI "$url" -o /dev/null -w "%{http_code}")
+    http_code=$(curl -sI --max-time 10 "$url" -o /dev/null -w "%{http_code}")
     if [ "${http_code}" -ne 200 ]; then
         echo "Error: $repo branch '$branch' not found. Exiting."
         exit 1
