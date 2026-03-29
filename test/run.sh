@@ -59,8 +59,10 @@ CONTAINER_CUSTOM=$(start_container \
     -e FTLCONF_webserver_api_password=1234567890 \
     -e FTLCONF_webserver_port=8080 \
     -e FTLCONF_dns_upstreams="8.8.8.8;1.1.1.1")
+CONTAINER_PACKAGES=$(start_container \
+    -e ADDITIONAL_PACKAGES=wget)
 
-export CONTAINER_DEFAULT CONTAINER_CUSTOM CIPLATFORM
+export CONTAINER_DEFAULT CONTAINER_CUSTOM CONTAINER_PACKAGES CIPLATFORM
 
 # ---- Wait for containers to be ready ----------------------------------------
 
@@ -82,7 +84,7 @@ wait_for_ftl() {
     echo "ready (${elapsed}s)"
 }
 
-for container in "$CONTAINER_DEFAULT" "$CONTAINER_CUSTOM"; do
+for container in "$CONTAINER_DEFAULT" "$CONTAINER_CUSTOM" "$CONTAINER_PACKAGES"; do
     wait_for_ftl "$container"
 done
 
