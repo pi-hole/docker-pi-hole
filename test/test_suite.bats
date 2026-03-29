@@ -62,6 +62,13 @@
 }
 
 
+# ---- Additional packages ----------------------------------------------------
+
+@test "ADDITIONAL_PACKAGES are installed" {
+    run docker exec "$CONTAINER_PACKAGES" which wget
+    [ "$status" -eq 0 ]
+}
+
 # ---- Container configuration ------------------------------------------------
 
 @test "Cron file is valid" {
@@ -93,4 +100,41 @@
     run docker exec "$CONTAINER_CUSTOM" bash -c ". bash_functions.sh; setup_web_password"
     [ "$status" -eq 0 ]
     [[ "$output" == *"Assigning password defined by Environment Variable"* ]]
+}
+
+# ---- TAIL_FTL_LOG -----------------------------------------------------------
+
+@test "TAIL_FTL_LOG=0 suppresses FTL log output in docker logs" {
+    # TAIL_FTL_LOG defaults to 1 (enabled), so CONTAINER_DEFAULT already exercises
+    # the enabled path. This test verifies the opt-out case: that setting it to 0
+    # suppresses FTL log lines and emits the expected notice instead.
+    local platform_args=()
+    [ -n "${CIPLATFORM:-}" ] && platform_args=(--platform "$CIPLATFORM")
+
+    local container
+    container=$(docker run -d -t "${platform_args[@]}" \
+        -e TZ="Europe/London" \
+        -e TAIL_FTL_LOG=0 \
+        pihole:test)
+
+    # The "disabled" notice only appears after FTL has started, so waiting for it
+    # confirms both that FTL started and that the suppression logic ran.
+    local timeout=60
+    local elapsed=0
+    until docker logs "$container" 2>&1 | grep -q "FTL log output is disabled"; do
+        sleep 1
+        elapsed=$(( elapsed + 1 ))
+        if (( elapsed >= timeout )); then
+            docker rm -f "$container"
+            echo "Container did not reach expected state within ${timeout}s"
+            return 1
+        fi
+    done
+
+    run docker logs "$container"
+    docker rm -f "$container"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"FTL log output is disabled"* ]]
+    [[ "$output" != *"########## FTL started"* ]]
 }

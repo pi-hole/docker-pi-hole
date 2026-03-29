@@ -85,7 +85,9 @@ start_cron() {
     sed -i "s/59 1 /$((1 + RANDOM % 58)) $((3 + RANDOM % 2))/" /crontab.txt
     # Randomize update checker time
     sed -i "s/59 17/$((1 + RANDOM % 58)) $((12 + RANDOM % 8))/" /crontab.txt
-    /usr/bin/crontab /crontab.txt
+    if ! /usr/bin/crontab /crontab.txt; then
+        echo "  [!] Failed to install crontab - scheduled tasks (gravity, update checker) will not run"
+    fi
 
     /usr/sbin/crond
     echo ""
