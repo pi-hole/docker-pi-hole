@@ -24,10 +24,8 @@ RUN apk add --no-cache \
     bash \
     bash-completion \
     bind-tools \
-    binutils \
     coreutils \
     curl \
-    git \
     # Install grep to avoid issues in pihole -w/b with the default busybox grep
     grep \
     iproute2 \
@@ -63,7 +61,8 @@ ADD --chmod=0755 https://raw.githubusercontent.com/${PADD_FORK}/PADD/${PADD_BRAN
 # if the branch is master we clone the latest tag as sometimes the master branch contains meta changes that have not been tagged
 # (we need to create a new "master" branch to avoid the "detached HEAD" state for the version check to work correctly)
 
-RUN clone_repo() { \
+RUN apk add --no-cache git \
+    && clone_repo() { \
         FORK="$1"; \
         REPO="$2"; \
         BRANCH="$3"; \
@@ -75,9 +74,10 @@ RUN clone_repo() { \
         git clone --branch "$CLONE_BRANCH" --single-branch --depth 1 "https://github.com/${FORK}/${REPO}.git" "$DEST"; \
         cd "$DEST"; \
         if [ "$BRANCH" = "master" ]; then git checkout -b master; fi; \
-    }; \
-    clone_repo "${WEB_FORK}" "web" "${WEB_BRANCH}" "/var/www/html/admin"; \
-    clone_repo "${CORE_FORK}" "pi-hole" "${CORE_BRANCH}" "/etc/.pihole"
+    } \
+    && clone_repo "${WEB_FORK}" "web" "${WEB_BRANCH}" "/var/www/html/admin" \
+    && clone_repo "${CORE_FORK}" "pi-hole" "${CORE_BRANCH}" "/etc/.pihole" \
+    && apk del git
 
 
 RUN cd /etc/.pihole && \
@@ -111,7 +111,10 @@ EXPOSE 443
 FROM base AS remote-ftl-install
 # Default stage if FTL_SOURCE is not explicitly set to "local"
 # Download the latest version of pihole-FTL for the correct architecture
-RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
+# ARG must be re-declared in each stage that uses it
+ARG FTL_BRANCH="development"
+RUN apk add --no-cache binutils \
+    && if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     elif [ "$TARGETPLATFORM" = "linux/386" ];      then FTLARCH=386; \
     elif [ "$TARGETPLATFORM" = "linux/arm/v6" ];   then FTLARCH=armv6; \
     elif [ "$TARGETPLATFORM" = "linux/arm/v7" ];   then FTLARCH=armv7; \
@@ -124,12 +127,15 @@ RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     && curl -sSL "${URL}/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL \
     && chmod +x /usr/bin/pihole-FTL \
     && readelf -h /usr/bin/pihole-FTL || (echo "Error with downloaded FTL binary" && exit 1) \
-    && /usr/bin/pihole-FTL  -vv
+    && /usr/bin/pihole-FTL  -vv \
+    && apk del binutils
 
 FROM base AS local-ftl-install
 # pihole-FTL must be built from source and copied to the src directory first!
 COPY --chmod=0755 pihole-FTL /usr/bin/pihole-FTL
-RUN  readelf -h /usr/bin/pihole-FTL || (echo "Error with local FTL binary" && exit 1)
+RUN apk add --no-cache binutils \
+    && readelf -h /usr/bin/pihole-FTL || (echo "Error with local FTL binary" && exit 1) \
+    && apk del binutils
 
 # Use the appropriate FTL Install stage based on the FTL_SOURCE build-arg
 FROM ${FTL_SOURCE}-ftl-install AS final
