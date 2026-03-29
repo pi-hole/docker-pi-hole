@@ -26,6 +26,7 @@ RUN apk add --no-cache \
     bind-tools \
     coreutils \
     curl \
+    git \
     # Install grep to avoid issues in pihole -w/b with the default busybox grep
     grep \
     iproute2 \
@@ -61,8 +62,7 @@ ADD --chmod=0755 https://raw.githubusercontent.com/${PADD_FORK}/PADD/${PADD_BRAN
 # if the branch is master we clone the latest tag as sometimes the master branch contains meta changes that have not been tagged
 # (we need to create a new "master" branch to avoid the "detached HEAD" state for the version check to work correctly)
 
-RUN apk add --no-cache git \
-    && clone_repo() { \
+RUN clone_repo() { \
         FORK="$1"; \
         REPO="$2"; \
         BRANCH="$3"; \
@@ -74,10 +74,9 @@ RUN apk add --no-cache git \
         git clone --branch "$CLONE_BRANCH" --single-branch --depth 1 "https://github.com/${FORK}/${REPO}.git" "$DEST"; \
         cd "$DEST"; \
         if [ "$BRANCH" = "master" ]; then git checkout -b master; fi; \
-    } \
-    && clone_repo "${WEB_FORK}" "web" "${WEB_BRANCH}" "/var/www/html/admin" \
-    && clone_repo "${CORE_FORK}" "pi-hole" "${CORE_BRANCH}" "/etc/.pihole" \
-    && apk del git
+    }; \
+    clone_repo "${WEB_FORK}" "web" "${WEB_BRANCH}" "/var/www/html/admin"; \
+    clone_repo "${CORE_FORK}" "pi-hole" "${CORE_BRANCH}" "/etc/.pihole"
 
 
 RUN cd /etc/.pihole && \

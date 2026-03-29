@@ -20,15 +20,15 @@ usage() {
 
 # Set default values
 TAG="pihole:local"
-NO_CACHE=true
+DOCKER_BUILD_CMD="docker buildx build src/. --tag ${TAG} --load --no-cache"
 FTL_FLAG=false
 CORE_FORK="pi-hole"
 WEB_FORK="pi-hole"
 PADD_FORK="pi-hole"
-BUILD_ARGS=()
 
 # Check if buildx is installed
-if ! docker buildx version >/dev/null 2>&1; then
+docker buildx version >/dev/null 2>&1
+if [ $? -ne 0 ]; then
     echo "Error: Docker buildx is required to build this image. For installation instructions, see:"
     echo "       https://github.com/docker/buildx#installing"
     exit 1
@@ -71,7 +71,7 @@ while [[ $# -gt 0 ]]; do
             usage
         fi
         FTL_FLAG=true
-        BUILD_ARGS+=(--build-arg FTL_SOURCE=local)
+        DOCKER_BUILD_CMD+=" --build-arg FTL_SOURCE=local"
         shift
         ;;
     -f | --ftlbranch)
@@ -82,56 +82,58 @@ while [[ $# -gt 0 ]]; do
         FTL_FLAG=true
         FTL_BRANCH="$2"
         check_branch_exists "ftl" "$FTL_BRANCH"
-        BUILD_ARGS+=(--build-arg "FTL_BRANCH=$FTL_BRANCH")
+        DOCKER_BUILD_CMD+=" --build-arg FTL_BRANCH=$FTL_BRANCH"
         shift
         shift
         ;;
     -c | --corebranch)
         CORE_BRANCH="$2"
         check_branch_exists "pi-hole" "$CORE_BRANCH" "$CORE_FORK"
-        BUILD_ARGS+=(--build-arg "CORE_BRANCH=$CORE_BRANCH")
+        DOCKER_BUILD_CMD+=" --build-arg CORE_BRANCH=$CORE_BRANCH"
         shift
         shift
         ;;
     -w | --webbranch)
         WEB_BRANCH="$2"
         check_branch_exists "web" "$WEB_BRANCH" "$WEB_FORK"
-        BUILD_ARGS+=(--build-arg "WEB_BRANCH=$WEB_BRANCH")
+        DOCKER_BUILD_CMD+=" --build-arg WEB_BRANCH=$WEB_BRANCH"
         shift
         shift
         ;;
     -p | --paddbranch)
         PADD_BRANCH="$2"
         check_branch_exists "padd" "$PADD_BRANCH"
-        BUILD_ARGS+=(--build-arg "PADD_BRANCH=$PADD_BRANCH")
+        DOCKER_BUILD_CMD+=" --build-arg PADD_BRANCH=$PADD_BRANCH"
         shift
         shift
         ;;
     -cf | --corefork)
         CORE_FORK="$2"
-        BUILD_ARGS+=(--build-arg "CORE_FORK=$CORE_FORK")
+        DOCKER_BUILD_CMD+=" --build-arg CORE_FORK=$CORE_FORK"
         shift
         shift
         ;;
     -wf | --webfork)
         WEB_FORK="$2"
-        BUILD_ARGS+=(--build-arg "WEB_FORK=$WEB_FORK")
+        DOCKER_BUILD_CMD+=" --build-arg WEB_FORK=$WEB_FORK"
         shift
         shift
         ;;
     -pf | --paddfork)
         PADD_FORK="$2"
-        BUILD_ARGS+=(--build-arg "PADD_FORK=$PADD_FORK")
+        DOCKER_BUILD_CMD+=" --build-arg PADD_FORK=$PADD_FORK"
         shift
         shift
         ;;
     -t | --tag)
-        TAG="$2"
+        CUSTOM_TAG="$2"
+        DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD/$TAG/$CUSTOM_TAG}
+        TAG=$CUSTOM_TAG
         shift
         shift
         ;;
     use_cache)
-        NO_CACHE=false
+        DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD/--no-cache/}
         shift
         ;;
     *)
@@ -141,23 +143,19 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Build the docker command as an array to avoid eval and handle arguments safely
-DOCKER_BUILD_CMD=(docker buildx build src/. --tag "${TAG}" --load)
-if [ "${NO_CACHE}" = true ]; then
-    DOCKER_BUILD_CMD+=(--no-cache)
-fi
-DOCKER_BUILD_CMD+=("${BUILD_ARGS[@]}")
-
 # Execute the docker build command
-echo "Executing command: ${DOCKER_BUILD_CMD[*]}"
-if "${DOCKER_BUILD_CMD[@]}"; then
-    echo ""
-    echo "Successfully built Docker image with tag '${TAG}'"
-    docker images "${TAG}"
-else
+echo "Executing command: $DOCKER_BUILD_CMD"
+eval "${DOCKER_BUILD_CMD}"
+
+# Check exit code of previous command
+if [ $? -ne 0 ]; then
     echo ""
     echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     echo "!! ERROR: Docker build failed, please review logs above !!"
     echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     exit 1
+else
+    echo ""
+    echo "Successfully built Docker image with tag '$TAG'"
+    docker images "${TAG}"
 fi
