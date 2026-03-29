@@ -54,12 +54,19 @@
     [[ "$logs" == *"(code 0)"* ]]
 }
 
+@test "FTLCONF_ variables successfully configure FTL" {
+    run docker exec "$CONTAINER_CUSTOM" pihole-FTL --config
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"dns.upstreams = [ 8.8.8.8, 1.1.1.1 ]"* ]]
+    [[ "$output" == *"webserver.port = 8080"* ]]
+}
+
+
 # ---- Container configuration ------------------------------------------------
 
 @test "Cron file is valid" {
-    run docker exec "$CONTAINER_DEFAULT" bash -c \
-        "/usr/bin/crontab /crontab.txt 2>&1; crond -d 8 -L /cron.log 2>&1; cat /cron.log"
-    [[ "$output" != *"parse error"* ]]
+    run docker exec "$CONTAINER_DEFAULT" /usr/bin/crontab /crontab.txt
+    [ "$status" -eq 0 ]
 }
 
 @test "Custom PIHOLE_UID is applied to pihole user" {

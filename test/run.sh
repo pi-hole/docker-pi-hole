@@ -23,7 +23,7 @@ docker buildx build \
 if [ -z "${BATS:-}" ]; then
     mkdir -p libs
     if [ ! -d libs/bats ]; then
-        git clone --depth=1 --quiet https://github.com/bats-core/bats-core libs/bats
+        git clone --depth=1 --quiet --branch "${BATS_VERSION:-v1.13.0}" https://github.com/bats-core/bats-core libs/bats
     fi
     BATS=libs/bats/bin/bats
 fi
@@ -50,7 +50,9 @@ CONTAINER_DEFAULT=$(start_container)
 CONTAINER_CUSTOM=$(start_container \
     -e PIHOLE_UID=456 \
     -e PIHOLE_GID=456 \
-    -e FTLCONF_webserver_api_password=1234567890)
+    -e FTLCONF_webserver_api_password=1234567890 \
+    -e FTLCONF_webserver_port=8080 \
+    -e FTLCONF_dns_upstreams="8.8.8.8;1.1.1.1")
 
 export CONTAINER_DEFAULT CONTAINER_CUSTOM CIPLATFORM
 
@@ -80,9 +82,21 @@ done
 
 # ---- Run BATS ---------------------------------------------------------------
 
-# Use pretty formatter when stdout is a TTY; fall back to TAP in CI / pipes
-if [ -t 1 ]; then
-    "$BATS" --pretty test_suite.bats
-else
-    "$BATS" --formatter tap test_suite.bats
+TEST_FILES=(
+    test_suite.bats
+)
+
+# Configure BATS output and parallelization
+BATS_FLAGS=("--print-output-on-failure");
+
+# Use pretty output when stdout is a terminal; TAP format for CI
+if [[ -t 1 ]]; then
+    BATS_FLAGS+=("-p")
 fi
+
+# Parallelize tests if GNU parallel is available
+if command -v parallel > /dev/null 2>&1; then
+    BATS_FLAGS+=("--jobs" "$(nproc)")
+fi
+
+"$BATS" "${BATS_FLAGS[@]}" "${TEST_FILES[@]}"
