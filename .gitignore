@@ -15,6 +15,7 @@ etc-pihole/
 var-log/
 .vscode/
 .pytest_cache/
+test/libs/
 
 # WIP/test stuff
 doco.yml
