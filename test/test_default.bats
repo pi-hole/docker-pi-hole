@@ -47,6 +47,65 @@ teardown_file() {
     assert_output --partial "assigning random password:"
 }
 
+# ---- Container services -----------------------------------------------------
+
+@test "crond is running" {
+    run docker exec "$CONTAINER" pgrep crond
+    assert_success
+}
+
+@test "Logrotate config is installed" {
+    run docker exec "$CONTAINER" test -f /etc/pihole/logrotate
+    assert_success
+}
+
+# ---- Default configuration --------------------------------------------------
+
+@test "Default DNS upstreams are applied when none are configured" {
+    run docker exec "$CONTAINER" pihole-FTL --config -q dns.upstreams
+    assert_success
+    assert_output --partial "8.8.8.8"
+    assert_output --partial "8.8.4.4"
+}
+
+# ---- Web interface ----------------------------------------------------------
+
+@test "Web interface is accessible" {
+    run docker exec "$CONTAINER" curl -sf /dev/null http://localhost/admin/
+    assert_success
+}
+
+# ---- Docker image -----------------------------------------------------------
+
+@test "/pihole.docker.tag is present" {
+    run docker exec "$CONTAINER" test -f /pihole.docker.tag
+    assert_success
+}
+
+@test "macvendor.db is present" {
+    run docker exec "$CONTAINER" test -f /macvendor.db
+    assert_success
+}
+
+@test "macvendor.db path is configured in FTL" {
+    run docker exec "$CONTAINER" pihole-FTL --config -q files.macvendor
+    assert_success
+    assert_output "/macvendor.db"
+}
+
+# ---- Runtime ----------------------------------------------------------------
+
+@test "FTL is running as the pihole user" {
+    run docker exec "$CONTAINER" pgrep -u pihole pihole-FTL
+    assert_success
+}
+
+@test "Capabilities are applied to pihole-FTL" {
+    run docker exec "$CONTAINER" getcap /usr/bin/pihole-FTL
+    assert_success
+    assert_output --partial "cap_net_raw"
+}
+
 # ---- FTL shutdown (DO THIS LAST!)---------------------------------------------
 
 @test "FTL starts up and shuts down cleanly" {

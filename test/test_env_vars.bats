@@ -59,6 +59,13 @@ teardown_file() {
     assert_success
 }
 
+# ---- Web interface ----------------------------------------------------------
+
+@test "Web interface is accessible on custom port" {
+    run docker exec "$CONTAINER" curl -sf http://localhost:8080/admin
+    assert_success
+}
+
 # ---- TAIL_FTL_LOG disabled --------------------------------------------------
 
 @test "TAIL_FTL_LOG=0 suppresses FTL log output in docker logs" {

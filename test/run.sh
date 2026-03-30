@@ -43,6 +43,7 @@ export CIPLATFORM
 TEST_FILES=(
     test_default.bats
     test_env_vars.bats
+    test_secrets.bats
 )
 
 # Configure BATS output and parallelization
