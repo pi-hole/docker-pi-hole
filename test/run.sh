@@ -25,6 +25,12 @@ if [ -z "${BATS:-}" ]; then
     if [ ! -d libs/bats ]; then
         git clone --depth=1 --quiet --branch "${BATS_VERSION:-v1.13.0}" https://github.com/bats-core/bats-core libs/bats
     fi
+    if [ ! -d libs/bats-support ]; then
+        git clone --depth=1 --quiet --branch "${BATS_SUPPORT_VERSION:-v0.3.0}" https://github.com/bats-core/bats-support libs/bats-support
+    fi
+    if [ ! -d libs/bats-assert ]; then
+        git clone --depth=1 --quiet --branch "${BATS_ASSERT_VERSION:-v2.1.0}" https://github.com/bats-core/bats-assert libs/bats-assert
+    fi
     BATS=libs/bats/bin/bats
 fi
 
