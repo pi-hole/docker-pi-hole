@@ -88,6 +88,8 @@ done
 
 # ---- Run BATS ---------------------------------------------------------------
 
+echo "Running tests with BATS"
+
 TEST_FILES=(
     test_suite.bats
 )
@@ -102,6 +104,7 @@ fi
 
 # Parallelize tests if GNU parallel is available
 if command -v parallel > /dev/null 2>&1; then
+    echo "GNU parallel found, running tests in parallel"
     BATS_FLAGS+=("--jobs" "$(nproc)")
 fi
 
