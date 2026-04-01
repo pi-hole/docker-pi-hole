@@ -42,7 +42,6 @@ jobs:
         run: CIPLATFORM=${{ env.CI_ARCH }} bash test/run.sh
 
   build-prepare:
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     outputs:
       components_branch: ${{ env.components_branch }}
@@ -51,8 +50,7 @@ jobs:
       - run: echo "Exposing env vars for reusable workflow"
 
   build:
-    if: github.event_name != 'pull_request'
-    uses: docker/github-builder/.github/workflows/build.yml@v1
+    uses: docker/github-builder/.github/workflows/build.yml@70313223e2665c3211b454b3fea6534624e78d64 # v1.4.0
     needs:
       - build-prepare
     permissions:
@@ -72,7 +70,7 @@ jobs:
         WEB_BRANCH=${{ needs.build-prepare.outputs.components_branch }}
         PADD_BRANCH=${{ needs.build-prepare.outputs.components_branch }}
       platforms: linux/amd64,linux/386,linux/arm/v6,linux/arm/v7,linux/arm64,linux/riscv64
-      push: true
+      push: ${{ github.event_name != 'pull_request' }}
       set-meta-labels: true
       meta-images: |
         pihole/pihole
