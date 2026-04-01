@@ -34,68 +34,20 @@ if [ -z "${BATS:-}" ]; then
     BATS=libs/bats/bin/bats
 fi
 
-# ---- Start containers -------------------------------------------------------
-
-# Cleanup all test containers on exit (success or failure)
-CONTAINERS=()
-cleanup() {
-    if [ ${#CONTAINERS[@]} -gt 0 ]; then
-        docker rm -f "${CONTAINERS[@]}" > /dev/null 2>&1 || true
-    fi
-}
-trap cleanup EXIT
-
-start_container() {
-    local id
-    id=$(docker run -d -t "${PLATFORM_ARGS[@]}" -e TZ="Europe/London" "$@" pihole:test)
-    CONTAINERS+=("$id")
-    echo "$id"
-}
-
-CONTAINER_DEFAULT=$(start_container)
-CONTAINER_CUSTOM=$(start_container \
-    -e PIHOLE_UID=456 \
-    -e PIHOLE_GID=456 \
-    -e FTLCONF_webserver_api_password=1234567890 \
-    -e FTLCONF_webserver_port=8080 \
-    -e FTLCONF_dns_upstreams="8.8.8.8;1.1.1.1")
-
-export CONTAINER_DEFAULT CONTAINER_CUSTOM CIPLATFORM
-
-# ---- Wait for containers to be ready ----------------------------------------
-
-wait_for_ftl() {
-    local container="$1"
-    local timeout=60
-    local elapsed=0
-    printf "Waiting for FTL in %.12s... " "${container}"
-    until docker logs "${container}" 2>&1 | grep -q "########## FTL started"; do
-        sleep 1
-        elapsed=$(( elapsed + 1 ))
-        if (( elapsed >= timeout )); then
-            echo "TIMEOUT"
-            echo "--- Container logs ---"
-            docker logs "${container}"
-            return 1
-        fi
-    done
-    echo "ready (${elapsed}s)"
-}
-
-for container in "$CONTAINER_DEFAULT" "$CONTAINER_CUSTOM"; do
-    wait_for_ftl "$container"
-done
-
 # ---- Run BATS ---------------------------------------------------------------
 
 echo "Running tests with BATS"
 
+export CIPLATFORM
+
 TEST_FILES=(
-    test_suite.bats
+    test_default.bats
+    test_env_vars.bats
+    test_secrets.bats
 )
 
 # Configure BATS output and parallelization
-BATS_FLAGS=("--print-output-on-failure");
+BATS_FLAGS=();
 
 # Use pretty output when stdout is a terminal; TAP format for CI
 if [[ -t 1 ]]; then
