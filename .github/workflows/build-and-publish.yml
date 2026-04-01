@@ -18,23 +18,17 @@ env:
 jobs:
   test:
     if: github.event_name == 'pull_request'
-    runs-on: ${{ matrix.runner }}
+    runs-on: ${{ startsWith(matrix.platform, 'linux/arm') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - platform: linux/amd64
-            runner: ubuntu-latest
-          - platform: linux/386
-            runner: ubuntu-latest
-          - platform: linux/arm/v6
-            runner: ubuntu-24.04-arm
-          - platform: linux/arm/v7
-            runner: ubuntu-24.04-arm
-          - platform: linux/arm64
-            runner: ubuntu-24.04-arm
-          - platform: linux/riscv64
-            runner: ubuntu-24.04-arm
+        platform:
+          - linux/amd64
+          - linux/386
+          - linux/arm/v6
+          - linux/arm/v7
+          - linux/arm64
+          - linux/riscv64
     env:
       CI_ARCH: ${{ matrix.platform }}
     steps:
