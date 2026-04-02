@@ -50,7 +50,7 @@ jobs:
       - run: echo "Exposing env vars for reusable workflow"
 
   build:
-    uses: docker/github-builder/.github/workflows/build.yml@70313223e2665c3211b454b3fea6534624e78d64 # v1.4.0
+    uses: docker/github-builder/.github/workflows/build.yml@2497a7d1e7d8683af4949c9d6d62012bc16ed59c #v1.5.0
     needs:
       - build-prepare
     permissions:
@@ -61,6 +61,7 @@ jobs:
       setup-qemu: true
       cache: true
       cache-scope: build
+      fail-fast: true
       context: src
       output: image
       build-args: |
