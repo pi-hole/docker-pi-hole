@@ -7,161 +7,88 @@ on:
       - development
   release:
     types: [published]
+  pull_request:
 
 permissions:
   contents: read
-  packages: write
 
 env:
-  dockerhub: ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole
-  ghcr: ghcr.io/${{ github.repository_owner }}/pihole
   components_branch: ${{ github.event_name == 'release' && 'master' || 'development' }}
 
 jobs:
-  build:
-    runs-on: ${{ matrix.runner }}
+  test:
+    if: github.event_name == 'pull_request'
+    runs-on: ${{ startsWith(matrix.platform, 'linux/arm') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - platform: linux/amd64
-            runner: ubuntu-latest
-          - platform: linux/386
-            runner: ubuntu-latest
-          - platform: linux/arm/v6
-            runner: ubuntu-24.04-arm
-          - platform: linux/arm/v7
-            runner: ubuntu-24.04-arm
-          - platform: linux/arm64
-            runner: ubuntu-24.04-arm
-          - platform: linux/riscv64
-            runner: ubuntu-24.04-arm
-
+        platform:
+          - linux/amd64
+          - linux/386
+          - linux/arm/v6
+          - linux/arm/v7
+          - linux/arm64
+          - linux/riscv64
+    env:
+      CI_ARCH: ${{ matrix.platform }}
     steps:
-      - name: Prepare name for digest up/download
-        run: |
-          platform=${{ matrix.platform }}
-          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
-
-      - &checkout-repo
-        name: Checkout Repo
-        if: github.event_name != 'schedule'
+      - name: Checkout Repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
-
-      - &checkout-dev
-        name: Checkout dev branch if scheduled
-        if: github.event_name == 'schedule'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
-        with:
-          ref: development
-
-      - &docker-meta
-        name: Docker meta
-        id: meta
-        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 #v5.10.0
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          images: |
-            ${{ env.dockerhub }}
-            ${{ env.ghcr }}
-          flavor: |
-            latest=${{ startsWith(github.ref, 'refs/tags/') }}
-          tags: |
-            type=schedule,pattern=nightly
-            type=raw,value=nightly,enable=${{ github.event_name == 'push' }}
-            type=ref,event=tag
-
-      - &login-dockerhub
-        name: Login to Docker Hub
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 #v3.7.0
-        with:
-          registry: docker.io
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
-
-      - &login-ghcr
-        name: Login to GitHub Container Registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 #v3.7.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 #v3.7.0
-        with:
-          platforms: ${{ matrix.platform}}
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a #v4.0.0
 
-      - &setup-buildx
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f #v3.12.0
-        with:
-          # Buildx version 0.31.1 broke our publish workflow, this need to be revised when 0.32.0 is released
-          # https://github.com/docker/buildx/releases/tag/v0.31.1
-          version: v0.31.0
+      - name: Test
+        run: CIPLATFORM=${{ env.CI_ARCH }} bash test/run.sh
 
-      - name: Build container and push by digest
-        id: build
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 #v6.19.2
-        with:
-          context: ./src/
-          platforms: ${{ matrix.platform }}
-          build-args: |
-            PIHOLE_DOCKER_TAG=${{ steps.meta.outputs.version }}
-            FTL_BRANCH=${{ env.components_branch }}
-            CORE_BRANCH=${{ env.components_branch }}
-            WEB_BRANCH=${{ env.components_branch }}
-            PADD_BRANCH=${{ env.components_branch }}
-          labels: ${{ steps.meta.outputs.labels }}
-          outputs: |
-            type=image,name=${{ env.dockerhub }},push-by-digest=true,name-canonical=true,push=true
-
-      - name: Export digests
-        run: |
-          mkdir -p /tmp/digests
-          digest_docker="${{ steps.build.outputs.digest }}"
-          touch "/tmp/digests/${digest_docker#sha256:}"
-
-      - name: Upload digest
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
-        with:
-          name: digests-${{ env.PLATFORM_PAIR }}
-          path: /tmp/digests/*
-          if-no-files-found: error
-          retention-days: 1
-
-  # Merge all the digests into a single file
-  # If we would push immediately above, the individual runners would overwrite each other's images
-  # https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
-  merge-and-deploy:
-    runs-on: ubuntu-latest
-    needs:
-      - build
+  build-prepare:
+    runs-on: ubuntu-24.04
+    outputs:
+      components_branch: ${{ env.components_branch }}
     steps:
-      - *checkout-repo
-      - *checkout-dev
+      # FIXME: can't use env object in reusable workflow inputs: https://github.com/orgs/community/discussions/26671
+      - run: echo "Exposing env vars for reusable workflow"
 
-      - name: Download digests
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
-        with:
-          path: /tmp/digests
-          pattern: digests-*
-          merge-multiple: true
-
-      - *setup-buildx
-      - *docker-meta
-      - *login-dockerhub
-      - *login-ghcr
-
-      - name: Create manifest list and push (DockerHub and GitHub Container Registry)
-        working-directory: /tmp/digests
-        run: |
-          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.dockerhub }}@sha256:%s ' *)
-          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.ghcr }}@sha256:%s ' *)
-
-      - name: Inspect images
-        run: |
-          docker buildx imagetools inspect ${{ env.dockerhub }}:${{ steps.meta.outputs.version }}
-          docker buildx imagetools inspect ${{ env.ghcr }}:${{ steps.meta.outputs.version }}
+  build:
+    uses: docker/github-builder/.github/workflows/build.yml@2497a7d1e7d8683af4949c9d6d62012bc16ed59c #v1.5.0
+    needs:
+      - build-prepare
+    permissions:
+      contents: read # same as global permissions
+      id-token: write # for signing attestation(s) with GitHub OIDC Token
+      packages: write # required to push to GHCR
+    with:
+      setup-qemu: true
+      cache: true
+      cache-scope: build
+      fail-fast: true
+      context: src
+      output: image
+      build-args: |
+        PIHOLE_DOCKER_TAG={{meta.version}}
+        FTL_BRANCH=${{ needs.build-prepare.outputs.components_branch }}
+        CORE_BRANCH=${{ needs.build-prepare.outputs.components_branch }}
+        WEB_BRANCH=${{ needs.build-prepare.outputs.components_branch }}
+        PADD_BRANCH=${{ needs.build-prepare.outputs.components_branch }}
+      platforms: linux/amd64,linux/386,linux/arm/v6,linux/arm/v7,linux/arm64,linux/riscv64
+      push: ${{ github.event_name != 'pull_request' }}
+      set-meta-labels: true
+      meta-images: |
+        pihole/pihole
+        ghcr.io/${{ github.repository_owner }}/pihole
+      meta-tags: |
+        type=schedule,pattern=nightly
+        type=raw,value=nightly,enable=${{ github.event_name == 'push' }}
+        type=ref,event=tag
+      meta-flavor: |
+        latest=${{ startsWith(github.ref, 'refs/tags/') }}
+      # FIXME: GHCR does not support the referrers API and spams the registry with sha-tagged images when cosigned: https://github.com/docker/github-builder/issues/109
+      sign: false
+    secrets:
+      registry-auths: |
+        - registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+        - registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}

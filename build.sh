@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Usage function
 usage() {
@@ -19,8 +20,8 @@ usage() {
 
 # Set default values
 TAG="pihole:local"
-DOCKER_BUILD_CMD="docker buildx build src/. --tag ${TAG} --load --no-cache"
 FTL_FLAG=false
+USE_CACHE=false
 CORE_FORK="pi-hole"
 WEB_FORK="pi-hole"
 PADD_FORK="pi-hole"
@@ -48,12 +49,15 @@ check_branch_exists() {
     fi
 
     local http_code
-    http_code=$(curl -sI "$url" -o /dev/null -w "%{http_code}")
+    http_code=$(curl -sI --max-time 10 "$url" -o /dev/null -w "%{http_code}")
     if [ "${http_code}" -ne 200 ]; then
         echo "Error: $repo branch '$branch' not found. Exiting."
         exit 1
     fi
 }
+
+# Collect extra --build-arg values from flags
+BUILD_ARGS=()
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -70,7 +74,7 @@ while [[ $# -gt 0 ]]; do
             usage
         fi
         FTL_FLAG=true
-        DOCKER_BUILD_CMD+=" --build-arg FTL_SOURCE=local"
+        BUILD_ARGS+=(--build-arg "FTL_SOURCE=local")
         shift
         ;;
     -f | --ftlbranch)
@@ -81,58 +85,56 @@ while [[ $# -gt 0 ]]; do
         FTL_FLAG=true
         FTL_BRANCH="$2"
         check_branch_exists "ftl" "$FTL_BRANCH"
-        DOCKER_BUILD_CMD+=" --build-arg FTL_BRANCH=$FTL_BRANCH"
+        BUILD_ARGS+=(--build-arg "FTL_BRANCH=$FTL_BRANCH")
         shift
         shift
         ;;
     -c | --corebranch)
         CORE_BRANCH="$2"
         check_branch_exists "pi-hole" "$CORE_BRANCH" "$CORE_FORK"
-        DOCKER_BUILD_CMD+=" --build-arg CORE_BRANCH=$CORE_BRANCH"
+        BUILD_ARGS+=(--build-arg "CORE_BRANCH=$CORE_BRANCH")
         shift
         shift
         ;;
     -w | --webbranch)
         WEB_BRANCH="$2"
         check_branch_exists "web" "$WEB_BRANCH" "$WEB_FORK"
-        DOCKER_BUILD_CMD+=" --build-arg WEB_BRANCH=$WEB_BRANCH"
+        BUILD_ARGS+=(--build-arg "WEB_BRANCH=$WEB_BRANCH")
         shift
         shift
         ;;
     -p | --paddbranch)
         PADD_BRANCH="$2"
         check_branch_exists "padd" "$PADD_BRANCH"
-        DOCKER_BUILD_CMD+=" --build-arg PADD_BRANCH=$PADD_BRANCH"
+        BUILD_ARGS+=(--build-arg "PADD_BRANCH=$PADD_BRANCH")
         shift
         shift
         ;;
     -cf | --corefork)
         CORE_FORK="$2"
-        DOCKER_BUILD_CMD+=" --build-arg CORE_FORK=$CORE_FORK"
+        BUILD_ARGS+=(--build-arg "CORE_FORK=$CORE_FORK")
         shift
         shift
         ;;
     -wf | --webfork)
         WEB_FORK="$2"
-        DOCKER_BUILD_CMD+=" --build-arg WEB_FORK=$WEB_FORK"
+        BUILD_ARGS+=(--build-arg "WEB_FORK=$WEB_FORK")
         shift
         shift
         ;;
     -pf | --paddfork)
         PADD_FORK="$2"
-        DOCKER_BUILD_CMD+=" --build-arg PADD_FORK=$PADD_FORK"
+        BUILD_ARGS+=(--build-arg "PADD_FORK=$PADD_FORK")
         shift
         shift
         ;;
     -t | --tag)
-        CUSTOM_TAG="$2"
-        DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD/$TAG/$CUSTOM_TAG}
-        TAG=$CUSTOM_TAG
+        TAG="$2"
         shift
         shift
         ;;
     use_cache)
-        DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD/--no-cache/}
+        USE_CACHE=true
         shift
         ;;
     *)
@@ -142,9 +144,14 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Build the command as an array to avoid eval and shell injection
+DOCKER_BUILD_CMD=(docker buildx build src/. --tag "${TAG}" --load)
+[ "$USE_CACHE" = false ] && DOCKER_BUILD_CMD+=(--no-cache)
+DOCKER_BUILD_CMD+=("${BUILD_ARGS[@]}")
+
 # Execute the docker build command
-echo "Executing command: $DOCKER_BUILD_CMD"
-eval "${DOCKER_BUILD_CMD}"
+echo "Executing command: ${DOCKER_BUILD_CMD[*]}"
+"${DOCKER_BUILD_CMD[@]}"
 
 # Check exit code of previous command
 if [ $? -ne 0 ]; then
