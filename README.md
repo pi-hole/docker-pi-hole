@@ -29,7 +29,7 @@
 
 > [!TIP]
 > Some users [have reported issues](https://github.com/pi-hole/docker-pi-hole/issues/963#issuecomment-1095602502) with using the `--privileged` flag on `2022.04` and above.\
-> TL;DR, don't use that mode, and be [explicit with the permitted caps](https://docs.pi-hole.net/docker/#note-on-capabilities) (if needed) instead.
+> TL;DR, don't use that mode, and be [explicit with the permitted caps](https://docs.pi-hole.net/docker/configuration/#note-on-capabilities) (if needed) instead.
 
 ## Quick Start
 
