@@ -42,7 +42,7 @@ services:
       # Uncomment the below if you have custom dnsmasq config files that you want to persist. Not needed for most.
       #- './etc-dnsmasq.d:/etc/dnsmasq.d'
     cap_add:
-      # See https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+      # See https://docs.pi-hole.net/docker/configuration/#note-on-capabilities
       # Required if you are using Pi-hole as your DHCP server, else not needed
       - NET_ADMIN
     restart: unless-stopped
