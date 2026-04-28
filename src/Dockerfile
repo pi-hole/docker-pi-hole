@@ -27,6 +27,7 @@ RUN apk add --no-cache \
     binutils \
     coreutils \
     curl \
+    gawk \
     git \
     # Install grep to avoid issues in pihole -w/b with the default busybox grep
     grep \
