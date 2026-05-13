@@ -86,7 +86,6 @@ RUN cd /etc/.pihole && \
     install -Dm755 -t /opt/pihole ./advanced/Scripts/*.sh && \
     install -Dm755 -t /opt/pihole ./advanced/Scripts/COL_TABLE && \
     install -Dm755 -d /etc/pihole && \
-    install -Dm644 -t /etc/pihole ./advanced/Templates/logrotate && \
     install -Dm755 -d /var/log/pihole && \
     install -Dm755 -d /var/lib/logrotate && \
     install -Dm755 -t /usr/local/bin pihole && \
@@ -94,6 +93,7 @@ RUN cd /etc/.pihole && \
     install -Dm644 ./advanced/bash-completion/pihole-ftl.bash /etc/bash_completion.d/pihole-FTL && \
     install -T -m 0755 ./advanced/Templates/pihole-FTL-prestart.sh /opt/pihole/pihole-FTL-prestart.sh && \
     install -T -m 0755 ./advanced/Templates/pihole-FTL-poststop.sh /opt/pihole/pihole-FTL-poststop.sh && \
+    install -T -m 644 ./advanced/Templates/logrotate /etc/logrotate.d/pihole && \
     addgroup -S pihole -g ${PIHOLE_GID} && adduser -S pihole -G pihole -u ${PIHOLE_UID} && \
     echo "${PIHOLE_DOCKER_TAG}" > /pihole.docker.tag
 

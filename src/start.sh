@@ -45,9 +45,6 @@ start() {
     # Start crond for scheduled scripts (logrotate, pihole flush, gravity update etc)
     start_cron
 
-    # Install the logrotate config file
-    install_logrotate
-
     #migrate Gravity Database if needed:
     migrate_gravity
 

@@ -55,7 +55,7 @@ teardown_file() {
 }
 
 @test "Logrotate config is installed" {
-    run docker exec "$CONTAINER" test -f /etc/pihole/logrotate
+    run docker exec "$CONTAINER" test -f /etc/logrotate.d/pihole
     assert_success
 }
 
