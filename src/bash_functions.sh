@@ -28,22 +28,55 @@ setFTLConfigValue() {
     pihole-FTL --config "${1}" "${2}" >/dev/null
 }
 
+__timestamp(){
+  date "+%Y%m%dT%H%M%S"
+}
+
+__log(){
+  local level="$1"
+  local service="$2"
+  local msg="$3"
+
+  # Check if msg is valid JSON - if so, use --argjson to avoid escaping
+  if echo "$msg" | jq empty 2>/dev/null; then
+    echo '{}' | \
+    jq  --monochrome-output \
+        --compact-output \
+        --raw-output \
+        --arg timestamp "$(__timestamp)" \
+        --arg level "$level" \
+        --arg service "$service" \
+        --argjson msg "$msg" \
+        '.timestamp=$timestamp|.log_level=$level|.service=$service|.message=$msg'
+  else
+    echo '{}' | \
+    jq  --monochrome-output \
+        --compact-output \
+        --raw-output \
+        --arg timestamp "$(__timestamp)" \
+        --arg level "$level" \
+        --arg service "$service" \
+        --arg msg "$msg" \
+        '.timestamp=$timestamp|.log_level=$level|.service=$service|.message=$msg'
+  fi
+}
+
 set_uid_gid() {
 
-    echo "  [i] Setting up user & group for the pihole user"
+    __log "INFO" "pihole-docker" "Setting up user & group for the pihole user"
 
     currentUid=$(id -u pihole)
 
     # If PIHOLE_UID is set, modify the pihole group's id to match
     if [ -n "${PIHOLE_UID}" ]; then
         if [[ ${currentUid} -ne ${PIHOLE_UID} ]]; then
-            echo "  [i] Changing ID for user: pihole (${currentUid} => ${PIHOLE_UID})"
+            __log "INFO" "pihole-docker" "Changing ID for user: pihole (${currentUid} => ${PIHOLE_UID})"
             usermod -o -u "${PIHOLE_UID}" pihole
         else
-            echo "  [i] ID for user pihole is already ${PIHOLE_UID}, no need to change"
+            __log "INFO" "pihole-docker" "ID for user pihole is already ${PIHOLE_UID}, no need to change"
         fi
     else
-        echo "  [i] PIHOLE_UID not set in environment, using default (${currentUid})"
+        __log "INFO" "pihole-docker" "PIHOLE_UID not set in environment, using default (${currentUid})"
     fi
 
     currentGid=$(id -g pihole)
@@ -51,42 +84,40 @@ set_uid_gid() {
     # If PIHOLE_GID is set, modify the pihole group's id to match
     if [ -n "${PIHOLE_GID}" ]; then
         if [[ ${currentGid} -ne ${PIHOLE_GID} ]]; then
-            echo "  [i] Changing ID for group: pihole (${currentGid} => ${PIHOLE_GID})"
+            __log "INFO" "pihole-docker" "Changing ID for group: pihole (${currentGid} => ${PIHOLE_GID})"
             groupmod -o -g "${PIHOLE_GID}" pihole
         else
-            echo "  [i] ID for group pihole is already ${PIHOLE_GID}, no need to change"
+            __log "INFO" "pihole-docker" "ID for group pihole is already ${PIHOLE_GID}, no need to change"
         fi
     else
-        echo "  [i] PIHOLE_GID not set in environment, using default (${currentGid})"
+        __log "INFO" "pihole-docker" "PIHOLE_GID not set in environment, using default (${currentGid})"
     fi
-    echo ""
 }
 
 install_additional_packages() {
     if [ -n "${ADDITIONAL_PACKAGES}" ]; then
-        echo "  [i] Additional packages requested: ${ADDITIONAL_PACKAGES}"
-        echo "  [i] Fetching APK repository metadata."
+        __log "INFO" "pihole-docker" "Additional packages requested: ${ADDITIONAL_PACKAGES}"
+        __log "INFO" "pihole-docker" "Fetching APK repository metadata."
         if ! apk update; then
-            echo "  [i] Failed to fetch APK repository metadata."
+            __log "ERROR" "pihole-docker" "Failed to fetch APK repository metadata."
         else
-            echo "  [i] Installing additional packages: ${ADDITIONAL_PACKAGES}."
+            __log "INFO" "pihole-docker" "Installing additional packages: ${ADDITIONAL_PACKAGES}."
             # shellcheck disable=SC2086
             if ! apk add --no-cache ${ADDITIONAL_PACKAGES}; then
-                echo "  [i] Failed to install additional packages."
+                __log "ERROR" "pihole-docker" "Failed to install additional packages."
             fi
         fi
-        echo ""
     fi
 }
 
 start_cron() {
-    echo "  [i] Starting crond for scheduled scripts. Randomizing times for gravity and update checker"
+    __log "INFO" "pihole-docker" "Starting crond for scheduled scripts. Randomizing times for gravity and update checker"
     # Randomize gravity update time
     sed -i "s/59 1 /$((1 + RANDOM % 58)) $((3 + RANDOM % 2))/" /crontab.txt
     # Randomize update checker time
     sed -i "s/59 17/$((1 + RANDOM % 58)) $((12 + RANDOM % 8))/" /crontab.txt
     if ! /usr/bin/crontab /crontab.txt; then
-        echo "  [!] Failed to install crontab - scheduled tasks (gravity, update checker) will not run"
+        __log "ERROR" "pihole-docker" "Failed to install crontab - scheduled tasks (gravity, update checker) will not run"
     fi
 
     # Run crond in foreground, prefix each line from STDIN/STDOUT with the current date/time/timezone and
@@ -99,33 +130,31 @@ install_logrotate() {
     # Install the logrotate config file - this is done already in Dockerfile
     # but if a user has mounted a volume over /etc/pihole, it will have been lost
     # pihole-FTL-prestart.sh will set the ownership of the file to root:root
-    echo "  [i] Ensuring logrotate script exists in /etc/pihole"
+    __log "INFO" "pihole-docker" "Ensuring logrotate script exists in /etc/pihole"
     install -Dm644 -t /etc/pihole /etc/.pihole/advanced/Templates/logrotate
-    echo ""
 }
 
 migrate_gravity() {
-    echo "  [i] Gravity migration checks"
+    __log "INFO" "pihole-docker" "Gravity migration checks"
     gravityDBfile=$(getFTLConfigValue files.gravity)
 
     if [[ ! -f /etc/pihole/adlists.list ]]; then
-        echo "  [i] No adlist file found, creating one with a default blocklist"
+        __log "INFO" "pihole-docker" "No adlist file found, creating one with a default blocklist"
         echo "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" >/etc/pihole/adlists.list
     fi
 
     if [ ! -f "${gravityDBfile}" ]; then
-        echo "  [i] ${gravityDBfile} does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate."
-        echo "  [i] Gravity will now be run to create the database"
+        __log "INFO" "pihole-docker" "${gravityDBfile} does not exist (Likely due to a fresh volume). This is a required file for Pi-hole to operate."
+        __log "INFO" "pihole-docker" "Gravity will now be run to create the database"
         pihole -g
     else
-        echo "  [i] Existing gravity database found - schema will be upgraded if necessary"
+        __log "INFO" "pihole-docker" "Existing gravity database found - schema will be upgraded if necessary"
         # source the migration script and run the upgrade function
         source /etc/.pihole/advanced/Scripts/database_migration/gravity-db.sh
         local upgradeOutput
         upgradeOutput=$(upgrade_gravityDB "${gravityDBfile}" "/etc/pihole")
-        printf "%b" "${upgradeOutput}\\n" | sed 's/^/     /'
+        __log "INFO" "pihole-docker" "Gravity DB migration output: ${upgradeOutput}"
     fi
-    echo ""
 }
 
 # shellcheck disable=SC2034
@@ -144,7 +173,7 @@ ftl_config() {
 
     # If getFTLConfigValue "dns.upstreams" returns [], default to Google's DNS server
     if [[ $(getFTLConfigValue "dns.upstreams") == "[]" ]]; then
-        echo "  [i] No DNS upstream set in environment or config file, defaulting to Google DNS"
+        __log "INFO" "pihole-docker" "No DNS upstream set in environment or config file, defaulting to Google DNS"
         setFTLConfigValue "dns.upstreams" "[\"8.8.8.8\", \"8.8.4.4\"]"
     fi
 
@@ -156,7 +185,7 @@ migrate_v5_configs() {
     # During migration, their content is copied into the new single source of
     # truth file /etc/pihole/pihole.toml and the old files are moved away to
     # avoid conflicts with other services on this system
-    echo "  [i] Migrating dnsmasq configuration files"
+    __log "INFO" "pihole-docker" "Migrating dnsmasq configuration files"
     V6_CONF_MIGRATION_DIR="/etc/pihole/migration_backup_v6"
     # Create target directory and make it owned by pihole:pihole
     mkdir -p "${V6_CONF_MIGRATION_DIR}"
@@ -171,7 +200,6 @@ migrate_v5_configs() {
 
     mv /etc/dnsmasq.d/0{1,2,4,5}-pihole*.conf "${V6_CONF_MIGRATION_DIR}/" 2>/dev/null || true
     mv /etc/dnsmasq.d/06-rfc6761.conf "${V6_CONF_MIGRATION_DIR}/" 2>/dev/null || true
-    echo ""
 
     # Finally, after everything is in place, we can create the new config file
     # /etc/pihole/pihole.toml
@@ -186,13 +214,11 @@ migrate_v5_configs() {
     # We suppress the message about environment variables as these will be set on FTL's first real start
     printf "%b" "${FTLoutput}\\n" | sed 's/^/      /' | sed 's/      Migrating config to Pi-hole v6.0 format/  [i] Migrating config to Pi-hole v6.0 format/' | sed 's/- 0 entries are forced through environment//'
 
-    # Print a blank line for separation
-    echo ""
 }
 
 setup_web_password() {
     if [ -z "${FTLCONF_webserver_api_password+x}" ] && [ -n "${WEBPASSWORD_FILE}" ] && [ -r "/run/secrets/${WEBPASSWORD_FILE}" ]; then
-        echo "  [i] Setting FTLCONF_webserver_api_password from file"
+        __log "INFO" "pihole-docker" "Setting FTLCONF_webserver_api_password from file"
         FTLCONF_webserver_api_password=$(<"/run/secrets/${WEBPASSWORD_FILE}")
         export FTLCONF_webserver_api_password
     fi
@@ -201,13 +227,13 @@ setup_web_password() {
     if [ -z "${FTLCONF_webserver_api_password+x}" ]; then
         # Is this already set to something other than blank (default) in FTL's config file? (maybe in a volume mount)
         if [[ $(pihole-FTL --config webserver.api.pwhash) ]]; then
-            echo "  [i] Password already set in config file"
+            __log "INFO" "pihole-docker" "Password already set in config file"
             return
         else
             # If we are here, the password is set in neither the environment nor the config file
             # We will generate a random password.
             RANDOMPASSWORD=$(tr -dc _A-Z-a-z-0-9 </dev/urandom | head -c 8)
-            echo "  [i] No password set in environment or config file, assigning random password: $RANDOMPASSWORD"
+            __log "INFO" "pihole-docker" "No password set in environment or config file, assigning random password: $RANDOMPASSWORD"
 
             # Explicitly turn off bash printing when working with secrets
             { set +x; } 2>/dev/null
@@ -221,7 +247,7 @@ setup_web_password() {
             fi
         fi
     else
-        echo "  [i] Assigning password defined by Environment Variable"
+        __log "INFO" "pihole-docker" "Assigning password defined by Environment Variable"
     fi
 }
 
@@ -229,7 +255,7 @@ fix_capabilities() {
     # Testing on Docker 20.10.14 with no caps set shows the following caps available to the container:
     # Current: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=ep
     # FTL can also use CAP_NET_ADMIN and CAP_SYS_NICE. If we try to set them when they haven't been explicitly enabled, FTL will not start. Test for them first:
-    echo "  [i] Setting capabilities on pihole-FTL where possible"
+    __log "INFO" "pihole-docker" "Setting capabilities on pihole-FTL where possible"
     capsh --has-p=cap_chown 2>/dev/null && CAP_STR+=',CAP_CHOWN'
     capsh --has-p=cap_net_bind_service 2>/dev/null && CAP_STR+=',CAP_NET_BIND_SERVICE'
     capsh --has-p=cap_net_raw 2>/dev/null && CAP_STR+=',CAP_NET_RAW'
@@ -239,30 +265,28 @@ fix_capabilities() {
 
     if [[ ${CAP_STR} ]]; then
         # We have the (some of) the above caps available to us - apply them to pihole-FTL
-        echo "  [i] Applying the following caps to pihole-FTL:"
         IFS=',' read -ra CAPS <<<"${CAP_STR:1}"
-        for i in "${CAPS[@]}"; do
-            echo "        * ${i}"
-        done
+        # Build JSON array from capabilities
+        CAPS_JSON=$(printf '%s\n' "${CAPS[@]}" | jq -R . | jq -s '{"applied_capabilities": .}')
+        __log "INFO" "pihole-docker" "$CAPS_JSON"
 
         setcap "${CAP_STR:1}"+ep "$(which pihole-FTL)" || ret=$?
 
         if [[ $DHCP_READY == false ]] && [[ $FTLCONF_dhcp_active == true ]]; then
             # DHCP is requested but NET_ADMIN is not available.
-            echo "ERROR: DHCP requested but NET_ADMIN is not available. DHCP will not be started."
-            echo "      Please add cap_net_admin to the container's capabilities or disable DHCP."
+            __log "ERROR" "pihole-docker" "DHCP requested but NET_ADMIN is not available. DHCP will not be started."
+            __log "INFO" "pihole-docker" "      Please add cap_net_admin to the container's capabilities or disable DHCP."
             setFTLConfigValue dhcp.active false
         fi
 
         if [[ $ret -ne 0 && "${DNSMASQ_USER:-pihole}" != "root" ]]; then
-            echo "  [!] ERROR: Unable to set capabilities for pihole-FTL. Cannot run as non-root."
-            echo "            If you are seeing this error, please set the environment variable 'DNSMASQ_USER' to the value 'root'"
+            __log "ERROR" "pihole-docker" "Unable to set capabilities for pihole-FTL. Cannot run as non-root."
+            __log "ERROR" "pihole-docker" "If you are seeing this error, please set the environment variable 'DNSMASQ_USER' to the value 'root'"
             exit 1
         fi
     else
-        echo "  [!] ERROR: Unable to set capabilities for pihole-FTL."
-        echo "            Please ensure that the container has the required capabilities."
+        __log "ERROR" "pihole-docker" "Unable to set capabilities for pihole-FTL."
+        __log "ERROR" "pihole-docker" "Please ensure that the container has the required capabilities."
         exit 1
     fi
-    echo ""
 }
