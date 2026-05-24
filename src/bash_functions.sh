@@ -191,7 +191,8 @@ migrate_v5_configs() {
 setup_web_password() {
     if [ -z "${FTLCONF_webserver_api_password+x}" ] && [ -n "${WEBPASSWORD_FILE}" ] && [ -r "/run/secrets/${WEBPASSWORD_FILE}" ]; then
         echo "  [i] Setting FTLCONF_webserver_api_password from file"
-        export FTLCONF_webserver_api_password=$(<"/run/secrets/${WEBPASSWORD_FILE}")
+        FTLCONF_webserver_api_password=$(<"/run/secrets/${WEBPASSWORD_FILE}")
+        export FTLCONF_webserver_api_password
     fi
 
     # If FTLCONF_webserver_api_password is not set
