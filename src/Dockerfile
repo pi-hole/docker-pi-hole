@@ -98,6 +98,7 @@ RUN cd /etc/.pihole && \
     echo "${PIHOLE_DOCKER_TAG}" > /pihole.docker.tag
 
 COPY --chmod=0755 bash_functions.sh /usr/bin/bash_functions.sh
+COPY --chmod=0755 prefix-time.sh /usr/bin/prefix-time.sh
 COPY --chmod=0755 start.sh /usr/bin/start.sh
 
 EXPOSE 53 53/udp
