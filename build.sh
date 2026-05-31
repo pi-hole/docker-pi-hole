@@ -27,8 +27,7 @@ WEB_FORK="pi-hole"
 PADD_FORK="pi-hole"
 
 # Check if buildx is installed
-docker buildx version >/dev/null 2>&1
-if [ $? -ne 0 ]; then
+if ! docker buildx version >/dev/null 2>&1; then
     echo "Error: Docker buildx is required to build this image. For installation instructions, see:"
     echo "       https://github.com/docker/buildx#installing"
     exit 1
@@ -151,10 +150,7 @@ DOCKER_BUILD_CMD+=("${BUILD_ARGS[@]}")
 
 # Execute the docker build command
 echo "Executing command: ${DOCKER_BUILD_CMD[*]}"
-"${DOCKER_BUILD_CMD[@]}"
-
-# Check exit code of previous command
-if [ $? -ne 0 ]; then
+if ! "${DOCKER_BUILD_CMD[@]}"; then
     echo ""
     echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     echo "!! ERROR: Docker build failed, please review logs above !!"

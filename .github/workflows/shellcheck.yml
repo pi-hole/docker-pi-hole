@@ -1,0 +1,25 @@
+name: ShellCheck
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  shellcheck:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+      with:
+        fetch-depth: 0
+
+    - name: Differential ShellCheck
+      uses: redhat-plumbers-in-action/differential-shellcheck@d965e66ec0b3b2f821f75c8eff9b12442d9a7d1e #v5.5.6
+      with:
+        severity: warning
+        display-engine: sarif-fmt
+        token: ${{ secrets.GITHUB_TOKEN }}
