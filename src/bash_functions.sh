@@ -29,7 +29,7 @@ setFTLConfigValue() {
 }
 
 __timestamp(){
-  date "+%Y%m%dT%H%M%S"
+  date '+%F %T.%3N %Z'
 }
 
 __log(){
