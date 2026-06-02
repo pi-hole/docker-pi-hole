@@ -120,9 +120,10 @@ start_cron() {
         __log "ERROR" "pihole-docker" "Failed to install crontab - scheduled tasks (gravity, update checker) will not run"
     fi
 
-    # Run crond in foreground, prefix each line from STDIN/STDOUT with the current date/time/timezone and
-    # write to PID 1 STDOUT (docker log)
-    { /usr/sbin/crond -f -d 6 |& prefix-time.sh; } &
+    # Run crond in foreground and emit each line as structured JSON to container stdout
+    { /usr/sbin/crond -f -d 6 |& while IFS= read -r line; do
+        __log "INFO" "crond" "$line"
+    done; } &
     echo ""
 }
 
