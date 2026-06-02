@@ -89,7 +89,9 @@ start_cron() {
         echo "  [!] Failed to install crontab - scheduled tasks (gravity, update checker) will not run"
     fi
 
-    /usr/sbin/crond
+    # Run crond in foreground, prefix each line from STDIN/STDOUT with the current date/time/timezone and
+    # write to PID 1 STDOUT (docker log)
+    { /usr/sbin/crond -f -d 6 |& prefix-time.sh; } &
     echo ""
 }
 
