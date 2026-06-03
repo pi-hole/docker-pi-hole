@@ -66,11 +66,10 @@ start() {
 
     __log "INFO" "pihole-docker" "Starting pihole-FTL as user ${DNSMASQ_USER}"
 
-    capsh --user="${DNSMASQ_USER}" --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
+    capsh --user="${DNSMASQ_USER}" --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD" &
     # Notes on above:
     # - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env
-    # - /var/log/pihole/pihole*.log has FTL's output that no-daemon would normally print in FG too
-    #   prevent duplicating it in docker logs by sending to dev null
+    # - "--log-json" already writes full structured JSON, we can capture it directly
 
     # We need the PID of the capsh process so that we can wait for it to finish
     CAPSH_PID=$!
@@ -91,13 +90,6 @@ start() {
       ftl: .version.ftl.local | {version, branch, hash, date}
     }')
     __log "INFO" "pihole-docker" "$versionJson"
-
-    if [ "${TAIL_FTL_LOG:-1}" -eq 1 ]; then
-        # Start tailing the FTL log file from the EOF position we recorded on container start
-        tail -F -c +$((startFrom + 1)) -- "${FTLlogFile}" &
-    else
-        __log "INFO" "pihole-docker" "FTL log output is disabled. Remove the Environment variable TAIL_FTL_LOG, or set it to 1 to enable FTL log output."
-    fi
 
     # Wait for the capsh process (which spawned FTL) to finish
     wait $CAPSH_PID

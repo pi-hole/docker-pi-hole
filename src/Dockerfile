@@ -18,7 +18,7 @@ ARG PIHOLE_UID=1000
 ARG PIHOLE_GID=1000
 
 ENV DNSMASQ_USER=pihole
-ENV FTL_CMD=no-daemon
+ENV FTL_CMD="no-daemon --log-json"
 
 RUN apk add --no-cache \
     bash \
