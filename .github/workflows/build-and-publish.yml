@@ -61,6 +61,7 @@ jobs:
       setup-qemu: true
       cache: true
       cache-scope: build
+      cache-mode: max
       fail-fast: true
       context: src
       output: image

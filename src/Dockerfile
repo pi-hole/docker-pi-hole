@@ -20,7 +20,8 @@ ARG PIHOLE_GID=1000
 ENV DNSMASQ_USER=pihole
 ENV FTL_CMD=no-daemon
 
-RUN apk add --no-cache \
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk add \
     bash \
     bash-completion \
     bind-tools \
@@ -43,21 +44,10 @@ RUN apk add --no-cache \
     unzip \
     wget
 
-# For nightly images, we install gdb and screen for ease of debugging (this is
-# not included in the default image to keep it small), and also prepare the
-# system for a core dump. Furthermore, we already add the required signal
-# instructions to the gdb config file
-RUN if [ "${PIHOLE_DOCKER_TAG}" = "nightly" ]; then \
-    apk add --no-cache gdb screen && \
-    echo "ulimit -c unlimited" >> /etc/profile && \
-    echo "handle SIGHUP nostop SIGPIPE nostop SIGTERM nostop SIG32 nostop SIG33 nostop SIG34 nostop SIG35 nostop SIG36 nostop SIG37 nostop SIG38 nostop SIG39 nostop SIG40 nostop SIG41 nostop" > /root/.gdbinit; \
-    fi
-
-ADD https://ftl.pi-hole.net/macvendor.db /macvendor.db
-COPY crontab.txt /crontab.txt
+ADD --link https://ftl.pi-hole.net/macvendor.db /macvendor.db
 
 # Add PADD to the container, too.
-ADD --chmod=0755 https://raw.githubusercontent.com/${PADD_FORK}/PADD/${PADD_BRANCH}/padd.sh /usr/local/bin/padd
+ADD --link --chmod=0755 https://raw.githubusercontent.com/${PADD_FORK}/PADD/${PADD_BRANCH}/padd.sh /usr/local/bin/padd
 
 # download a the main repos from github
 # if the branch is master we clone the latest tag as sometimes the master branch contains meta changes that have not been tagged
@@ -94,12 +84,23 @@ RUN cd /etc/.pihole && \
     install -Dm644 ./advanced/bash-completion/pihole-ftl.bash /etc/bash_completion.d/pihole-FTL && \
     install -T -m 0755 ./advanced/Templates/pihole-FTL-prestart.sh /opt/pihole/pihole-FTL-prestart.sh && \
     install -T -m 0755 ./advanced/Templates/pihole-FTL-poststop.sh /opt/pihole/pihole-FTL-poststop.sh && \
-    addgroup -S pihole -g ${PIHOLE_GID} && adduser -S pihole -G pihole -u ${PIHOLE_UID} && \
-    echo "${PIHOLE_DOCKER_TAG}" > /pihole.docker.tag
+    addgroup -S pihole -g ${PIHOLE_GID} && adduser -S pihole -G pihole -u ${PIHOLE_UID}
 
 COPY --chmod=0755 bash_functions.sh /usr/bin/bash_functions.sh
 COPY --chmod=0755 prefix-time.sh /usr/bin/prefix-time.sh
 COPY --chmod=0755 start.sh /usr/bin/start.sh
+COPY crontab.txt /crontab.txt
+
+# For nightly images, we install gdb and screen for ease of debugging (this is
+# not included in the default image to keep it small), and also prepare the
+# system for a core dump. Furthermore, we already add the required signal
+# instructions to the gdb config file
+RUN if [ "${PIHOLE_DOCKER_TAG}" = "nightly" ]; then \
+        apk add --no-cache gdb screen && \
+        echo "ulimit -c unlimited" >> /etc/profile && \
+        echo "handle SIGHUP nostop SIGPIPE nostop SIGTERM nostop SIG32 nostop SIG33 nostop SIG34 nostop SIG35 nostop SIG36 nostop SIG37 nostop SIG38 nostop SIG39 nostop SIG40 nostop SIG41 nostop" > /root/.gdbinit; \
+    fi; \
+    echo "${PIHOLE_DOCKER_TAG}" > /pihole.docker.tag
 
 EXPOSE 53 53/udp
 EXPOSE 67/udp
