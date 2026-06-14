@@ -89,7 +89,9 @@ start_cron() {
         echo "  [!] Failed to install crontab - scheduled tasks (gravity, update checker) will not run"
     fi
 
-    /usr/sbin/crond
+    # Run crond in foreground, prefix each line from STDIN/STDOUT with the current date/time/timezone and
+    # write to PID 1 STDOUT (docker log)
+    { /usr/sbin/crond -f -d 6 |& prefix-time.sh; } &
     echo ""
 }
 
@@ -191,7 +193,8 @@ migrate_v5_configs() {
 setup_web_password() {
     if [ -z "${FTLCONF_webserver_api_password+x}" ] && [ -n "${WEBPASSWORD_FILE}" ] && [ -r "/run/secrets/${WEBPASSWORD_FILE}" ]; then
         echo "  [i] Setting FTLCONF_webserver_api_password from file"
-        export FTLCONF_webserver_api_password=$(<"/run/secrets/${WEBPASSWORD_FILE}")
+        FTLCONF_webserver_api_password=$(<"/run/secrets/${WEBPASSWORD_FILE}")
+        export FTLCONF_webserver_api_password
     fi
 
     # If FTLCONF_webserver_api_password is not set
