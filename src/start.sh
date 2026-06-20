@@ -23,8 +23,7 @@ start() {
     # If the file /etc/pihole/setupVars.conf exists, but /etc/pihole/pihole.toml does not, then we are migrating v5->v6
     # FTL Will handle the migration of the config files
     if [[ -f /etc/pihole/setupVars.conf && ! -f /etc/pihole/pihole.toml ]]; then
-        echo "  [i] v5 files detected that have not yet been migrated to v6"
-        echo ""
+        __log "INFO" "pihole-docker" "v5 files detected that have not yet been migrated to v6"
         migrate_v5_configs
     fi
 
@@ -36,7 +35,7 @@ start() {
     set_uid_gid
 
     # Configure FTL with any environment variables if needed
-    echo "  [i] Starting FTL configuration"
+    __log "INFO" "pihole-docker" "Starting FTL configuration"
     ftl_config
 
     # Install additional packages inside the container if requested
@@ -51,7 +50,7 @@ start() {
     #migrate Gravity Database if needed:
     migrate_gravity
 
-    echo "  [i] pihole-FTL pre-start checks"
+    __log "INFO" "pihole-docker" "pihole-FTL pre-start checks"
     # Run the post stop script to cleanup any remaining artifacts from a previous run
     sh /opt/pihole/pihole-FTL-poststop.sh
 
@@ -65,37 +64,32 @@ start() {
     local startFrom
     startFrom=$(stat -c%s "${FTLlogFile}")
 
-    echo "  [i] Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
-    echo ""
+    __log "INFO" "pihole-docker" "Starting pihole-FTL as user ${DNSMASQ_USER}"
 
-    capsh --user="${DNSMASQ_USER}" --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD >/dev/null" &
+    capsh --user="${DNSMASQ_USER}" --keep=1 -- -c "/usr/bin/pihole-FTL $FTL_CMD" &
     # Notes on above:
     # - DNSMASQ_USER default of pihole is in Dockerfile & can be overwritten by runtime container env
-    # - /var/log/pihole/pihole*.log has FTL's output that no-daemon would normally print in FG too
-    #   prevent duplicating it in docker logs by sending to dev null
+    # - "--log-json" already writes full structured JSON, we can capture it directly
 
     # We need the PID of the capsh process so that we can wait for it to finish
     CAPSH_PID=$!
 
     # Wait for FTL to start by monitoring the FTL log file for the "FTL started" line
     if ! timeout 30 tail -F -c +$((startFrom + 1)) -- "${FTLlogFile}" | grep -q '########## FTL started'; then
-        echo "  [!] ERROR: Did not find 'FTL started' message in ${FTLlogFile} in 30 seconds, stopping container"
+        __log "ERROR" "pihole-docker" "Did not find 'FTL started' message in ${FTLlogFile} in 30 seconds, stopping container"
         exit 1
     fi
 
     pihole updatechecker
-    local versionsOutput
-    versionsOutput=$(pihole -v)
-    echo "  [i] Version info:"
-    printf "%b" "${versionsOutput}\\n" | sed 's/^/      /'
-    echo ""
 
-    if [ "${TAIL_FTL_LOG:-1}" -eq 1 ]; then
-        # Start tailing the FTL log file from the EOF position we recorded on container start
-        tail -F -c +$((startFrom + 1)) -- "${FTLlogFile}" &
-    else
-        echo "  [i] FTL log output is disabled. Remove the Environment variable TAIL_FTL_LOG, or set it to 1 to enable FTL log output."
-    fi
+    # Get version information from API endpoint
+    local versionJson
+    versionJson=$(pihole api info/version | jq -c '{
+      core: .version.core.local | {version, branch, hash},
+      web: .version.web.local | {version, branch, hash},
+      ftl: .version.ftl.local | {version, branch, hash, date}
+    }')
+    __log "INFO" "pihole-docker" "$versionJson"
 
     # Wait for the capsh process (which spawned FTL) to finish
     wait $CAPSH_PID
@@ -116,8 +110,8 @@ stop() {
     if [ -z "${FTL_EXIT_CODE}" ]; then
         TRAP_TRIGGERED=1
         echo ""
-        echo "  [i] Container stop requested..."
-        echo "  [i] pihole-FTL is running - Attempting to shut it down cleanly"
+        __log "INFO" "pihole-docker" "Container stop requested..."
+        __log "INFO" "pihole-docker" "pihole-FTL is running - Attempting to shut it down cleanly"
         echo ""
         killall --signal 15 pihole-FTL
 
@@ -135,12 +129,8 @@ stop() {
 
     sh /opt/pihole/pihole-FTL-poststop.sh
 
-    echo ""
-    echo "  [i] pihole-FTL exited with status $FTL_EXIT_CODE"
-    echo ""
-    echo "  [i] Container will now stop or restart depending on your restart policy"
-    echo "      https://docs.docker.com/engine/containers/start-containers-automatically/#use-a-restart-policy"
-    echo ""
+    __log "INFO" "pihole-docker" "pihole-FTL exited with status ${FTL_EXIT_CODE}"
+    __log "INFO" "pihole-docker" "Container will now stop or restart depending on your restart policy - https://docs.docker.com/engine/containers/start-containers-automatically/#use-a-restart-policy"
 
     exit "${FTL_EXIT_CODE}"
 

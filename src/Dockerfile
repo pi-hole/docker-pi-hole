@@ -18,7 +18,7 @@ ARG PIHOLE_UID=1000
 ARG PIHOLE_GID=1000
 
 ENV DNSMASQ_USER=pihole
-ENV FTL_CMD=no-daemon
+ENV FTL_CMD="no-daemon --log-json"
 
 RUN apk add \
     bash \
@@ -86,7 +86,6 @@ RUN cd /etc/.pihole && \
     addgroup -S pihole -g ${PIHOLE_GID} && adduser -S pihole -G pihole -u ${PIHOLE_UID}
 
 COPY --chmod=0755 bash_functions.sh /usr/bin/bash_functions.sh
-COPY --chmod=0755 prefix-time.sh /usr/bin/prefix-time.sh
 COPY --chmod=0755 start.sh /usr/bin/start.sh
 COPY crontab.txt /crontab.txt
 
