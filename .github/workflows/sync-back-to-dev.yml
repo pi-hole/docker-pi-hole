@@ -15,7 +15,7 @@ jobs:
     name: Syncing branches
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 #v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
       - name: Opening pull request
         run: gh pr create -B development -H master --title 'Sync master back into development' --body 'Created by Github action' --label 'internal'
         env:
