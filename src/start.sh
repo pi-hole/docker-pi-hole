@@ -42,7 +42,7 @@ start() {
     # Install additional packages inside the container if requested
     install_additional_packages
 
-    # Start crond for scheduled scripts (logrotate, pihole flush, gravity update etc)
+    # Start crond for scheduled scripts (logrotate, gravity update etc)
     start_cron
 
     # Install the logrotate config file
