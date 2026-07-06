@@ -20,7 +20,7 @@ ARG PIHOLE_GID=1000
 ENV DNSMASQ_USER=pihole
 ENV FTL_CMD=no-daemon
 
-RUN apk add \
+RUN apk add --no-cache \
     bash \
     bash-completion \
     bind-tools \
