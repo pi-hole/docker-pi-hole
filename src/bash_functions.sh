@@ -95,15 +95,6 @@ start_cron() {
     echo ""
 }
 
-install_logrotate() {
-    # Install the logrotate config file - this is done already in Dockerfile
-    # but if a user has mounted a volume over /etc/pihole, it will have been lost
-    # pihole-FTL-prestart.sh will set the ownership of the file to root:root
-    echo "  [i] Ensuring logrotate script exists in /etc/pihole"
-    install -Dm644 -t /etc/pihole /etc/.pihole/advanced/Templates/logrotate
-    echo ""
-}
-
 migrate_gravity() {
     echo "  [i] Gravity migration checks"
     gravityDBfile=$(getFTLConfigValue files.gravity)
