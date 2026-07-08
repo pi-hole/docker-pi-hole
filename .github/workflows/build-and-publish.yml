@@ -1,50 +1,20 @@
 name: Build Image and Publish
 on:
-  schedule:
-    - cron: "0 5 * * *"
-  push:
-    branches:
-      - development
-  release:
-    types: [published]
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 env:
-  components_branch: ${{ github.event_name == 'release' && 'master' || 'development' }}
+  components_branch: development
+  ftl_branch: new/dot-doh-client
 
 jobs:
-  test:
-    if: github.event_name == 'pull_request'
-    runs-on: ${{ startsWith(matrix.platform, 'linux/arm') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        platform:
-          - linux/amd64
-          - linux/386
-          - linux/arm/v6
-          - linux/arm/v7
-          - linux/arm64
-          - linux/riscv64
-    env:
-      CI_ARCH: ${{ matrix.platform }}
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 #v4.2.0
-
-      - name: Test
-        run: CIPLATFORM=${{ env.CI_ARCH }} bash test/run.sh
-
   build-prepare:
     runs-on: ubuntu-24.04
     outputs:
       components_branch: ${{ env.components_branch }}
+      ftl_branch: ${{ env.ftl_branch }}
     steps:
       # FIXME: can't use env object in reusable workflow inputs: https://github.com/orgs/community/discussions/26671
       - run: echo "Exposing env vars for reusable workflow"
@@ -67,22 +37,20 @@ jobs:
       output: image
       build-args: |
         PIHOLE_DOCKER_TAG={{meta.version}}
-        FTL_BRANCH=${{ needs.build-prepare.outputs.components_branch }}
+        FTL_BRANCH=${{ needs.build-prepare.outputs.ftl_branch }}
         CORE_BRANCH=${{ needs.build-prepare.outputs.components_branch }}
         WEB_BRANCH=${{ needs.build-prepare.outputs.components_branch }}
         PADD_BRANCH=${{ needs.build-prepare.outputs.components_branch }}
       platforms: linux/amd64,linux/386,linux/arm/v6,linux/arm/v7,linux/arm64,linux/riscv64
-      push: ${{ github.event_name != 'pull_request' }}
+      push: true
       set-meta-labels: true
       meta-images: |
         pihole/pihole
         ghcr.io/${{ github.repository_owner }}/pihole
       meta-tags: |
-        type=schedule,pattern=nightly
-        type=raw,value=nightly,enable=${{ github.event_name == 'push' }}
-        type=ref,event=tag
+        type=raw,value=dot-doh-client-test
       meta-flavor: |
-        latest=${{ startsWith(github.ref, 'refs/tags/') }}
+        latest=false
       # FIXME: GHCR does not support the referrers API and spams the registry with sha-tagged images when cosigned: https://github.com/docker/github-builder/issues/109
       sign: false
     secrets:
