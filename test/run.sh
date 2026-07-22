@@ -58,4 +58,5 @@ if command -v parallel > /dev/null 2>&1; then
     BATS_FLAGS+=("--jobs" "$(nproc)")
 fi
 
-"$BATS" "${BATS_FLAGS[@]}" "${TEST_FILES[@]}"
+# Ensure that the TERM environment variable is set for colored CI output, defaulting to xterm if not set
+TERM=${TERM:-xterm} "$BATS" "${BATS_FLAGS[@]}" "${TEST_FILES[@]}"
