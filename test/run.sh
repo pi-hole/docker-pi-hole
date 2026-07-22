@@ -23,7 +23,7 @@ docker buildx build \
 if [ -z "${BATS:-}" ]; then
     mkdir -p libs
     if [ ! -d libs/bats ]; then
-        git clone --depth=1 --quiet --branch "${BATS_VERSION:-v1.13.0}" https://github.com/bats-core/bats-core libs/bats
+        git clone --depth=1 --quiet --branch "${BATS_VERSION:-v1.14.0}" https://github.com/bats-core/bats-core libs/bats
     fi
     if [ ! -d libs/bats-support ]; then
         git clone --depth=1 --quiet --branch "${BATS_SUPPORT_VERSION:-v0.3.0}" https://github.com/bats-core/bats-support libs/bats-support
@@ -49,10 +49,8 @@ TEST_FILES=(
 # Configure BATS output and parallelization
 BATS_FLAGS=();
 
-# Use pretty output when stdout is a terminal; TAP format for CI
-if [[ -t 1 ]]; then
-    BATS_FLAGS+=("-p")
-fi
+# Use pretty output, since BATS 1.14 CI runs will auto-adjust
+BATS_FLAGS+=("-p")
 
 # Parallelize tests if GNU parallel is available
 if command -v parallel > /dev/null 2>&1; then
