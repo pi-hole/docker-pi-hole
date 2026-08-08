@@ -105,7 +105,8 @@ EXPOSE 53 53/udp
 EXPOSE 67/udp
 EXPOSE 80
 EXPOSE 123/udp
-EXPOSE 443
+EXPOSE 443 443/udp
+EXPOSE 853 853/udp
 
 ## Buildkit can do some fancy stuff and we can use it to either download FTL from ftl.pi-hole.net or use a local copy
 
