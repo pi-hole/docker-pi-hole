@@ -59,7 +59,11 @@ RUN clone_repo() { \
         DEST="$4"; \
         CLONE_BRANCH="$BRANCH"; \
         if [ "$BRANCH" = "master" ]; then \
-            CLONE_BRANCH=$(curl -s https://api.github.com/repos/${FORK}/${REPO}/releases/latest | jq -r .tag_name); \
+            CLONE_BRANCH=$(curl -fsSL "https://api.github.com/repos/${FORK}/${REPO}/releases/latest" | jq -r .tag_name); \
+            if [ -z "$CLONE_BRANCH" ] || [ "$CLONE_BRANCH" = "null" ]; then \
+                echo "Failed to resolve latest release tag for ${FORK}/${REPO}"; \
+                exit 1; \
+            fi; \
         fi; \
         git clone --branch "$CLONE_BRANCH" --single-branch --depth 1 "https://github.com/${FORK}/${REPO}.git" "$DEST"; \
         cd "$DEST"; \
@@ -122,7 +126,7 @@ RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     else FTLARCH=amd64; fi \
     && echo "Arch: ${TARGETPLATFORM}, FTLARCH: ${FTLARCH}" \
     && if [ "${FTL_BRANCH}" = "master" ]; then URL="https://github.com/pi-hole/ftl/releases/latest/download"; else URL="https://ftl.pi-hole.net/${FTL_BRANCH}"; fi \
-    && curl -sSL "${URL}/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL \
+    && curl -fsSL "${URL}/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL \
     && chmod +x /usr/bin/pihole-FTL \
     && readelf -h /usr/bin/pihole-FTL || (echo "Error with downloaded FTL binary" && exit 1) \
     && /usr/bin/pihole-FTL  -vv
