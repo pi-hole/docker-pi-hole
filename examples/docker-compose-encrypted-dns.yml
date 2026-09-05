@@ -1,0 +1,43 @@
+# Pi-hole as an encrypted resolver for your clients.
+#
+# FTL answers DNS-over-TLS (DoT), DNS-over-QUIC (DoQ) and DNS-over-HTTPS (DoH)
+# itself, so no proxy in front of the container is needed. All three are enabled
+# by default and use the same certificate as the web interface.
+#
+# More info at https://docs.pi-hole.net/ftldns/encrypted-dns/
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    ports:
+      # Plain DNS
+      - "53:53/tcp"
+      - "53:53/udp"
+      # Web interface and API. The HTTPS port also serves DoH at /dns-query, and
+      # HTTP/3 on the same port number over UDP
+      - "80:80/tcp"
+      - "443:443/tcp"
+      - "443:443/udp"
+      # DoT (TCP) and DoQ (UDP). Both use port 853, they do not collide.
+      # These are published on every host address - prefix them with your LAN
+      # address (e.g. "192.168.1.2:853:853/tcp") if the host also faces the
+      # Internet, so you do not run an open resolver
+      - "853:853/tcp"
+      - "853:853/udp"
+    environment:
+      TZ: 'Europe/London'
+      FTLCONF_webserver_api_password: 'correct horse battery staple'
+      # If using Docker's default `bridge` network setting the dns listening mode should be set to 'ALL'
+      FTLCONF_dns_listeningMode: 'ALL'
+      # The listeners are on by default. Set a port to move DoT/DoQ, or 0 to switch
+      # them off - we recommend staying on 853, as that is the port clients try
+      # first. DoH is a plain on/off switch, as it rides on the HTTPS port
+      #FTLCONF_dns_dot: '853'
+      #FTLCONF_dns_doq: '853'
+      #FTLCONF_dns_doh: 'true'
+      # Clients validate the certificate against the name they connect to. Set this
+      # to the name your clients use, so the generated certificate matches it
+      #FTLCONF_webserver_domain: 'pi.hole'
+    volumes:
+      - './etc-pihole:/etc/pihole'
+    restart: unless-stopped
