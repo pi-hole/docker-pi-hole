@@ -33,10 +33,10 @@ jobs:
       CI_ARCH: ${{ matrix.platform }}
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 #v4.2.0
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 #v4.4.0
 
       - name: Test
         run: CIPLATFORM=${{ env.CI_ARCH }} bash test/run.sh
@@ -50,7 +50,7 @@ jobs:
       - run: echo "Exposing env vars for reusable workflow"
 
   build:
-    uses: docker/github-builder/.github/workflows/build.yml@5f637c833aa76bc99372a1dc9a6f8bcd8056fb85 #v1.12.0
+    uses: docker/github-builder/.github/workflows/build.yml@58cb9f5b71b1836d6f690c1e95effdeb9b98cb8a #v1.17.0
     needs:
       - build-prepare
     permissions:

@@ -69,7 +69,7 @@ services:
       # Uncomment the below if you have custom dnsmasq config files that you want to persist. Not needed for most starting fresh with Pi-hole v6. If you're upgrading from v5 you and have used this directory before, you should keep it enabled for the first v6 container start to allow for a complete migration. It can be removed afterwards. Needs environment variable FTLCONF_misc_etc_dnsmasq_d: 'true'
       #- './etc-dnsmasq.d:/etc/dnsmasq.d'
     cap_add:
-      # See https://docs.pi-hole.net/docker/#note-on-capabilities
+      # See https://docs.pi-hole.net/docker/configuration/#note-on-capabilities
       # Required if you are using Pi-hole as your DHCP server, else not needed
       - NET_ADMIN
       # Required if you are using Pi-hole as your NTP client to be able to set the host's system time
