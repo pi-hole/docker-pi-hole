@@ -184,8 +184,16 @@ migrate_v5_configs() {
 setup_web_password() {
     if [ -z "${FTLCONF_webserver_api_password+x}" ] && [ -n "${WEBPASSWORD_FILE}" ] && [ -r "/run/secrets/${WEBPASSWORD_FILE}" ]; then
         echo "  [i] Setting FTLCONF_webserver_api_password from file"
+
+        # Explicitly turn off bash printing when working with secrets
+        { set +x; } 2>/dev/null
+
         FTLCONF_webserver_api_password=$(<"/run/secrets/${WEBPASSWORD_FILE}")
         export FTLCONF_webserver_api_password
+
+        if [ "${PH_VERBOSE:-0}" -gt 0 ]; then
+            set -x
+        fi
     fi
 
     # If FTLCONF_webserver_api_password is not set
