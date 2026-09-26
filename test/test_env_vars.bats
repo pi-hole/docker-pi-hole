@@ -12,7 +12,8 @@ setup_file() {
         -e FTLCONF_webserver_port=8080 \
         -e FTLCONF_dns_upstreams="8.8.8.8;1.1.1.1" \
         -e ADDITIONAL_PACKAGES=wget \
-        -e TAIL_FTL_LOG=0)
+        -e TAIL_FTL_LOG=0 \
+        -e TAIL_WEB_LOG=0)
     wait_for_log "$CONTAINER" "FTL log output is disabled"
     export CONTAINER
 }
@@ -75,4 +76,15 @@ teardown_file() {
     assert_success
     assert_output --partial "FTL log output is disabled"
     refute_output --partial "########## FTL started"
+}
+
+# ---- TAIL_WEB_LOG disabled --------------------------------------------------
+
+@test "TAIL_WEB_LOG=0 suppresses web server log output in docker logs" {
+    # TAIL_WEB_LOG defaults to 1 (enabled); the default container exercises that path.
+    # This test verifies the opt-out case.
+    run docker logs "$CONTAINER"
+    assert_success
+    assert_output --partial "Web server log output is disabled"
+    refute_output --partial "Initializing HTTP server on ports"
 }
