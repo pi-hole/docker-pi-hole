@@ -55,6 +55,15 @@ services:
       #- "67:67/udp"
       # Uncomment the line below if you are using Pi-hole as your NTP server
       #- "123:123/udp"
+      # Uncomment the lines below if your clients should use Pi-hole as an encrypted
+      # resolver: DNS-over-TLS (TCP) and DNS-over-QUIC (UDP). DNS-over-HTTPS needs no
+      # port of its own, it is served on the HTTPS port above
+      #- "853:853/tcp"
+      #- "853:853/udp"
+      # Uncomment the line below for HTTP/3, which runs on UDP on the same port
+      # number and carries both the web interface and DoH. Without it, clients
+      # simply stay on HTTP/2
+      #- "443:443/udp"
     environment:
       # Set the appropriate timezone for your location (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), e.g:
       TZ: 'Europe/London'
@@ -93,6 +102,7 @@ services:
 For more detailed information, please refer to our documentation:
 
 - [Running DHCP from Docker Pi-Hole](https://docs.pi-hole.net/docker/DHCP/)
+- [Encrypted DNS for your clients (DoT, DoH, DoQ)](https://docs.pi-hole.net/ftldns/encrypted-dns/)
 - [Configuration](https://docs.pi-hole.net/docker/configuration/)
 - [Tips and Tricks](https://docs.pi-hole.net/docker/tips-and-tricks/)
 - [Docker tags and versioning](https://docs.pi-hole.net/docker/#docker-tags-and-versioning)
