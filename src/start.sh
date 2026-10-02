@@ -55,12 +55,14 @@ start() {
     fix_capabilities
     sh /opt/pihole/pihole-FTL-prestart.sh
 
-    # Get the FTL log file path from the config
+    # Get the FTL and web server log file path from the config
     FTLlogFile=$(getFTLConfigValue files.log.ftl)
+    WEBlogFile=$(getFTLConfigValue files.log.webserver)
 
-    # Get the EOF position of the FTL log file so that we can tail from there later.
-    local startFrom
-    startFrom=$(stat -c%s "${FTLlogFile}")
+    # Get the EOF position of the FTL and web server log file so that we can tail from there later.
+    local FTLstartFrom WEBstartFrom
+    FTLstartFrom=$(stat -c%s "${FTLlogFile}")
+    WEBstartFrom=$(stat -c%s "${WEBlogFile}")
 
     echo "  [i] Starting pihole-FTL ($FTL_CMD) as ${DNSMASQ_USER}"
     echo ""
@@ -75,7 +77,7 @@ start() {
     CAPSH_PID=$!
 
     # Wait for FTL to start by monitoring the FTL log file for the "FTL started" line
-    if ! timeout 30 tail -F -c +$((startFrom + 1)) -- "${FTLlogFile}" | grep -q '########## FTL started'; then
+    if ! timeout 30 tail -F -c +$((FTLstartFrom + 1)) -- "${FTLlogFile}" | grep -q '########## FTL started'; then
         echo "  [!] ERROR: Did not find 'FTL started' message in ${FTLlogFile} in 30 seconds, stopping container"
         exit 1
     fi
@@ -89,10 +91,19 @@ start() {
 
     if [ "${TAIL_FTL_LOG:-1}" -eq 1 ]; then
         # Start tailing the FTL log file from the EOF position we recorded on container start
-        tail -F -c +$((startFrom + 1)) -- "${FTLlogFile}" &
+        tail -F -c +$((FTLstartFrom + 1)) -- "${FTLlogFile}" &
     else
         echo "  [i] FTL log output is disabled. Remove the Environment variable TAIL_FTL_LOG, or set it to 1 to enable FTL log output."
     fi
+    if [ "${TAIL_WEB_LOG:-1}" -eq 1 ]; then
+        # Start tailing the web server log file from the EOF position we recorded on container start
+        tail -F -c +$((WEBstartFrom + 1)) -- "${WEBlogFile}" &
+    else
+        echo "  [i] Web server log output is disabled. Remove the Environment variable TAIL_WEB_LOG, or set it to 1 to enable web server log output."
+    fi
+
+
+
 
     # Wait for the capsh process (which spawned FTL) to finish
     wait $CAPSH_PID

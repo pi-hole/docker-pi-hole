@@ -39,6 +39,14 @@ teardown_file() {
     assert_success
 }
 
+# ---- Web log is tailed to docker log ------------------------------------------------
+
+@test "Web server log is tailed to docker log" {
+    run docker logs "$CONTAINER"
+    assert_success
+    assert_output --partial "Initializing HTTP server on ports"
+}
+
 # ---- Web password setup -----------------------------------------------------
 
 @test "Random password is assigned on fresh start" {
