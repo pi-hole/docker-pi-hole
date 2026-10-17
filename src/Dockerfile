@@ -89,6 +89,15 @@ RUN cd /etc/.pihole && \
     install -T -m 644 ./advanced/Templates/logrotate /etc/logrotate.d/pihole && \
     addgroup -S pihole -g ${PIHOLE_GID} && adduser -S pihole -G pihole -u ${PIHOLE_UID}
 
+# updatecheck.sh hands over to the unprivileged "pihole" user when started as
+# root (GHSA-xch2-4qxw-g5vj). git refuses to read the root-owned repos above as
+# another user ("dubious ownership"), which would make `pihole -v` show N/A for
+# the local Core/Web versions, so trust them system-wide. The image is built
+# as root and the paths are fixed, so no validation of the paths is needed here.
+RUN git config --system --add safe.directory /etc/.pihole && \
+    git config --system --add safe.directory /var/www/html/admin && \
+    chmod a+r /etc/gitconfig
+
 COPY --chmod=0755 bash_functions.sh /usr/bin/bash_functions.sh
 COPY --chmod=0755 prefix-time.sh /usr/bin/prefix-time.sh
 COPY --chmod=0755 start.sh /usr/bin/start.sh
