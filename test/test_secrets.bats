@@ -13,6 +13,7 @@ setup_file() {
 
     CONTAINER=$(start_container \
         -e WEBPASSWORD_FILE=pihole_password \
+        -e PH_VERBOSE=1 \
         -v "${secret_file}:/run/secrets/pihole_password:ro")
     wait_for_log "$CONTAINER" "########## FTL started"
     export CONTAINER
@@ -29,4 +30,10 @@ teardown_file() {
     run docker logs "$CONTAINER"
     assert_success
     assert_output --partial "Setting FTLCONF_webserver_api_password from file"
+}
+
+@test "WEBPASSWORD_FILE secret is not printed by verbose startup" {
+    run docker logs "$CONTAINER"
+    assert_success
+    refute_output --partial "mysecretpassword"
 }

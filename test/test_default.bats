@@ -82,6 +82,26 @@ teardown_file() {
     assert_success
 }
 
+@test "git trusts the Core and Web repositories for the pihole user" {
+    run docker exec "$CONTAINER" git config --system --get-all safe.directory
+    assert_success
+    assert_line "/etc/.pihole"
+    assert_line "/var/www/html/admin"
+}
+
+@test "updatechecker run as root writes local versions as the pihole user" {
+    run docker exec "$CONTAINER" pihole updatechecker
+    assert_success
+
+    run docker exec "$CONTAINER" stat -c '%a %U' /etc/pihole/versions
+    assert_output "644 pihole"
+
+    run docker exec "$CONTAINER" cat /etc/pihole/versions
+    assert_line --partial "CORE_VERSION="
+    refute_line "CORE_VERSION=null"
+    refute_line "WEB_VERSION=null"
+}
+
 @test "macvendor.db is present" {
     run docker exec "$CONTAINER" test -f /macvendor.db
     assert_success

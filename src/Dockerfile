@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG FTL_SOURCE=remote
 # Pull Stable images
-FROM alpine:3.24.1@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b AS base
+FROM alpine:3.24.2@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS base
 
 ARG TARGETPLATFORM
 ARG WEB_BRANCH="development"
@@ -59,7 +59,11 @@ RUN clone_repo() { \
         DEST="$4"; \
         CLONE_BRANCH="$BRANCH"; \
         if [ "$BRANCH" = "master" ]; then \
-            CLONE_BRANCH=$(curl -s https://api.github.com/repos/${FORK}/${REPO}/releases/latest | jq -r .tag_name); \
+            CLONE_BRANCH=$(curl -fsSL "https://api.github.com/repos/${FORK}/${REPO}/releases/latest" | jq -r .tag_name); \
+            if [ -z "$CLONE_BRANCH" ] || [ "$CLONE_BRANCH" = "null" ]; then \
+                echo "Failed to resolve latest release tag for ${FORK}/${REPO}"; \
+                exit 1; \
+            fi; \
         fi; \
         git clone --branch "$CLONE_BRANCH" --single-branch --depth 1 "https://github.com/${FORK}/${REPO}.git" "$DEST"; \
         cd "$DEST"; \
@@ -84,6 +88,15 @@ RUN cd /etc/.pihole && \
     install -T -m 0755 ./advanced/Templates/pihole-FTL-poststop.sh /opt/pihole/pihole-FTL-poststop.sh && \
     install -T -m 644 ./advanced/Templates/logrotate /etc/logrotate.d/pihole && \
     addgroup -S pihole -g ${PIHOLE_GID} && adduser -S pihole -G pihole -u ${PIHOLE_UID}
+
+# updatecheck.sh hands over to the unprivileged "pihole" user when started as
+# root (GHSA-xch2-4qxw-g5vj). git refuses to read the root-owned repos above as
+# another user ("dubious ownership"), which would make `pihole -v` show N/A for
+# the local Core/Web versions, so trust them system-wide. The image is built
+# as root and the paths are fixed, so no validation of the paths is needed here.
+RUN git config --system --add safe.directory /etc/.pihole && \
+    git config --system --add safe.directory /var/www/html/admin && \
+    chmod a+r /etc/gitconfig
 
 COPY --chmod=0755 bash_functions.sh /usr/bin/bash_functions.sh
 COPY --chmod=0755 prefix-time.sh /usr/bin/prefix-time.sh
@@ -122,7 +135,7 @@ RUN if   [ "$TARGETPLATFORM" = "linux/amd64" ];    then FTLARCH=amd64; \
     else FTLARCH=amd64; fi \
     && echo "Arch: ${TARGETPLATFORM}, FTLARCH: ${FTLARCH}" \
     && if [ "${FTL_BRANCH}" = "master" ]; then URL="https://github.com/pi-hole/ftl/releases/latest/download"; else URL="https://ftl.pi-hole.net/${FTL_BRANCH}"; fi \
-    && curl -sSL "${URL}/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL \
+    && curl -fsSL "${URL}/pihole-FTL-${FTLARCH}" -o /usr/bin/pihole-FTL \
     && chmod +x /usr/bin/pihole-FTL \
     && readelf -h /usr/bin/pihole-FTL || (echo "Error with downloaded FTL binary" && exit 1) \
     && /usr/bin/pihole-FTL  -vv
