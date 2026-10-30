@@ -59,7 +59,10 @@ jobs:
       packages: write # required to push to GHCR
     with:
       setup-qemu: true
-      cache: true
+      # Skip the layer cache for scheduled (nightly) builds so Alpine package
+      # updates, FTL/Core/web clones and the FTL download are refreshed daily.
+      # Push, PR and release builds keep the cache and stay fast. See #2089.
+      cache: ${{ github.event_name != 'schedule' }}
       cache-scope: build
       cache-mode: max
       fail-fast: true
