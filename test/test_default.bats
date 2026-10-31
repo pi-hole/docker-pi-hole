@@ -59,6 +59,13 @@ teardown_file() {
     assert_success
 }
 
+@test "Logrotate is scheduled without --force" {
+    run docker exec "$CONTAINER" crontab -l
+    assert_success
+    assert_output --partial "/usr/sbin/logrotate /etc/logrotate.d/pihole"
+    refute_output --partial "logrotate --force"
+}
+
 # ---- Default configuration --------------------------------------------------
 
 @test "Default DNS upstreams are applied when none are configured" {
