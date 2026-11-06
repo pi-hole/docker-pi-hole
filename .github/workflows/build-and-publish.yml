@@ -2,6 +2,7 @@ name: Build Image and Publish
 on:
   schedule:
     - cron: "0 5 * * *"
+  workflow_dispatch:
   push:
     branches:
       - development
@@ -41,7 +42,20 @@ jobs:
       - name: Test
         run: CIPLATFORM=${{ env.CI_ARCH }} bash test/run.sh
 
+  # Scheduled runs always start on the default branch, but the nightly image
+  # has to be built from the development Dockerfile to match its components.
+  nightly:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: write
+    steps:
+      - run: gh workflow run build-and-publish.yml --repo "${{ github.repository }}" --ref development
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   build-prepare:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-24.04
     outputs:
       components_branch: ${{ env.components_branch }}
@@ -59,12 +73,9 @@ jobs:
       packages: write # required to push to GHCR
     with:
       setup-qemu: true
-      # Skip the layer cache for scheduled (nightly) builds so Alpine package
-      # updates, FTL/Core/web clones and the FTL download are refreshed daily.
-      # Push, PR and release builds keep the cache and stay fast. See #2089.
-      cache: ${{ github.event_name != 'schedule' }}
-      cache-scope: build
-      cache-mode: max
+      # No layer cache: the image builds quickly, and cached layers can leave
+      # outdated Alpine packages and components in published images. See #2089.
+      cache: false
       fail-fast: true
       context: src
       output: image
@@ -81,8 +92,7 @@ jobs:
         pihole/pihole
         ghcr.io/${{ github.repository_owner }}/pihole
       meta-tags: |
-        type=schedule,pattern=nightly
-        type=raw,value=nightly,enable=${{ github.event_name == 'push' }}
+        type=raw,value=nightly,enable=${{ github.ref == 'refs/heads/development' }}
         type=ref,event=tag
       meta-flavor: |
         latest=${{ startsWith(github.ref, 'refs/tags/') }}

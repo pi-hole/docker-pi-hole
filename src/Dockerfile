@@ -37,6 +37,7 @@ RUN apk add --no-cache \
     ncurses \
     procps-ng \
     psmisc \
+    setpriv \
     shadow \
     sudo \
     tzdata \
