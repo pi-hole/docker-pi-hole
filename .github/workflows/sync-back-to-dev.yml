@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   sync-branches:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     name: Syncing branches
     steps:
       - name: Checkout

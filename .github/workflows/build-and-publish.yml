@@ -46,7 +46,7 @@ jobs:
   # has to be built from the development Dockerfile to match its components.
   nightly:
     if: github.event_name == 'schedule'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     permissions:
       actions: write
     steps:
@@ -56,7 +56,7 @@ jobs:
 
   build-prepare:
     if: github.event_name != 'schedule'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     outputs:
       components_branch: ${{ env.components_branch }}
     steps:
