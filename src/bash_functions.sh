@@ -122,10 +122,6 @@ migrate_gravity() {
 # shellcheck disable=SC2034
 ftl_config() {
 
-    # Force a check of pihole-FTL --config, this will read any environment variables and set them in the config file
-    # suppress the output as we don't need to see the default values.
-    getFTLConfigValue >/dev/null
-
     # If FTLCONF_files_macvendor is not set
     if [[ -z "${FTLCONF_files_macvendor:-}" ]]; then
         # User is not passing in a custom location - so force FTL to use the file we moved to / during the build

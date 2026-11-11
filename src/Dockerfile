@@ -39,7 +39,6 @@ RUN apk add --no-cache \
     psmisc \
     setpriv \
     shadow \
-    sudo \
     tzdata \
     unzip \
     wget
