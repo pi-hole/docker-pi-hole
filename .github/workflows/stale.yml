@@ -40,14 +40,12 @@ jobs:
     # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#issue_comment-on-issues-only-or-pull-requests-only
     if: ${{ !github.event.issue.pull_request && github.event_name != 'schedule' }}
     permissions:
-      contents: read #  for actions/checkout
       issues: write #  to edit issues label
     runs-on: ubuntu-slim
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
       - name: Remove 'stale' label
         run: gh issue edit ${{ github.event.issue.number }} --remove-label ${{ env.stale_label }}
         env:
+          GH_REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
