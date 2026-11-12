@@ -3,12 +3,18 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
-permissions:
-  contents: read
-  security-events: write
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   shellcheck:
+    name: shellcheck
+    permissions:
+      contents: read # to checkout the repository
+      security-events: write # to upload SARIF results to code scanning
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:

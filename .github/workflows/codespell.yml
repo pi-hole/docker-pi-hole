@@ -6,8 +6,13 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   spell-check:
+    name: spell-check
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
