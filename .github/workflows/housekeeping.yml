@@ -4,12 +4,18 @@ on:
     schedule:
         - cron: "0 0 * * *"
 
-permissions:
-  packages: write
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
     housekeeping:
+        name: Delete untagged images
         runs-on: ubuntu-latest
+        permissions:
+            packages: write # to delete untagged package versions
         steps:
             -
                 name: Delete all containers from repository without tags

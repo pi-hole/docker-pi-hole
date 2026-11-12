@@ -4,21 +4,24 @@ on:
   schedule:
     - cron: '0 8 * * *'
   workflow_dispatch:
-  issue_comment:
+  issue_comment: # zizmor: ignore[dangerous-triggers] only uses the issue number, never PR code
 
-permissions:
-  issues: write
-  pull-requests: write
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number || github.ref }}
+  cancel-in-progress: false
 
 env:
   stale_label: stale
 
 jobs:
   stale_action:
+    name: Mark stale issues
     if: github.event_name != 'issue_comment'
     runs-on: ubuntu-slim
     permissions:
-      issues: write
+      issues: write # to label and close stale issues
 
     steps:
     - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 #v11.0.0
@@ -34,20 +37,21 @@ jobs:
         close-issue-reason: 'not_planned'
 
   remove_stale:
+    name: Remove stale label
     # trigger "stale" removal immediately when stale issues are commented on
     # we need to explicitly check that the trigger does not run on comment on a PR as
     # 'issue_comment' triggers on issues AND PR comments
     # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#issue_comment-on-issues-only-or-pull-requests-only
     if: ${{ !github.event.issue.pull_request && github.event_name != 'schedule' }}
     permissions:
-      contents: read #  for actions/checkout
-      issues: write #  to edit issues label
+      issues: write # to edit issues label
     runs-on: ubuntu-slim
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
       - name: Remove 'stale' label
-        run: gh issue edit ${{ github.event.issue.number }} --remove-label ${{ env.stale_label }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label "$STALE_LABEL"
         env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          STALE_LABEL: ${{ env.stale_label }}
+          GH_REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

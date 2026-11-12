@@ -5,17 +5,24 @@ on:
     branches:
       - master
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   sync-branches:
     runs-on: ubuntu-slim
     name: Syncing branches
+    permissions:
+      contents: write # unchanged from the previous workflow-level permission
+      pull-requests: write # to open the sync pull request
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+        with:
+          persist-credentials: false
       - name: Opening pull request
         run: gh pr create -B development -H master --title 'Sync master back into development' --body 'Created by Github action' --label 'internal'
         env:

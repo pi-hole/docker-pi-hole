@@ -3,12 +3,18 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
-permissions:
-  contents: read
-  security-events: write
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   shellcheck:
+    name: shellcheck
+    permissions:
+      contents: read # to checkout the repository
+      security-events: write # to upload SARIF results to code scanning
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
@@ -16,6 +22,7 @@ jobs:
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
       with:
         fetch-depth: 0
+        persist-credentials: false
 
     - name: Differential ShellCheck
       uses: redhat-plumbers-in-action/differential-shellcheck@f51c7c0d32777d00de777131d25918617a246415 #v5.5.7

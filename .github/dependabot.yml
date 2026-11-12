@@ -8,6 +8,8 @@ updates:
       interval: "weekly"
       day: saturday
       time: "10:00"
+    cooldown:
+      default-days: 7
     groups:
       github_action-dependencies:
         patterns:
@@ -19,4 +21,6 @@ updates:
       interval: "weekly"
       day: saturday
       time: "10:00"
+    cooldown:
+      default-days: 7
     target-branch: development
