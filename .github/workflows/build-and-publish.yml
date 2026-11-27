@@ -98,6 +98,7 @@ jobs:
         PADD_BRANCH=${{ needs.build-prepare.outputs.components_branch }}
       platforms: linux/amd64,linux/386,linux/arm/v6,linux/arm/v7,linux/arm64,linux/riscv64
       push: ${{ github.event_name != 'pull_request' }}
+      sbom: true
       set-meta-labels: true
       meta-images: |
         pihole/pihole
